@@ -9,7 +9,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 )
 
-func CloneOrOpen(repoURL string, targetDir string) (*git.Repository, error) {
+func cloneOrOpen(repoURL string, targetDir string) (*git.Repository, error) {
 	var repo *git.Repository
 
 	if _, err := os.Stat(targetDir); os.IsNotExist(err) {
@@ -44,7 +44,7 @@ func Execute(repoURL string, targetDir string) error {
 	var repo *git.Repository
 	var err error
 
-	repo, err = CloneOrOpen(repoURL, targetDir)
+	repo, err = cloneOrOpen(repoURL, targetDir)
 	if err != nil {
 		return err
 	}

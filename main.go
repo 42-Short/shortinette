@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	// "github.com/42-Short/shortinette/cmd"
+	"github.com/42-Short/shortinette/pkg/functioncheck"
 	"github.com/42-Short/shortinette/pkg/git"
 	"github.com/joho/godotenv"
 )
@@ -17,6 +17,12 @@ func main() {
 
 	err = git.Execute("https://github.com/42-student-council/website.git", "website")
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
+	}
+
+	allowedFunctions := []string{"println"}
+	err = functioncheck.Execute(allowedFunctions)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
