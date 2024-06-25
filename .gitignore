@@ -4,7 +4,7 @@
 
 # TESTS
 
-allowedfunctions/
+functioncheck/
 website/
 ex*/
 *.rlib

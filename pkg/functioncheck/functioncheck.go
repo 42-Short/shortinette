@@ -94,9 +94,48 @@ func CreateFileWithDirs(filePath string) (*os.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
-
 	return file, nil
+}
+
+func writeAllowedItemsLibCargoToml() error {
+	path := "functioncheck/allowedfunctions/Cargo.toml"
+	file, err := CreateFileWithDirs(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	content := `[package]
+name = "allowedfunctions"
+version = "0.1.0"
+edition = "2021"
+`
+	if _, err := file.WriteString(content); err != nil {
+		return err
+	}
+	return nil
+}
+
+func writeStudentCodeCargoToml() error {
+	path := "functioncheck/src/Cargo.toml"
+	file, err := CreateFileWithDirs(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	content := `[package]
+name = "functioncheck"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+allowedfunctions = { path = "functioncheck" }
+
+[workspace]
+`
+	if _, err := file.WriteString(content); err != nil {
+		return err
+	}
+	return nil
 }
 
 func initCompilingEnvironment(allowedItems []AllowedItem) error {
@@ -109,6 +148,15 @@ func initCompilingEnvironment(allowedItems []AllowedItem) error {
 	if err := writeAllowedItemsLib(allowedItems, file); err != nil {
 		return err
 	}
+
+	if err := writeAllowedItemsLibCargoToml(); err != nil {
+		return err
+	}
+
+	if err := writeStudentCodeCargoToml(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
