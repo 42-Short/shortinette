@@ -37,19 +37,32 @@ func parseCSV(allowedItemsCSVPath string) ([]AllowedItem, error) {
 	return allowedItems, nil
 }
 
-func initCompilingEnvironment(allowedItems []AllowedItem, ) error {
-	libFilePath := "functioncheck/allowedfunctions/src/lib.rs"
-	dir := filepath.Dir(libFilePath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+func writeMacroEntry(itemName string, file *os.File) error {
+	content := fmt.Sprintf(`
+	#[cfg(not(feature = "allowed_%s"))]
+	#[macro_export]
+	macro_rules! %s {
+		($($arg:tt)*) => {{}}
+	}
+`, itemName, itemName)
+	if _, err := file.WriteString(content); err != nil {
 		return err
 	}
+	return nil
+}
 
-	file, err := os.Create(libFilePath)
-	if err != nil {
+func writeFunctionEntry(itemName string, file *os.File) error {
+	content := fmt.Sprintf(`
+	#[cfg(not(feature = "allowed_%s"))]
+	pub fn %s() {}
+`, itemName, itemName)
+	if _, err := file.WriteString(content); err != nil {
 		return err
 	}
-	defer file.Close()
+	return nil
+}
 
+func writeAllowedItemsLib(allowedItems []AllowedItem, file *os.File) error {
 	exerciseNumber := "00"
 	content := fmt.Sprintf("pub mod ex%s { ", exerciseNumber)
 	if _, err := file.WriteString(content); err != nil {
@@ -58,19 +71,44 @@ func initCompilingEnvironment(allowedItems []AllowedItem, ) error {
 
 	for _, item := range allowedItems {
 		if item.Type == "macro" {
-			content := fmt.Sprintf(`
-		#[cfg(not(feature = "allowed_%[1]s"))]
-		#[macro_export]
-		macro_rules! %[1]s {
-			($($arg:tt)*) => {{}}
-	}
-`, item.Name)
-			if _, err := file.WriteString(content); err != nil {
+			if err := writeMacroEntry(item.Name, file); err != nil {
+				return err
+			}
+		} else if item.Type == "function" {
+			if err := writeFunctionEntry(item.Name, file); err != nil {
 				return err
 			}
 		}
 	}
 	file.WriteString("}")
+	return nil
+}
+
+func CreateFileWithDirs(filePath string) (*os.File, error) {
+	dir := filepath.Dir(filePath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return nil, err
+	}
+
+	file, err := os.Create(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	return file, nil
+}
+
+func initCompilingEnvironment(allowedItems []AllowedItem) error {
+	libFilePath := "functioncheck/allowedfunctions/src/lib.rs"
+	file, err := CreateFileWithDirs(libFilePath)
+	if err != nil {
+		return err
+	}
+
+	if err := writeAllowedItemsLib(allowedItems, file); err != nil {
+		return err
+	}
 	return nil
 }
 
