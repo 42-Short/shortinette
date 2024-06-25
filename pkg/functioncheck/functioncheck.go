@@ -8,7 +8,7 @@ import (
 )
 
 func writeDummyLib(allowedFunctions []string) error {
-	filePath := "allowed_functions/src/lib.rs"
+	filePath := "allowedfunctions/src/lib.rs"
 	file, err := os.Create(filePath)
 	if err != nil {
 		return fmt.Errorf("error creating %s: %s", filePath, err)
