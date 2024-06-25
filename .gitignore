@@ -6,3 +6,5 @@
 
 allowedfunctions/
 website/
+ex*/
+*.rlib
