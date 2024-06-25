@@ -3,8 +3,11 @@ package functioncheck
 import (
 	"encoding/csv"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/42-Short/shortinette/pkg/git"
 )
 
 type AllowedItem struct {
@@ -116,7 +119,7 @@ edition = "2021"
 }
 
 func writeStudentCodeCargoToml() error {
-	path := "functioncheck/src/Cargo.toml"
+	path := "functioncheck/Cargo.toml"
 	file, err := CreateFileWithDirs(path)
 	if err != nil {
 		return err
@@ -128,7 +131,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-allowedfunctions = { path = "functioncheck" }
+allowedfunctions = { path = "allowedfunctions" }
+
+[[bin]]
+name = "functioncheck"
+path = "src/ex00/main.rs"
 
 [workspace]
 `
@@ -160,6 +167,44 @@ func initCompilingEnvironment(allowedItems []AllowedItem) error {
 	return nil
 }
 
+func prependHeadersToStudentCode(filePath string) error {
+	originalFile, err := os.Open(filePath)
+	if err != nil {
+		return err
+	}
+	defer originalFile.Close()
+
+	tempFilePath := "functioncheck/src/temp.rs"
+	tempFile, err := os.Create(tempFilePath)
+	if err != nil {
+		return err
+	}
+	defer tempFile.Close()
+
+	headers := `#![no_std]
+#[macro_use]
+extern crate allowedfunctions;
+use allowedfunctions::ex00::*;
+`
+	if _, err := tempFile.WriteString(headers); err != nil {
+		return err
+	}
+
+	originalContent, err := io.ReadAll(originalFile)
+	if err != nil {
+		return err
+	}
+	if _, err := tempFile.Write(originalContent); err != nil {
+		return err
+	}
+
+	if err := os.Rename(tempFilePath, filePath); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func Execute(allowedItemsCSVPath string) error {
 	allowedItems, err := parseCSV(allowedItemsCSVPath)
 	if err != nil {
@@ -168,6 +213,16 @@ func Execute(allowedItemsCSVPath string) error {
 	err = initCompilingEnvironment(allowedItems)
 	if err != nil {
 		return fmt.Errorf("error initializing compiling environment: %s", err)
+	}
+	err = git.Execute("https://github.com/42-Short/abied-ch-R00.git", "functioncheck/src/")
+	if err != nil {
+		return fmt.Errorf("error executing git: %s", err)
+	}
+
+	studentCodeFilePath := "functioncheck/src/ex00/main.rs"
+	err = prependHeadersToStudentCode(studentCodeFilePath)
+	if err != nil {
+		return fmt.Errorf("error prepending headers to student code: %s", err)
 	}
 	return nil
 }
