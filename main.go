@@ -20,8 +20,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	allowedFunctions := []string{"println"}
-	err = functioncheck.Execute(allowedFunctions)
+	allowedItemList := []string{"println"}
+	err = functioncheck.Execute("db/stdlib.csv", allowedItemList)
 	if err != nil {
 		log.Fatal(err)
 	}
