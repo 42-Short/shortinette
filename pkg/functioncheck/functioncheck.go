@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
+	"strings"
 
 	"github.com/42-Short/shortinette/pkg/git"
 )
@@ -189,7 +192,6 @@ use allowedfunctions::ex00::*;
 	if _, err := tempFile.WriteString(headers); err != nil {
 		return err
 	}
-
 	originalContent, err := io.ReadAll(originalFile)
 	if err != nil {
 		return err
@@ -197,12 +199,43 @@ use allowedfunctions::ex00::*;
 	if _, err := tempFile.Write(originalContent); err != nil {
 		return err
 	}
-
 	if err := os.Rename(tempFilePath, filePath); err != nil {
 		return err
 	}
-
 	return nil
+}
+
+func compileWithDummyLib(sourceDir string) (string, error) {
+	cmd := exec.Command("cargo", "build")
+	cmd.Dir = sourceDir
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return string(output), fmt.Errorf("error compiling code in %s: %s\nCompiler Output:\n%s", sourceDir, err, output)
+	}
+	return string(output), nil
+}
+
+func parseForbiddenFunctions(compilerOutput string) ([]string, error) {
+	re, err := regexp.Compile("error: cannot find (function|macro) `" + `(\w+)` + "` in this scope")
+	if err != nil {
+		return nil, fmt.Errorf("error compiling regex: %s", err)
+	}
+
+	matches := re.FindAllStringSubmatch(compilerOutput, -1)
+	if matches == nil {
+		return nil, fmt.Errorf("no forbidden functions found")
+	}
+
+	var forbiddenFunctions []string
+
+	for _, match := range matches {
+		if len(match) > 2 {
+			forbiddenFunctions = append(forbiddenFunctions, match[2])
+		}
+	}
+
+	return forbiddenFunctions, nil
 }
 
 func Execute(allowedItemsCSVPath string) error {
@@ -218,11 +251,22 @@ func Execute(allowedItemsCSVPath string) error {
 	if err != nil {
 		return fmt.Errorf("error executing git: %s", err)
 	}
-
 	studentCodeFilePath := "functioncheck/src/ex00/main.rs"
 	err = prependHeadersToStudentCode(studentCodeFilePath)
 	if err != nil {
 		return fmt.Errorf("error prepending headers to student code: %s", err)
+	}
+
+	output, err := compileWithDummyLib("functioncheck/")
+	if err != nil {
+		usedForbiddenFunctions, parseErr := parseForbiddenFunctions(output)
+		if parseErr != nil {
+			return fmt.Errorf("error parsing forbidden functions: %v", parseErr)
+		}
+		if len(usedForbiddenFunctions) > 0 {
+			forbiddenFunctionsStr := strings.Join(usedForbiddenFunctions, ", ")
+			return fmt.Errorf("error: forbidden functions used: %s", forbiddenFunctionsStr)
+		}
 	}
 	return nil
 }
