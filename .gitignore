@@ -1,3 +1,7 @@
 # SECRETS
 
 .env
+
+# TESTS
+
+allowed_functions/
