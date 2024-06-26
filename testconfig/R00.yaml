@@ -3,10 +3,17 @@ ex00:
   turn_in_file: hello.rs
   allowed_items:
     macros:
-      - vec
       - println
   tests:
     assert_eq:
       - "Hello, World!\n"
-    assert_ne:
-      - "Hello, World!\t"
+
+ex01:
+  turn_in_directory: ex01
+  turn_in_file: min.rs
+  allowed_items:
+    macros:
+      - println
+  forbidden_keywords:
+    - return
+  tests:
