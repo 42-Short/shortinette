@@ -8,10 +8,12 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/42-Short/shortinette/internal/datastructures"
+	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/pkg/git"
 )
 
-func initCompilingEnvironment(allowedItems []AllowedItem, exercise string) error {
+func initCompilingEnvironment(allowedItems []datastructures.AllowedItem, exercise string) error {
 	libFilePath := "compile-environment/allowedfunctions/src/lib.rs"
 	file, err := createFileWithDirs(libFilePath)
 	if err != nil {
@@ -110,28 +112,22 @@ func handleCompileError(output string) error {
 		return fmt.Errorf("could not parse forbidden functions: %w", parseErr)
 	} else if len(usedForbiddenFunctions) > 0 {
 		forbiddenFunctions := strings.Join(usedForbiddenFunctions, ", ")
-		return fmt.Errorf("forbidden functions used: %s", forbiddenFunctions)
+		return errors.NewSubmissionError(errors.ErrForbiddenItem, forbiddenFunctions)
 	} else {
 		return fmt.Errorf("could not compile code: %s", output)
 	}
 }
 
-func Execute(allowedItems []AllowedItem, exercise string) (err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf("error: %w", err)
-		}
-	}()
-
+func Execute(allowedItems []datastructures.AllowedItem, exercise string) (err error) {
 	if err = initCompilingEnvironment(allowedItems, exercise); err != nil {
 		return err
 	}
 
-	if err = git.Get("https://github.com/42-Short/abied-ch-R00.git", "compile-environment/src/"); err != nil {
+	if err = git.Get("https://github.com/42-Short/shortinette-test.git", "compile-environment/src/"); err != nil {
 		return err
 	}
 
-	err = prependHeadersToStudentCode(fmt.Sprintf("compile-environment/src/%s/main.rs", exercise), exercise)
+	err = prependHeadersToStudentCode(fmt.Sprintf("compile-environment/src/%s/hello.rs", exercise), exercise)
 	if err != nil {
 		return err
 	}
@@ -140,5 +136,10 @@ func Execute(allowedItems []AllowedItem, exercise string) (err error) {
 	if compileErr != nil {
 		return handleCompileError(output)
 	}
+
+	if err = os.RemoveAll("compile-environment/"); err != nil {
+		return fmt.Errorf("failed to remove compile environment: %w", err)
+	}
+
 	return nil
 }
