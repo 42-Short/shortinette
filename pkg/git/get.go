@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 )
 
 func cloneRepository(repoURL, targetDir string) (*git.Repository, error) {
@@ -58,7 +58,7 @@ func pullLatestChanges(repo *git.Repository, targetDir string) error {
 	err = worktree.Pull(&git.PullOptions{
 		RemoteName:    "origin",
 		ReferenceName: plumbing.Main,
-		Auth: &githttp.BasicAuth{
+		Auth: &http.BasicAuth{
 			Username: username,
 			Password: password,
 		},

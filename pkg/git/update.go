@@ -5,16 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 )
-
-func getToken() (string, error) {
-	token := os.Getenv("GITHUB_TOKEN")
-	if token == "" {
-		return "", fmt.Errorf("GITHUB_TOKEN environment variable not set")
-	}
-	return token, nil
-}
 
 func buildCollaboratorURL(repo, username string) string {
 	return fmt.Sprintf("https://api.github.com/repos/42-Short/%s/collaborators/%s", repo, username)
