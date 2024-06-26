@@ -30,6 +30,7 @@ func Create(name string) error {
 	return nil
 }
 
+// Add a collaborator with the specified permissions to the repository
 func AddCollaborator(repo string, name string, permission string) error {
 	if err := addCollaborator(repo, name, "push"); err != nil {
 		return fmt.Errorf("could not add %s to repo %s: %w", name, repo, err)
