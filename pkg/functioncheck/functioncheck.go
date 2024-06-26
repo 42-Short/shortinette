@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
 	"github.com/42-Short/shortinette/pkg/git"
 )
 
@@ -94,14 +95,14 @@ edition = "2021"
 	return nil
 }
 
-func writeStudentCodeCargoToml() error {
+func writeStudentCodeCargoToml(exercise string) error {
 	path := "functioncheck/Cargo.toml"
 	file, err := CreateFileWithDirs(path)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	content := `[package]
+	content := fmt.Sprintf(`[package]
 name = "functioncheck"
 version = "0.1.0"
 edition = "2021"
@@ -111,17 +112,17 @@ allowedfunctions = { path = "allowedfunctions" }
 
 [[bin]]
 name = "functioncheck"
-path = "src/ex00/main.rs"
+path = "src/%s/temp.rs"
 
 [workspace]
-`
+`, exercise)
 	if _, err := file.WriteString(content); err != nil {
 		return err
 	}
 	return nil
 }
 
-func initCompilingEnvironment(allowedItems []AllowedItem) error {
+func initCompilingEnvironment(allowedItems []AllowedItem, exercise string) error {
 	libFilePath := "functioncheck/allowedfunctions/src/lib.rs"
 	file, err := CreateFileWithDirs(libFilePath)
 	if err != nil {
@@ -136,43 +137,38 @@ func initCompilingEnvironment(allowedItems []AllowedItem) error {
 		return err
 	}
 
-	if err := writeStudentCodeCargoToml(); err != nil {
+	if err := writeStudentCodeCargoToml(exercise); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func prependHeadersToStudentCode(filePath string) error {
+func prependHeadersToStudentCode(filePath string, exercise string) (err error) {
+
 	originalFile, err := os.Open(filePath)
 	if err != nil {
 		return err
 	}
 	defer originalFile.Close()
 
-	tempFilePath := "functioncheck/src/temp.rs"
+	tempFilePath := fmt.Sprintf("functioncheck/src/%s/temp.rs", exercise)
 	tempFile, err := os.Create(tempFilePath)
 	if err != nil {
 		return err
 	}
 	defer tempFile.Close()
 
-	headers := `#![no_std]
+	headers := fmt.Sprintf(`#![no_std]
 #[macro_use]
 extern crate allowedfunctions;
-use allowedfunctions::ex00::*;
-`
+use allowedfunctions::%s::*;
+`, exercise)
 	if _, err := tempFile.WriteString(headers); err != nil {
 		return err
-	}
-	originalContent, err := io.ReadAll(originalFile)
-	if err != nil {
+	} else if originalContent, err := io.ReadAll(originalFile); err != nil {
 		return err
-	}
-	if _, err := tempFile.Write(originalContent); err != nil {
-		return err
-	}
-	if err := os.Rename(tempFilePath, filePath); err != nil {
+	} else if _, err := tempFile.Write(originalContent); err != nil {
 		return err
 	}
 	return nil
@@ -226,14 +222,14 @@ func Execute(allowedItems []AllowedItem, exercise string) (err error) {
 		}
 	}()
 
-	if err = initCompilingEnvironment(allowedItems); err != nil {
+	if err = initCompilingEnvironment(allowedItems, exercise); err != nil {
 		return err
 	} else if err = git.Execute("https://github.com/42-Short/abied-ch-R00.git", "functioncheck/src/"); err != nil {
 		return err
 	}
 
-	studentCodeFilePath := "functioncheck/src/ex00/main.rs"
-	err = prependHeadersToStudentCode(studentCodeFilePath)
+	studentCodeFilePath := fmt.Sprintf("functioncheck/src/%s/main.rs", exercise)
+	err = prependHeadersToStudentCode(studentCodeFilePath, exercise)
 	if err != nil {
 		return fmt.Errorf("error prepending headers to student code: %s", err)
 	}
