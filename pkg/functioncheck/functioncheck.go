@@ -118,7 +118,7 @@ func handleCompileError(output string) error {
 	}
 }
 
-func Execute(allowedItems []datastructures.AllowedItem, exercise string) (err error) {
+func Execute(allowedItems []datastructures.AllowedItem, turnInDirectory string, turnInFile string) (err error) {
 	defer func() {
 		rmErr := os.RemoveAll("compile-environment/")
 		if rmErr != nil {
@@ -126,7 +126,7 @@ func Execute(allowedItems []datastructures.AllowedItem, exercise string) (err er
 		}
 	}()
 
-	if err = initCompilingEnvironment(allowedItems, exercise); err != nil {
+	if err = initCompilingEnvironment(allowedItems, turnInDirectory); err != nil {
 		return err
 	}
 
@@ -134,7 +134,7 @@ func Execute(allowedItems []datastructures.AllowedItem, exercise string) (err er
 		return err
 	}
 
-	err = prependHeadersToStudentCode(fmt.Sprintf("compile-environment/src/%s/hello.rs", exercise), exercise)
+	err = prependHeadersToStudentCode(fmt.Sprintf("compile-environment/src/%s/%s", turnInDirectory, turnInFile), turnInDirectory)
 	if err != nil {
 		return err
 	}

@@ -12,7 +12,7 @@ type AllowedItems struct {
 
 type Exercise struct {
 	TurnInDirectory string       `yaml:"turn_in_directory"`
-	TurnInFiles     []string     `yaml:"turn_in_files"`
+	TurnInFile      string       `yaml:"turn_in_file"`
 	AllowedItems    AllowedItems `yaml:"allowed_items"`
 	Tests           Test         `yaml:"tests"`
 }
