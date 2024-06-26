@@ -8,10 +8,11 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/42-Short/shortinette/internal/datastructures"
 	"github.com/42-Short/shortinette/pkg/git"
 )
 
-func initCompilingEnvironment(allowedItems []AllowedItem, exercise string) error {
+func initCompilingEnvironment(allowedItems []datastructures.AllowedItem, exercise string) error {
 	libFilePath := "compile-environment/allowedfunctions/src/lib.rs"
 	file, err := createFileWithDirs(libFilePath)
 	if err != nil {
@@ -116,7 +117,7 @@ func handleCompileError(output string) error {
 	}
 }
 
-func Execute(allowedItems []AllowedItem, exercise string) (err error) {
+func Execute(allowedItems []datastructures.AllowedItem, exercise string) (err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("error: %w", err)

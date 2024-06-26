@@ -1,0 +1,10 @@
+ex00:
+  turn_in_directory: ex00/
+  turn_in_files:
+    - hello.rs
+  allowed_items:
+    - println
+  tests:
+    output:
+      assert_eq:
+        - "Hello, World!\n"

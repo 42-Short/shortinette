@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/42-Short/shortinette/pkg/tester"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/cobra"
 )
@@ -46,12 +45,4 @@ func gradeExercise() {
 		Message: "Enter the path to the exercise file:",
 	}, &filePath)
 
-	result, err := shortinette.RunUserCode(filePath)
-	if err != nil {
-		fmt.Println("Error running the code:", err)
-		return
-	}
-
-	fmt.Println("Result:", result)
-	startInteractiveMenu()
 }

@@ -4,12 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-)
 
-type AllowedItem struct {
-	Name string
-	Type string
-}
+	"github.com/42-Short/shortinette/internal/datastructures"
+)
 
 func writeTemplateToFile(template, itemName string, file *os.File) error {
 	content := fmt.Sprintf(template, itemName, itemName)
@@ -19,7 +16,7 @@ func writeTemplateToFile(template, itemName string, file *os.File) error {
 	return nil
 }
 
-func writeAllowedItemsLib(allowedItems []AllowedItem, file *os.File) error {
+func writeAllowedItemsLib(allowedItems []datastructures.AllowedItem, file *os.File) error {
 	exerciseNumber := "00"
 	content := fmt.Sprintf(allowedItemsLibHeader, exerciseNumber)
 	if _, err := file.WriteString(content); err != nil {
