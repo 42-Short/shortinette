@@ -35,15 +35,15 @@ The `AllowedItem` struct represents an item (function or macro) that is allowed 
 
 ## Usage
 1. **Initialize Compilation Environment**
-* The **initCompilingEnvironment** function creates the required Rust files and directories, writing the allowed items into the Rust library.
+	* The **initCompilingEnvironment** function creates the required Rust files and directories, writing the allowed items into the Rust library.
 2. **Modify Student Code**
-* The **prependHeadersToStudentCode** function reads the student's code, adds necessary headers, and writes it to a temporary file.
+	* The **prependHeadersToStudentCode** function reads the student's code, adds necessary headers, and writes it to a temporary file.
 3. **Compile Code**
-* The **compileWithDummyLib** function compiles the student's code using the dummy library that contains the allowed items.
+	* The **compileWithDummyLib** function compiles the student's code using the dummy library that contains the allowed items.
 4. **Parse and Handle Errors**
-* If the compilation fails, the **handleCompileError** function parses the output to identify any forbidden functions used.
+	* If the compilation fails, the **handleCompileError** function parses the output to identify any forbidden functions used.
 5. **Execute the Process**
-* The **Execute** function orchestrates the entire process: initializing the environment, modifying the code, compiling it, and handling any errors.
+	* The **Execute** function orchestrates the entire process: initializing the environment, modifying the code, compiling it, and handling any errors.
 
 ## Templates
 * **allowedMacroTemplate**: Template for allowed macros.
