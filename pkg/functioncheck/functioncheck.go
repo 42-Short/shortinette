@@ -127,7 +127,7 @@ func Execute(allowedItems []AllowedItem, exercise string) (err error) {
 		return err
 	}
 
-	if err = git.Execute("https://github.com/42-Short/abied-ch-R00.git", "compile-environment/src/"); err != nil {
+	if err = git.Get("https://github.com/42-Short/abied-ch-R00.git", "compile-environment/src/"); err != nil {
 		return err
 	}
 
