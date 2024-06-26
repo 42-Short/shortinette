@@ -7,17 +7,14 @@ import (
 	"net/http"
 )
 
-// buildRepoURL constructs the GitHub API URL for the repository
 func buildRepoURL(repo string) string {
 	return fmt.Sprintf("https://api.github.com/repos/42-Short/%s", repo)
 }
 
-// buildCreateRepoURL constructs the GitHub API URL for creating a repository in the organization
 func buildCreateRepoURL() string {
 	return "https://api.github.com/orgs/42-Short/repos"
 }
 
-// createHTTPRequest creates a new HTTP request with the provided method, URL, token, and body
 func createHTTPRequest(method, url, token string, body []byte) (*http.Request, error) {
 	request, err := http.NewRequest(method, url, bytes.NewBuffer(body))
 	if err != nil {
@@ -31,7 +28,6 @@ func createHTTPRequest(method, url, token string, body []byte) (*http.Request, e
 	return request, nil
 }
 
-// sendHTTPRequest sends the provided HTTP request and returns the response
 func sendHTTPRequest(request *http.Request) (*http.Response, error) {
 	client := &http.Client{}
 	response, err := client.Do(request)
@@ -41,7 +37,6 @@ func sendHTTPRequest(request *http.Request) (*http.Response, error) {
 	return response, nil
 }
 
-// RepoExists checks if the specified repository exists in the organization
 func RepoExists(repo string) (bool, error) {
 	token, err := getToken()
 	if err != nil {
@@ -69,7 +64,6 @@ func RepoExists(repo string) (bool, error) {
 	}
 }
 
-// createRepository creates a new repository in the organization with the specified name
 func createRepository(name string) error {
 	token, err := getToken()
 	if err != nil {
