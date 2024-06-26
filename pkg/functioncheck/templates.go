@@ -22,7 +22,7 @@ edition = "2021"
 allowedfunctions = { path = "allowedfunctions" }
 
 [[bin]]
-name = "internal"
+name = "compile-environment"
 path = "src/%s/temp.rs"
 
 [workspace]

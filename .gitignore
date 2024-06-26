@@ -4,7 +4,7 @@
 
 # TESTS
 
-internal/
+compile-environment/
 website/
 ex*/
 *.rlib

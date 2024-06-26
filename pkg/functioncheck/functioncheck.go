@@ -12,7 +12,7 @@ import (
 )
 
 func initCompilingEnvironment(allowedItems []AllowedItem, exercise string) error {
-	libFilePath := "internal/allowedfunctions/src/lib.rs"
+	libFilePath := "compile-environment/allowedfunctions/src/lib.rs"
 	file, err := createFileWithDirs(libFilePath)
 	if err != nil {
 		return err
@@ -22,12 +22,12 @@ func initCompilingEnvironment(allowedItems []AllowedItem, exercise string) error
 		return err
 	}
 
-	if err := writeCargoToml("internal/allowedfunctions/Cargo.toml", allowedItemsCargoToml); err != nil {
+	if err := writeCargoToml("compile-environment/allowedfunctions/Cargo.toml", allowedItemsCargoToml); err != nil {
 		return err
 	}
 
-	cargoTomlContent := fmt.Sprintf(cargoTomlTemplate, "internal", exercise)
-	if err := writeCargoToml("internal/Cargo.toml", cargoTomlContent); err != nil {
+	cargoTomlContent := fmt.Sprintf(cargoTomlTemplate, "compile-environment", exercise)
+	if err := writeCargoToml("compile-environment/Cargo.toml", cargoTomlContent); err != nil {
 		return err
 	}
 
@@ -41,7 +41,7 @@ func prependHeadersToStudentCode(filePath, exercise string) error {
 	}
 	defer originalFile.Close()
 
-	tempFilePath := fmt.Sprintf("internal/src/%s/temp.rs", exercise)
+	tempFilePath := fmt.Sprintf("compile-environment/src/%s/temp.rs", exercise)
 	tempFile, err := os.Create(tempFilePath)
 	if err != nil {
 		return fmt.Errorf("could not create temp file: %w", err)
@@ -127,16 +127,16 @@ func Execute(allowedItems []AllowedItem, exercise string) (err error) {
 		return err
 	}
 
-	if err = git.Execute("https://github.com/42-Short/abied-ch-R00.git", "internal/src/"); err != nil {
+	if err = git.Execute("https://github.com/42-Short/abied-ch-R00.git", "compile-environment/src/"); err != nil {
 		return err
 	}
 
-	err = prependHeadersToStudentCode(fmt.Sprintf("internal/src/%s/main.rs", exercise), exercise)
+	err = prependHeadersToStudentCode(fmt.Sprintf("compile-environment/src/%s/main.rs", exercise), exercise)
 	if err != nil {
 		return err
 	}
 
-	output, compileErr := compileWithDummyLib("internal/")
+	output, compileErr := compileWithDummyLib("compile-environment/")
 	if compileErr != nil {
 		return handleCompileError(output)
 	}
