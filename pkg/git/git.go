@@ -16,7 +16,7 @@ func getToken() (string, error) {
 // Clone or open the repo & pull the latest changes into targetDirectory
 func Get(repoURL string, targetDirectory string) error {
 	if err := get(repoURL, targetDirectory); err != nil {
-		return fmt.Errorf("could not get repo: %w", err)
+		return err
 	}
 	return nil
 }

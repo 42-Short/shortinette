@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/42-Short/shortinette/internal/datastructures"
+	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/pkg/git"
 )
 
@@ -111,19 +112,13 @@ func handleCompileError(output string) error {
 		return fmt.Errorf("could not parse forbidden functions: %w", parseErr)
 	} else if len(usedForbiddenFunctions) > 0 {
 		forbiddenFunctions := strings.Join(usedForbiddenFunctions, ", ")
-		return fmt.Errorf("forbidden functions used: %s", forbiddenFunctions)
+		return errors.NewSubmissionError(errors.ErrForbiddenItem, forbiddenFunctions)
 	} else {
 		return fmt.Errorf("could not compile code: %s", output)
 	}
 }
 
 func Execute(allowedItems []datastructures.AllowedItem, exercise string) (err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf("error: %w", err)
-		}
-	}()
-
 	if err = initCompilingEnvironment(allowedItems, exercise); err != nil {
 		return err
 	}
@@ -132,7 +127,7 @@ func Execute(allowedItems []datastructures.AllowedItem, exercise string) (err er
 		return err
 	}
 
-	err = prependHeadersToStudentCode(fmt.Sprintf("compile-environment/src/%s/main.rs", exercise), exercise)
+	err = prependHeadersToStudentCode(fmt.Sprintf("compile-environment/src/%s/hello.rs", exercise), exercise)
 	if err != nil {
 		return err
 	}
