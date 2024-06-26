@@ -141,6 +141,7 @@ func Execute(allowedItems []datastructures.AllowedItem, turnInDirectory string, 
 
 	output, compileErr := compileWithDummyLib("compile-environment/")
 	if compileErr != nil {
+		println(compileErr.Error())
 		return handleCompileError(output)
 	}
 

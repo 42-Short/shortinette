@@ -35,6 +35,6 @@ edition = "2021"
 	studentCodePrefix = `#![no_std]
 #[macro_use]
 extern crate allowedfunctions;
-use allowedfunctions::ex%s::*;
+use allowedfunctions::%s::*;
 `
 )

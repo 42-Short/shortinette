@@ -4,6 +4,7 @@ ex00:
   allowed_items:
     macros:
       - vec
+      - println
   tests:
     assert_eq:
       - "Hello, World!\n"
