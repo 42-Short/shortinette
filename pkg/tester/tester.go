@@ -72,21 +72,30 @@ func runStudentCode(executablePath string) (string, error) {
 	return out.String(), nil
 }
 
-func Run(configFilePath, studentLogin, codeDirectory string) error {
-	defer os.RemoveAll(codeDirectory)
-
+func prepareEnvironment(configFilePath string) (*datastructures.Config, error) {
 	allowedItems, err := config.GetAllowedItems(configFilePath)
 	if err != nil {
-		return fmt.Errorf("failed to get allowed items: %w", err)
+		return nil, fmt.Errorf("failed to get allowed items: %w", err)
 	}
 
 	conf, err := config.GetConfig(configFilePath)
 	if err != nil {
-		return fmt.Errorf("failed to get config: %w", err)
+		return nil, fmt.Errorf("failed to get config: %w", err)
 	}
 
 	if err := functioncheck.Execute(allowedItems, conf.Ex00.TurnInDirectory, conf.Ex00.TurnInFile); err != nil {
-		return fmt.Errorf("function check failed: %w", err)
+		return nil, fmt.Errorf("function check failed: %w", err)
+	}
+
+	return conf, nil
+}
+
+func Run(configFilePath, studentLogin, codeDirectory string) error {
+	defer os.RemoveAll(codeDirectory)
+
+	conf, err := prepareEnvironment(configFilePath)
+	if err != nil {
+		return err
 	}
 
 	if err := git.Get(fmt.Sprintf("https://github.com/42-Short/%s.git", studentLogin), codeDirectory); err != nil {
@@ -94,7 +103,7 @@ func Run(configFilePath, studentLogin, codeDirectory string) error {
 	}
 
 	if err := compileStudentCode(codeDirectory, conf.Ex00.TurnInDirectory, conf.Ex00.TurnInFile); err != nil {
-		return fmt.Errorf("compilation failed: %w", err)
+		return err
 	}
 
 	executablePath := fmt.Sprintf("%s/%s/%s", codeDirectory, conf.Ex00.TurnInDirectory, conf.Ex00.TurnInFile)
@@ -102,11 +111,11 @@ func Run(configFilePath, studentLogin, codeDirectory string) error {
 
 	output, err := runStudentCode(executablePath)
 	if err != nil {
-		return fmt.Errorf("execution failed: %w", err)
+		return err
 	}
 
 	if err := checkAssertions(output, conf.Ex00.Tests); err != nil {
-		return fmt.Errorf("assertion check failed: %w", err)
+		return err
 	}
 
 	fmt.Println("All tests passed!")
