@@ -5,6 +5,7 @@ ex00:
   allowed_items:
     - println
   tests:
-    output:
-      assert_eq:
-        - "Hello, World!\n"
+    assert_eq:
+      - "Hello, World!\n"
+    assert_ne:
+      - "Hello, World!\t"
