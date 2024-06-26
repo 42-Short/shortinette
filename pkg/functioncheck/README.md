@@ -19,8 +19,8 @@ The `AllowedItem` struct represents an item (function or macro) that is allowed 
 
 ### Functions
 #### alloweditems.go
-* **writeTemplateToFile(template, itemName string, file *os.File) error**: Writes a formatted template to a file.
-* **writeAllowedItemsLib(allowedItems []AllowedItem, file *os.File) error**: Writes the allowed items to a Rust library file.
+* **writeTemplateToFile(template, itemName string, file \*os.File) error**: Writes a formatted template to a file.
+* **writeAllowedItemsLib(allowedItems []AllowedItem, file \*os.File) error**: Writes the allowed items to a Rust library file.
 * **createFileWithDirs(filePath string) (*os.File, error)**: Creates a file along with necessary directories.
 * **writeCargoToml(filePath, content string) error**: Writes content to a Cargo.toml file.
 
