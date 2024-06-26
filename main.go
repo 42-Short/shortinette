@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/42-Short/shortinette/pkg/config"
+	"github.com/42-Short/shortinette/internal/config"
 	"github.com/42-Short/shortinette/pkg/functioncheck"
 	"github.com/42-Short/shortinette/pkg/git"
 	"github.com/joho/godotenv"
