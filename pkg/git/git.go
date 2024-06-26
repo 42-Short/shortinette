@@ -17,15 +17,22 @@ func getCredentials() (string, string, error) {
 }
 
 func Get(repoURL string, targetDirectory string) error {
-	if err := doGet(repoURL, targetDirectory); err != nil {
+	if err := get(repoURL, targetDirectory); err != nil {
 		return fmt.Errorf("could not get repo: %w", err)
 	}
 	return nil
 }
 
 func Create(name string) error {
-	if err := doCreate(name); err != nil {
+	if err := create(name); err != nil {
 		return fmt.Errorf("could not create repo: %w", err)
+	}
+	return nil
+}
+
+func AddCollaborator(repo string, name string, permission string) error {
+	if err := addCollaborator(repo, name, "push"); err != nil {
+		return fmt.Errorf("could not add %s to repo %s: %w", name, repo, err)
 	}
 	return nil
 }

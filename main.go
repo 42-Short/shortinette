@@ -54,7 +54,10 @@ func main() {
 		log.Print(err)
 
 	}
-	if err = git.Create("arthur"); err != nil {
-		log.Fatalf("error: %s", err)
+	if err = git.Create("shortinette-test"); err != nil {
+		log.Printf("error: %s", err)
+	}
+	if err = git.AddCollaborator("shortinette-test", "shortinette-test", "push"); err != nil {
+		log.Printf("error: %s", err)
 	}
 }

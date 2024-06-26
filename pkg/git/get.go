@@ -29,7 +29,7 @@ func cloneOrOpen(repoURL string, targetDir string) (*git.Repository, error) {
 	return repo, nil
 }
 
-func doGet(repoURL string, targetDir string) error {
+func get(repoURL string, targetDir string) error {
 
 	var repo *git.Repository
 	var err error
