@@ -1,10 +1,8 @@
 package datastructures
 
 type Test struct {
-	Output struct {
-		AssertEq []string `yaml:"assert_eq"`
-		AssertNe []string `yaml:"assert_ne"`
-	}
+	AssertEq []string `yaml:"assert_eq"`
+	AssertNe []string `yaml:"assert_ne"`
 }
 
 type AllowedItems struct {

@@ -6,6 +6,7 @@ import (
 	"github.com/42-Short/shortinette/internal/config"
 	"github.com/42-Short/shortinette/pkg/functioncheck"
 	"github.com/42-Short/shortinette/pkg/git"
+	"github.com/42-Short/shortinette/pkg/tester"
 	"github.com/joho/godotenv"
 )
 
@@ -26,6 +27,9 @@ func main() {
 		fmt.Println(err)
 	}
 	if err = git.AddCollaborator("shortinette-test", "shortinette-test", "push"); err != nil {
+		fmt.Println(err)
+	}
+	if err = tester.Run("testconfig/R00.yaml"); err != nil {
 		fmt.Println(err)
 	}
 }

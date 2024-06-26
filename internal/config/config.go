@@ -31,6 +31,15 @@ func GetAllowedItems(configFilePath string) ([]datastructures.AllowedItem, error
 	return allowedItems, nil
 }
 
+func GetTests(configFilePath string) (*datastructures.Test, error) {
+	config, err := GetConfig(configFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse config file %s: %w", configFilePath, err)
+	}
+
+	return &config.Ex00.Tests, nil
+}
+
 func GetConfig(configFilePath string) (*datastructures.Config, error) {
 	file, err := os.Open(configFilePath)
 	if err != nil {
