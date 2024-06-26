@@ -3,7 +3,8 @@ ex00:
   turn_in_files:
     - hello.rs
   allowed_items:
-    - println
+    macros:
+      - println
   tests:
     assert_eq:
       - "Hello, World!\n"

@@ -7,11 +7,16 @@ type Test struct {
 	}
 }
 
+type AllowedItems struct {
+	Macros    []string `yaml:"macros"`
+	Functions []string `yaml:"functions"`
+}
+
 type Exercise struct {
-	TurnInDirectory string   `yaml:"turn_in_directory"`
-	TurnInFiles     []string `yaml:"turn_in_files"`
-	AllowedItems    []string `yaml:"allowed_items"`
-	Tests           Test     `yaml:"tests"`
+	TurnInDirectory string       `yaml:"turn_in_directory"`
+	TurnInFiles     []string     `yaml:"turn_in_files"`
+	AllowedItems    AllowedItems `yaml:"allowed_items"`
+	Tests           Test         `yaml:"tests"`
 }
 
 type Config struct {

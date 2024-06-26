@@ -15,11 +15,13 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	allowedItems, _ := config.GetAllowedItems("allowedItems.csv")
+	allowedItems, err := config.GetAllowedItems("testconfig/R00.yaml")
+	if err != nil {
+		log.Print(err)
+	}
 	err = functioncheck.Execute(allowedItems, "ex00")
 	if err != nil {
 		log.Print(err)
-
 	}
 	if err = git.Create("shortinette-test"); err != nil {
 		log.Printf("error: %s", err)
