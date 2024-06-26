@@ -128,7 +128,7 @@ func Execute(allowedItems []datastructures.AllowedItem, exercise string) (err er
 		return err
 	}
 
-	if err = git.Get("https://github.com/42-Short/abied-ch-R00.git", "compile-environment/src/"); err != nil {
+	if err = git.Get("https://github.com/42-Short/shortinette-test.git", "compile-environment/src/"); err != nil {
 		return err
 	}
 
@@ -141,5 +141,10 @@ func Execute(allowedItems []datastructures.AllowedItem, exercise string) (err er
 	if compileErr != nil {
 		return handleCompileError(output)
 	}
+
+	if err = os.RemoveAll("compile-environment/"); err != nil {
+		return fmt.Errorf("failed to remove compile environment: %w", err)
+	}
+
 	return nil
 }

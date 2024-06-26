@@ -10,9 +10,18 @@ import (
 )
 
 func cloneRepository(repoURL, targetDir string) (*git.Repository, error) {
+	username, token, err := getCredentials()
+	if err != nil {
+		return nil, err
+	}
+
 	repo, err := git.PlainClone(targetDir, false, &git.CloneOptions{
 		URL:      repoURL,
 		Progress: os.Stdout,
+		Auth: &http.BasicAuth{
+			Username: username,
+			Password: token,
+		},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error cloning repository %s to directory %s: %w", repoURL, targetDir, err)
