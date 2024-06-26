@@ -3,75 +3,36 @@ package git
 import (
 	"fmt"
 	"os"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
 )
 
-func cloneOrOpen(repoURL string, targetDir string) (*git.Repository, error) {
-	var repo *git.Repository
-
-	if _, err := os.Stat(targetDir); os.IsNotExist(err) {
-		repo, err = git.PlainClone(targetDir, false, &git.CloneOptions{
-			URL:      repoURL,
-			Progress: os.Stdout,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("error cloning repository %s to directory %s: %w", repoURL, targetDir, err)
-		}
-	} else {
-		repo, err = git.PlainOpen(targetDir)
-		if err != nil {
-			return nil, fmt.Errorf("error opening repository in directory %s: %w", targetDir, err)
-		}
+func getToken() (string, error) {
+	token := os.Getenv("GITHUB_TOKEN")
+	if token == "" {
+		return "", fmt.Errorf("GITHUB_TOKEN environment variable not set")
 	}
-	return repo, nil
+	return token, nil
 }
 
-func GetCredentials() (string, string, error) {
-	username := os.Getenv("GITHUB_USER")
-	password := os.Getenv("GITHUB_PASSWORD")
-
-	if username == "" || password == "" {
-		return username, password, fmt.Errorf("error: GITHUB_USER and/or GITHUB_PASSWORD environment variables not set")
+// Clone or open the repo & pull the latest changes into targetDirectory
+func Get(repoURL string, targetDirectory string) error {
+	if err := get(repoURL, targetDirectory); err != nil {
+		return fmt.Errorf("could not get repo: %w", err)
 	}
-
-	return username, password, nil
+	return nil
 }
 
-func Execute(repoURL string, targetDir string) error {
-	var repo *git.Repository
-	var err error
-
-	repo, err = cloneOrOpen(repoURL, targetDir)
-	if err != nil {
-		return err
+// Check if repo exists, if not create it.
+func Create(name string) error {
+	if err := create(name); err != nil {
+		return fmt.Errorf("could not create repo: %w", err)
 	}
+	return nil
+}
 
-	worktree, err := repo.Worktree()
-	if err != nil {
-		return fmt.Errorf("error getting worktree for repository in directory %s: %w", targetDir, err)
+// Add a collaborator with the specified permissions to the repo
+func AddCollaborator(repo string, name string, permission string) error {
+	if err := addCollaborator(repo, name, "push"); err != nil {
+		return fmt.Errorf("could not add %s to repo %s: %w", name, repo, err)
 	}
-
-	username, password, err := GetCredentials()
-	if err != nil {
-		return err
-	}
-
-	err = worktree.Pull(&git.PullOptions{
-		RemoteName:    "origin",
-		ReferenceName: plumbing.Main,
-		Auth: &http.BasicAuth{
-			Username: username,
-			Password: password,
-		},
-		Progress: os.Stdout,
-	})
-
-	if err != nil && err != git.NoErrAlreadyUpToDate {
-		return fmt.Errorf("error pulling repository %s: %w", repoURL, err)
-	}
-
-	fmt.Println("Repository pulled successfully.")
 	return nil
 }

@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/42-Short/shortinette/pkg/functioncheck"
+	"github.com/42-Short/shortinette/pkg/git"
 	"github.com/joho/godotenv"
 )
 
@@ -47,9 +48,16 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	allowedItems, err := parseCSV("allowedItems.csv")
+	allowedItems, _ := parseCSV("allowedItems.csv")
 	err = functioncheck.Execute(allowedItems, "ex00")
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+
+	}
+	if err = git.Create("shortinette-test"); err != nil {
+		log.Printf("error: %s", err)
+	}
+	if err = git.AddCollaborator("shortinette-test", "shortinette-test", "push"); err != nil {
+		log.Printf("error: %s", err)
 	}
 }
