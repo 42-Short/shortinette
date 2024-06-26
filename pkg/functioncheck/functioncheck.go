@@ -1,7 +1,6 @@
 package functioncheck
 
 import (
-	"encoding/csv"
 	"fmt"
 	"io"
 	"os"
@@ -9,38 +8,12 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-
 	"github.com/42-Short/shortinette/pkg/git"
 )
 
 type AllowedItem struct {
 	Name string
 	Type string
-}
-
-func parseCSV(allowedItemsCSVPath string) ([]AllowedItem, error) {
-	file, err := os.Open(allowedItemsCSVPath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-	lines, err := csv.NewReader(file).ReadAll()
-	if err != nil {
-		return nil, err
-	}
-
-	var allowedItems []AllowedItem
-	for _, line := range lines {
-		if len(line) < 2 {
-			continue
-		}
-		allowedItem := AllowedItem{
-			Name: line[0],
-			Type: line[1],
-		}
-		allowedItems = append(allowedItems, allowedItem)
-	}
-	return allowedItems, nil
 }
 
 func writeMacroEntry(itemName string, file *os.File) error {
@@ -52,7 +25,7 @@ func writeMacroEntry(itemName string, file *os.File) error {
 	}
 `, itemName, itemName)
 	if _, err := file.WriteString(content); err != nil {
-		return err
+		return fmt.Errorf("error writing macro entry: %w", err)
 	}
 	return nil
 }
@@ -63,7 +36,7 @@ func writeFunctionEntry(itemName string, file *os.File) error {
 	pub fn %s() {}
 `, itemName, itemName)
 	if _, err := file.WriteString(content); err != nil {
-		return err
+		return fmt.Errorf("error writing function entry: %w", err)
 	}
 	return nil
 }
@@ -216,6 +189,14 @@ func compileWithDummyLib(sourceDir string) (string, error) {
 	return string(output), nil
 }
 
+func setToSlice(forbiddenFunctionSet map[string]bool) []string {
+	var slice []string
+	for key := range forbiddenFunctionSet {
+		slice = append(slice, key)
+	}
+	return slice
+}
+
 func parseForbiddenFunctions(compilerOutput string) ([]string, error) {
 	re, err := regexp.Compile("error: cannot find (function|macro) `" + `(\w+)` + "` in this scope")
 	if err != nil {
@@ -227,30 +208,30 @@ func parseForbiddenFunctions(compilerOutput string) ([]string, error) {
 		return nil, fmt.Errorf("no forbidden functions found")
 	}
 
-	var forbiddenFunctions []string
+	forbiddenFunctionsSet := make(map[string]bool)
 
 	for _, match := range matches {
 		if len(match) > 2 {
-			forbiddenFunctions = append(forbiddenFunctions, match[2])
+			forbiddenFunctionsSet[match[2]] = true
 		}
 	}
 
-	return forbiddenFunctions, nil
+	return setToSlice(forbiddenFunctionsSet), nil
 }
 
-func Execute(allowedItemsCSVPath string) error {
-	allowedItems, err := parseCSV(allowedItemsCSVPath)
-	if err != nil {
-		return fmt.Errorf("error parsing %s: %s", allowedItemsCSVPath, err)
+func Execute(allowedItems []AllowedItem, exercise string) (err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf("error: %w", err)
+		}
+	}()
+
+	if err = initCompilingEnvironment(allowedItems); err != nil {
+		return err
+	} else if err = git.Execute("https://github.com/42-Short/abied-ch-R00.git", "functioncheck/src/"); err != nil {
+		return err
 	}
-	err = initCompilingEnvironment(allowedItems)
-	if err != nil {
-		return fmt.Errorf("error initializing compiling environment: %s", err)
-	}
-	err = git.Execute("https://github.com/42-Short/abied-ch-R00.git", "functioncheck/src/")
-	if err != nil {
-		return fmt.Errorf("error executing git: %s", err)
-	}
+
 	studentCodeFilePath := "functioncheck/src/ex00/main.rs"
 	err = prependHeadersToStudentCode(studentCodeFilePath)
 	if err != nil {
