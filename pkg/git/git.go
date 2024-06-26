@@ -2,20 +2,9 @@ package git
 
 import (
 	"fmt"
-	"os"
 )
 
-func getCredentials() (string, string, error) {
-	username := os.Getenv("GITHUB_USER")
-	password := os.Getenv("GITHUB_TOKEN")
-
-	if username == "" || password == "" {
-		return username, password, fmt.Errorf("error: GITHUB_USER and/or GITHUB_TOKEN environment variables not set")
-	}
-
-	return username, password, nil
-}
-
+// Clone or open the repository and pull the latest changes into targetDirectory
 func Get(repoURL string, targetDirectory string) error {
 	if err := get(repoURL, targetDirectory); err != nil {
 		return fmt.Errorf("could not get repo: %w", err)

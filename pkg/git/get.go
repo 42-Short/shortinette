@@ -9,36 +9,42 @@ import (
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 )
 
-func cloneOrOpen(repoURL string, targetDir string) (*git.Repository, error) {
-	var repo *git.Repository
-
-	if _, err := os.Stat(targetDir); os.IsNotExist(err) {
-		repo, err = git.PlainClone(targetDir, false, &git.CloneOptions{
-			URL:      repoURL,
-			Progress: os.Stdout,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("error cloning repository %s to directory %s: %w", repoURL, targetDir, err)
-		}
-	} else {
-		repo, err = git.PlainOpen(targetDir)
-		if err != nil {
-			return nil, fmt.Errorf("error opening repository in directory %s: %w", targetDir, err)
-		}
+func cloneRepository(repoURL, targetDir string) (*git.Repository, error) {
+	repo, err := git.PlainClone(targetDir, false, &git.CloneOptions{
+		URL:      repoURL,
+		Progress: os.Stdout,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error cloning repository %s to directory %s: %w", repoURL, targetDir, err)
 	}
 	return repo, nil
 }
 
-func get(repoURL string, targetDir string) error {
-
-	var repo *git.Repository
-	var err error
-
-	repo, err = cloneOrOpen(repoURL, targetDir)
+func openRepository(targetDir string) (*git.Repository, error) {
+	repo, err := git.PlainOpen(targetDir)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("error opening repository in directory %s: %w", targetDir, err)
 	}
+	return repo, nil
+}
 
+func cloneOrOpen(repoURL, targetDir string) (*git.Repository, error) {
+	if _, err := os.Stat(targetDir); os.IsNotExist(err) {
+		return cloneRepository(repoURL, targetDir)
+	}
+	return openRepository(targetDir)
+}
+
+func getCredentials() (string, string, error) {
+	username := os.Getenv("GITHUB_USER")
+	token := os.Getenv("GITHUB_TOKEN")
+	if username == "" || token == "" {
+		return "", "", fmt.Errorf("error: GITHUB_USER and/or GITHUB_TOKEN environment variables not set")
+	}
+	return username, token, nil
+}
+
+func pullLatestChanges(repo *git.Repository, targetDir string) error {
 	worktree, err := repo.Worktree()
 	if err != nil {
 		return fmt.Errorf("error getting worktree for repository in directory %s: %w", targetDir, err)
@@ -60,9 +66,17 @@ func get(repoURL string, targetDir string) error {
 	})
 
 	if err != nil && err != git.NoErrAlreadyUpToDate {
-		return fmt.Errorf("error pulling repository %s: %w", repoURL, err)
+		return fmt.Errorf("error pulling repository %s: %w", targetDir, err)
 	}
 
 	fmt.Println("Repository pulled successfully.")
 	return nil
+}
+
+func get(repoURL, targetDir string) error {
+	repo, err := cloneOrOpen(repoURL, targetDir)
+	if err != nil {
+		return err
+	}
+	return pullLatestChanges(repo, targetDir)
 }

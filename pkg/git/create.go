@@ -48,7 +48,7 @@ func create(name string) error {
 	}
 
 	if exists {
-		fmt.Printf("Repository %s already exists. Skipping creation.", name)
+		fmt.Printf("Repository %s already exists. Skipping creation.\n", name)
 		return nil
 	}
 	token := os.Getenv("GITHUB_TOKEN")
