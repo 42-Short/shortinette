@@ -22,6 +22,14 @@ func compileStudentCode(codeDirectory string, turnInDirectory string, turnInFile
 		if err != nil {
 			return errors.NewSubmissionError(errors.ErrInvalidCompilation, string(output))
 		}
+	} else {
+		cmd := exec.Command("cargo", "build")
+		cmd.Dir = parentDirectory
+
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			return errors.NewSubmissionError(errors.ErrInvalidCompilation, string(output))
+		}
 	}
 	return nil
 }
