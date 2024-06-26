@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/42-Short/shortinette/pkg/shortinette"
+	"github.com/42-Short/shortinette/pkg/tester"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/cobra"
 )
