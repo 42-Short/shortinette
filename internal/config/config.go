@@ -9,35 +9,45 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func GetAllowedItems(configFilePath string) ([]datastructures.AllowedItem, error) {
+func GetAllowedItems(configFilePath string) (map[string][]datastructures.AllowedItem, error) {
 	config, err := GetConfig(configFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing config file %s: %w", configFilePath, err)
 	}
 
-	var allowedItems []datastructures.AllowedItem
-	for _, macro := range config.Ex00.AllowedItems.Macros {
-		allowedItems = append(allowedItems, datastructures.AllowedItem{
-			Name: macro,
-			Type: "macro",
-		})
+	allowedItemsMap := make(map[string][]datastructures.AllowedItem)
+	for key, exercise := range config.Exercises {
+		var allowedItems []datastructures.AllowedItem
+		for _, macro := range exercise.AllowedItems.Macros {
+			allowedItems = append(allowedItems, datastructures.AllowedItem{
+				Name: macro,
+				Type: "macro",
+			})
+		}
+		for _, function := range exercise.AllowedItems.Functions {
+			allowedItems = append(allowedItems, datastructures.AllowedItem{
+				Name: function,
+				Type: "function",
+			})
+		}
+		allowedItemsMap[key] = allowedItems
 	}
-	for _, function := range config.Ex00.AllowedItems.Functions {
-		allowedItems = append(allowedItems, datastructures.AllowedItem{
-			Name: function,
-			Type: "function",
-		})
-	}
-	return allowedItems, nil
+
+	return allowedItemsMap, nil
 }
 
-func GetTests(configFilePath string) (*datastructures.Test, error) {
+func GetTests(configFilePath string) (map[string]datastructures.Test, error) {
 	config, err := GetConfig(configFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse config file %s: %w", configFilePath, err)
 	}
 
-	return &config.Ex00.Tests, nil
+	testsMap := make(map[string]datastructures.Test)
+	for key, exercise := range config.Exercises {
+		testsMap[key] = exercise.Tests
+	}
+
+	return testsMap, nil
 }
 
 func GetConfig(configFilePath string) (*datastructures.Config, error) {

@@ -72,28 +72,30 @@ func runStudentCode(executablePath string) (string, error) {
 	return out.String(), nil
 }
 
-func prepareEnvironment(configFilePath string) (*datastructures.Config, error) {
+func prepareEnvironment(configFilePath string) (*datastructures.Config, map[string][]datastructures.AllowedItem, error) {
 	allowedItems, err := config.GetAllowedItems(configFilePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get allowed items: %w", err)
+		return nil, nil, fmt.Errorf("failed to get allowed items: %w", err)
 	}
 
 	conf, err := config.GetConfig(configFilePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get config: %w", err)
+		return nil, nil, fmt.Errorf("failed to get config: %w", err)
 	}
 
-	if err := functioncheck.Execute(allowedItems, conf.Ex00.TurnInDirectory, conf.Ex00.TurnInFile); err != nil {
-		return nil, fmt.Errorf("function check failed: %w", err)
+	for key, exercise := range conf.Exercises {
+		if err := functioncheck.Execute(allowedItems[key], exercise.TurnInDirectory, exercise.TurnInFile); err != nil {
+			return nil, nil, fmt.Errorf("function check failed for %s: %w", key, err)
+		}
 	}
 
-	return conf, nil
+	return conf, allowedItems, nil
 }
 
 func Run(configFilePath, studentLogin, codeDirectory string) error {
 	defer os.RemoveAll(codeDirectory)
 
-	conf, err := prepareEnvironment(configFilePath)
+	conf, _, err := prepareEnvironment(configFilePath)
 	if err != nil {
 		return err
 	}
@@ -102,22 +104,26 @@ func Run(configFilePath, studentLogin, codeDirectory string) error {
 		return fmt.Errorf("git clone failed: %w", err)
 	}
 
-	if err := compileStudentCode(codeDirectory, conf.Ex00.TurnInDirectory, conf.Ex00.TurnInFile); err != nil {
-		return err
+	for key, exercise := range conf.Exercises {
+		fmt.Printf("Running tests for %s...\n", key)
+
+		if err := compileStudentCode(codeDirectory, exercise.TurnInDirectory, exercise.TurnInFile); err != nil {
+			return err
+		}
+
+		executablePath := fmt.Sprintf("%s/%s/%s", codeDirectory, exercise.TurnInDirectory, exercise.TurnInFile)
+		executablePath = strings.TrimSuffix(executablePath, ".rs")
+
+		output, err := runStudentCode(executablePath)
+		if err != nil {
+			return err
+		}
+
+		if err := checkAssertions(output, exercise.Tests); err != nil {
+			return err
+		}
 	}
 
-	executablePath := fmt.Sprintf("%s/%s/%s", codeDirectory, conf.Ex00.TurnInDirectory, conf.Ex00.TurnInFile)
-	executablePath = strings.TrimSuffix(executablePath, ".rs")
-
-	output, err := runStudentCode(executablePath)
-	if err != nil {
-		return err
-	}
-
-	if err := checkAssertions(output, conf.Ex00.Tests); err != nil {
-		return err
-	}
-
-	fmt.Println("All tests passed!")
+	fmt.Println("All tests passed for all exercises!")
 	return nil
 }

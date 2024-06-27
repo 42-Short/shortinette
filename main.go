@@ -9,8 +9,9 @@ import (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
+	var err error
+
+	if err = godotenv.Load(); err != nil {
 		fmt.Println("error loading .env file")
 	}
 	if err = git.Create("shortinette-test"); err != nil {

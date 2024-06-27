@@ -11,14 +11,16 @@ type AllowedItems struct {
 }
 
 type Exercise struct {
-	TurnInDirectory string       `yaml:"turn_in_directory"`
-	TurnInFile      string       `yaml:"turn_in_file"`
-	AllowedItems    AllowedItems `yaml:"allowed_items"`
-	Tests           Test         `yaml:"tests"`
+	TurnInDirectory   string       `yaml:"turn_in_directory"`
+	TurnInFile        string       `yaml:"turn_in_file"`
+	AllowedItems      AllowedItems `yaml:"allowed_items"`
+	ForbiddenKeywords []string     `yaml:"forbidden_keywords,omitempty"`
+	Tests             Test         `yaml:"tests"`
+	TestsPath         string       `yaml:"tests_path,omitempty"`
 }
 
 type Config struct {
-	Ex00 Exercise `yaml:"ex00"`
+	Exercises map[string]Exercise `yaml:"exercises"`
 }
 
 type AllowedItem struct {
