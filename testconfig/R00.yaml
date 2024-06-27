@@ -18,7 +18,7 @@ exercises:
         - println
     forbidden_keywords:
       - return
-    tests_path: testmains/R00/ex01.rs
+    tests_path: tests/R00/ex01/
     tests:
       assert_eq:
         - "some test"

@@ -6,6 +6,5 @@
 
 compile-environment/
 website/
-ex*/
 *.rlib
 *.csv
