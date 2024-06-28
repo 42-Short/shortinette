@@ -36,21 +36,21 @@ func initCompilingEnvironment(allowedItems datastructures.AllowedItems, exercise
 	return nil
 }
 
-func prependHeadersToStudentCode(filePath, exercise string) error {
+func prependHeadersToStudentCode(filePath, exerciseNumber string) error {
 	originalFile, err := os.Open(filePath)
 	if err != nil {
 		return fmt.Errorf("could not open original file: %w", err)
 	}
 	defer originalFile.Close()
 
-	tempFilePath := fmt.Sprintf("compile-environment/src/%s/temp.rs", exercise)
+	tempFilePath := fmt.Sprintf("compile-environment/src/%s/temp.rs", exerciseNumber)
 	tempFile, err := os.Create(tempFilePath)
 	if err != nil {
 		return fmt.Errorf("could not create temp file: %w", err)
 	}
 	defer tempFile.Close()
 
-	headers := fmt.Sprintf(studentCodePrefix, exercise)
+	headers := fmt.Sprintf(studentCodePrefix, exerciseNumber)
 	if _, err := tempFile.WriteString(headers); err != nil {
 		return fmt.Errorf("could not write headers: %w", err)
 	}
@@ -134,6 +134,7 @@ func Execute(exerciseConfig datastructures.Exercise) (err error) {
 		return err
 	}
 
+	
 	err = prependHeadersToStudentCode(fmt.Sprintf("compile-environment/src/%s/%s", exerciseConfig.TurnInDirectory, exerciseConfig.TurnInFile), exerciseConfig.TurnInDirectory)
 	if err != nil {
 		return err

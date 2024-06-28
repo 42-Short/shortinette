@@ -37,4 +37,7 @@ edition = "2021"
 extern crate allowedfunctions;
 use allowedfunctions::%s::*;
 `
+	dummyMain = `fn main() {
+	%s;
+}`
 )
