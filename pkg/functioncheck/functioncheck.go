@@ -36,7 +36,7 @@ func initCompilingEnvironment(allowedItems datastructures.AllowedItems, exercise
 	return nil
 }
 
-func prependHeadersToStudentCode(filePath, exerciseNumber string) error {
+func prependHeadersToStudentCode(filePath, exerciseNumber string, exerciseType string, dummyCall string) error {
 	originalFile, err := os.Open(filePath)
 	if err != nil {
 		return fmt.Errorf("could not open original file: %w", err)
@@ -51,16 +51,22 @@ func prependHeadersToStudentCode(filePath, exerciseNumber string) error {
 	defer tempFile.Close()
 
 	headers := fmt.Sprintf(studentCodePrefix, exerciseNumber)
+
 	if _, err := tempFile.WriteString(headers); err != nil {
 		return fmt.Errorf("could not write headers: %w", err)
 	}
-
 	originalContent, err := io.ReadAll(originalFile)
 	if err != nil {
 		return fmt.Errorf("could not read original file content: %w", err)
 	}
 	if _, err := tempFile.Write(originalContent); err != nil {
 		return fmt.Errorf("could not write original content to temp file: %w", err)
+	}
+	if exerciseType == "function" {
+		main := fmt.Sprintf(dummyMain, dummyCall)
+		if _, err := tempFile.Write([]byte(main)); err != nil {
+			return fmt.Errorf("could not write dummy main to temp file: %w", err)
+		}
 	}
 	return nil
 }
@@ -119,12 +125,12 @@ func handleCompileError(output string) error {
 }
 
 func Execute(exerciseConfig datastructures.Exercise) (err error) {
-	defer func() {
-		rmErr := os.RemoveAll("compile-environment/")
-		if rmErr != nil {
-			err = fmt.Errorf("failed to remove compile environment: %w", rmErr)
-		}
-	}()
+	// defer func() {
+	// 	rmErr := os.RemoveAll("compile-environment/")
+	// 	if rmErr != nil {
+	// 		err = fmt.Errorf("failed to remove compile environment: %w", rmErr)
+	// 	}
+	// }()
 
 	if err = initCompilingEnvironment(exerciseConfig.AllowedItems, exerciseConfig.TurnInDirectory); err != nil {
 		return err
@@ -134,15 +140,14 @@ func Execute(exerciseConfig datastructures.Exercise) (err error) {
 		return err
 	}
 
-	
-	err = prependHeadersToStudentCode(fmt.Sprintf("compile-environment/src/%s/%s", exerciseConfig.TurnInDirectory, exerciseConfig.TurnInFile), exerciseConfig.TurnInDirectory)
+	exercisePath := fmt.Sprintf("compile-environment/src/%s/%s", exerciseConfig.TurnInDirectory, exerciseConfig.TurnInFile)
+	err = prependHeadersToStudentCode(exercisePath, exerciseConfig.TurnInDirectory, exerciseConfig.Type, exerciseConfig.DummyCall)
 	if err != nil {
 		return err
 	}
 
 	output, compileErr := compileWithDummyLib("compile-environment/")
 	if compileErr != nil {
-		println(compileErr.Error())
 		return handleCompileError(output)
 	}
 
