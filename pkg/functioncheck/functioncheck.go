@@ -138,7 +138,7 @@ func Execute(exerciseConfig datastructures.Exercise) (err error) {
 		return err
 	}
 
-	if err = git.Get("https://github.com/42-Short/shortinette-test.git", "compile-environment/src/"); err != nil {
+	if err = git.Get(fmt.Sprintf("https://github.com/%s/shortinette-test.git", os.Getenv("GITHUB_ORGANISATION")), "compile-environment/src/"); err != nil {
 		return err
 	}
 

@@ -9,18 +9,13 @@ import (
 )
 
 func main() {
-	var err error
-
-	if err = godotenv.Load(); err != nil {
+	if err := godotenv.Load(); err != nil {
 		fmt.Println("error loading .env file")
 	}
-	if err = git.Create("shortinette-test"); err != nil {
+	err := git.CheckRequiredEnvironmentVariables();
+	if err != nil {
 		fmt.Println(err)
 	}
-	if err = git.AddCollaborator("shortinette-test", "shortinette-test", "push"); err != nil {
-		fmt.Println(err)
-	}
-
 	if err = tester.Run("testconfig/R00.yaml", "shortinette-test", "studentcode"); err != nil {
 		fmt.Println(err)
 	}

@@ -173,7 +173,7 @@ func Run(configFilePath, studentLogin, codeDirectory string) error {
 		fmt.Println(err)
 	}
 
-	if err := git.Get(fmt.Sprintf("https://github.com/42-Short/%s.git", studentLogin), codeDirectory); err != nil {
+	if err := git.Get(fmt.Sprintf("https://github.com/%s/%s.git",os.Getenv("GITHUB_ORGANISATION"), studentLogin), codeDirectory); err != nil {
 		return fmt.Errorf("git clone failed: %w", err)
 	}
 
