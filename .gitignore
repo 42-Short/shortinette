@@ -5,6 +5,7 @@
 # TESTS
 
 compile-environment/
+studentcode/
 website/
 *.rlib
 *.csv

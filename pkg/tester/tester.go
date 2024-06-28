@@ -93,7 +93,7 @@ func prepareEnvironment(configFilePath string) (*datastructures.Config, map[stri
 }
 
 func Run(configFilePath, studentLogin, codeDirectory string) error {
-	defer os.RemoveAll(codeDirectory)
+	// defer os.RemoveAll(codeDirectory)
 
 	conf, _, err := prepareEnvironment(configFilePath)
 	if err != nil {

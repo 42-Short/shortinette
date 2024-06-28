@@ -38,14 +38,12 @@ func initCompilingEnvironment(allowedItems datastructures.AllowedItems, exercise
 
 func prependHeadersToStudentCode(filePath, exerciseNumber string, exerciseType string, dummyCall string) error {
 	originalFile, err := os.Open(filePath)
-	fmt.Printf("File Path: %s\n", filePath)
 	if err != nil {
 		return fmt.Errorf("could not open original file: %w", err)
 	}
 	defer originalFile.Close()
 
 	tempFilePath := fmt.Sprintf("compile-environment/src/%s/temp.rs", exerciseNumber)
-	fmt.Printf("Temp File Path: %s\n", tempFilePath)
 	tempFile, err := os.Create(tempFilePath)
 	if err != nil {
 		return fmt.Errorf("could not create temp file: %w", err)
@@ -53,13 +51,11 @@ func prependHeadersToStudentCode(filePath, exerciseNumber string, exerciseType s
 	defer tempFile.Close()
 
 	headers := fmt.Sprintf(studentCodePrefix, exerciseNumber)
-	fmt.Printf("Headers: %s\n", headers)
 
 	if _, err := tempFile.WriteString(headers); err != nil {
 		return fmt.Errorf("could not write headers: %w", err)
 	}
 	originalContent, err := io.ReadAll(originalFile)
-	fmt.Printf("Original COntent: %s\n", originalContent)
 	if err != nil {
 		return fmt.Errorf("could not read original file content: %w", err)
 	}
@@ -68,7 +64,6 @@ func prependHeadersToStudentCode(filePath, exerciseNumber string, exerciseType s
 	}
 	if exerciseType == "function" {
 		main := fmt.Sprintf(dummyMain, dummyCall)
-		fmt.Printf("Main: %s\n", main)
 
 		if _, err := tempFile.Write([]byte(main)); err != nil {
 			return fmt.Errorf("could not write dummy main to temp file: %w", err)
@@ -131,12 +126,12 @@ func handleCompileError(output string) error {
 }
 
 func Execute(exerciseConfig datastructures.Exercise) (err error) {
-	// defer func() {
-	// 	rmErr := os.RemoveAll("compile-environment/")
-	// 	if rmErr != nil {
-	// 		err = fmt.Errorf("failed to remove compile environment: %w", rmErr)
-	// 	}
-	// }()
+	defer func() {
+		rmErr := os.RemoveAll("compile-environment/")
+		if rmErr != nil {
+			err = fmt.Errorf("failed to remove compile environment: %w", rmErr)
+		}
+	}()
 
 	if err = initCompilingEnvironment(exerciseConfig.AllowedItems, exerciseConfig.TurnInDirectory); err != nil {
 		return err
