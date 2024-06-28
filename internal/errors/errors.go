@@ -26,4 +26,5 @@ var (
 	ErrInvalidOutput      = fmt.Errorf("invalid output")
 	ErrInvalidCompilation = fmt.Errorf("could not compile code")
 	ErrRuntime            = fmt.Errorf("code did not execute as expected")
+	ErrFailedTests        = fmt.Errorf("test failed")
 )
