@@ -35,7 +35,7 @@ Make sure you have the following installed:
 
 1. Clone the repo:
 ```sh
-git clone https://github.com/42-student-council/website.git
+git clone https://github.com/42-Short/shortinette.git
 cd website
 ```
 2. Create your .env file and add the necessary variables (See [DOTENV](.github/docs/DOTENV.md) for details).
