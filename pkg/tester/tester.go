@@ -15,7 +15,7 @@ import (
 	"github.com/42-Short/shortinette/pkg/git"
 )
 
-func compileStudentCode(codeDir, turnInDir, turnInFile string) error {
+func compileProgram(codeDir, turnInDir, turnInFile string) error {
 	parentDir := fmt.Sprintf("./%s/%s/", codeDir, turnInDir)
 
 	if _, err := os.Stat(fmt.Sprintf("%s/Cargo.toml", parentDir)); os.IsNotExist(err) {
@@ -72,7 +72,7 @@ func checkAssertions(output string, assertions datastructures.Test) error {
 	return nil
 }
 
-func runStudentCode(executablePath string) (string, error) {
+func runCode(executablePath string) (string, error) {
 	cmd := exec.Command(executablePath)
 	var out bytes.Buffer
 	cmd.Stdout = &out
@@ -85,22 +85,22 @@ func runStudentCode(executablePath string) (string, error) {
 }
 
 func appendToFile(source string, dest string) error {
-    sourceFile, err := os.Open(source)
-    if err != nil {
-        return err
-    }
-    defer sourceFile.Close()
+	sourceFile, err := os.Open(source)
+	if err != nil {
+		return err
+	}
+	defer sourceFile.Close()
 
-    destFile, err := os.OpenFile(dest, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-    if err != nil {
-        return err
-    }
-    defer destFile.Close()
+	destFile, err := os.OpenFile(dest, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		return err
+	}
+	defer destFile.Close()
 
-    if _, err = io.Copy(destFile, sourceFile); err != nil {
-        return err
-    }
-    return nil
+	if _, err = io.Copy(destFile, sourceFile); err != nil {
+		return err
+	}
+	return nil
 }
 
 func prepareEnvironment(configFilePath string) (*datastructures.Config, map[string][]datastructures.AllowedItem, error) {
@@ -123,6 +123,34 @@ func prepareEnvironment(configFilePath string) (*datastructures.Config, map[stri
 	return conf, allowedItems, nil
 }
 
+func runProgramTests(exercise datastructures.Exercise, codeDirectory string, executablePath string) error {
+	if err := compileProgram(codeDirectory, exercise.TurnInDirectory, exercise.TurnInFile); err != nil {
+		return err
+	}
+	output, err := runCode(executablePath)
+	if err != nil {
+		return err
+	}
+	if err := checkAssertions(output, exercise.Tests); err != nil {
+		return err
+	}
+	return nil
+}
+
+func runFunctionTests(exercise datastructures.Exercise, codeDirectory string, executablePath string) (err error) {
+	if err = appendToFile(exercise.TestsPath, fmt.Sprintf("%s/min.rs", codeDirectory)); err != nil {
+		return err
+	}
+	fmt.Println("Passed copy file")
+	if err = compileWithRustcTestOption(codeDirectory, exercise.TurnInFile); err != nil {
+		return err
+	}
+	if output, err := runCode(executablePath); err != nil {
+		return errors.NewSubmissionError(errors.ErrFailedTests, output)
+	}
+	return nil
+}
+
 func Run(configFilePath, studentLogin, codeDirectory string) error {
 	defer os.RemoveAll(codeDirectory)
 
@@ -139,34 +167,12 @@ func Run(configFilePath, studentLogin, codeDirectory string) error {
 		fmt.Printf("Running tests for %s...\n", key)
 
 		studentCodeParentDir := fmt.Sprintf("%s/%s", codeDirectory, exercise.TurnInDirectory)
-		fmt.Printf("Student Code Parent Dir: %s\n", studentCodeParentDir)
-		filePath := fmt.Sprintf("%s/%s", studentCodeParentDir, exercise.TurnInFile)
-		fmt.Printf("File Path: %s\n", filePath)
-		executablePath := strings.TrimSuffix(filePath, ".rs")
-		fmt.Printf("Executable Path: %s\n", executablePath)
+		executablePath := strings.TrimSuffix(fmt.Sprintf("%s/%s", studentCodeParentDir, exercise.TurnInFile), ".rs")
 
 		if exercise.Type == "program" {
-			if err := compileStudentCode(codeDirectory, exercise.TurnInDirectory, exercise.TurnInFile); err != nil {
-				return err
-			}
-			output, err := runStudentCode(executablePath)
-			if err != nil {
-				return err
-			}
-			if err := checkAssertions(output, exercise.Tests); err != nil {
-				return err
-			}
+			runProgramTests(exercise, studentCodeParentDir, executablePath)
 		} else if exercise.Type == "function" {
-			if err := appendToFile(exercise.TestsPath, fmt.Sprintf("%s/min.rs", studentCodeParentDir)); err != nil {
-				return err
-			}
-			fmt.Println("Passed copy file")
-			if err = compileWithRustcTestOption(studentCodeParentDir, exercise.TurnInFile); err != nil {
-				return err
-			}
-			if output, err := runStudentCode(executablePath); err != nil {
-				return errors.NewSubmissionError(errors.ErrFailedTests, output)
-			}
+			runFunctionTests(exercise, studentCodeParentDir, executablePath)
 		}
 		fmt.Printf("Tests for %s passed\n", key)
 	}
