@@ -151,6 +151,20 @@ func runFunctionTests(exercise datastructures.Exercise, codeDirectory string, ex
 	return nil
 }
 
+func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string, exerciseNumber string) {
+	fmt.Printf("Running tests for %s...\n", exerciseNumber)
+
+	studentCodeParentDir := fmt.Sprintf("%s/%s", codeDirectory, exercise.TurnInDirectory)
+	executablePath := strings.TrimSuffix(fmt.Sprintf("%s/%s", studentCodeParentDir, exercise.TurnInFile), ".rs")
+
+	if exercise.Type == "program" {
+		runProgramTests(exercise, studentCodeParentDir, executablePath)
+	} else if exercise.Type == "function" {
+		runFunctionTests(exercise, studentCodeParentDir, executablePath)
+	}
+	fmt.Printf("Tests for %s passed\n", executablePath)
+}
+
 func Run(configFilePath, studentLogin, codeDirectory string) error {
 	defer os.RemoveAll(codeDirectory)
 
@@ -164,17 +178,7 @@ func Run(configFilePath, studentLogin, codeDirectory string) error {
 	}
 
 	for key, exercise := range conf.Exercises {
-		fmt.Printf("Running tests for %s...\n", key)
-
-		studentCodeParentDir := fmt.Sprintf("%s/%s", codeDirectory, exercise.TurnInDirectory)
-		executablePath := strings.TrimSuffix(fmt.Sprintf("%s/%s", studentCodeParentDir, exercise.TurnInFile), ".rs")
-
-		if exercise.Type == "program" {
-			runProgramTests(exercise, studentCodeParentDir, executablePath)
-		} else if exercise.Type == "function" {
-			runFunctionTests(exercise, studentCodeParentDir, executablePath)
-		}
-		fmt.Printf("Tests for %s passed\n", key)
+		runTestsForExercise(exercise, codeDirectory, key)
 	}
 
 	fmt.Println("All tests passed for all exercises!")
