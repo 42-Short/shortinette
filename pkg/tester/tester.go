@@ -15,22 +15,21 @@ import (
 	"github.com/42-Short/shortinette/pkg/git"
 )
 
-func compileProgram(codeDir, turnInDir, turnInFile string) error {
-	parentDir := fmt.Sprintf("./%s/%s/", codeDir, turnInDir)
-
-	if _, err := os.Stat(fmt.Sprintf("%s/Cargo.toml", parentDir)); os.IsNotExist(err) {
-		return compileWithRustc(parentDir, turnInFile)
+func compileProgram(directory, turnInFile string) error {
+	if _, err := os.Stat(fmt.Sprintf("%s/Cargo.toml", directory)); os.IsNotExist(err) {
+		return compileWithRustc(directory, turnInFile)
 	} else {
-		return compileWithCargo(parentDir)
+		return compileWithCargo(directory)
 	}
 }
 
-func compileWithRustc(dir, turnInFile string) error {
+func compileWithRustc(dir string, turnInFile string) error {
 	cmd := exec.Command("rustc", turnInFile)
 	cmd.Dir = dir
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
+		fmt.Println(err)
 		return errors.NewSubmissionError(errors.ErrInvalidCompilation, string(output))
 	}
 	return nil
@@ -124,7 +123,8 @@ func prepareEnvironment(configFilePath string) (*datastructures.Config, map[stri
 }
 
 func runProgramTests(exercise datastructures.Exercise, codeDirectory string, executablePath string) error {
-	if err := compileProgram(codeDirectory, exercise.TurnInDirectory, exercise.TurnInFile); err != nil {
+	fmt.Println(codeDirectory, exercise.TurnInDirectory, exercise.TurnInFile)
+	if err := compileProgram(codeDirectory, exercise.TurnInFile); err != nil {
 		return err
 	}
 	output, err := runCode(executablePath)
@@ -141,7 +141,6 @@ func runFunctionTests(exercise datastructures.Exercise, codeDirectory string, ex
 	if err = appendToFile(exercise.TestsPath, fmt.Sprintf("%s/min.rs", codeDirectory)); err != nil {
 		return err
 	}
-	fmt.Println("Passed copy file")
 	if err = compileWithRustcTestOption(codeDirectory, exercise.TurnInFile); err != nil {
 		return err
 	}
@@ -151,18 +150,23 @@ func runFunctionTests(exercise datastructures.Exercise, codeDirectory string, ex
 	return nil
 }
 
-func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string, exerciseNumber string) {
+func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string, exerciseNumber string) error {
 	fmt.Printf("Running tests for %s...\n", exerciseNumber)
 
 	studentCodeParentDir := fmt.Sprintf("%s/%s", codeDirectory, exercise.TurnInDirectory)
 	executablePath := strings.TrimSuffix(fmt.Sprintf("%s/%s", studentCodeParentDir, exercise.TurnInFile), ".rs")
 
 	if exercise.Type == "program" {
-		runProgramTests(exercise, studentCodeParentDir, executablePath)
+		if err := runProgramTests(exercise, studentCodeParentDir, executablePath); err != nil {
+			return err
+		}
 	} else if exercise.Type == "function" {
-		runFunctionTests(exercise, studentCodeParentDir, executablePath)
+		if err := runFunctionTests(exercise, studentCodeParentDir, executablePath); err != nil {
+			return err
+		}
 	}
 	fmt.Printf("Tests for %s passed\n", executablePath)
+	return nil
 }
 
 func Run(configFilePath, studentLogin, codeDirectory string) error {
@@ -178,7 +182,9 @@ func Run(configFilePath, studentLogin, codeDirectory string) error {
 	}
 
 	for key, exercise := range conf.Exercises {
-		runTestsForExercise(exercise, codeDirectory, key)
+		if err := runTestsForExercise(exercise, codeDirectory, key); err != nil {
+			return err
+		}
 	}
 
 	fmt.Println("All tests passed for all exercises!")

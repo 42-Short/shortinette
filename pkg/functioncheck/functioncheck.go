@@ -10,8 +10,8 @@ import (
 
 	"github.com/42-Short/shortinette/internal/datastructures"
 	"github.com/42-Short/shortinette/internal/errors"
-	"github.com/42-Short/shortinette/pkg/git"
 	"github.com/42-Short/shortinette/internal/templates"
+	"github.com/42-Short/shortinette/pkg/git"
 )
 
 func initCompilingEnvironment(allowedItems datastructures.AllowedItems, exercise string) error {
