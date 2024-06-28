@@ -84,7 +84,7 @@ func prepareEnvironment(configFilePath string) (*datastructures.Config, map[stri
 	}
 
 	for key, exercise := range conf.Exercises {
-		if err := functioncheck.Execute(allowedItems[key], exercise.TurnInDirectory, exercise.TurnInFile); err != nil {
+		if err := functioncheck.Execute(exercise); err != nil {
 			return nil, nil, fmt.Errorf("function check failed for %s: %w", key, err)
 		}
 	}
@@ -97,7 +97,7 @@ func Run(configFilePath, studentLogin, codeDirectory string) error {
 
 	conf, _, err := prepareEnvironment(configFilePath)
 	if err != nil {
-		return err
+		fmt.Println(err)
 	}
 
 	if err := git.Get(fmt.Sprintf("https://github.com/42-Short/%s.git", studentLogin), codeDirectory); err != nil {

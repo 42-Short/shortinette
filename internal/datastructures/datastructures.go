@@ -17,6 +17,8 @@ type Exercise struct {
 	ForbiddenKeywords []string     `yaml:"forbidden_keywords,omitempty"`
 	Tests             Test         `yaml:"tests"`
 	TestsPath         string       `yaml:"tests_path,omitempty"`
+	Type              string       `yaml:"type"`
+	DummyCall         string       `yaml:"dummy_call,omitempty"`
 }
 
 type Config struct {

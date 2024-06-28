@@ -12,7 +12,7 @@ macro_rules! %s {
 #[cfg(not(feature = "allowed_%s"))]
 pub fn %s() {}
 `
-	allowedItemsLibHeader = "pub mod ex%s { "
+	allowedItemsLibHeader = "pub mod %s { "
 	cargoTomlTemplate     = `[package]
 name = "%s"
 version = "0.1.0"

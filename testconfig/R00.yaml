@@ -11,6 +11,7 @@ exercises:
         - "Hello, World!\n"
   ex01:
     type: function
+    dummy_call: min(42, 42)
     turn_in_directory: ex01
     turn_in_file: min.rs
     allowed_items:

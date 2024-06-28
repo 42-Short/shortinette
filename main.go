@@ -20,6 +20,7 @@ func main() {
 	if err = git.AddCollaborator("shortinette-test", "shortinette-test", "push"); err != nil {
 		fmt.Println(err)
 	}
+
 	if err = tester.Run("testconfig/R00.yaml", "shortinette-test", "studentcode"); err != nil {
 		fmt.Println(err)
 	}

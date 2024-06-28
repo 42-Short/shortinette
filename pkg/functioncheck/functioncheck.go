@@ -13,14 +13,14 @@ import (
 	"github.com/42-Short/shortinette/pkg/git"
 )
 
-func initCompilingEnvironment(allowedItems []datastructures.AllowedItem, exercise string) error {
+func initCompilingEnvironment(allowedItems datastructures.AllowedItems, exercise string) error {
 	libFilePath := "compile-environment/allowedfunctions/src/lib.rs"
 	file, err := createFileWithDirs(libFilePath)
 	if err != nil {
 		return err
 	}
 
-	if err := writeAllowedItemsLib(allowedItems, file); err != nil {
+	if err := writeAllowedItemsLib(allowedItems, file, exercise); err != nil {
 		return err
 	}
 
@@ -118,7 +118,7 @@ func handleCompileError(output string) error {
 	}
 }
 
-func Execute(allowedItems []datastructures.AllowedItem, turnInDirectory string, turnInFile string) (err error) {
+func Execute(exerciseConfig datastructures.Exercise) (err error) {
 	defer func() {
 		rmErr := os.RemoveAll("compile-environment/")
 		if rmErr != nil {
@@ -126,7 +126,7 @@ func Execute(allowedItems []datastructures.AllowedItem, turnInDirectory string, 
 		}
 	}()
 
-	if err = initCompilingEnvironment(allowedItems, turnInDirectory); err != nil {
+	if err = initCompilingEnvironment(exerciseConfig.AllowedItems, exerciseConfig.TurnInDirectory); err != nil {
 		return err
 	}
 
@@ -134,7 +134,7 @@ func Execute(allowedItems []datastructures.AllowedItem, turnInDirectory string, 
 		return err
 	}
 
-	err = prependHeadersToStudentCode(fmt.Sprintf("compile-environment/src/%s/%s", turnInDirectory, turnInFile), turnInDirectory)
+	err = prependHeadersToStudentCode(fmt.Sprintf("compile-environment/src/%s/%s", exerciseConfig.TurnInDirectory, exerciseConfig.TurnInFile), exerciseConfig.TurnInDirectory)
 	if err != nil {
 		return err
 	}

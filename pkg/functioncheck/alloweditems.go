@@ -16,24 +16,23 @@ func writeTemplateToFile(template, itemName string, file *os.File) error {
 	return nil
 }
 
-func writeAllowedItemsLib(allowedItems []datastructures.AllowedItem, file *os.File) error {
-	exerciseNumber := "00"
-	content := fmt.Sprintf(allowedItemsLibHeader, exerciseNumber)
+func writeAllowedItemsLib(allowedItems datastructures.AllowedItems, file *os.File, exercise string) error {
+	content := fmt.Sprintf(allowedItemsLibHeader, exercise)
 	if _, err := file.WriteString(content); err != nil {
 		return err
 	}
 
-	for _, item := range allowedItems {
-		if item.Type == "macro" {
-			if err := writeTemplateToFile(allowedMacroTemplate, item.Name, file); err != nil {
-				return err
-			}
-		} else if item.Type == "function" {
-			if err := writeTemplateToFile(allowedFunctionTemplate, item.Name, file); err != nil {
-				return err
-			}
+	for _, macro := range allowedItems.Macros {
+		if err := writeTemplateToFile(allowedMacroTemplate, macro, file); err != nil {
+			return err
 		}
 	}
+	for _, function := range allowedItems.Functions {
+		if err := writeTemplateToFile(allowedFunctionTemplate, function, file); err != nil {
+			return err
+		}
+	}
+
 	if _, err := file.WriteString("}"); err != nil {
 		return fmt.Errorf("error writing closing bracket: %w", err)
 	}
