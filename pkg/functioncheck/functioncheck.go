@@ -11,24 +11,25 @@ import (
 	"github.com/42-Short/shortinette/internal/datastructures"
 	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/pkg/git"
+	"github.com/42-Short/shortinette/internal/templates"
 )
 
-func initCompilingEnvironment(allowedItems []datastructures.AllowedItem, exercise string) error {
+func initCompilingEnvironment(allowedItems datastructures.AllowedItems, exercise string) error {
 	libFilePath := "compile-environment/allowedfunctions/src/lib.rs"
 	file, err := createFileWithDirs(libFilePath)
 	if err != nil {
 		return err
 	}
 
-	if err := writeAllowedItemsLib(allowedItems, file); err != nil {
+	if err := writeAllowedItemsLib(allowedItems, file, exercise); err != nil {
 		return err
 	}
 
-	if err := writeCargoToml("compile-environment/allowedfunctions/Cargo.toml", allowedItemsCargoToml); err != nil {
+	if err := writeCargoToml("compile-environment/allowedfunctions/Cargo.toml", templates.AllowedItemsCargoToml); err != nil {
 		return err
 	}
 
-	cargoTomlContent := fmt.Sprintf(cargoTomlTemplate, "compile-environment", exercise)
+	cargoTomlContent := fmt.Sprintf(templates.CargoTomlTemplate, "compile-environment", exercise)
 	if err := writeCargoToml("compile-environment/Cargo.toml", cargoTomlContent); err != nil {
 		return err
 	}
@@ -36,31 +37,38 @@ func initCompilingEnvironment(allowedItems []datastructures.AllowedItem, exercis
 	return nil
 }
 
-func prependHeadersToStudentCode(filePath, exercise string) error {
+func prependHeadersToStudentCode(filePath, exerciseNumber string, exerciseType string, dummyCall string) error {
 	originalFile, err := os.Open(filePath)
 	if err != nil {
 		return fmt.Errorf("could not open original file: %w", err)
 	}
 	defer originalFile.Close()
 
-	tempFilePath := fmt.Sprintf("compile-environment/src/%s/temp.rs", exercise)
+	tempFilePath := fmt.Sprintf("compile-environment/src/%s/temp.rs", exerciseNumber)
 	tempFile, err := os.Create(tempFilePath)
 	if err != nil {
 		return fmt.Errorf("could not create temp file: %w", err)
 	}
 	defer tempFile.Close()
 
-	headers := fmt.Sprintf(studentCodePrefix, exercise)
+	headers := fmt.Sprintf(templates.StudentCodePrefix, exerciseNumber)
+
 	if _, err := tempFile.WriteString(headers); err != nil {
 		return fmt.Errorf("could not write headers: %w", err)
 	}
-
 	originalContent, err := io.ReadAll(originalFile)
 	if err != nil {
 		return fmt.Errorf("could not read original file content: %w", err)
 	}
 	if _, err := tempFile.Write(originalContent); err != nil {
 		return fmt.Errorf("could not write original content to temp file: %w", err)
+	}
+	if exerciseType == "function" {
+		main := fmt.Sprintf(templates.DummyMain, dummyCall)
+
+		if _, err := tempFile.Write([]byte(main)); err != nil {
+			return fmt.Errorf("could not write dummy main to temp file: %w", err)
+		}
 	}
 	return nil
 }
@@ -85,7 +93,7 @@ func setToSlice(forbiddenFunctionSet map[string]bool) []string {
 }
 
 func parseForbiddenFunctions(compilerOutput string) ([]string, error) {
-	re, err := regexp.Compile("error: cannot find (function|macro) `" + `(\w+)` + "` in this scope")
+	re, err := regexp.Compile(`error: cannot find (function|macro) ` + `(\w+)` + ` in this scope`)
 	if err != nil {
 		return nil, fmt.Errorf("error compiling regex: %w", err)
 	}
@@ -118,8 +126,15 @@ func handleCompileError(output string) error {
 	}
 }
 
-func Execute(allowedItems []datastructures.AllowedItem, exercise string, env datastructures.Environment) (err error) {
-	if err = initCompilingEnvironment(allowedItems, exercise); err != nil {
+func Execute(exerciseConfig datastructures.Exercise, env datastructures.Environment) (err error) {
+	defer func() {
+		rmErr := os.RemoveAll("compile-environment/")
+		if rmErr != nil {
+			err = fmt.Errorf("failed to remove compile environment: %w", rmErr)
+		}
+	}()
+
+	if err = initCompilingEnvironment(exerciseConfig.AllowedItems, exerciseConfig.TurnInDirectory); err != nil {
 		return err
 	}
 
@@ -127,7 +142,8 @@ func Execute(allowedItems []datastructures.AllowedItem, exercise string, env dat
 		return err
 	}
 
-	err = prependHeadersToStudentCode(fmt.Sprintf("compile-environment/src/%s/hello.rs", exercise), exercise)
+	exercisePath := fmt.Sprintf("compile-environment/src/%s/%s", exerciseConfig.TurnInDirectory, exerciseConfig.TurnInFile)
+	err = prependHeadersToStudentCode(exercisePath, exerciseConfig.TurnInDirectory, exerciseConfig.Type, exerciseConfig.DummyCall)
 	if err != nil {
 		return err
 	}
@@ -137,9 +153,7 @@ func Execute(allowedItems []datastructures.AllowedItem, exercise string, env dat
 		return handleCompileError(output)
 	}
 
-	if err = os.RemoveAll("compile-environment/"); err != nil {
-		return fmt.Errorf("failed to remove compile environment: %w", err)
-	}
+	fmt.Println("No forbidden items/keywords found")
 
 	return nil
 }

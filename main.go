@@ -3,15 +3,13 @@ package main
 import (
 	"fmt"
 
-	"github.com/42-Short/shortinette/internal/config"
-	"github.com/42-Short/shortinette/pkg/functioncheck"
 	"github.com/42-Short/shortinette/pkg/git"
+	"github.com/42-Short/shortinette/pkg/tester"
 	"github.com/joho/godotenv"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
+	if err := godotenv.Load(); err != nil {
 		fmt.Println("error loading .env file")
 	}
 	env, err := git.GetEnviorment();
@@ -25,11 +23,4 @@ func main() {
 	}
 	if err = functioncheck.Execute(allowedItems, "ex00", env); err != nil {
 		fmt.Println(err)
-	}
-	if err = git.Create("shortinette-test", env); err != nil {
-		fmt.Println(err)
-	}
-	if err = git.AddCollaborator("shortinette-test", "shortinette-test", "push", env); err != nil {
-		fmt.Println(err)
-	}
 }

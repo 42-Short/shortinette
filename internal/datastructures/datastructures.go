@@ -1,10 +1,8 @@
 package datastructures
 
 type Test struct {
-	Output struct {
-		AssertEq []string `yaml:"assert_eq"`
-		AssertNe []string `yaml:"assert_ne"`
-	}
+	AssertEq []string `yaml:"assert_eq"`
+	AssertNe []string `yaml:"assert_ne"`
 }
 
 type AllowedItems struct {
@@ -13,14 +11,18 @@ type AllowedItems struct {
 }
 
 type Exercise struct {
-	TurnInDirectory string       `yaml:"turn_in_directory"`
-	TurnInFiles     []string     `yaml:"turn_in_files"`
-	AllowedItems    AllowedItems `yaml:"allowed_items"`
-	Tests           Test         `yaml:"tests"`
+	TurnInDirectory   string       `yaml:"turn_in_directory"`
+	TurnInFile        string       `yaml:"turn_in_file"`
+	AllowedItems      AllowedItems `yaml:"allowed_items"`
+	ForbiddenKeywords []string     `yaml:"forbidden_keywords,omitempty"`
+	Tests             Test         `yaml:"tests"`
+	TestsPath         string       `yaml:"tests_path,omitempty"`
+	Type              string       `yaml:"type"`
+	DummyCall         string       `yaml:"dummy_call,omitempty"`
 }
 
 type Config struct {
-	Ex00 Exercise `yaml:"ex00"`
+	Exercises map[string]Exercise `yaml:"exercises"`
 }
 
 type AllowedItem struct {
