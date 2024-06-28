@@ -12,11 +12,11 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		fmt.Println("error loading .env file")
 	}
-	env, err := git.GetEnvironment();
+	err := git.CheckRequiredEnvironmentVariables();
 	if err != nil {
 		fmt.Println(err)
 	}
-	if err = tester.Run("testconfig/R00.yaml", "shortinette-test", "studentcode", env); err != nil {
+	if err = tester.Run("testconfig/R00.yaml", "shortinette-test", "studentcode"); err != nil {
 		fmt.Println(err)
 	}
 }

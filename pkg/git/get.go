@@ -8,17 +8,16 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
-	"github.com/42-Short/shortinette/internal/datastructures"
 )
 
-func cloneRepository(repoURL, targetDir string, env datastructures.Environment) (*git.Repository, error) {
+func cloneRepository(repoURL, targetDir string) (*git.Repository, error) {
 
 	repo, err := git.PlainClone(targetDir, false, &git.CloneOptions{
 		URL:      repoURL,
 		Progress: os.Stdout,
 		Auth: &http.BasicAuth{
-			Username: env.User,
-			Password: env.Token,
+			Username: os.Getenv("GITHUB_USER"),
+			Password: os.Getenv("GITHUB_TOKEN"),
 		},
 	})
 	if err != nil {
@@ -38,14 +37,14 @@ func openRepository(targetDir string) (*git.Repository, error) {
 	return repo, nil
 }
 
-func cloneOrOpen(repoURL, targetDir string, env datastructures.Environment) (*git.Repository, error) {
+func cloneOrOpen(repoURL, targetDir string) (*git.Repository, error) {
 	if _, err := os.Stat(targetDir); os.IsNotExist(err) {
-		return cloneRepository(repoURL, targetDir, env)
+		return cloneRepository(repoURL, targetDir)
 	}
 	return openRepository(targetDir)
 }
 
-func pullLatestChanges(repo *git.Repository, targetDir string, env datastructures.Environment) error {
+func pullLatestChanges(repo *git.Repository, targetDir string) error {
 	worktree, err := repo.Worktree()
 	if err != nil {
 		return fmt.Errorf("error getting worktree for repository in directory %s: %w", targetDir, err)
@@ -55,8 +54,8 @@ func pullLatestChanges(repo *git.Repository, targetDir string, env datastructure
 		RemoteName:    "origin",
 		ReferenceName: plumbing.Main,
 		Auth: &http.BasicAuth{
-			Username: env.User,
-			Password: env.Token,
+			Username: os.Getenv("GITHUB_USER"),
+			Password: os.Getenv("GITHUB_TOKEN"),
 		},
 		Progress: os.Stdout,
 	})
@@ -69,10 +68,10 @@ func pullLatestChanges(repo *git.Repository, targetDir string, env datastructure
 	return nil
 }
 
-func get(repoURL, targetDir string, env datastructures.Environment) error {
-	repo, err := cloneOrOpen(repoURL, targetDir, env)
+func get(repoURL, targetDir string) error {
+	repo, err := cloneOrOpen(repoURL, targetDir)
 	if err != nil {
 		return err
 	}
-	return pullLatestChanges(repo, targetDir, env)
+	return pullLatestChanges(repo, targetDir)
 }

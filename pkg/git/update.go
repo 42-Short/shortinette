@@ -5,12 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/42-Short/shortinette/internal/datastructures"
+	"os"
 )
 
-func buildCollaboratorURL(repo, username string, env datastructures.Environment) string {
-	return fmt.Sprintf("https://api.github.com/repos/%s/%s/collaborators/%s", env.Organisation, repo, username)
+func buildCollaboratorURL(repo, username string) string {
+	return fmt.Sprintf("https://api.github.com/repos/%s/%s/collaborators/%s", os.Getenv("GITHUB_ORGANISATION"), repo, username)
 }
 
 func createCollaboratorRequest(url, token, permission string) (*http.Request, error) {
@@ -51,10 +50,10 @@ func sendRequest(request *http.Request) error {
 	return nil
 }
 
-func addCollaborator(repo, username, permission string, env datastructures.Environment) error {
-	url := buildCollaboratorURL(repo, username, env)
+func addCollaborator(repo, username, permission string) error {
+	url := buildCollaboratorURL(repo, username)
 
-	request, err := createCollaboratorRequest(url, env.Token, permission)
+	request, err := createCollaboratorRequest(url, os.Getenv("GITHUB_TOKEN"), permission)
 	if err != nil {
 		return err
 	}

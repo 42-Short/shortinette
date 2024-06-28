@@ -126,7 +126,7 @@ func handleCompileError(output string) error {
 	}
 }
 
-func Execute(exerciseConfig datastructures.Exercise, env datastructures.Environment) (err error) {
+func Execute(exerciseConfig datastructures.Exercise) (err error) {
 	defer func() {
 		rmErr := os.RemoveAll("compile-environment/")
 		if rmErr != nil {
@@ -138,7 +138,7 @@ func Execute(exerciseConfig datastructures.Exercise, env datastructures.Environm
 		return err
 	}
 
-	if err = git.Get("https://github.com/42-Short/shortinette-test.git", "compile-environment/src/", env); err != nil {
+	if err = git.Get(fmt.Sprintf("https://github.com/%s/shortinette-test.git", os.Getenv("GITHUB_ORGANISATION")), "compile-environment/src/"); err != nil {
 		return err
 	}
 

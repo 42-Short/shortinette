@@ -29,9 +29,3 @@ type AllowedItem struct {
 	Name string
 	Type string
 }
-
-type Environment struct {
-	User string
-	Token string
-	Organisation string
-}
