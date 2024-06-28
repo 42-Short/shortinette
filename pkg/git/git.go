@@ -8,14 +8,14 @@ import (
 )
 
 // Retrieves environment variables related to GitHub configuration
-func GetEnviorment() (datastructures.Environment, error) {
+func GetEnvironment() (datastructures.Environment, error) {
 	env := datastructures.Environment{}
 
 	if env.User = os.Getenv("GITHUB_USER"); env.User == "" {
 		return env, fmt.Errorf("GITHUB_USER environment variable not set")
 	} else if env.Token = os.Getenv("GITHUB_TOKEN"); env.Token == "" {
 		return env, fmt.Errorf("GITHUB_TOKEN environment variable not set")
-	} else if env.Organisation = os.Getenv("GITHUB_ORGANISATION"); env.Token == "" {
+	} else if env.Organisation = os.Getenv("GITHUB_ORGANISATION"); env.Organisation == "" {
 		return env, fmt.Errorf("GITHUB_ORGANISATION environment variable not set")
 	}
 	return env, nil
