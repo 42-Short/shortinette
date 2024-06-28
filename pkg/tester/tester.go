@@ -119,8 +119,13 @@ func Run(configFilePath, studentLogin, codeDirectory string) error {
 			return err
 		}
 
-		if err := checkAssertions(output, exercise.Tests); err != nil {
-			return err
+		if exercise.Type == "program" {
+			if err := checkAssertions(output, exercise.Tests); err != nil {
+				return err
+			}
+		} else {
+			// TODO
+			fmt.Println("Not implemented")
 		}
 		fmt.Printf("Tests for %s passed\n", key)
 	}

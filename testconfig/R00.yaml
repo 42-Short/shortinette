@@ -20,6 +20,3 @@ exercises:
     forbidden_keywords:
       - return
     tests_path: tests/R00/ex01/
-    tests:
-      assert_eq:
-        - "some test"
