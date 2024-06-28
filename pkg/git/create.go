@@ -5,14 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/42-Short/shortinette/internal/datastructures"
 )
 
-func buildRepoURL(repo string) string {
-	return fmt.Sprintf("https://api.github.com/repos/42-Short/%s", repo)
+func buildRepoURL(repo string, env datastructures.Environment) string {
+	return fmt.Sprintf("https://api.github.com/repos/%s/%s", env.Organisation, repo)
 }
 
-func buildCreateRepoURL() string {
-	return "https://api.github.com/orgs/42-Short/repos"
+func buildCreateRepoURL(env datastructures.Environment) string {
+	return fmt.Sprintf("https://api.github.com/orgs/%s/repos", env.Organisation)
 }
 
 func createHTTPRequest(method, url, token string, body []byte) (*http.Request, error) {
@@ -37,14 +39,9 @@ func sendHTTPRequest(request *http.Request) (*http.Response, error) {
 	return response, nil
 }
 
-func RepoExists(repo string) (bool, error) {
-	token, err := getToken()
-	if err != nil {
-		return false, err
-	}
-
-	url := buildRepoURL(repo)
-	request, err := createHTTPRequest("GET", url, token, nil)
+func RepoExists(repo string, env datastructures.Environment) (bool, error) {
+	url := buildRepoURL(repo, env)
+	request, err := createHTTPRequest("GET", url, env.Token, nil)
 	if err != nil {
 		return false, err
 	}
@@ -64,13 +61,8 @@ func RepoExists(repo string) (bool, error) {
 	}
 }
 
-func createRepository(name string) error {
-	token, err := getToken()
-	if err != nil {
-		return err
-	}
-
-	url := buildCreateRepoURL()
+func createRepository(name string, env datastructures.Environment) error {
+	url := buildCreateRepoURL(env)
 	repoDetails := map[string]interface{}{
 		"name":    name,
 		"private": true,
@@ -80,7 +72,7 @@ func createRepository(name string) error {
 		return fmt.Errorf("could not marshal repository details: %w", err)
 	}
 
-	request, err := createHTTPRequest("POST", url, token, repoDetailsJSON)
+	request, err := createHTTPRequest("POST", url, env.Token, repoDetailsJSON)
 	if err != nil {
 		return err
 	}
@@ -99,8 +91,8 @@ func createRepository(name string) error {
 	return nil
 }
 
-func create(name string) error {
-	exists, err := RepoExists(name)
+func create(name string, env datastructures.Environment) error {
+	exists, err := RepoExists(name, env)
 	if err != nil {
 		return fmt.Errorf("could not verify repository existence: %w", err)
 	}
@@ -110,5 +102,5 @@ func create(name string) error {
 		return nil
 	}
 
-	return createRepository(name)
+	return createRepository(name, env)
 }

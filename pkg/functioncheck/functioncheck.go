@@ -118,12 +118,12 @@ func handleCompileError(output string) error {
 	}
 }
 
-func Execute(allowedItems []datastructures.AllowedItem, exercise string) (err error) {
+func Execute(allowedItems []datastructures.AllowedItem, exercise string, env datastructures.Environment) (err error) {
 	if err = initCompilingEnvironment(allowedItems, exercise); err != nil {
 		return err
 	}
 
-	if err = git.Get("https://github.com/42-Short/shortinette-test.git", "compile-environment/src/"); err != nil {
+	if err = git.Get("https://github.com/42-Short/shortinette-test.git", "compile-environment/src/", env); err != nil {
 		return err
 	}
 

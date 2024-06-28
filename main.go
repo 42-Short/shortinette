@@ -14,18 +14,22 @@ func main() {
 	if err != nil {
 		fmt.Println("error loading .env file")
 	}
+	env, err := git.GetEnviorment();
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	allowedItems, err := config.GetAllowedItems("testconfig/R00.yaml")
 	if err != nil {
 		fmt.Println(err)
 	}
-	if err = functioncheck.Execute(allowedItems, "ex00"); err != nil {
+	if err = functioncheck.Execute(allowedItems, "ex00", env); err != nil {
 		fmt.Println(err)
 	}
-	if err = git.Create("shortinette-test"); err != nil {
+	if err = git.Create("shortinette-test", env); err != nil {
 		fmt.Println(err)
 	}
-	if err = git.AddCollaborator("shortinette-test", "shortinette-test", "push"); err != nil {
+	if err = git.AddCollaborator("shortinette-test", "shortinette-test", "push", env); err != nil {
 		fmt.Println(err)
 	}
 }
