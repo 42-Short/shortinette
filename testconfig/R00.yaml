@@ -1,12 +1,22 @@
-ex00:
-  turn_in_directory: ex00/
-  turn_in_files:
-    - hello.rs
-  allowed_items:
-    macros:
-      - vec
-  tests:
-    assert_eq:
-      - "Hello, World!\n"
-    assert_ne:
-      - "Hello, World!\t"
+exercises:
+  ex00:
+    type: program
+    turn_in_directory: ex00
+    turn_in_file: hello.rs
+    allowed_items:
+      macros:
+        - println
+    tests:
+      assert_eq:
+        - "Hello, World!\n"
+  ex01:
+    type: function
+    dummy_call: min(42, 42)
+    turn_in_directory: ex01
+    turn_in_file: min.rs
+    allowed_items:
+      macros:
+        - println
+    forbidden_keywords:
+      - return
+    tests_path: tests/R00/ex01/tests.rs
