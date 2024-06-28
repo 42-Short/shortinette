@@ -36,20 +36,6 @@ func GetAllowedItems(configFilePath string) (map[string][]datastructures.Allowed
 	return allowedItemsMap, nil
 }
 
-func GetTests(configFilePath string) (map[string]datastructures.Test, error) {
-	config, err := GetConfig(configFilePath)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse config file %s: %w", configFilePath, err)
-	}
-
-	testsMap := make(map[string]datastructures.Test)
-	for key, exercise := range config.Exercises {
-		testsMap[key] = exercise.Tests
-	}
-
-	return testsMap, nil
-}
-
 func GetConfig(configFilePath string) (*datastructures.Config, error) {
 	file, err := os.Open(configFilePath)
 	if err != nil {
