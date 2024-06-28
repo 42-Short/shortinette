@@ -3,6 +3,7 @@ package tester
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -46,6 +47,17 @@ func compileWithCargo(dir string) error {
 	return nil
 }
 
+func compileWithRustcTestOption(dir string, turnInFile string) error {
+	cmd := exec.Command("rustc", "--test", turnInFile)
+	cmd.Dir = dir
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return errors.NewSubmissionError(errors.ErrInvalidCompilation, string(output))
+	}
+	return nil
+}
+
 func checkAssertions(output string, assertions datastructures.Test) error {
 	for _, assert := range assertions.AssertEq {
 		if output != assert {
@@ -70,6 +82,32 @@ func runStudentCode(executablePath string) (string, error) {
 		return "", errors.NewSubmissionError(errors.ErrRuntime, err.Error())
 	}
 	return out.String(), nil
+}
+
+func copyFile(source string, dest string) error {
+	sourceFile, err := os.Open(source)
+	if err != nil {
+		return err
+	}
+	defer sourceFile.Close()
+
+	destFile, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+	defer destFile.Close()
+
+	if _, err = io.Copy(destFile, sourceFile); err != nil {
+		return err
+	}
+	return nil
+}
+
+func runTestsOnFunction(testsPath string, studentCodeParentDir string) error {
+	if err := copyFile(testsPath, studentCodeParentDir); err != nil {
+		return err
+	}
+	return nil
 }
 
 func prepareEnvironment(configFilePath string) (*datastructures.Config, map[string][]datastructures.AllowedItem, error) {
@@ -107,25 +145,27 @@ func Run(configFilePath, studentLogin, codeDirectory string) error {
 	for key, exercise := range conf.Exercises {
 		fmt.Printf("Running tests for %s...\n", key)
 
-		if err := compileStudentCode(codeDirectory, exercise.TurnInDirectory, exercise.TurnInFile); err != nil {
-			return err
+		if exercise.Type == "program" {
+			if err := compileStudentCode(codeDirectory, exercise.TurnInDirectory, exercise.TurnInFile); err != nil {
+				return err
+			}
 		}
 
-		executablePath := fmt.Sprintf("%s/%s/%s", codeDirectory, exercise.TurnInDirectory, exercise.TurnInFile)
-		executablePath = strings.TrimSuffix(executablePath, ".rs")
-
-		output, err := runStudentCode(executablePath)
-		if err != nil {
-			return err
-		}
+		studentCodeParentDir := fmt.Sprintf("%s/%s/", codeDirectory, exercise.TurnInDirectory)
+		filePath := fmt.Sprintf("%s/%s", studentCodeParentDir, exercise.TurnInFile)
+		executablePath := strings.TrimSuffix(filePath, ".rs")
 
 		if exercise.Type == "program" {
+			output, err := runStudentCode(executablePath)
+			if err != nil {
+				return err
+			}
 			if err := checkAssertions(output, exercise.Tests); err != nil {
 				return err
 			}
-		} else {
-			// TODO
-			fmt.Println("Not implemented")
+		} else if exercise.Type == "function" {
+			runTestsOnFunction(exercise.TestsPath, studentCodeParentDir)
+			compileWithRustcTestOption(studentCodeParentDir, exercise.TurnInFile)
 		}
 		fmt.Printf("Tests for %s passed\n", key)
 	}

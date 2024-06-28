@@ -19,4 +19,4 @@ exercises:
         - println
     forbidden_keywords:
       - return
-    tests_path: tests/R00/ex01/
+    tests_path: tests/R00/ex01/tests.rs
