@@ -11,6 +11,7 @@ import (
 	"github.com/42-Short/shortinette/internal/datastructures"
 	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/pkg/git"
+	"github.com/42-Short/shortinette/internal/templates"
 )
 
 func initCompilingEnvironment(allowedItems datastructures.AllowedItems, exercise string) error {
@@ -24,11 +25,11 @@ func initCompilingEnvironment(allowedItems datastructures.AllowedItems, exercise
 		return err
 	}
 
-	if err := writeCargoToml("compile-environment/allowedfunctions/Cargo.toml", allowedItemsCargoToml); err != nil {
+	if err := writeCargoToml("compile-environment/allowedfunctions/Cargo.toml", templates.AllowedItemsCargoToml); err != nil {
 		return err
 	}
 
-	cargoTomlContent := fmt.Sprintf(cargoTomlTemplate, "compile-environment", exercise)
+	cargoTomlContent := fmt.Sprintf(templates.CargoTomlTemplate, "compile-environment", exercise)
 	if err := writeCargoToml("compile-environment/Cargo.toml", cargoTomlContent); err != nil {
 		return err
 	}
@@ -50,7 +51,7 @@ func prependHeadersToStudentCode(filePath, exerciseNumber string, exerciseType s
 	}
 	defer tempFile.Close()
 
-	headers := fmt.Sprintf(studentCodePrefix, exerciseNumber)
+	headers := fmt.Sprintf(templates.StudentCodePrefix, exerciseNumber)
 
 	if _, err := tempFile.WriteString(headers); err != nil {
 		return fmt.Errorf("could not write headers: %w", err)
@@ -63,7 +64,7 @@ func prependHeadersToStudentCode(filePath, exerciseNumber string, exerciseType s
 		return fmt.Errorf("could not write original content to temp file: %w", err)
 	}
 	if exerciseType == "function" {
-		main := fmt.Sprintf(dummyMain, dummyCall)
+		main := fmt.Sprintf(templates.DummyMain, dummyCall)
 
 		if _, err := tempFile.Write([]byte(main)); err != nil {
 			return fmt.Errorf("could not write dummy main to temp file: %w", err)

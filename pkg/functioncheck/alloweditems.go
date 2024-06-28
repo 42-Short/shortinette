@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/42-Short/shortinette/internal/datastructures"
+	"github.com/42-Short/shortinette/internal/templates"
 )
 
 func writeTemplateToFile(template, itemName string, file *os.File) error {
@@ -17,18 +18,18 @@ func writeTemplateToFile(template, itemName string, file *os.File) error {
 }
 
 func writeAllowedItemsLib(allowedItems datastructures.AllowedItems, file *os.File, exercise string) error {
-	content := fmt.Sprintf(allowedItemsLibHeader, exercise)
+	content := fmt.Sprintf(templates.AllowedItemsLibHeader, exercise)
 	if _, err := file.WriteString(content); err != nil {
 		return err
 	}
 
 	for _, macro := range allowedItems.Macros {
-		if err := writeTemplateToFile(allowedMacroTemplate, macro, file); err != nil {
+		if err := writeTemplateToFile(templates.AllowedMacroTemplate, macro, file); err != nil {
 			return err
 		}
 	}
 	for _, function := range allowedItems.Functions {
-		if err := writeTemplateToFile(allowedFunctionTemplate, function, file); err != nil {
+		if err := writeTemplateToFile(templates.AllowedFunctionTemplate, function, file); err != nil {
 			return err
 		}
 	}

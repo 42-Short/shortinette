@@ -122,6 +122,7 @@ func Run(configFilePath, studentLogin, codeDirectory string) error {
 		if err := checkAssertions(output, exercise.Tests); err != nil {
 			return err
 		}
+		fmt.Printf("Tests for %s passed\n", key)
 	}
 
 	fmt.Println("All tests passed for all exercises!")
