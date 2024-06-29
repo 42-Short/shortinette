@@ -108,7 +108,7 @@ func prepareEnvironment(configFilePath string) (*datastructures.Config, map[stri
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get allowed items: %w", err)
 	}
-
+	
 	conf, err := config.GetConfig(configFilePath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get config: %w", err)
@@ -116,10 +116,9 @@ func prepareEnvironment(configFilePath string) (*datastructures.Config, map[stri
 
 	for key, exercise := range conf.Exercises {
 		if err := functioncheck.Execute(exercise); err != nil {
-			return nil, nil, fmt.Errorf("function check failed for %s: %w", key, err)
+			return conf, allowedItems, fmt.Errorf("function check failed for %s: %w", key, err)
 		}
 	}
-
 	return conf, allowedItems, nil
 }
 
