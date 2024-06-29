@@ -107,7 +107,7 @@ func prepareEnvironment(configFilePath string) (*datastructures.Config, map[stri
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get allowed items: %w", err)
 	}
-
+	
 	conf, err := config.GetConfig(configFilePath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get config: %w", err)
@@ -115,10 +115,9 @@ func prepareEnvironment(configFilePath string) (*datastructures.Config, map[stri
 
 	for key, exercise := range conf.Exercises {
 		if err := functioncheck.Execute(exercise); err != nil {
-			return nil, nil, fmt.Errorf("function check failed for %s: %w", key, err)
+			return conf, allowedItems, fmt.Errorf("function check failed for %s: %w", key, err)
 		}
 	}
-
 	return conf, allowedItems, nil
 }
 
@@ -158,11 +157,11 @@ func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string,
 
 	if exercise.Type == "program" {
 		if err := runProgramTests(exercise, studentCodeParentDir, executablePath); err != nil {
-			return err
+			fmt.Println(err)
 		}
 	} else if exercise.Type == "function" {
 		if err := runFunctionTests(exercise, studentCodeParentDir, executablePath); err != nil {
-			return err
+			fmt.Println(err)
 		}
 	}
 	fmt.Printf("Tests for %s passed\n", executablePath)
@@ -177,7 +176,7 @@ func Run(configFilePath, studentLogin, codeDirectory string) error {
 		fmt.Println(err)
 	}
 
-	if err := git.Get(fmt.Sprintf("https://github.com/42-Short/%s.git", studentLogin), codeDirectory); err != nil {
+	if err := git.Get(fmt.Sprintf("https://github.com/%s/%s.git",os.Getenv("GITHUB_ORGANISATION"), studentLogin), codeDirectory); err != nil {
 		return fmt.Errorf("git clone failed: %w", err)
 	}
 

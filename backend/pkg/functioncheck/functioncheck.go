@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"bufio"
 
 	"github.com/42-Short/shortinette/internal/datastructures"
 	"github.com/42-Short/shortinette/internal/errors"
@@ -35,6 +36,40 @@ func initCompilingEnvironment(allowedItems datastructures.AllowedItems, exercise
 	}
 
 	return nil
+}
+
+func scanForForbiddenKeywords(scanner *bufio.Scanner, forbiddenKeywords []string) (err error) {
+	foundKeywords := make([]string, 0, len(forbiddenKeywords))
+	
+    for scanner.Scan() {
+        word := scanner.Text()
+        for _, keyword := range forbiddenKeywords {
+            if word == keyword {
+                foundKeywords = append(foundKeywords, keyword)
+            }
+        }
+    }
+	if len(foundKeywords) > 0 {
+		return fmt.Errorf("found forbidden keywords: %s", strings.Join(foundKeywords, ", "))
+	}
+    return scanner.Err()
+}
+
+func lintStudentCode(exercisePath string, exerciseConfig datastructures.Exercise) (err error) {
+	file, err := os.Open(exercisePath)
+    if err != nil {
+        return fmt.Errorf("could not open %s: %w", exercisePath, err)
+    }
+    defer file.Close()
+
+    scanner := bufio.NewScanner(file)
+    scanner.Split(bufio.ScanWords)
+
+    err = scanForForbiddenKeywords(scanner, exerciseConfig.ForbiddenKeywords)
+	if err != nil {
+        return err
+    }
+    return nil
 }
 
 func prependHeadersToStudentCode(filePath, exerciseNumber string, exerciseType string, dummyCall string) error {
@@ -127,22 +162,27 @@ func handleCompileError(output string) error {
 }
 
 func Execute(exerciseConfig datastructures.Exercise) (err error) {
-	defer func() {
-		rmErr := os.RemoveAll("compile-environment/")
-		if rmErr != nil {
-			err = fmt.Errorf("failed to remove compile environment: %w", rmErr)
-		}
-	}()
+	// defer func() {
+	// 	rmErr := os.RemoveAll("compile-environment/")
+	// 	if rmErr != nil {
+	// 		err = fmt.Errorf("failed to remove compile environment: %w", rmErr)
+	// 	}
+	// }()
 
 	if err = initCompilingEnvironment(exerciseConfig.AllowedItems, exerciseConfig.TurnInDirectory); err != nil {
 		return err
 	}
 
-	if err = git.Get("https://github.com/42-Short/shortinette-test.git", "compile-environment/src/"); err != nil {
+	if err = git.Get(fmt.Sprintf("https://github.com/%s/shortinette-test.git", os.Getenv("GITHUB_ORGANISATION")), "compile-environment/src/"); err != nil {
 		return err
 	}
 
 	exercisePath := fmt.Sprintf("compile-environment/src/%s/%s", exerciseConfig.TurnInDirectory, exerciseConfig.TurnInFile)
+	err = lintStudentCode(exercisePath, exerciseConfig)
+	if err != nil {
+		return err
+	}
+
 	err = prependHeadersToStudentCode(exercisePath, exerciseConfig.TurnInDirectory, exerciseConfig.Type, exerciseConfig.DummyCall)
 	if err != nil {
 		return err

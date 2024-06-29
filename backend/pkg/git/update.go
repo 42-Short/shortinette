@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 )
 
 func buildCollaboratorURL(repo, username string) string {
-	return fmt.Sprintf("https://api.github.com/repos/42-Short/%s/collaborators/%s", repo, username)
+	return fmt.Sprintf("https://api.github.com/repos/%s/%s/collaborators/%s", os.Getenv("GITHUB_ORGANISATION"), repo, username)
 }
 
 func createCollaboratorRequest(url, token, permission string) (*http.Request, error) {
@@ -50,14 +51,9 @@ func sendRequest(request *http.Request) error {
 }
 
 func addCollaborator(repo, username, permission string) error {
-	token, err := getToken()
-	if err != nil {
-		return err
-	}
-
 	url := buildCollaboratorURL(repo, username)
 
-	request, err := createCollaboratorRequest(url, token, permission)
+	request, err := createCollaboratorRequest(url, os.Getenv("GITHUB_TOKEN"), permission)
 	if err != nil {
 		return err
 	}

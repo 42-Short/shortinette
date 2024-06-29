@@ -5,12 +5,19 @@ import (
 	"os"
 )
 
-func getToken() (string, error) {
-	token := os.Getenv("GITHUB_TOKEN")
-	if token == "" {
-		return "", fmt.Errorf("GITHUB_TOKEN environment variable not set")
+// Checks if needed enviorment variables are present in the .env file
+func CheckRequiredEnvironmentVariables() error {
+	vars := map[string]string{
+		"GITHUB_USER":         os.Getenv("GITHUB_USER"),
+		"GITHUB_TOKEN":        os.Getenv("GITHUB_TOKEN"),
+		"GITHUB_ORGANISATION": os.Getenv("GITHUB_ORGANISATION"),
 	}
-	return token, nil
+	for key, value := range vars {
+		if value == "" {
+			return fmt.Errorf("%s environment variable not set", key)
+		}
+	}
+	return nil
 }
 
 // Clone or open the repo & pull the latest changes into targetDirectory

@@ -11,17 +11,13 @@ import (
 )
 
 func cloneRepository(repoURL, targetDir string) (*git.Repository, error) {
-	username, token, err := getCredentials()
-	if err != nil {
-		return nil, err
-	}
 
 	repo, err := git.PlainClone(targetDir, false, &git.CloneOptions{
 		URL:      repoURL,
 		Progress: os.Stdout,
 		Auth: &http.BasicAuth{
-			Username: username,
-			Password: token,
+			Username: os.Getenv("GITHUB_USER"),
+			Password: os.Getenv("GITHUB_TOKEN"),
 		},
 	})
 	if err != nil {
@@ -48,32 +44,18 @@ func cloneOrOpen(repoURL, targetDir string) (*git.Repository, error) {
 	return openRepository(targetDir)
 }
 
-func getCredentials() (string, string, error) {
-	username := os.Getenv("GITHUB_USER")
-	token := os.Getenv("GITHUB_TOKEN")
-	if username == "" || token == "" {
-		return "", "", fmt.Errorf("error: GITHUB_USER and/or GITHUB_TOKEN environment variables not set")
-	}
-	return username, token, nil
-}
-
 func pullLatestChanges(repo *git.Repository, targetDir string) error {
 	worktree, err := repo.Worktree()
 	if err != nil {
 		return fmt.Errorf("error getting worktree for repository in directory %s: %w", targetDir, err)
 	}
 
-	username, password, err := getCredentials()
-	if err != nil {
-		return err
-	}
-
 	err = worktree.Pull(&git.PullOptions{
 		RemoteName:    "origin",
 		ReferenceName: plumbing.Main,
 		Auth: &http.BasicAuth{
-			Username: username,
-			Password: password,
+			Username: os.Getenv("GITHUB_USER"),
+			Password: os.Getenv("GITHUB_TOKEN"),
 		},
 		Progress: os.Stdout,
 	})
