@@ -162,12 +162,12 @@ func handleCompileError(output string) error {
 }
 
 func Execute(exerciseConfig datastructures.Exercise) (err error) {
-	defer func() {
-		rmErr := os.RemoveAll("compile-environment/")
-		if rmErr != nil {
-			err = fmt.Errorf("failed to remove compile environment: %w", rmErr)
-		}
-	}()
+	// defer func() {
+	// 	rmErr := os.RemoveAll("compile-environment/")
+	// 	if rmErr != nil {
+	// 		err = fmt.Errorf("failed to remove compile environment: %w", rmErr)
+	// 	}
+	// }()
 
 	if err = initCompilingEnvironment(exerciseConfig.AllowedItems, exerciseConfig.TurnInDirectory); err != nil {
 		return err
