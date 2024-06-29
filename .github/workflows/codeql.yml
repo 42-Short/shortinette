@@ -44,6 +44,10 @@ jobs:
         echo '  make release'
         exit 1
 
+    - name: Gosec Security Checker
+      uses: securego/gosec@v2.20.0
+            
+
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
