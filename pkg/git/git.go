@@ -6,14 +6,14 @@ import (
 )
 
 // Checks if needed enviorment variables are present in the .env file
-func CheckRequiredEnvironmentVariables() (error) {
-	vars := map[string]string {
-		"GITHUB_USER": os.Getenv("GITHUB_USER"),
-		"GITHUB_TOKEN": os.Getenv("GITHUB_TOKEN"),
+func CheckRequiredEnvironmentVariables() error {
+	vars := map[string]string{
+		"GITHUB_USER":         os.Getenv("GITHUB_USER"),
+		"GITHUB_TOKEN":        os.Getenv("GITHUB_TOKEN"),
 		"GITHUB_ORGANISATION": os.Getenv("GITHUB_ORGANISATION"),
 	}
-	for key, values := range vars {
-		if values == "" {
+	for key, value := range vars {
+		if value == "" {
 			return fmt.Errorf("%s environment variable not set", key)
 		}
 	}
