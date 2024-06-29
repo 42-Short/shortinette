@@ -81,6 +81,6 @@ func main() {
 	router.GET("/test/:repoId", testSubmission)
 
 	if err := router.Run("0.0.0.0:8080"); err != nil {
-		log.Fatalf("fatal error: %w", err)
+		log.Fatalf("fatal error: %s", err)
 	}
 }
