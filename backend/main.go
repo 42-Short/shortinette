@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
 	"errors"
+	"fmt"
+	"log"
+	"net/http"
 
 	internalErrors "github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/pkg/git"
@@ -79,5 +80,7 @@ func main() {
 	router.POST("/teams/new", createNewTeam)
 	router.GET("/test/:repoId", testSubmission)
 
-	router.Run("0.0.0.0:8080")
+	if err := router.Run("0.0.0.0:8080"); err != nil {
+		log.Fatalf("fatal error: %w", err)
+	}
 }
