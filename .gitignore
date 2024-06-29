@@ -9,3 +9,4 @@ studentcode/
 website/
 *.rlib
 *.csv
+node_modules
