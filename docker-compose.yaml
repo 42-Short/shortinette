@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+      args:
+        GITHUB_USER: ${GITHUB_USER}
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+        GITHUB_ORGANISATION: ${GITHUB_ORGANISATION}
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
