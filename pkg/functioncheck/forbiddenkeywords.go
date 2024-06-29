@@ -26,6 +26,7 @@ func scanForForbiddenKeywords(scanner *bufio.Scanner, forbiddenKeywords []string
     return scanner.Err()
 }
 
+//Lints the student code and checks for forbidden keywords
 func LintStudentCode(exercisePath string, exerciseConfig datastructures.Exercise) (err error) {
 	file, err := os.Open(exercisePath)
     if err != nil {
