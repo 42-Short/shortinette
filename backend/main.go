@@ -79,5 +79,5 @@ func main() {
 	router.POST("/teams/new", createNewTeam)
 	router.GET("/test/:repoId", testSubmission)
 
-	router.Run("localhost:8080")
+	router.Run("0.0.0.0:8080")
 }
