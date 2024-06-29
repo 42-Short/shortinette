@@ -158,9 +158,13 @@ func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string,
 	executablePath := strings.TrimSuffix(fmt.Sprintf("%s/%s", studentCodeParentDir, exercise.TurnInFile), ".rs")
 
 	if exercise.Type == "program" {
-		runProgramTests(exercise, studentCodeParentDir, executablePath)
+		if err := runProgramTests(exercise, studentCodeParentDir, executablePath); err != nil {
+			fmt.Println(err)
+		}
 	} else if exercise.Type == "function" {
-		runFunctionTests(exercise, studentCodeParentDir, executablePath)
+		if err := runFunctionTests(exercise, studentCodeParentDir, executablePath); err != nil {
+			fmt.Println(err)
+		}
 	}
 	fmt.Printf("Tests for %s passed\n", executablePath)
 }
