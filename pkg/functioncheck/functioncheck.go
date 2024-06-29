@@ -143,6 +143,11 @@ func Execute(exerciseConfig datastructures.Exercise) (err error) {
 	}
 
 	exercisePath := fmt.Sprintf("compile-environment/src/%s/%s", exerciseConfig.TurnInDirectory, exerciseConfig.TurnInFile)
+	err = LintStudentCode(exercisePath, exerciseConfig)
+	if err != nil {
+		return err
+	}
+
 	err = prependHeadersToStudentCode(exercisePath, exerciseConfig.TurnInDirectory, exerciseConfig.Type, exerciseConfig.DummyCall)
 	if err != nil {
 		return err
