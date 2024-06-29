@@ -6,6 +6,9 @@ exercises:
     allowed_items:
       macros:
         - println
+      keywords:
+        - keyword: unsafe
+          amount: 0
     tests:
       assert_eq:
         - "Hello, World!\n"
@@ -17,6 +20,10 @@ exercises:
     allowed_items:
       macros:
         - println
-    forbidden_keywords:
-      - return
+      keywords:
+        - keyword: return
+          amount: 0
+        - keyword: unsafe
+          amount: 0
+
     tests_path: tests/R00/ex01/tests.rs
