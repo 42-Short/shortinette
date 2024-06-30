@@ -1,14 +1,14 @@
 import { LoaderFunction, json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "./components/card";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel";
+} from "./components/carousel";
 
 export const loader: LoaderFunction = async () => {
   return json({ items: Array.from({ length: 5 }) });
