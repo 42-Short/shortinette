@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 
-	internalErrors "github.com/42-Short/shortinette/internal/errors"
-	"github.com/42-Short/shortinette/pkg/git"
-	"github.com/42-Short/shortinette/pkg/tester"
-	"github.com/joho/godotenv"
+	"github.com/42-Short/shortinette/internal/errors"
+	"github.com/42-Short/shortinette/internal/git"
+	"github.com/42-Short/shortinette/internal/tester"
+	"github.com/42-Short/shortinette/internal/utils"
 )
 
 func createNewTeam(githubLogin string, projectId string) (err error) {
@@ -24,14 +24,14 @@ func createNewTeam(githubLogin string, projectId string) (err error) {
 func testSubmission(repoId string, testConfigPath string) (result map[string]error, err error) {
 	result, err = tester.Run(testConfigPath, repoId, "studentcode")
 	if err != nil {
-		return nil, internalErrors.NewInternalError(internalErrors.ErrInternal, fmt.Sprintf("failed to run tests: %v", err))
+		return nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to run tests: %v", err))
 	}
 	return result, nil
 }
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		fmt.Println("error loading .env file")
+	if err := utils.RequireEnv(); err != nil {
+		log.Fatalf(err.Error())
 	}
 	if err := createNewTeam("shortinette-test", "R00"); err != nil {
 		log.Fatalf("could not create team: %s", err)

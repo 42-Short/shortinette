@@ -13,8 +13,8 @@ import (
 	"github.com/42-Short/shortinette/internal/config"
 	"github.com/42-Short/shortinette/internal/datastructures"
 	"github.com/42-Short/shortinette/internal/errors"
-	"github.com/42-Short/shortinette/pkg/functioncheck"
-	"github.com/42-Short/shortinette/pkg/git"
+	"github.com/42-Short/shortinette/internal/functioncheck"
+	"github.com/42-Short/shortinette/internal/git"
 )
 
 func compileProgram(directory, turnInFile string) error {
