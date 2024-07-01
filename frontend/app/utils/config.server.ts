@@ -1,4 +1,3 @@
 export const config = {
-    // superAdmin: requireEnv('SUPER_ADMIN'),
+  // superAdmin: requireEnv('SUPER_ADMIN'),
 };
-
