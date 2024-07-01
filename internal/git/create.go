@@ -56,7 +56,7 @@ func RepoExists(repo string) (bool, error) {
 	} else if response.StatusCode == http.StatusNotFound {
 		return false, nil
 	} else {
-		return false, fmt.Errorf("failed to check if repository exists: %s", response.Status)
+		return false, fmt.Errorf(response.Status)
 	}
 }
 
@@ -68,7 +68,7 @@ func createRepository(name string) error {
 	}
 	repoDetailsJSON, err := json.Marshal(repoDetails)
 	if err != nil {
-		return fmt.Errorf("could not marshal repository details: %w", err)
+		return err
 	}
 
 	request, err := createHTTPRequest("POST", url, os.Getenv("GITHUB_TOKEN"), repoDetailsJSON)
@@ -83,10 +83,10 @@ func createRepository(name string) error {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusCreated {
-		return fmt.Errorf("could not create repository: %s", response.Status)
+		return fmt.Errorf(response.Status)
 	}
 
-	fmt.Println("Repository created successfully.")
+	fmt.Println("repository created successfully")
 	return nil
 }
 
@@ -97,7 +97,7 @@ func create(name string) error {
 	}
 
 	if exists {
-		fmt.Printf("Repository %s already exists. Skipping creation.\n", name)
+		fmt.Printf("repository %s already exists. Skipping creation\n", name)
 		return nil
 	}
 
