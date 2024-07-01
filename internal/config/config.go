@@ -52,6 +52,5 @@ func GetConfig(configFilePath string) (*datastructures.Config, error) {
 	if err := yaml.Unmarshal(content, &config); err != nil {
 		return nil, fmt.Errorf("could not unmarshal yaml %s: %w", configFilePath, err)
 	}
-	fmt.Println(config)
 	return &config, nil
 }
