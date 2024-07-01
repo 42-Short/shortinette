@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/42-Short/shortinette/internal/config"
 	"github.com/42-Short/shortinette/internal/datastructures"
@@ -160,7 +161,10 @@ func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string)
 }
 
 func initializeLogger(repoId string) error {
-	file, err := os.OpenFile(fmt.Sprintf("logs/%s", repoId), os.O_CREATE|os.O_WRONLY, 0666)
+	t := time.Now()
+	formattedTime := t.Format("20060102_150405")
+	fileName := fmt.Sprintf("logs/%s-%s", repoId, formattedTime)
+	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		return errors.NewInternalError(errors.ErrInternal, err.Error())
 	}
@@ -173,7 +177,7 @@ func Run(configFilePath string, repoId string, codeDirectory string) (map[string
 
 	conf, _, err := prepareEnvironment(configFilePath, repoId, codeDirectory)
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 
 	results := make(map[string]error)
@@ -192,6 +196,5 @@ func Run(configFilePath string, repoId string, codeDirectory string) (map[string
 		results[key] = nil
 		log.Printf("[%s] passed\n", key)
 	}
-	fmt.Println("all tests passed for all exercises!")
 	return results, nil
 }
