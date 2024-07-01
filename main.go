@@ -22,29 +22,29 @@ func createNewTeam(githubLogin string, projectId string) (err error) {
 	return nil
 }
 
-func testSubmission(repoId string, testConfigPath string) (result string) {
+func testSubmission(repoId string, testConfigPath string) (result string, err error) {
 	if err := tester.Run(testConfigPath, repoId, "studentcode"); err != nil {
 		var submissionErr *internalErrors.SubmissionError
 		if errors.As(err, &submissionErr) {
 			switch {
 			case errors.Is(submissionErr.Err, internalErrors.ErrEmptyRepo):
-				return "empty repository"
+				return "empty repository", nil
 			case errors.Is(submissionErr.Err, internalErrors.ErrForbiddenItem):
-				return "forbidden items used"
+				return "forbidden items used", nil
 			case errors.Is(submissionErr.Err, internalErrors.ErrInvalidOutput):
-				return "invalid output"
+				return "invalid output", nil
 			case errors.Is(submissionErr.Err, internalErrors.ErrInvalidCompilation):
-				return "invalid compilation"
+				return "invalid compilation", nil
 			case errors.Is(submissionErr.Err, internalErrors.ErrRuntime):
-				return "runtime error"
+				return "runtime error", nil
 			default:
-				return "unknown error"
+				return "", err
 			}
 		} else {
-			return "unknown error"
+			return "", err
 		}
 	}
-	return "success"
+	return "success", nil
 }
 
 func main() {
@@ -53,5 +53,10 @@ func main() {
 	}
 	if err := createNewTeam("shortinette-test", "R00"); err != nil {
 		log.Fatalf("could not create team: %s", err)
+	}
+	if result, err := testSubmission("shortinette-test-R00", "testconfig/R00.yaml"); err != nil {
+		log.Fatalf("could not run tests: %s", err)
+	} else {
+		fmt.Printf("tests run successfully: %s", result)
 	}
 }
