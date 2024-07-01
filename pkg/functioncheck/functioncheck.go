@@ -93,11 +93,10 @@ func setToSlice(forbiddenFunctionSet map[string]bool) []string {
 }
 
 func parseForbiddenFunctions(compilerOutput string) ([]string, error) {
-	re, err := regexp.Compile(`error: cannot find (function|macro) ` + `(\w+)` + ` in this scope`)
+	re, err := regexp.Compile(`error: cannot find (function|macro) ` + "`(\\w+)`" + ` in this scope`)
 	if err != nil {
 		return nil, fmt.Errorf("error compiling regex: %w", err)
 	}
-
 	matches := re.FindAllStringSubmatch(compilerOutput, -1)
 	if matches == nil {
 		return nil, fmt.Errorf("no forbidden functions found")
@@ -119,6 +118,7 @@ func handleCompileError(output string) error {
 	if parseErr != nil {
 		return errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("could not parse forbidden functions: %s", parseErr))
 	} else if len(usedForbiddenFunctions) > 0 {
+		fmt.Println(usedForbiddenFunctions)
 		forbiddenFunctions := strings.Join(usedForbiddenFunctions, ", ")
 		return errors.NewSubmissionError(errors.ErrForbiddenItem, forbiddenFunctions)
 	} else {

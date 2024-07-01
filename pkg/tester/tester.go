@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"log"
 
 	"github.com/42-Short/shortinette/internal/config"
 	"github.com/42-Short/shortinette/internal/datastructures"
@@ -102,21 +103,14 @@ func appendToFile(source string, dest string) error {
 	return nil
 }
 
-func prepareEnvironment(configFilePath string, repoId string) (*datastructures.Config, map[string][]datastructures.AllowedItem, error) {
+func prepareEnvironment(configFilePath string) (*datastructures.Config, map[string][]datastructures.AllowedItem, error) {
 	allowedItems, err := config.GetAllowedItems(configFilePath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get allowed items: %w", err)
 	}
-
 	conf, err := config.GetConfig(configFilePath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get config: %w", err)
-	}
-
-	for key, exercise := range conf.Exercises {
-		if err := functioncheck.Execute(exercise, repoId); err != nil {
-			return conf, allowedItems, fmt.Errorf("function check failed for %s: %w", key, err)
-		}
 	}
 	return conf, allowedItems, nil
 }
@@ -168,24 +162,30 @@ func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string,
 	return nil
 }
 
-func Run(configFilePath, repoId, codeDirectory string) error {
+func Run(configFilePath string, repoId string, codeDirectory string) error {
 	defer os.RemoveAll(codeDirectory)
 
-	conf, _, err := prepareEnvironment(configFilePath, repoId)
+	conf, _, err := prepareEnvironment(configFilePath)
 	if err != nil {
 		fmt.Println(err)
 	}
-
 	if err := git.Get(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId), codeDirectory); err != nil {
 		return fmt.Errorf("git clone failed: %w", err)
 	}
-
+	file, err := os.OpenFile(fmt.Sprintf("logs/%s", repoId), os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		return errors.NewInternalError(errors.ErrInternal, err.Error())
+	}
+	log.SetOutput(file)
 	for key, exercise := range conf.Exercises {
+		log.Println(key)
+		if err := functioncheck.Execute(exercise, repoId); err != nil {
+			log.Println(err)
+		}
 		if err := runTestsForExercise(exercise, codeDirectory, key); err != nil {
-			return err
+			log.Println(err)
 		}
 	}
-
 	fmt.Println("all tests passed for all exercises!")
 	return nil
 }

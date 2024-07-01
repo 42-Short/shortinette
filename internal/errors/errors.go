@@ -14,8 +14,8 @@ type InternalError struct {
 	Details string
 }
 
-func (i *InternalError) Error() string {
-	panic("unimplemented")
+func (e *InternalError) Error() string {
+	return fmt.Sprintf("internal error: %v, details: %s", e.Err, e.Details)
 }
 
 func (e *SubmissionError) Error() string {
