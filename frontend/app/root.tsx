@@ -12,6 +12,7 @@ import {
 import stylesheet from "~/tailwind.css?url";
 import NavBar from "./components/NavBar";
 import { H1 } from "./components/ui/H1";
+import { Footer } from "./components/Footer";
 
 export const links: LinksFunction = () => {
   return [
@@ -29,17 +30,16 @@ export const links: LinksFunction = () => {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-full">
       <head>
-        <NavBar />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
       </head>
-      <body className="min-h-screen">
-        {children}
-
+      <body className="flex flex-col min-h-screen">
+        <div className="flex-grow">{children}</div>
+        <Footer />
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -61,9 +61,9 @@ export function ErrorBoundary() {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="flex flex-col min-h-screen">
         <NavBar />
-        <div className="flex items-center justify-center h-screen">
+        <div className="flex-grow p-4 flex items-center justify-center">
           {isRouteErrorResponse(error) ? (
             <div className="flex flex-col items-center">
               <H1>{error.status}</H1>
@@ -73,6 +73,8 @@ export function ErrorBoundary() {
             "Unknown Error"
           )}
         </div>
+        <Footer />
+        <ScrollRestoration />
         <Scripts />
       </body>
     </html>

@@ -9,6 +9,7 @@ import {
 import { Card, CardContent } from "~/components/ui/card";
 import { H1 } from "~/components/ui/H1";
 import NavBar from "~/components/NavBar";
+import { Footer } from "~/components/Footer";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   return null;
@@ -17,10 +18,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export default function Index() {
   return (
     <div>
-      <NavBar /> {}
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <H1>Rust Piscine</H1>
-        <div className="w-full max-w-xl md:max-w-3xl h-96">
+      <NavBar />
+      <div className="flex flex-col items-center min-h-screen pt-4 pb-12">
+        <div className="w-full max-w-xl md:max-w-2xl h-96">
           <Carousel>
             <CarouselContent>
               {Array.from({ length: 5 }).map((_, index) => (
