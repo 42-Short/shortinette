@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+
+	"github.com/42-Short/shortinette/internal/logger"
 )
 
 func buildRepoURL(repo string) string {
@@ -97,7 +99,7 @@ func create(name string) error {
 	}
 
 	if exists {
-		fmt.Printf("repository %s already exists. Skipping creation\n", name)
+		logger.Info.Printf("repository %s already exists. Skipping creation\n", name)
 		return nil
 	}
 

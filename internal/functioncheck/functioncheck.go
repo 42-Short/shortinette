@@ -10,8 +10,9 @@ import (
 
 	"github.com/42-Short/shortinette/internal/datastructures"
 	"github.com/42-Short/shortinette/internal/errors"
-	"github.com/42-Short/shortinette/internal/templates"
 	"github.com/42-Short/shortinette/internal/git"
+	"github.com/42-Short/shortinette/internal/logger"
+	"github.com/42-Short/shortinette/internal/templates"
 )
 
 func initCompilingEnvironment(allowedItems datastructures.AllowedItems, exercise string) error {
@@ -157,7 +158,7 @@ func Execute(exerciseConfig datastructures.Exercise, repoId string) (err error) 
 		return handleCompileError(output)
 	}
 
-	fmt.Println("No forbidden items/keywords found")
+	logger.Info.Printf("no forbidden items/keywords found in %s", exerciseConfig.TurnInDirectory + "/" + exerciseConfig.TurnInFile)
 
 	return nil
 }

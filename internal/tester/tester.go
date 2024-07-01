@@ -4,17 +4,16 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
-	"time"
 
 	"github.com/42-Short/shortinette/internal/config"
 	"github.com/42-Short/shortinette/internal/datastructures"
 	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/internal/functioncheck"
 	"github.com/42-Short/shortinette/internal/git"
+	"github.com/42-Short/shortinette/internal/logger"
 )
 
 func compileProgram(directory, turnInFile string) error {
@@ -30,9 +29,10 @@ func compileWithRustc(dir string, turnInFile string) error {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		fmt.Println(err)
+		logger.Error.Println(err)
 		return errors.NewSubmissionError(errors.ErrInvalidCompilation, string(output))
 	}
+	logger.Info.Printf("%s/%s compiled with rustc\n", dir, turnInFile)
 	return nil
 }
 
@@ -42,8 +42,10 @@ func compileWithCargo(dir string) error {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
+		logger.Error.Println(err)
 		return errors.NewSubmissionError(errors.ErrInvalidCompilation, string(output))
 	}
+	logger.Info.Printf("%s/Cargo.toml compiled\n", dir)
 	return nil
 }
 
@@ -53,21 +55,22 @@ func compileWithRustcTestOption(dir string, turnInFile string) error {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
+		logger.Error.Println(err)
 		return errors.NewSubmissionError(errors.ErrInvalidCompilation, string(output))
 	}
-	fmt.Println("Compiled code with test option")
+	logger.Info.Printf("%s/%s compiled with rustc --test\n", dir, turnInFile)
 	return nil
 }
 
 func checkAssertions(output string, assertions datastructures.Test) error {
-    for _, assert := range assertions.AssertEq {
-        outputReplaced := strings.ReplaceAll(output, "\n", "\\n")
-        assertReplaced := strings.ReplaceAll(assert, "\n", "\\n")
-        if outputReplaced != assertReplaced {
-            return fmt.Errorf("assertion failed: expected '%s', got '%s'", assertReplaced, outputReplaced)
-        }
-    }
-    return nil
+	for _, assert := range assertions.AssertEq {
+		outputReplaced := strings.ReplaceAll(output, "\n", "\\n")
+		assertReplaced := strings.ReplaceAll(assert, "\n", "\\n")
+		if outputReplaced != assertReplaced {
+			return fmt.Errorf("assertion failed: expected '%s', got '%s'", assertReplaced, outputReplaced)
+		}
+	}
+	return nil
 }
 
 func runCode(executablePath string) (string, error) {
@@ -113,7 +116,7 @@ func prepareEnvironment(configFilePath string, repoId string, codeDirectory stri
 	if err := git.Get(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId), codeDirectory); err != nil {
 		return nil, nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to clone repository: %v", err))
 	}
-	if err := initializeLogger(repoId); err != nil {
+	if err := logger.InitializeTraceLogger(repoId); err != nil {
 		return nil, nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to initalize logging system: %v", err))
 	}
 	return conf, allowedItems, nil
@@ -162,18 +165,6 @@ func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string)
 	return nil
 }
 
-func initializeLogger(repoId string) error {
-	t := time.Now()
-	formattedTime := t.Format("20060102_150405")
-	fileName := fmt.Sprintf("logs/%s-%s.log", repoId, formattedTime)
-	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		return errors.NewInternalError(errors.ErrInternal, err.Error())
-	}
-	log.SetOutput(file)
-	return nil
-}
-
 func Run(configFilePath string, repoId string, codeDirectory string) (map[string]error, error) {
 	defer os.RemoveAll(codeDirectory)
 
@@ -184,19 +175,19 @@ func Run(configFilePath string, repoId string, codeDirectory string) (map[string
 
 	results := make(map[string]error)
 	for key, exercise := range conf.Exercises {
-		log.Printf("[%s]\n", key)
+		logger.File.Printf("[%s]\n", key)
 		if err := functioncheck.Execute(exercise, repoId); err != nil {
-			log.Println(err)
+			logger.File.Println(err)
 			results[key] = err
 			continue
 		}
 		if err := runTestsForExercise(exercise, codeDirectory); err != nil {
-			log.Println(err)
+			logger.File.Println(err)
 			results[key] = err
 			continue
 		}
 		results[key] = nil
-		log.Printf("[%s] passed\n", key)
+		logger.File.Printf("[%s] passed\n", key)
 	}
 	return results, nil
 }

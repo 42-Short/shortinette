@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+
+	"github.com/42-Short/shortinette/internal/logger"
 )
 
 func buildCollaboratorURL(repo, username string) string {
@@ -46,7 +48,7 @@ func sendRequest(request *http.Request) error {
 		return fmt.Errorf("could not add collaborator: %s", response.Status)
 	}
 
-	fmt.Println("collaborator added successfully")
+	logger.Info.Println("collaborator added successfully")
 	return nil
 }
 

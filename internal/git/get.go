@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/42-Short/shortinette/internal/errors"
+	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
@@ -63,7 +64,7 @@ func pullLatestChanges(repo *git.Repository) error {
 		return fmt.Errorf("could not pull repository: %w", err)
 	}
 
-	fmt.Println("repository pulled successfully")
+	logger.Info.Println("repository pulled successfully")
 	return nil
 }
 
