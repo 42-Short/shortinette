@@ -107,7 +107,7 @@ func prepareEnvironment(configFilePath string) (*datastructures.Config, map[stri
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get allowed items: %w", err)
 	}
-	
+
 	conf, err := config.GetConfig(configFilePath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get config: %w", err)
@@ -144,7 +144,7 @@ func runFunctionTests(exercise datastructures.Exercise, codeDirectory string, ex
 		return err
 	}
 	if output, err := runCode(executablePath); err != nil {
-		return errors.NewSubmissionError(errors.ErrFailedTests, output)
+		return errors.NewSubmissionError(errors.ErrInvalidOutput, output)
 	}
 	return nil
 }
@@ -176,7 +176,7 @@ func Run(configFilePath, studentLogin, codeDirectory string) error {
 		fmt.Println(err)
 	}
 
-	if err := git.Get(fmt.Sprintf("https://github.com/%s/%s.git",os.Getenv("GITHUB_ORGANISATION"), studentLogin), codeDirectory); err != nil {
+	if err := git.Get(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), studentLogin), codeDirectory); err != nil {
 		return fmt.Errorf("git clone failed: %w", err)
 	}
 
