@@ -1,5 +1,11 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "~/components/ui/carousel";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "~/components/ui/carousel";
 import { Card, CardContent } from "~/components/ui/card";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -7,7 +13,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Index() {
-      return (
+  return (
     <Carousel className="w-full max-w-xs">
       <CarouselContent>
         {Array.from({ length: 5 }).map((_, index) => (
@@ -25,5 +31,5 @@ export default function Index() {
       <CarouselPrevious />
       <CarouselNext />
     </Carousel>
-  )
+  );
 }
