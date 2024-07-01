@@ -60,12 +60,14 @@ func compileWithRustcTestOption(dir string, turnInFile string) error {
 }
 
 func checkAssertions(output string, assertions datastructures.Test) error {
-	for _, assert := range assertions.AssertEq {
-		if output != assert {
-			return fmt.Errorf("assertion failed: expected %s, got %s", assert, output)
-		}
-	}
-	return nil
+    for _, assert := range assertions.AssertEq {
+        outputReplaced := strings.ReplaceAll(output, "\n", "\\n")
+        assertReplaced := strings.ReplaceAll(assert, "\n", "\\n")
+        if outputReplaced != assertReplaced {
+            return fmt.Errorf("assertion failed: expected '%s', got '%s'", assertReplaced, outputReplaced)
+        }
+    }
+    return nil
 }
 
 func runCode(executablePath string) (string, error) {
@@ -150,11 +152,11 @@ func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string)
 
 	if exercise.Type == "program" {
 		if err := runProgramTests(exercise, studentCodeParentDir, executablePath); err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 	} else if exercise.Type == "function" {
 		if err := runFunctionTests(exercise, studentCodeParentDir, executablePath); err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 	}
 	return nil
@@ -163,7 +165,7 @@ func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string)
 func initializeLogger(repoId string) error {
 	t := time.Now()
 	formattedTime := t.Format("20060102_150405")
-	fileName := fmt.Sprintf("logs/%s-%s", repoId, formattedTime)
+	fileName := fmt.Sprintf("logs/%s-%s.log", repoId, formattedTime)
 	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		return errors.NewInternalError(errors.ErrInternal, err.Error())

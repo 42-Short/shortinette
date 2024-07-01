@@ -4,6 +4,8 @@ exercises:
     turn_in_directory: ex00
     turn_in_file: hello.rs
     allowed_items:
+      macros:
+        - println
       keywords:
         - keyword: unsafe
           amount: 0
