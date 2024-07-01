@@ -27,24 +27,9 @@ const navItems = [
     icon: Home,
   },
   {
-    label: "About",
+    label: "My Team",
     href: "/about",
     icon: Info,
-  },
-  {
-    label: "Announcements",
-    href: "/announcements",
-    icon: Info,
-  },
-  {
-    label: "Issues",
-    href: "/issues",
-    icon: TriangleAlert,
-  },
-  {
-    label: "Contact",
-    href: "/contact",
-    icon: MessageCircle,
   },
 ];
 
@@ -127,52 +112,3 @@ export default function NavBar() {
     </header>
   );
 }
-
-// import { NavLink } from "@remix-run/react";
-// import classNames from "classnames";
-// import { Handshake, HardHat, Info } from "lucide-react";
-
-// export function Header() {
-
-// 	return (
-// 		<header className="mt-2 border-b pb-2 px-2">
-// 			<nav className="flex flex-row justify-between items-center mx-2 md:mx-10">
-// 				<ul className="flex flex-row font-bold text-slate-600 space-x-3 md:space-x-5 ">
-// 					<li>
-// 						<NavLink
-// 							to="/about"
-// 							className={({ isActive, isPending }) =>
-// 								classNames({
-// 									"text-slate-600 hover:text-blue-600 transition-colors duration-300":
-// 										!isActive && !isPending,
-// 									"text-blue-600": isActive,
-// 									"text-blue-600 animate-pulse": isPending,
-// 								})
-// 							}
-// 						>
-// 							<Info className="size-5 mr-1" /> About
-// 						</NavLink>
-// 					</li>
-// 					<li>
-// 						<NavLink
-// 							to="/issues"
-// 							className={({ isActive, isPending }) =>
-// 								classNames({
-// 									"text-slate-600 hover:text-green-500 transition-colors duration-300":
-// 										!isActive && !isPending,
-// 									"text-green-500": isActive,
-// 									"text-green-500 animate-pulse": isPending,
-// 								})
-// 							}
-// 						>
-// 							<HardHat className="size-5 mr-1" />
-// 							Issues
-// 						</NavLink>
-// 					</li>
-// 				</ul>
-// 			</nav>
-// 		</header>
-// 	);
-// }
-
-// export default Header;
