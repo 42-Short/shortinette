@@ -10,8 +10,9 @@ import (
 
 	"github.com/42-Short/shortinette/internal/datastructures"
 	"github.com/42-Short/shortinette/internal/errors"
+	"github.com/42-Short/shortinette/internal/git"
+	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/templates"
-	"github.com/42-Short/shortinette/pkg/git"
 )
 
 func initCompilingEnvironment(allowedItems datastructures.AllowedItems, exercise string) error {
@@ -93,11 +94,10 @@ func setToSlice(forbiddenFunctionSet map[string]bool) []string {
 }
 
 func parseForbiddenFunctions(compilerOutput string) ([]string, error) {
-	re, err := regexp.Compile(`error: cannot find (function|macro) ` + `(\w+)` + ` in this scope`)
+	re, err := regexp.Compile(`error: cannot find (function|macro) ` + "`(\\w+)`" + ` in this scope`)
 	if err != nil {
 		return nil, fmt.Errorf("error compiling regex: %w", err)
 	}
-
 	matches := re.FindAllStringSubmatch(compilerOutput, -1)
 	if matches == nil {
 		return nil, fmt.Errorf("no forbidden functions found")
@@ -117,16 +117,16 @@ func parseForbiddenFunctions(compilerOutput string) ([]string, error) {
 func handleCompileError(output string) error {
 	usedForbiddenFunctions, parseErr := parseForbiddenFunctions(output)
 	if parseErr != nil {
-		return fmt.Errorf("could not parse forbidden functions: %w", parseErr)
+		return errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("could not parse forbidden functions: %s", parseErr))
 	} else if len(usedForbiddenFunctions) > 0 {
 		forbiddenFunctions := strings.Join(usedForbiddenFunctions, ", ")
 		return errors.NewSubmissionError(errors.ErrForbiddenItem, forbiddenFunctions)
 	} else {
-		return fmt.Errorf("could not compile code: %s", output)
+		return errors.NewSubmissionError(errors.ErrInvalidCompilation, output)
 	}
 }
 
-func Execute(exerciseConfig datastructures.Exercise) (err error) {
+func Execute(exerciseConfig datastructures.Exercise, repoId string) (err error) {
 	defer func() {
 		rmErr := os.RemoveAll("compile-environment/")
 		if rmErr != nil {
@@ -138,7 +138,7 @@ func Execute(exerciseConfig datastructures.Exercise) (err error) {
 		return err
 	}
 
-	if err = git.Get(fmt.Sprintf("https://github.com/%s/shortinette-test.git", os.Getenv("GITHUB_ORGANISATION")), "compile-environment/src/"); err != nil {
+	if err = git.Get(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId), "compile-environment/src/"); err != nil {
 		return err
 	}
 
@@ -158,7 +158,7 @@ func Execute(exerciseConfig datastructures.Exercise) (err error) {
 		return handleCompileError(output)
 	}
 
-	fmt.Println("No forbidden items/keywords found")
+	logger.Info.Printf("no forbidden items/keywords found in %s", exerciseConfig.TurnInDirectory + "/" + exerciseConfig.TurnInFile)
 
 	return nil
 }

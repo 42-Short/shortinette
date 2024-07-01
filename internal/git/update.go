@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+
+	"github.com/42-Short/shortinette/internal/logger"
 )
 
 func buildCollaboratorURL(repo, username string) string {
@@ -19,12 +21,12 @@ func createCollaboratorRequest(url, token, permission string) (*http.Request, er
 
 	collaboratorDetailsJSON, err := json.Marshal(collaboratorDetails)
 	if err != nil {
-		return nil, fmt.Errorf("could not marshal collaborator details: %w", err)
+		return nil, err
 	}
 
 	request, err := http.NewRequest("PUT", url, bytes.NewBuffer(collaboratorDetailsJSON))
 	if err != nil {
-		return nil, fmt.Errorf("could not create HTTP request: %w", err)
+		return nil, err
 	}
 
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
@@ -38,15 +40,15 @@ func sendRequest(request *http.Request) error {
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
-		return fmt.Errorf("error sending HTTP request: %w", err)
+		return err
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("failed to add collaborator: %s", response.Status)
+		return fmt.Errorf("could not add collaborator: %s", response.Status)
 	}
 
-	fmt.Println("Collaborator added successfully.")
+	logger.Info.Println("collaborator added successfully")
 	return nil
 }
 

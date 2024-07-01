@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/42-Short/shortinette/internal/errors"
+	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
@@ -13,8 +14,7 @@ import (
 func cloneRepository(repoURL, targetDir string) (*git.Repository, error) {
 
 	repo, err := git.PlainClone(targetDir, false, &git.CloneOptions{
-		URL:      repoURL,
-		Progress: os.Stdout,
+		URL: repoURL,
 		Auth: &http.BasicAuth{
 			Username: os.Getenv("GITHUB_USER"),
 			Password: os.Getenv("GITHUB_TOKEN"),
@@ -32,7 +32,7 @@ func cloneRepository(repoURL, targetDir string) (*git.Repository, error) {
 func openRepository(targetDir string) (*git.Repository, error) {
 	repo, err := git.PlainOpen(targetDir)
 	if err != nil {
-		return nil, fmt.Errorf("error opening repository in directory %s: %w", targetDir, err)
+		return nil, fmt.Errorf("could not open repository: %w", err)
 	}
 	return repo, nil
 }
@@ -44,10 +44,10 @@ func cloneOrOpen(repoURL, targetDir string) (*git.Repository, error) {
 	return openRepository(targetDir)
 }
 
-func pullLatestChanges(repo *git.Repository, targetDir string) error {
+func pullLatestChanges(repo *git.Repository) error {
 	worktree, err := repo.Worktree()
 	if err != nil {
-		return fmt.Errorf("error getting worktree for repository in directory %s: %w", targetDir, err)
+		return fmt.Errorf("could not get worktree: %w", err)
 	}
 
 	err = worktree.Pull(&git.PullOptions{
@@ -61,10 +61,10 @@ func pullLatestChanges(repo *git.Repository, targetDir string) error {
 	})
 
 	if err != nil && err != git.NoErrAlreadyUpToDate {
-		return fmt.Errorf("error pulling repository %s: %w", targetDir, err)
+		return fmt.Errorf("could not pull repository: %w", err)
 	}
 
-	fmt.Println("Repository pulled successfully.")
+	logger.Info.Println("repository pulled successfully")
 	return nil
 }
 
@@ -73,5 +73,5 @@ func get(repoURL, targetDir string) error {
 	if err != nil {
 		return err
 	}
-	return pullLatestChanges(repo, targetDir)
+	return pullLatestChanges(repo)
 }

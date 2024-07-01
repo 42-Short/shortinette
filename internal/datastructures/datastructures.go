@@ -6,24 +6,24 @@ type Test struct {
 }
 
 type AllowedItems struct {
-	Macros   	[]string 	 `yaml:"macros"`
-    Functions	[]string 	 `yaml:"functions"`
-    Keywords  	[]Keyword     `yaml:"keywords"`
+	Macros    []string  `yaml:"macros"`
+	Functions []string  `yaml:"functions"`
+	Keywords  []Keyword `yaml:"keywords"`
 }
 
 type Keyword struct {
 	Keyword string `yaml:"keyword"`
-	Amount int `yaml:"amount"`
+	Amount  int    `yaml:"amount"`
 }
 
 type Exercise struct {
-    TurnInDirectory   string       		`yaml:"turn_in_directory"`
-    TurnInFile        string       		`yaml:"turn_in_file"`
-    AllowedItems      AllowedItems 		`yaml:"allowed_items"`
-    Tests             Test         		`yaml:"tests"`
-    TestsPath         string       		`yaml:"tests_path,omitempty"`
-    Type              string       		`yaml:"type"`
-    DummyCall         string       		`yaml:"dummy_call,omitempty"`
+	TurnInDirectory string       `yaml:"turn_in_directory"`
+	TurnInFile      string       `yaml:"turn_in_file"`
+	AllowedItems    AllowedItems `yaml:"allowed_items"`
+	Tests           Test         `yaml:"tests"`
+	TestsPath       string       `yaml:"tests_path,omitempty"`
+	Type            string       `yaml:"type"`
+	DummyCall       string       `yaml:"dummy_call,omitempty"`
 }
 
 type Config struct {

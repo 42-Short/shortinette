@@ -13,3 +13,7 @@ website/
 # PACKAGES
 
 node_modules
+
+# LOGS
+
+logs/
