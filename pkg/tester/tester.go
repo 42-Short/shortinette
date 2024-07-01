@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
-	"log"
 
 	"github.com/42-Short/shortinette/internal/config"
 	"github.com/42-Short/shortinette/internal/datastructures"
@@ -103,14 +103,20 @@ func appendToFile(source string, dest string) error {
 	return nil
 }
 
-func prepareEnvironment(configFilePath string) (*datastructures.Config, map[string][]datastructures.AllowedItem, error) {
+func prepareEnvironment(configFilePath string, repoId string, codeDirectory string) (*datastructures.Config, map[string][]datastructures.AllowedItem, error) {
 	allowedItems, err := config.GetAllowedItems(configFilePath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to get allowed items: %w", err)
+		return nil, nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to get allowed items: %v", err))
 	}
 	conf, err := config.GetConfig(configFilePath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to get config: %w", err)
+		return nil, nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to get test configuration: %v", err))
+	}
+	if err := git.Get(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId), codeDirectory); err != nil {
+		return nil, nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to clone repository: %v", err))
+	}
+	if err := initializeLogger(repoId); err != nil {
+		return nil, nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to initalize logging system: %v", err))
 	}
 	return conf, allowedItems, nil
 }
@@ -162,21 +168,23 @@ func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string,
 	return nil
 }
 
-func Run(configFilePath string, repoId string, codeDirectory string) error {
-	defer os.RemoveAll(codeDirectory)
-
-	conf, _, err := prepareEnvironment(configFilePath)
-	if err != nil {
-		fmt.Println(err)
-	}
-	if err := git.Get(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId), codeDirectory); err != nil {
-		return fmt.Errorf("git clone failed: %w", err)
-	}
+func initializeLogger(repoId string) error {
 	file, err := os.OpenFile(fmt.Sprintf("logs/%s", repoId), os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		return errors.NewInternalError(errors.ErrInternal, err.Error())
 	}
 	log.SetOutput(file)
+	return nil
+}
+
+func Run(configFilePath string, repoId string, codeDirectory string) error {
+	defer os.RemoveAll(codeDirectory)
+
+	conf, _, err := prepareEnvironment(configFilePath, repoId, codeDirectory)
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	for key, exercise := range conf.Exercises {
 		log.Println(key)
 		if err := functioncheck.Execute(exercise, repoId); err != nil {
