@@ -10,7 +10,6 @@ import {
   useRouteError,
 } from "@remix-run/react";
 import stylesheet from "~/tailwind.css?url";
-import { Footer } from "./components/Footer";
 import NavBar from "./components/NavBar";
 import { H1 } from "./components/ui/H1";
 
@@ -40,7 +39,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body className="min-h-screen">
         {children}
 
-        <Footer />
         <ScrollRestoration />
         <Scripts />
       </body>
