@@ -175,19 +175,18 @@ func Run(configFilePath string, repoId string, codeDirectory string) (map[string
 
 	results := make(map[string]error)
 	for key, exercise := range conf.Exercises {
-		logger.File.Printf("[%s]\n", key)
 		if err := functioncheck.Execute(exercise, repoId); err != nil {
-			logger.File.Println(err)
+			logger.File.Printf("[%s] KO: %s", key, err)
 			results[key] = err
 			continue
 		}
 		if err := runTestsForExercise(exercise, codeDirectory); err != nil {
-			logger.File.Println(err)
+			logger.File.Printf("[%s] KO: %s", key, err)
 			results[key] = err
 			continue
 		}
 		results[key] = nil
-		logger.File.Printf("[%s] passed\n", key)
+		logger.File.Printf("[%s] OK\n", key)
 	}
 	return results, nil
 }
