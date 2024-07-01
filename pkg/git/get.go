@@ -14,7 +14,6 @@ func cloneRepository(repoURL, targetDir string) (*git.Repository, error) {
 
 	repo, err := git.PlainClone(targetDir, false, &git.CloneOptions{
 		URL:      repoURL,
-		Progress: os.Stdout,
 		Auth: &http.BasicAuth{
 			Username: os.Getenv("GITHUB_USER"),
 			Password: os.Getenv("GITHUB_TOKEN"),

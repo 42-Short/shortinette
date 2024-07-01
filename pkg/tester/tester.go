@@ -152,11 +152,11 @@ func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string)
 
 	if exercise.Type == "program" {
 		if err := runProgramTests(exercise, studentCodeParentDir, executablePath); err != nil {
-			log.Println(err)
+			return err
 		}
 	} else if exercise.Type == "function" {
 		if err := runFunctionTests(exercise, studentCodeParentDir, executablePath); err != nil {
-			log.Println(err)
+			return err
 		}
 	}
 	return nil
