@@ -11,13 +11,14 @@ import (
 func main() {
 	logger.InitializeStandardLoggers()
 	if err := utils.RequireEnv(); err != nil {
-		log.Fatalf(err.Error())
+		logger.Error.Println(err.Error())
+		return
 	}
 	if err := endpoints.CreateNewTeam("shortinette-test", "R00"); err != nil {
 		log.Fatalf("could not create team: %s", err)
 	}
 	if result, err := endpoints.TestSubmission("shortinette-test-R00", "testconfig/R00.yaml"); err != nil {
-		log.Fatalf("could not run tests: %s", err)
+		logger.Error.Println(err)
 	} else {
 		logger.Info.Printf("tests run successfully, results: %s", result)
 	}

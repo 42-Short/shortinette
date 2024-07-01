@@ -5,8 +5,6 @@ import (
 	"log"
 	"os"
 	"time"
-
-	"github.com/42-Short/shortinette/internal/errors"
 )
 
 var (
@@ -22,7 +20,7 @@ func InitializeTraceLogger(repoId string) error {
 
 	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
-		return errors.NewInternalError(errors.ErrInternal, err.Error())
+		return err
 	}
 	File = log.New(file, "", log.Ldate|log.Ltime)
 	return nil
