@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
 
@@ -22,29 +21,12 @@ func createNewTeam(githubLogin string, projectId string) (err error) {
 	return nil
 }
 
-func testSubmission(repoId string, testConfigPath string) (result string, err error) {
-	if err := tester.Run(testConfigPath, repoId, "studentcode"); err != nil {
-		var submissionErr *internalErrors.SubmissionError
-		if errors.As(err, &submissionErr) {
-			switch {
-			case errors.Is(submissionErr.Err, internalErrors.ErrEmptyRepo):
-				return "empty repository", nil
-			case errors.Is(submissionErr.Err, internalErrors.ErrForbiddenItem):
-				return "forbidden items used", nil
-			case errors.Is(submissionErr.Err, internalErrors.ErrInvalidOutput):
-				return "invalid output", nil
-			case errors.Is(submissionErr.Err, internalErrors.ErrInvalidCompilation):
-				return "invalid compilation", nil
-			case errors.Is(submissionErr.Err, internalErrors.ErrRuntime):
-				return "runtime error", nil
-			default:
-				return "", err
-			}
-		} else {
-			return "", err
-		}
+func testSubmission(repoId string, testConfigPath string) (result map[string]error, err error) {
+	result, err = tester.Run(testConfigPath, repoId, "studentcode")
+	if err != nil {
+		return nil, internalErrors.NewInternalError(internalErrors.ErrInternal, fmt.Sprintf("failed to run tests: %v", err))
 	}
-	return "success", nil
+	return result, nil
 }
 
 func main() {

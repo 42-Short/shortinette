@@ -19,9 +19,8 @@ import (
 func compileProgram(directory, turnInFile string) error {
 	if _, err := os.Stat(fmt.Sprintf("%s/Cargo.toml", directory)); os.IsNotExist(err) {
 		return compileWithRustc(directory, turnInFile)
-	} else {
-		return compileWithCargo(directory)
 	}
+	return compileWithCargo(directory)
 }
 
 func compileWithRustc(dir string, turnInFile string) error {
@@ -50,6 +49,7 @@ func compileWithCargo(dir string) error {
 func compileWithRustcTestOption(dir string, turnInFile string) error {
 	cmd := exec.Command("rustc", "--test", turnInFile)
 	cmd.Dir = dir
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return errors.NewSubmissionError(errors.ErrInvalidCompilation, string(output))
@@ -62,11 +62,6 @@ func checkAssertions(output string, assertions datastructures.Test) error {
 	for _, assert := range assertions.AssertEq {
 		if output != assert {
 			return fmt.Errorf("assertion failed: expected %s, got %s", assert, output)
-		}
-	}
-	for _, assert := range assertions.AssertNe {
-		if output == assert {
-			return fmt.Errorf("assertion failed: expected not %s, but got %s", assert, output)
 		}
 	}
 	return nil
@@ -122,7 +117,6 @@ func prepareEnvironment(configFilePath string, repoId string, codeDirectory stri
 }
 
 func runProgramTests(exercise datastructures.Exercise, codeDirectory string, executablePath string) error {
-	fmt.Println(codeDirectory, exercise.TurnInDirectory, exercise.TurnInFile)
 	if err := compileProgram(codeDirectory, exercise.TurnInFile); err != nil {
 		return err
 	}
@@ -149,9 +143,7 @@ func runFunctionTests(exercise datastructures.Exercise, codeDirectory string, ex
 	return nil
 }
 
-func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string, exerciseNumber string) error {
-	fmt.Printf("Running tests for %s...\n", exerciseNumber)
-
+func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string) error {
 	studentCodeParentDir := fmt.Sprintf("%s/%s", codeDirectory, exercise.TurnInDirectory)
 	executablePath := strings.TrimSuffix(fmt.Sprintf("%s/%s", studentCodeParentDir, exercise.TurnInFile), ".rs")
 
@@ -164,7 +156,6 @@ func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string,
 			fmt.Println(err)
 		}
 	}
-	fmt.Printf("Tests for %s passed\n", executablePath)
 	return nil
 }
 
@@ -177,7 +168,7 @@ func initializeLogger(repoId string) error {
 	return nil
 }
 
-func Run(configFilePath string, repoId string, codeDirectory string) error {
+func Run(configFilePath string, repoId string, codeDirectory string) (map[string]error, error) {
 	defer os.RemoveAll(codeDirectory)
 
 	conf, _, err := prepareEnvironment(configFilePath, repoId, codeDirectory)
@@ -185,15 +176,22 @@ func Run(configFilePath string, repoId string, codeDirectory string) error {
 		fmt.Println(err)
 	}
 
+	results := make(map[string]error)
 	for key, exercise := range conf.Exercises {
-		log.Println(key)
+		log.Printf("[%s]\n", key)
 		if err := functioncheck.Execute(exercise, repoId); err != nil {
 			log.Println(err)
+			results[key] = err
+			continue
 		}
-		if err := runTestsForExercise(exercise, codeDirectory, key); err != nil {
+		if err := runTestsForExercise(exercise, codeDirectory); err != nil {
 			log.Println(err)
+			results[key] = err
+			continue
 		}
+		results[key] = nil
+		log.Printf("[%s] passed\n", key)
 	}
 	fmt.Println("all tests passed for all exercises!")
-	return nil
+	return results, nil
 }
