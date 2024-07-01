@@ -4,12 +4,10 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 
-RUN npm install
+RUN npm cache clean --force && npm install
 
 COPY . .
 
-RUN npm run build
+EXPOSE 5173
 
-EXPOSE 3000
-
-CMD ["npm", "start"]
+CMD [ "npm", "run", "dev", "--", "--host", "0.0.0.0" ]

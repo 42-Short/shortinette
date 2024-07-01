@@ -1,47 +1,82 @@
-import { LoaderFunction, json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-
-import { Card, CardContent } from "@/components/ui/card";
+import { LinksFunction } from "@remix-run/node";
 import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+  Link,
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  isRouteErrorResponse,
+  useRouteError,
+} from "@remix-run/react";
+import stylesheet from "~/tailwind.css?url";
+import NavBar from "./components/NavBar";
+import { H1 } from "./components/ui/H1";
+import { Footer } from "./components/Footer";
 
-export const loader: LoaderFunction = async () => {
-  return json({ items: Array.from({ length: 5 }) });
+export const links: LinksFunction = () => {
+  return [
+    {
+      rel: "stylesheet",
+      href: stylesheet,
+    },
+    {
+      rel: "icon",
+      type: "image/x-icon",
+      href: "/favicon.ico",
+    },
+  ];
 };
 
-export default function Root() {
-  const data = useLoaderData() as { items: any[] };
+export function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className="h-full">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body className="flex flex-col min-h-screen">
+        <div className="flex-grow">{children}</div>
+        <Footer />
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
+export default function App() {
+  return <Outlet />;
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
 
   return (
-    <div>
-      <h1>Welcome to My Remix App</h1>
-      <Carousel
-        opts={{
-          align: "start",
-        }}
-        className="w-full max-w-sm"
-      >
-        <CarouselContent>
-          {data.items.map((_, index: number) => (
-            <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-              <div className="p-1">
-                <Card>
-                  <CardContent className="flex aspect-square items-center justify-center p-6">
-                    <span className="text-3xl font-semibold">{index + 1}</span>
-                  </CardContent>
-                </Card>
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
-      </Carousel>
-    </div>
+    <html>
+      <head>
+        <title>Oops!</title>
+        <Meta />
+        <Links />
+      </head>
+      <body className="flex flex-col min-h-screen">
+        <NavBar />
+        <div className="flex-grow p-4 flex items-center justify-center">
+          {isRouteErrorResponse(error) ? (
+            <div className="flex flex-col items-center">
+              <H1>{error.status}</H1>
+              <p className="text-xl">{error.statusText}</p>
+            </div>
+          ) : (
+            "Unknown Error"
+          )}
+        </div>
+        <Footer />
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
   );
 }
