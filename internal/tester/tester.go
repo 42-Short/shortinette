@@ -105,25 +105,21 @@ func appendToFile(source string, dest string) error {
 	return nil
 }
 
-func prepareEnvironment(configFilePath string, repoId string, codeDirectory string) (*datastructures.Config, map[string][]datastructures.AllowedItem, error) {
-	allowedItems, err := config.GetAllowedItems(configFilePath)
-	if err != nil {
-		return nil, nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to get allowed items: %v", err))
-	}
+func prepareEnvironment(configFilePath string, repoId string, codeDirectory string) (*datastructures.Config, error) {
 	conf, err := config.GetConfig(configFilePath)
 	if err != nil {
-		return nil, nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to get test configuration: %v", err))
+		return nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to get test configuration: %v", err))
 	}
 	if err := git.Get(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId), codeDirectory); err != nil {
-		return nil, nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to clone repository: %v", err))
+		return nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to clone repository: %v", err))
 	}
 	if err := logger.InitializeTraceLogger(repoId); err != nil {
-		return nil, nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to initalize logging system (%v), does the ./traces directory exist?", err))
+		return nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to initalize logging system (%v), does the ./traces directory exist?", err))
 	}
 	if err = git.Get(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId), "compile-environment/src/"); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	return conf, allowedItems, nil
+	return conf, nil
 }
 
 func runProgramTests(exercise datastructures.Exercise, codeDirectory string, executablePath string) error {
@@ -221,7 +217,7 @@ func Run(configFilePath string, repoId string, codeDirectory string) (results ma
 		}
 	}()
 
-	conf, _, err := prepareEnvironment(configFilePath, repoId, codeDirectory)
+	conf, err := prepareEnvironment(configFilePath, repoId, codeDirectory)
 	if err != nil {
 		return nil, err
 	}
