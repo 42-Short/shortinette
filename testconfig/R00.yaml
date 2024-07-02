@@ -57,6 +57,6 @@ exercises:
             - println
           functions:
             - bytes
-        tests_path: tests/R00/ex02/print_bytes.rs
+        main_path: tests/R00/ex02/print_bytes.rs
     
     
