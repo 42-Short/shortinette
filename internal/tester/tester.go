@@ -118,7 +118,7 @@ func prepareEnvironment(configFilePath string, repoId string, codeDirectory stri
 		return nil, nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to clone repository: %v", err))
 	}
 	if err := logger.InitializeTraceLogger(repoId); err != nil {
-		return nil, nil, fmt.Errorf("failed to initalize logging system (%v), does the ./traces directory exist?", err)
+		return nil, nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to initalize logging system (%v), does the ./traces directory exist?", err))
 	}
 	return conf, allowedItems, nil
 }
