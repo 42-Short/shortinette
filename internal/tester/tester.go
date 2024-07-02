@@ -75,14 +75,15 @@ func checkAssertions(output string, assertions datastructures.Test) error {
 
 func runCode(executablePath string) (string, error) {
 	cmd := exec.Command(executablePath)
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &out
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
-		return "", errors.NewSubmissionError(errors.ErrRuntime, err.Error())
+		return stderr.String(), errors.NewSubmissionError(errors.ErrRuntime, err.Error())
 	}
-	return out.String(), nil
+	return stdout.String(), nil
 }
 
 func appendToFile(source string, dest string) error {
