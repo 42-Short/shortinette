@@ -17,9 +17,9 @@ func main() {
 	if err := endpoints.CreateNewTeam("shortinette-test", "R00"); err != nil {
 		log.Fatalf("could not create team: %s", err)
 	}
-	if result, err := endpoints.TestSubmission("shortinette-test-R00", "testconfig/R00.yaml"); err != nil {
+	if _, err := endpoints.TestSubmission("shortinette-test-R00", "testconfig/R00.yaml"); err != nil {
 		logger.Error.Println(err)
 	} else {
-		logger.Info.Printf("tests run successfully, results: %s", result)
+		logger.Info.Printf("tests run successfully, results: ")
 	}
 }

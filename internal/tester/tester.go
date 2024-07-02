@@ -137,14 +137,26 @@ func runProgramTests(exercise datastructures.Exercise, codeDirectory string, exe
 }
 
 func runFunctionTests(exercise datastructures.Exercise, codeDirectory string, executablePath string) (err error) {
-	if err = appendToFile(exercise.TestsPath, fmt.Sprintf("%s/min.rs", codeDirectory)); err != nil {
-		return err
-	}
-	if err = compileWithRustcTestOption(codeDirectory, exercise.TurnInFile); err != nil {
-		return err
-	}
-	if output, err := runCode(executablePath); err != nil {
-		return errors.NewSubmissionError(errors.ErrInvalidOutput, output)
+	if exercise.TestsPath != "" {
+		if err = appendToFile(exercise.TestsPath, fmt.Sprintf("%s/%s", codeDirectory, exercise.TurnInFile)); err != nil {
+			return err
+		}
+		if err = compileWithRustcTestOption(codeDirectory, exercise.TurnInFile); err != nil {
+			return err
+		}
+		if output, err := runCode(executablePath); err != nil {
+			return errors.NewSubmissionError(errors.ErrInvalidOutput, output)
+		}
+	} else {
+		if err = appendToFile(exercise.MainPath, fmt.Sprintf("%s/%s", codeDirectory, exercise.TurnInFile)); err != nil {
+			return err
+		}
+		if err = compileWithRustc(codeDirectory, exercise.TurnInFile); err != nil {
+			return err
+		}
+		if output, err := runCode(executablePath); err != nil {
+			return errors.NewSubmissionError(errors.ErrInvalidOutput, output)
+		}
 	}
 	return nil
 }

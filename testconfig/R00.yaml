@@ -47,7 +47,7 @@ exercises:
             - println
           functions:
             - bytes
-        tests_path: tests/R00/ex02/collatz.rs
+        main_path: tests/R00/ex02/collatz.rs
       - type: function
         dummy_call: print_bytes("s")
         turn_in_directory: ex02
