@@ -84,25 +84,6 @@ func runCode(executablePath string) (string, error) {
 	return stdout.String(), nil
 }
 
-func appendToFile(source string, dest string) error {
-	sourceFile, err := os.Open(source)
-	if err != nil {
-		return err
-	}
-	defer sourceFile.Close()
-
-	destFile, err := os.OpenFile(dest, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		return err
-	}
-	defer destFile.Close()
-
-	if _, err = io.Copy(destFile, sourceFile); err != nil {
-		return err
-	}
-	return nil
-}
-
 func prepareEnvironment(configFilePath string, repoId string, codeDirectory string) (*datastructures.Config, error) {
 	conf, err := config.GetConfig(configFilePath)
 	if err != nil {

@@ -66,6 +66,14 @@ func (b *ModuleBuilderImpl) Build() Module {
 }
 
 func (b *ModuleBuilderImpl) Run() []testbuilder.Result {
+	defer func() {
+		if err := os.RemoveAll("compile-environment"); err != nil {
+			logger.Error.Printf("could not tear down testing environment: %v", err)
+		}
+		if err := os.RemoveAll("studentcode"); err != nil {
+			logger.Error.Printf("could not tear down testing environment: %v", err)
+		}
+	}()
 	var results []testbuilder.Result
 	if b.exercises != nil {
 		for _, exercise := range b.exercises {
