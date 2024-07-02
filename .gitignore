@@ -18,3 +18,7 @@ node_modules
 
 logs/
 traces/
+
+# LEGACY CODE
+
+legacy/
