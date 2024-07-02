@@ -16,7 +16,7 @@ var (
 func InitializeTraceLogger(repoId string) error {
 	t := time.Now()
 	formattedTime := t.Format("20060102_150405")
-	fileName := fmt.Sprintf("logs/%s-%s.log", repoId, formattedTime)
+	fileName := fmt.Sprintf("traces/%s-%s.log", repoId, formattedTime)
 
 	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
