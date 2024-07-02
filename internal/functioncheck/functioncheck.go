@@ -158,7 +158,7 @@ func Execute(exerciseConfig datastructures.Exercise, repoId string) (err error) 
 		return handleCompileError(output)
 	}
 
-	logger.Info.Printf("no forbidden items/keywords found in %s", exerciseConfig.TurnInDirectory + "/" + exerciseConfig.TurnInFile)
+	logger.Info.Printf("no forbidden items/keywords found in %s", exerciseConfig.TurnInDirectory+"/"+exerciseConfig.TurnInFile)
 
 	return nil
 }
