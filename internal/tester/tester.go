@@ -215,7 +215,11 @@ func tearDownTestingEnvironment(codeDirectory string) error {
 }
 
 func Run(configFilePath string, repoId string, codeDirectory string) (results map[string]error, err error) {
-	defer tearDownTestingEnvironment(codeDirectory)
+	defer func () {
+		if tearDownErr := tearDownTestingEnvironment(codeDirectory); tearDownErr != nil {
+			err = tearDownErr
+		}
+	}()
 
 	conf, _, err := prepareEnvironment(configFilePath, repoId, codeDirectory)
 	if err != nil {
