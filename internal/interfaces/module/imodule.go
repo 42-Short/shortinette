@@ -7,25 +7,25 @@ import (
 	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/internal/git"
 	"github.com/42-Short/shortinette/internal/logger"
-	"github.com/42-Short/shortinette/internal/testbuilder"
+	"github.com/42-Short/shortinette/internal/interfaces/exercise"
 )
 
 type Module struct {
 	Name      string
-	Exercises []testbuilder.TestBuilder
+	Exercises []exercisebuilder.ExerciseBuilder
 }
 
 type ModuleBuilder interface {
 	SetName(name string) ModuleBuilder
-	SetExercises(exercises []testbuilder.TestBuilder) ModuleBuilder
+	SetExercises(exercises []exercisebuilder.ExerciseBuilder) ModuleBuilder
 	SetUp(repoId string, codeDirectory string) error
 	Build() Module
-	Run() []testbuilder.Result
+	Run() []exercisebuilder.Result
 }
 
 type ModuleBuilderImpl struct {
 	name      string
-	exercises []testbuilder.TestBuilder
+	exercises []exercisebuilder.ExerciseBuilder
 }
 
 func NewModuleBuilder() ModuleBuilder {
@@ -37,7 +37,7 @@ func (b *ModuleBuilderImpl) SetName(name string) ModuleBuilder {
 	return b
 }
 
-func (b *ModuleBuilderImpl) SetExercises(exercises []testbuilder.TestBuilder) ModuleBuilder {
+func (b *ModuleBuilderImpl) SetExercises(exercises []exercisebuilder.ExerciseBuilder) ModuleBuilder {
 	b.exercises = exercises
 	return b
 }
@@ -65,7 +65,7 @@ func (b *ModuleBuilderImpl) Build() Module {
 	}
 }
 
-func (b *ModuleBuilderImpl) Run() []testbuilder.Result {
+func (b *ModuleBuilderImpl) Run() []exercisebuilder.Result {
 	defer func() {
 		if err := os.RemoveAll("compile-environment"); err != nil {
 			logger.Error.Printf("could not tear down testing environment: %v", err)
@@ -74,7 +74,7 @@ func (b *ModuleBuilderImpl) Run() []testbuilder.Result {
 			logger.Error.Printf("could not tear down testing environment: %v", err)
 		}
 	}()
-	var results []testbuilder.Result
+	var results []exercisebuilder.Result
 	if b.exercises != nil {
 		for _, exercise := range b.exercises {
 			res := exercise.Run()

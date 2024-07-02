@@ -11,10 +11,10 @@ import (
 	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/templates"
-	"github.com/42-Short/shortinette/internal/testbuilder"
+	"github.com/42-Short/shortinette/internal/interfaces/exercise"
 )
 
-func initCompilingEnvironment(test testbuilder.Test, exercise string) error {
+func initCompilingEnvironment(test exercisebuilder.Test, exercise string) error {
 	libFilePath := "compile-environment/allowedfunctions/src/lib.rs"
 	file, err := createFileWithDirs(libFilePath)
 	if err != nil {
@@ -126,7 +126,7 @@ func handleCompileError(output string) error {
 	}
 }
 
-func Execute(test testbuilder.Test, repoId string) (err error) {
+func Execute(test exercisebuilder.Test, repoId string) (err error) {
 	if err = initCompilingEnvironment(test, test.TurnInDirectory); err != nil {
 		return err
 	}

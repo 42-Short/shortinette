@@ -9,8 +9,8 @@ import (
 
 	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/internal/functioncheck"
+	exercisebuilder "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
-	"github.com/42-Short/shortinette/internal/testbuilder"
 )
 
 const CargoTest = `
@@ -79,7 +79,7 @@ func runCode(executablePath string) (string, error) {
 	return stdout.String(), nil
 }
 
-func ex01Test(test *testbuilder.Test) bool {
+func ex01Test(test *exercisebuilder.Test) bool {
 	if err := functioncheck.Execute(*test, "shortinette-test-R00"); err != nil {
 		logger.File.Printf("[%s KO]: %v", test.Name, err)
 		return false
@@ -102,8 +102,8 @@ func ex01Test(test *testbuilder.Test) bool {
 	return true
 }
 
-func ex01() testbuilder.TestBuilder {
-	return testbuilder.NewTestBuilder().
+func ex01() exercisebuilder.ExerciseBuilder {
+	return exercisebuilder.NewExerciseBuilder().
 		SetName("EX01").
 		SetTurnInDirectory("ex01").
 		SetTurnInFile("min.rs").

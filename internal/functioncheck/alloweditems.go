@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/42-Short/shortinette/internal/templates"
-	"github.com/42-Short/shortinette/internal/testbuilder"
+	"github.com/42-Short/shortinette/internal/interfaces/exercise"
 )
 
 func searchForKeyword(keywords map[string]int, word string) (keyword string, found bool) {
@@ -51,7 +51,7 @@ func scanStudentFile(scanner *bufio.Scanner, allowedKeywords map[string]int) (er
 	return nil
 }
 
-func lintStudentCode(exercisePath string, test testbuilder.Test) (err error) {
+func lintStudentCode(exercisePath string, test exercisebuilder.Test) (err error) {
 	file, err := os.Open(exercisePath)
 	if err != nil {
 		return fmt.Errorf("could not open %s: %w", exercisePath, err)
@@ -70,7 +70,7 @@ func writeTemplateToFile(template, itemName string, file *os.File) error {
 	return nil
 }
 
-func writeAllowedItemsLib(test testbuilder.Test, file *os.File, exercise string) error {
+func writeAllowedItemsLib(test exercisebuilder.Test, file *os.File, exercise string) error {
 	content := fmt.Sprintf(templates.AllowedItemsLibHeader, exercise)
 	if _, err := file.WriteString(content); err != nil {
 		return err
