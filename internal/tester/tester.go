@@ -75,14 +75,15 @@ func checkAssertions(output string, assertions datastructures.Test) error {
 
 func runCode(executablePath string) (string, error) {
 	cmd := exec.Command(executablePath)
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &out
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
-		return "", errors.NewSubmissionError(errors.ErrRuntime, err.Error())
+		return stderr.String(), errors.NewSubmissionError(errors.ErrRuntime, err.Error())
 	}
-	return out.String(), nil
+	return stdout.String(), nil
 }
 
 func appendToFile(source string, dest string) error {
@@ -117,7 +118,7 @@ func prepareEnvironment(configFilePath string, repoId string, codeDirectory stri
 		return nil, nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to clone repository: %v", err))
 	}
 	if err := logger.InitializeTraceLogger(repoId); err != nil {
-		return nil, nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to initalize logging system: %v", err))
+		return nil, nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to initalize logging system (%v), does the ./traces directory exist?", err))
 	}
 	return conf, allowedItems, nil
 }
@@ -136,11 +137,11 @@ func runProgramTests(exercise datastructures.Exercise, codeDirectory string, exe
 	return nil
 }
 
-func runFunctionTests(exercise datastructures.Exercise, codeDirectory string, executablePath string) (err error) {
-	if err = appendToFile(exercise.TestsPath, fmt.Sprintf("%s/min.rs", codeDirectory)); err != nil {
+func setUpAndRun(exercise datastructures.Exercise, codeDirectory string, executablePath string, testPath string, compilerOption func(string, string) error) error {
+	if err := appendToFile(testPath, fmt.Sprintf("%s/%s", codeDirectory, exercise.TurnInFile)); err != nil {
 		return err
 	}
-	if err = compileWithRustcTestOption(codeDirectory, exercise.TurnInFile); err != nil {
+	if err := compilerOption(codeDirectory, exercise.TurnInFile); err != nil {
 		return err
 	}
 	if output, err := runCode(executablePath); err != nil {
@@ -149,7 +150,20 @@ func runFunctionTests(exercise datastructures.Exercise, codeDirectory string, ex
 	return nil
 }
 
-func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string) error {
+func runFunctionTests(exercise datastructures.Exercise, codeDirectory string, executablePath string) error {
+	if exercise.TestsPath != "" {
+		if err := setUpAndRun(exercise, codeDirectory, executablePath, exercise.TestsPath, compileWithRustcTestOption); err != nil {
+			return err
+		}
+	} else {
+		if err := setUpAndRun(exercise, codeDirectory, executablePath, exercise.MainPath, compileWithRustc); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func assertExerciseOutput(exercise datastructures.Exercise, codeDirectory string) error {
 	studentCodeParentDir := fmt.Sprintf("%s/%s", codeDirectory, exercise.TurnInDirectory)
 	executablePath := strings.TrimSuffix(fmt.Sprintf("%s/%s", studentCodeParentDir, exercise.TurnInFile), ".rs")
 
@@ -165,6 +179,28 @@ func runTestsForExercise(exercise datastructures.Exercise, codeDirectory string)
 	return nil
 }
 
+func runTestsForExercise(results map[string]error, exerciseNumber string, subExerciseId string, exercise datastructures.Exercise, repoId string, codeDirectory string) error {
+	logPrefix := func() string {
+		if subExerciseId != "" {
+			return fmt.Sprintf("[%s](%s)", exerciseNumber, subExerciseId)
+		}
+		return fmt.Sprintf("[%s]", exerciseNumber)
+	}()
+	if err := functioncheck.Execute(exercise, repoId); err != nil {
+		logger.File.Printf("%s KO: %s", logPrefix, err)
+		results[logPrefix] = err
+		return err
+	}
+	if err := assertExerciseOutput(exercise, codeDirectory); err != nil {
+		logger.File.Printf("%s KO: %s", logPrefix, err)
+		results[logPrefix] = err
+		return err
+	}
+	results[logPrefix] = nil
+	logger.File.Printf("%s OK\n", logPrefix)
+	return nil
+}
+
 func Run(configFilePath string, repoId string, codeDirectory string) (map[string]error, error) {
 	defer os.RemoveAll(codeDirectory)
 
@@ -172,22 +208,24 @@ func Run(configFilePath string, repoId string, codeDirectory string) (map[string
 	if err != nil {
 		return nil, err
 	}
-
 	results := make(map[string]error)
 	for key, exercise := range conf.Exercises {
-		logger.File.Printf("[%s]\n", key)
-		if err := functioncheck.Execute(exercise, repoId); err != nil {
-			logger.File.Println(err)
-			results[key] = err
-			continue
+		if exercise.SubExercises != nil {
+			failed := false
+			for _, subexercise := range exercise.SubExercises {
+				if err := runTestsForExercise(results, key, subexercise.TurnInFile, subexercise, repoId, codeDirectory); err != nil {
+					failed = true
+					continue
+				}
+			}
+			if failed {
+				logger.File.Printf("[%s] KO\n", key)
+			}
+		} else {
+			if err = runTestsForExercise(results, key, "", exercise, repoId, codeDirectory); err != nil {
+				continue
+			}
 		}
-		if err := runTestsForExercise(exercise, codeDirectory); err != nil {
-			logger.File.Println(err)
-			results[key] = err
-			continue
-		}
-		results[key] = nil
-		logger.File.Printf("[%s] passed\n", key)
 	}
 	return results, nil
 }

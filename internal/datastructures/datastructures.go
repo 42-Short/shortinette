@@ -22,8 +22,10 @@ type Exercise struct {
 	AllowedItems    AllowedItems `yaml:"allowed_items"`
 	Tests           Test         `yaml:"tests"`
 	TestsPath       string       `yaml:"tests_path,omitempty"`
+	MainPath        string       `yaml:"main_path,omitempty"`
 	Type            string       `yaml:"type"`
 	DummyCall       string       `yaml:"dummy_call,omitempty"`
+	SubExercises    []Exercise   `yaml:"sub_exercises,omitempty"`
 }
 
 type Config struct {
