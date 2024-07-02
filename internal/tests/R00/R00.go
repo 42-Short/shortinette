@@ -1,8 +1,8 @@
 package R00
 
 import (
-	"github.com/42-Short/shortinette/internal/interfaces/exercise"
-	"github.com/42-Short/shortinette/internal/interfaces/module"
+	exercisebuilder "github.com/42-Short/shortinette/internal/interfaces/exercise"
+	modulebuilder "github.com/42-Short/shortinette/internal/interfaces/module"
 	"github.com/42-Short/shortinette/internal/logger"
 )
 
