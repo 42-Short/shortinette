@@ -100,7 +100,7 @@ func parseForbiddenFunctions(compilerOutput string) ([]string, error) {
 	}
 	matches := re.FindAllStringSubmatch(compilerOutput, -1)
 	if matches == nil {
-		return nil, fmt.Errorf("no forbidden functions found")
+		return nil, nil
 	}
 
 	forbiddenFunctionsSet := make(map[string]bool)
@@ -117,7 +117,7 @@ func parseForbiddenFunctions(compilerOutput string) ([]string, error) {
 func handleCompileError(output string) error {
 	usedForbiddenFunctions, parseErr := parseForbiddenFunctions(output)
 	if parseErr != nil {
-		return errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("could not parse forbidden functions: %s", parseErr))
+		return parseErr
 	} else if len(usedForbiddenFunctions) > 0 {
 		forbiddenFunctions := strings.Join(usedForbiddenFunctions, ", ")
 		return errors.NewSubmissionError(errors.ErrForbiddenItem, forbiddenFunctions)

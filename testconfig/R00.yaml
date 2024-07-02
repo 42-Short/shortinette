@@ -25,7 +25,7 @@ exercises:
           amount: 0
         - keyword: unsafe
           amount: 0
-    tests_path: tests/R00/ex01/tests.rs
+    tests_path: tests/R00/ex01/min.rs
   ex02:
     sub_exercises:
       - type: function
@@ -37,7 +37,7 @@ exercises:
             - println
           functions:
             - bytes
-        tests_path: tests/R00/ex02/tests.rs
+        tests_path: tests/R00/ex02/yes.rs
       - type: function
         dummy_call: collatz(10)
         turn_in_directory: ex02
@@ -47,7 +47,7 @@ exercises:
             - println
           functions:
             - bytes
-        tests_path: tests/R00/ex02/tests.rs
+        tests_path: tests/R00/ex02/collatz.rs
       - type: function
         dummy_call: print_bytes("s")
         turn_in_directory: ex02
@@ -57,6 +57,6 @@ exercises:
             - println
           functions:
             - bytes
-        tests_path: tests/R00/ex02/tests.rs
+        tests_path: tests/R00/ex02/print_bytes.rs
     
     
