@@ -76,7 +76,7 @@ func ex00() testbuilder.TestBuilder {
 		SetTurnInFile("hello.rs").
 		SetExerciseType("program").
 		SetPrototype("").
-		SetAllowedMacros(nil).
+		SetAllowedMacros([]string{"println"}).
 		SetAllowedFunctions(nil).
 		SetAllowedKeywords(map[string]int{"unsafe": 0}).
 		SetExecuter(ex00Test)

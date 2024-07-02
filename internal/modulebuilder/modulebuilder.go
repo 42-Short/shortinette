@@ -70,7 +70,6 @@ func (b *ModuleBuilderImpl) Run() []testbuilder.Result {
 	if b.exercises != nil {
 		for _, exercise := range b.exercises {
 			res := exercise.Run()
-			logger.File.Printf("[%s]: %t", exercise.Build().Name, res.Passed)
 			results = append(results, res)
 		}
 	}

@@ -8,7 +8,7 @@ type Test struct {
 	Name             string
 	TurnInDirectory  string
 	TurnInFile       string
-	Type             string
+	ExerciseType     string
 	Prototype        string
 	AllowedMacros    []string
 	AllowedFunctions []string
@@ -96,6 +96,8 @@ func (b *TestBuilderImpl) Build() Test {
 		Name:             b.name,
 		TurnInDirectory:  b.turnInDirectory,
 		TurnInFile:       b.turnInFile,
+		Prototype:        b.prototype,
+		ExerciseType:     b.exerciseType,
 		AllowedMacros:    b.allowedMacros,
 		AllowedFunctions: b.allowedFunctions,
 		AllowedKeywords:  b.allowedKeywords,

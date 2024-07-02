@@ -63,9 +63,10 @@ func prependHeadersToStudentCode(filePath, exerciseNumber string, exerciseType s
 	if _, err := tempFile.Write(originalContent); err != nil {
 		return fmt.Errorf("could not write original content to temp file: %w", err)
 	}
+
+	fmt.Println(exerciseType)
 	if exerciseType == "function" {
 		main := fmt.Sprintf(templates.DummyMain, dummyCall)
-
 		if _, err := tempFile.Write([]byte(main)); err != nil {
 			return fmt.Errorf("could not write dummy main to temp file: %w", err)
 		}
@@ -136,7 +137,7 @@ func Execute(test testbuilder.Test, repoId string) (err error) {
 		return err
 	}
 
-	err = prependHeadersToStudentCode(exercisePath, test.TurnInDirectory, test.Type, test.Prototype)
+	err = prependHeadersToStudentCode(exercisePath, test.TurnInDirectory, test.ExerciseType, test.Prototype)
 	if err != nil {
 		return err
 	}
