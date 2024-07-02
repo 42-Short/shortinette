@@ -10,7 +10,6 @@ import (
 
 	"github.com/42-Short/shortinette/internal/datastructures"
 	"github.com/42-Short/shortinette/internal/errors"
-	"github.com/42-Short/shortinette/internal/git"
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/templates"
 )
@@ -127,18 +126,7 @@ func handleCompileError(output string) error {
 }
 
 func Execute(exerciseConfig datastructures.Exercise, repoId string) (err error) {
-	defer func() {
-		rmErr := os.RemoveAll("compile-environment/")
-		if rmErr != nil {
-			err = fmt.Errorf("failed to remove compile environment: %w", rmErr)
-		}
-	}()
-
 	if err = initCompilingEnvironment(exerciseConfig.AllowedItems, exerciseConfig.TurnInDirectory); err != nil {
-		return err
-	}
-
-	if err = git.Get(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId), "compile-environment/src/"); err != nil {
 		return err
 	}
 
