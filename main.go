@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/42-Short/shortinette/internal/logger"
+	"github.com/42-Short/shortinette/internal/tests/R00"
 	"github.com/42-Short/shortinette/internal/utils"
-	"github.com/42-Short/shortinette/internal/tests"
 )
 
 func main() {
@@ -21,5 +21,5 @@ func main() {
 	// 	logger.Info.Printf("tests run successfully, results: ")
 	// }
 	R00.R00("shortinette-test-R00", "studentcode")
-	
+
 }

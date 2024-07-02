@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/42-Short/shortinette/internal/errors"
+	"github.com/42-Short/shortinette/internal/functioncheck"
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/testbuilder"
-	"github.com/42-Short/shortinette/internal/modulebuilder"
 )
 
 func ex00Compile(test *testbuilder.Test) error {
@@ -46,6 +46,10 @@ func assertionErrorString(testName string, expected string, got string) string {
 }
 
 func ex00Test(test *testbuilder.Test) bool {
+	if err := functioncheck.Execute(*test, "shortinette-test-R00"); err != nil {
+		logger.File.Printf("[%s KO]: %v", test.Name, err)
+		return false
+	}
 	if err := ex00Compile(test); err != nil {
 		logger.File.Printf("[%s KO]: %v", test.Name, err)
 		return false
@@ -70,16 +74,10 @@ func ex00() testbuilder.TestBuilder {
 		SetName("EX00").
 		SetTurnInDirectory("ex00").
 		SetTurnInFile("hello.rs").
-		SetAllowedMacros([]string{"println"}).
+		SetExerciseType("program").
+		SetPrototype("").
+		SetAllowedMacros(nil).
 		SetAllowedFunctions(nil).
 		SetAllowedKeywords(map[string]int{"unsafe": 0}).
 		SetExecuter(ex00Test)
-}
-
-func R00(repoId string, codeDirectory string) {
-	r00 := modulebuilder.NewModuleBuilder().
-		SetName("R00").
-		SetExercises([]testbuilder.TestBuilder{ex00()})
-	r00.SetUp(repoId, codeDirectory)
-	r00.Run()
 }

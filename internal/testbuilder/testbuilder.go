@@ -8,17 +8,20 @@ type Test struct {
 	Name             string
 	TurnInDirectory  string
 	TurnInFile       string
+	Type             string
+	Prototype        string
 	AllowedMacros    []string
 	AllowedFunctions []string
 	AllowedKeywords  map[string]int
 	Executer         func(test *Test) bool
-	Result           Result
 }
 
 type TestBuilder interface {
 	SetName(name string) TestBuilder
 	SetTurnInDirectory(turnInDirectory string) TestBuilder
 	SetTurnInFile(turnInFile string) TestBuilder
+	SetExerciseType(exerciseType string) TestBuilder
+	SetPrototype(prototype string) TestBuilder
 	SetAllowedMacros(allowedMacros []string) TestBuilder
 	SetAllowedFunctions(allowedFunctions []string) TestBuilder
 	SetAllowedKeywords(allowedKeywords map[string]int) TestBuilder
@@ -31,10 +34,11 @@ type TestBuilderImpl struct {
 	name             string
 	turnInDirectory  string
 	turnInFile       string
+	exerciseType     string
+	prototype        string
 	allowedMacros    []string
 	allowedFunctions []string
 	allowedKeywords  map[string]int
-	result           Result
 	executer         func(test *Test) bool
 }
 
@@ -54,6 +58,16 @@ func (b *TestBuilderImpl) SetTurnInDirectory(turnInDirectory string) TestBuilder
 
 func (b *TestBuilderImpl) SetTurnInFile(turnInFile string) TestBuilder {
 	b.turnInFile = turnInFile
+	return b
+}
+
+func (b *TestBuilderImpl) SetExerciseType(exerciseType string) TestBuilder {
+	b.exerciseType = exerciseType
+	return b
+}
+
+func (b *TestBuilderImpl) SetPrototype(prototype string) TestBuilder {
+	b.prototype = prototype
 	return b
 }
 

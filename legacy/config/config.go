@@ -5,7 +5,6 @@ import (
 	"io"
 	"os"
 
-	"github.com/42-Short/shortinette/internal/datastructures"
 	"gopkg.in/yaml.v2"
 )
 
