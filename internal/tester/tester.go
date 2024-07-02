@@ -62,13 +62,11 @@ func compileWithRustcTestOption(dir string, turnInFile string) error {
 	return nil
 }
 
-func checkAssertions(output string, assertions datastructures.Test) error {
-	for _, assert := range assertions.AssertEq {
-		outputReplaced := strings.ReplaceAll(output, "\n", "\\n")
-		assertReplaced := strings.ReplaceAll(assert, "\n", "\\n")
-		if outputReplaced != assertReplaced {
-			return fmt.Errorf("assertion failed: expected '%s', got '%s'", assertReplaced, outputReplaced)
-		}
+func checkAssertions(output string, expectedOuput string) error {
+	outputReplaced := strings.ReplaceAll(output, "\n", "\\n")
+	assertReplaced := strings.ReplaceAll(expectedOuput, "\n", "\\n")
+	if outputReplaced != assertReplaced {
+		return fmt.Errorf("assertion failed: expected '%s', got '%s'", assertReplaced, outputReplaced)
 	}
 	return nil
 }
@@ -130,7 +128,7 @@ func runProgramTests(exercise datastructures.Exercise, codeDirectory string, exe
 	if err != nil {
 		return err
 	}
-	if err := checkAssertions(output, exercise.Tests); err != nil {
+	if err := checkAssertions(output, exercise.AssertEq); err != nil {
 		return err
 	}
 	return nil
@@ -211,7 +209,7 @@ func tearDownTestingEnvironment(codeDirectory string) error {
 }
 
 func Run(configFilePath string, repoId string, codeDirectory string) (results map[string]error, err error) {
-	defer func () {
+	defer func() {
 		if tearDownErr := tearDownTestingEnvironment(codeDirectory); tearDownErr != nil {
 			err = tearDownErr
 		}
