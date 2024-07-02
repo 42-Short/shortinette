@@ -120,6 +120,9 @@ func prepareEnvironment(configFilePath string, repoId string, codeDirectory stri
 	if err := logger.InitializeTraceLogger(repoId); err != nil {
 		return nil, nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to initalize logging system (%v), does the ./traces directory exist?", err))
 	}
+	if err = git.Get(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId), "compile-environment/src/"); err != nil {
+		return nil, nil, err
+	}
 	return conf, allowedItems, nil
 }
 
@@ -201,14 +204,24 @@ func runTestsForExercise(results map[string]error, exerciseNumber string, subExe
 	return nil
 }
 
-func Run(configFilePath string, repoId string, codeDirectory string) (map[string]error, error) {
-	defer os.RemoveAll(codeDirectory)
+func tearDownTestingEnvironment(codeDirectory string) error {
+	if err := os.RemoveAll("compile-environment/"); err != nil {
+		return fmt.Errorf("failed to tear down testing environment: %w", err)
+	}
+	if err := os.RemoveAll(codeDirectory); err != nil {
+		return fmt.Errorf("failed to tear down testing environment: %w", err)
+	}
+	return nil
+}
+
+func Run(configFilePath string, repoId string, codeDirectory string) (results map[string]error, err error) {
+	defer tearDownTestingEnvironment(codeDirectory)
 
 	conf, _, err := prepareEnvironment(configFilePath, repoId, codeDirectory)
 	if err != nil {
 		return nil, err
 	}
-	results := make(map[string]error)
+	results = make(map[string]error)
 	for key, exercise := range conf.Exercises {
 		if exercise.SubExercises != nil {
 			failed := false
