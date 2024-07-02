@@ -114,9 +114,7 @@ func prepareEnvironment(configFilePath string, repoId string, codeDirectory stri
 	if err := logger.InitializeTraceLogger(repoId); err != nil {
 		return nil, errors.NewInternalError(errors.ErrInternal, fmt.Sprintf("failed to initalize logging system (%v), does the ./traces directory exist?", err))
 	}
-	if err = git.Get(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId), "compile-environment/src/"); err != nil {
-		return nil, err
-	}
+
 	return conf, nil
 }
 
