@@ -7,7 +7,7 @@ import (
 
 	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/internal/functioncheck"
-	IExercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
+	Exercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/tests/testutils"
 )
@@ -52,7 +52,7 @@ func compileWithRustcTestOption(dir string, turnInFile string) error {
 	return nil
 }
 
-func ex01Test(test *IExercise.Exercise) bool {
+func ex01Test(test *Exercise.Exercise) bool {
 	if err := functioncheck.Execute(*test, "shortinette-test-R00"); err != nil {
 		logger.File.Printf("[%s KO]: %v", test.Name, err)
 		return false
@@ -75,15 +75,6 @@ func ex01Test(test *IExercise.Exercise) bool {
 	return true
 }
 
-func ex01() IExercise.ExerciseBuilder {
-	return IExercise.NewExerciseBuilder().
-		SetName("EX01").
-		SetTurnInDirectory("ex01").
-		SetTurnInFile("min.rs").
-		SetExerciseType("function").
-		SetPrototype("min(0, 0)").
-		SetAllowedMacros([]string{"println"}).
-		SetAllowedFunctions(nil).
-		SetAllowedKeywords(map[string]int{"unsafe": 0}).
-		SetExecuter(ex01Test)
+func ex01() Exercise.Exercise {
+	return Exercise.NewExercise("EX01", "ex01", "min.rs", "function", "min(0, 0)", []string{"println"}, nil, map[string]int{"unsafe": 0}, ex01Test)
 }

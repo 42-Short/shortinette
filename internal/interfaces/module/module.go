@@ -1,4 +1,4 @@
-package IModule
+package Module
 
 import (
 	"fmt"
@@ -6,44 +6,29 @@ import (
 
 	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/internal/git"
+	Exercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
-	"github.com/42-Short/shortinette/internal/interfaces/exercise"
 )
 
 type Module struct {
 	Name      string
-	Exercises []IExercise.ExerciseBuilder
+	Exercises []Exercise.Exercise
 	// duration
 }
 
-type ModuleBuilder interface {
-	SetName(name string) ModuleBuilder
-	SetExercises(exercises []IExercise.ExerciseBuilder) ModuleBuilder
-	SetUp(repoId string, codeDirectory string) error
-	Build() Module
-	Run() []IExercise.Result
+// NewModule initializes and returns a Module struct
+func NewModule(name string, exercises []Exercise.Exercise, repoId string, testDirectory string) (Module, error) {
+	if err := setUpEnvironment(repoId, testDirectory); err != nil {
+		return Module{}, err
+	}
+
+	return Module{
+		Name:      name,
+		Exercises: exercises,
+	}, nil
 }
 
-type ModuleBuilderImpl struct {
-	name      string
-	exercises []IExercise.ExerciseBuilder
-}
-
-func NewModuleBuilder() ModuleBuilder {
-	return &ModuleBuilderImpl{}
-}
-
-func (b *ModuleBuilderImpl) SetName(name string) ModuleBuilder {
-	b.name = name
-	return b
-}
-
-func (b *ModuleBuilderImpl) SetExercises(exercises []IExercise.ExerciseBuilder) ModuleBuilder {
-	b.exercises = exercises
-	return b
-}
-
-func (b *ModuleBuilderImpl) SetUp(repoId string, testDirectory string) error {
+func setUpEnvironment(repoId string, testDirectory string) error {
 	repoLink := fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId)
 	if err := git.Get(repoLink, testDirectory); err != nil {
 		errorMessage := fmt.Sprintf("failed to clone repository: %v", err)
@@ -59,14 +44,8 @@ func (b *ModuleBuilderImpl) SetUp(repoId string, testDirectory string) error {
 	return nil
 }
 
-func (b *ModuleBuilderImpl) Build() Module {
-	return Module{
-		Name:      b.name,
-		Exercises: b.exercises,
-	}
-}
-
-func (b *ModuleBuilderImpl) Run() []IExercise.Result {
+// Run executes the exercises and returns the results
+func (m *Module) Run() []Exercise.Result {
 	defer func() {
 		if err := os.RemoveAll("compile-environment"); err != nil {
 			logger.Error.Printf("could not tear down testing environment: %v", err)
@@ -75,9 +54,9 @@ func (b *ModuleBuilderImpl) Run() []IExercise.Result {
 			logger.Error.Printf("could not tear down testing environment: %v", err)
 		}
 	}()
-	var results []IExercise.Result
-	if b.exercises != nil {
-		for _, exercise := range b.exercises {
+	var results []Exercise.Result
+	if m.Exercises != nil {
+		for _, exercise := range m.Exercises {
 			res := exercise.Run()
 			results = append(results, res)
 		}

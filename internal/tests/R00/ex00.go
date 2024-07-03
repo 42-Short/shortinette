@@ -8,11 +8,11 @@ import (
 
 	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/internal/functioncheck"
-	IExercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
+	Exercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
 )
 
-func ex00Compile(test *IExercise.Exercise) error {
+func ex00Compile(test *Exercise.Exercise) error {
 	cmd := exec.Command("rustc", test.TurnInFile)
 	cmd.Dir = fmt.Sprintf("studentcode/%s/", test.TurnInDirectory)
 
@@ -45,7 +45,7 @@ func assertionErrorString(testName string, expected string, got string) string {
 	return fmt.Sprintf("[%s KO]: %v", testName, outputComparison)
 }
 
-func ex00Test(test *IExercise.Exercise) bool {
+func ex00Test(test *Exercise.Exercise) bool {
 	if err := functioncheck.Execute(*test, "shortinette-test-R00"); err != nil {
 		logger.File.Printf("[%s KO]: %v", test.Name, err)
 		return false
@@ -69,15 +69,6 @@ func ex00Test(test *IExercise.Exercise) bool {
 	return true
 }
 
-func ex00() IExercise.ExerciseBuilder {
-	return IExercise.NewExerciseBuilder().
-		SetName("EX00").
-		SetTurnInDirectory("ex00").
-		SetTurnInFile("hello.rs").
-		SetExerciseType("program").
-		SetPrototype("").
-		SetAllowedMacros([]string{"println"}).
-		SetAllowedFunctions(nil).
-		SetAllowedKeywords(map[string]int{"unsafe": 0}).
-		SetExecuter(ex00Test)
+func ex00() Exercise.Exercise {
+	return Exercise.NewExercise("EX00", "ex00", "hello.rs", "program", "", []string{"println"}, nil, map[string]int{"unsafe": 0}, ex00Test)
 }

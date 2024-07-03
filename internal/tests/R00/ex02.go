@@ -3,6 +3,7 @@ package R00
 import (
 	"time"
 
+	Exercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	IExercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/tests/testutils"
@@ -14,21 +15,12 @@ fn main() {
 }
 `
 
-func yesBuilder() IExercise.ExerciseBuilder {
-	return IExercise.NewExerciseBuilder().
-		SetName("EX02").
-		SetTurnInDirectory("ex02").
-		SetTurnInFile("yes.rs").
-		SetExerciseType("function").
-		SetPrototype("yes()").
-		SetAllowedMacros([]string{"println"}).
-		SetAllowedFunctions(nil).
-		SetAllowedKeywords(nil).
-		SetExecuter(nil)
+func yesBuilder() Exercise.Exercise {
+	return IExercise.NewExercise("EX02", "ex02", "yes.rs", "function", "yes()", []string{"println"}, nil, nil, nil)
 }
 
 func yes() bool {
-	exercise := yesBuilder().Build()
+	exercise := yesBuilder()
 	fullTurnInFilePath := testutils.FullTurnInFilePath("studentcode", exercise)
 	if err := testutils.AppendStringToFile(YesMain, fullTurnInFilePath); err != nil {
 		logger.Error.Printf("internal error: %v", err)
@@ -58,15 +50,6 @@ func ex02Test(exercise *IExercise.Exercise) bool {
 	return false
 }
 
-func ex02() IExercise.ExerciseBuilder {
-	return IExercise.NewExerciseBuilder().
-		SetName("EX02").
-		SetTurnInDirectory("ex02").
-		SetTurnInFile("").
-		SetExerciseType("").
-		SetPrototype("").
-		SetAllowedMacros(nil).
-		SetAllowedFunctions(nil).
-		SetAllowedKeywords(nil).
-		SetExecuter(ex02Test)
+func ex02() Exercise.Exercise {
+	return IExercise.NewExercise("EX02", "ex02", "", "", "", nil, nil, nil, ex02Test)
 }
