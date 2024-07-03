@@ -13,6 +13,7 @@ import (
 type Module struct {
 	Name      string
 	Exercises []IExercise.ExerciseBuilder
+	// duration
 }
 
 type ModuleBuilder interface {

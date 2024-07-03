@@ -9,12 +9,12 @@ import (
 	"strings"
 
 	"github.com/42-Short/shortinette/internal/errors"
+	IExercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/templates"
-	"github.com/42-Short/shortinette/internal/interfaces/exercise"
 )
 
-func initCompilingEnvironment(test exercisebuilder.Test, exercise string) error {
+func initCompilingEnvironment(test IExercise.Exercise, exercise string) error {
 	libFilePath := "compile-environment/allowedfunctions/src/lib.rs"
 	file, err := createFileWithDirs(libFilePath)
 	if err != nil {
@@ -64,7 +64,6 @@ func prependHeadersToStudentCode(filePath, exerciseNumber string, exerciseType s
 		return fmt.Errorf("could not write original content to temp file: %w", err)
 	}
 
-	fmt.Println(exerciseType)
 	if exerciseType == "function" {
 		main := fmt.Sprintf(templates.DummyMain, dummyCall)
 		if _, err := tempFile.Write([]byte(main)); err != nil {
@@ -126,7 +125,7 @@ func handleCompileError(output string) error {
 	}
 }
 
-func Execute(test exercisebuilder.Test, repoId string) (err error) {
+func Execute(test IExercise.Exercise, repoId string) (err error) {
 	if err = initCompilingEnvironment(test, test.TurnInDirectory); err != nil {
 		return err
 	}
