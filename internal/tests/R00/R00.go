@@ -9,7 +9,7 @@ import (
 func R00(repoId string, codeDirectory string) {
 	r00 := modulebuilder.NewModuleBuilder().
 		SetName("R00").
-		SetExercises([]exercisebuilder.ExerciseBuilder{ex00(), ex01()})
+		SetExercises([]exercisebuilder.ExerciseBuilder{ex00(), ex01(), ex02()})
 	if err := r00.SetUp(repoId, codeDirectory); err != nil {
 		logger.Error.Printf("internal error: %v", err)
 	}
