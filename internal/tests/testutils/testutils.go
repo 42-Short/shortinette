@@ -47,7 +47,9 @@ func WithTimeout(d time.Duration) RunCodeOption {
 		go func() {
 			<-ctx.Done()
 			if ctx.Err() == context.DeadlineExceeded {
-				syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+				if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL); err != nil {
+					return
+				}
 			}
 			cancel()
 		}()
