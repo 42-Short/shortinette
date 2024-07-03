@@ -10,6 +10,7 @@ import (
 	"github.com/42-Short/shortinette/internal/functioncheck"
 	Exercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
+	"github.com/42-Short/shortinette/internal/tests/testutils"
 )
 
 func ex00Compile(test *Exercise.Exercise) error {
@@ -38,13 +39,6 @@ func runExecutable(executablePath string) (string, error) {
 	return stdout.String(), nil
 }
 
-func assertionErrorString(testName string, expected string, got string) string {
-	expectedReplaced := strings.ReplaceAll(expected, "\n", "\\n")
-	gotReplaced := strings.ReplaceAll(got, "\n", "\\n")
-	outputComparison := fmt.Sprintf("invalid output: expected '%s', got '%s'", expectedReplaced, gotReplaced)
-	return fmt.Sprintf("[%s KO]: %v", testName, outputComparison)
-}
-
 func ex00Test(test *Exercise.Exercise) bool {
 	if err := functioncheck.Execute(*test, "shortinette-test-R00"); err != nil {
 		logger.File.Printf("[%s KO]: %v", test.Name, err)
@@ -62,7 +56,7 @@ func ex00Test(test *Exercise.Exercise) bool {
 		return false
 	}
 	if output != "Hello, World!\n" {
-		logger.File.Printf(assertionErrorString(test.Name, "Hello, World\n", output))
+		logger.File.Printf(testutils.AssertionErrorString(test.Name, "Hello, World\n", output))
 		return false
 	}
 	logger.File.Printf("[%s OK]", test.Name)

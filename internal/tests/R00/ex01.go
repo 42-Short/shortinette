@@ -52,26 +52,26 @@ func compileWithRustcTestOption(dir string, turnInFile string) error {
 	return nil
 }
 
-func ex01Test(test *Exercise.Exercise) bool {
-	if err := functioncheck.Execute(*test, "shortinette-test-R00"); err != nil {
-		logger.File.Printf("[%s KO]: %v", test.Name, err)
+func ex01Test(exercise *Exercise.Exercise) bool {
+	if err := functioncheck.Execute(*exercise, "shortinette-test-R00"); err != nil {
+		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
 		return false
 	}
-	filePath := fmt.Sprintf("studentcode/%s/%s", test.TurnInDirectory, test.TurnInFile)
+	filePath := fmt.Sprintf("studentcode/%s/%s", exercise.TurnInDirectory, exercise.TurnInFile)
 	if err := testutils.AppendStringToFile(CargoTest, filePath); err != nil {
 		logger.Error.Printf("could not write to %s: %v", filePath, err)
 		logger.File.Printf("internal error: could not write to %s: %v", filePath, err)
 		return false
 	}
-	turnInDirectory := fmt.Sprintf("studentcode/%s", test.TurnInDirectory)
-	if err := compileWithRustcTestOption(turnInDirectory, test.TurnInFile); err != nil {
-		logger.File.Printf("[%s KO]: invalid compilation: %v", test.Name, err)
+	turnInDirectory := fmt.Sprintf("studentcode/%s", exercise.TurnInDirectory)
+	if err := compileWithRustcTestOption(turnInDirectory, exercise.TurnInFile); err != nil {
+		logger.File.Printf("[%s KO]: invalid compilation: %v", exercise.Name, err)
 		return false
 	}
 	if output, err := testutils.RunCode(strings.TrimSuffix(filePath, ".rs")); err != nil {
-		logger.File.Printf("[%s KO]: invalid output: %v", test.Name, output)
+		logger.File.Printf("[%s KO]: invalid output: %v", exercise.Name, output)
 	}
-	logger.File.Printf("[%s OK]", test.Name)
+	logger.File.Printf("[%s OK]", exercise.Name)
 	return true
 }
 
