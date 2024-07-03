@@ -1,10 +1,10 @@
-package exercisebuilder
+package IExercise
 
 type Result struct {
 	Passed bool
 }
 
-type Test struct {
+type Exercise struct {
 	Name             string
 	TurnInDirectory  string
 	TurnInFile       string
@@ -13,7 +13,7 @@ type Test struct {
 	AllowedMacros    []string
 	AllowedFunctions []string
 	AllowedKeywords  map[string]int
-	Executer         func(test *Test) bool
+	Executer         func(test *Exercise) bool
 }
 
 type ExerciseBuilder interface {
@@ -25,8 +25,8 @@ type ExerciseBuilder interface {
 	SetAllowedMacros(allowedMacros []string) ExerciseBuilder
 	SetAllowedFunctions(allowedFunctions []string) ExerciseBuilder
 	SetAllowedKeywords(allowedKeywords map[string]int) ExerciseBuilder
-	SetExecuter(executer func(test *Test) bool) ExerciseBuilder
-	Build() Test
+	SetExecuter(executer func(test *Exercise) bool) ExerciseBuilder
+	Build() Exercise
 	Run() Result
 }
 
@@ -39,7 +39,7 @@ type ExerciseBuilderImpl struct {
 	allowedMacros    []string
 	allowedFunctions []string
 	allowedKeywords  map[string]int
-	executer         func(test *Test) bool
+	executer         func(test *Exercise) bool
 }
 
 func NewExerciseBuilder() ExerciseBuilder {
@@ -86,13 +86,13 @@ func (b *ExerciseBuilderImpl) SetAllowedKeywords(allowedKeywords map[string]int)
 	return b
 }
 
-func (b *ExerciseBuilderImpl) SetExecuter(executer func(test *Test) bool) ExerciseBuilder {
+func (b *ExerciseBuilderImpl) SetExecuter(executer func(test *Exercise) bool) ExerciseBuilder {
 	b.executer = executer
 	return b
 }
 
-func (b *ExerciseBuilderImpl) Build() Test {
-	return Test{
+func (b *ExerciseBuilderImpl) Build() Exercise {
+	return Exercise{
 		Name:             b.name,
 		TurnInDirectory:  b.turnInDirectory,
 		TurnInFile:       b.turnInFile,

@@ -1,49 +1,42 @@
 package R00
 
-import exercisebuilder "github.com/42-Short/shortinette/internal/interfaces/exercise"
+import (
+	IExercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
+	"github.com/42-Short/shortinette/internal/logger"
+	"github.com/42-Short/shortinette/internal/tests/testutils"
+)
 
 const YesMain = `
-use std::thread;
-use std::time::Duration;
-use std::sync::mpsc;
-
 fn main() {
-	let (tx, rx) = mpsc::channel();
-
-	let handle = thread::spawn(move || {
-		tx.send(()).unwrap();
-		yes();
-	});
-
-	rx.recv().unwrap();
-
-	thread::sleep(Duration::from_secs(1));
-
-	handle.thread().unpark();
+	yes();
 }
 `
 
-func yes() bool {
+func yes(exercise *IExercise.Exercise) bool {
+	fullTurnInPath := testutils.FullTurnInFilePath("studentcode", *exercise)
+	if err := testutils.AppendStringToFile(YesMain, fullTurnInPath); err != nil {
+		logger.File.Printf("internal error: %v", err)
+	}
 	return true
 }
 
-func collatz() bool {
+func collatz(exercise *IExercise.Exercise) bool {
 	return true
 }
 
-func print_bytes() bool {
+func print_bytes(exercise *IExercise.Exercise) bool {
 	return true
 }
 
-func ex02Test(test *exercisebuilder.Test) bool {
-	if yes() && collatz() && print_bytes() {
+func ex02Test(exercise *IExercise.Exercise) bool {
+	if yes(exercise) && collatz(exercise) && print_bytes(exercise) {
 		return true
 	}
 	return false
 }
 
-func ex02() exercisebuilder.ExerciseBuilder {
-	return exercisebuilder.NewExerciseBuilder().
+func ex02() IExercise.ExerciseBuilder {
+	return IExercise.NewExerciseBuilder().
 		SetName("EX02").
 		SetTurnInDirectory("ex02").
 		SetTurnInFile("").

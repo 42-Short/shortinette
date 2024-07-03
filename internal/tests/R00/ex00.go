@@ -8,11 +8,11 @@ import (
 
 	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/internal/functioncheck"
+	IExercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
-	"github.com/42-Short/shortinette/internal/interfaces/exercise"
 )
 
-func ex00Compile(test *exercisebuilder.Test) error {
+func ex00Compile(test *IExercise.Exercise) error {
 	cmd := exec.Command("rustc", test.TurnInFile)
 	cmd.Dir = fmt.Sprintf("studentcode/%s/", test.TurnInDirectory)
 
@@ -45,7 +45,7 @@ func assertionErrorString(testName string, expected string, got string) string {
 	return fmt.Sprintf("[%s KO]: %v", testName, outputComparison)
 }
 
-func ex00Test(test *exercisebuilder.Test) bool {
+func ex00Test(test *IExercise.Exercise) bool {
 	if err := functioncheck.Execute(*test, "shortinette-test-R00"); err != nil {
 		logger.File.Printf("[%s KO]: %v", test.Name, err)
 		return false
@@ -69,8 +69,8 @@ func ex00Test(test *exercisebuilder.Test) bool {
 	return true
 }
 
-func ex00() exercisebuilder.ExerciseBuilder {
-	return exercisebuilder.NewExerciseBuilder().
+func ex00() IExercise.ExerciseBuilder {
+	return IExercise.NewExerciseBuilder().
 		SetName("EX00").
 		SetTurnInDirectory("ex00").
 		SetTurnInFile("hello.rs").

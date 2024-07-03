@@ -2,10 +2,12 @@ package testutils
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
 
 	"github.com/42-Short/shortinette/internal/errors"
+	IExercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 )
 
 func AppendStringToFile(source string, destFilePath string) error {
@@ -32,4 +34,8 @@ func RunCode(executablePath string) (string, error) {
 		return stderr.String(), errors.NewSubmissionError(errors.ErrRuntime, err.Error())
 	}
 	return stdout.String(), nil
+}
+
+func FullTurnInFilePath(codeDirectory string, exercise IExercise.Exercise) string {
+	return fmt.Sprintf("%s/%s/%s", codeDirectory, exercise.TurnInDirectory, exercise.TurnInFile)
 }

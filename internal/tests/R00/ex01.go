@@ -7,7 +7,7 @@ import (
 
 	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/internal/functioncheck"
-	exercisebuilder "github.com/42-Short/shortinette/internal/interfaces/exercise"
+	IExercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/tests/testutils"
 )
@@ -52,7 +52,7 @@ func compileWithRustcTestOption(dir string, turnInFile string) error {
 	return nil
 }
 
-func ex01Test(test *exercisebuilder.Test) bool {
+func ex01Test(test *IExercise.Exercise) bool {
 	if err := functioncheck.Execute(*test, "shortinette-test-R00"); err != nil {
 		logger.File.Printf("[%s KO]: %v", test.Name, err)
 		return false
@@ -75,8 +75,8 @@ func ex01Test(test *exercisebuilder.Test) bool {
 	return true
 }
 
-func ex01() exercisebuilder.ExerciseBuilder {
-	return exercisebuilder.NewExerciseBuilder().
+func ex01() IExercise.ExerciseBuilder {
+	return IExercise.NewExerciseBuilder().
 		SetName("EX01").
 		SetTurnInDirectory("ex01").
 		SetTurnInFile("min.rs").

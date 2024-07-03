@@ -1,4 +1,4 @@
-package modulebuilder
+package IModule
 
 import (
 	"fmt"
@@ -12,20 +12,20 @@ import (
 
 type Module struct {
 	Name      string
-	Exercises []exercisebuilder.ExerciseBuilder
+	Exercises []IExercise.ExerciseBuilder
 }
 
 type ModuleBuilder interface {
 	SetName(name string) ModuleBuilder
-	SetExercises(exercises []exercisebuilder.ExerciseBuilder) ModuleBuilder
+	SetExercises(exercises []IExercise.ExerciseBuilder) ModuleBuilder
 	SetUp(repoId string, codeDirectory string) error
 	Build() Module
-	Run() []exercisebuilder.Result
+	Run() []IExercise.Result
 }
 
 type ModuleBuilderImpl struct {
 	name      string
-	exercises []exercisebuilder.ExerciseBuilder
+	exercises []IExercise.ExerciseBuilder
 }
 
 func NewModuleBuilder() ModuleBuilder {
@@ -37,7 +37,7 @@ func (b *ModuleBuilderImpl) SetName(name string) ModuleBuilder {
 	return b
 }
 
-func (b *ModuleBuilderImpl) SetExercises(exercises []exercisebuilder.ExerciseBuilder) ModuleBuilder {
+func (b *ModuleBuilderImpl) SetExercises(exercises []IExercise.ExerciseBuilder) ModuleBuilder {
 	b.exercises = exercises
 	return b
 }
@@ -65,7 +65,7 @@ func (b *ModuleBuilderImpl) Build() Module {
 	}
 }
 
-func (b *ModuleBuilderImpl) Run() []exercisebuilder.Result {
+func (b *ModuleBuilderImpl) Run() []IExercise.Result {
 	defer func() {
 		if err := os.RemoveAll("compile-environment"); err != nil {
 			logger.Error.Printf("could not tear down testing environment: %v", err)
@@ -74,7 +74,7 @@ func (b *ModuleBuilderImpl) Run() []exercisebuilder.Result {
 			logger.Error.Printf("could not tear down testing environment: %v", err)
 		}
 	}()
-	var results []exercisebuilder.Result
+	var results []IExercise.Result
 	if b.exercises != nil {
 		for _, exercise := range b.exercises {
 			res := exercise.Run()
