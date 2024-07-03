@@ -2,7 +2,6 @@ package R00
 
 import (
 	"errors"
-	"fmt"
 	"os/exec"
 	"strings"
 	"time"
@@ -54,16 +53,14 @@ func yes() bool {
 		return false
 	}
 	executablePath := testutils.ExecutablePath(fullTurnInFilePath, ".rs")
-	output, err := testutils.RunCode(executablePath, testutils.WithTimeout(1*time.Second))
-	if err != nil {
-		if !errors.Is(err, testutils.ErrTimeout) {
-			logger.File.Printf("[%s KO]: runtime error: %v", exercise.Name, err)
-			return false
-		}
+	output, err := testutils.RunCode(executablePath, testutils.WithTimeout(500*time.Millisecond))
+	if err == nil || !errors.Is(err, testutils.ErrTimeout) {
+		logger.File.Printf("[%s KO]: runtime error: %v", exercise.Name, err)
+		return false
 	}
 	lines := strings.Split(output, "\n")
 	for _, line := range lines {
-		if line != "y" {
+		if line != "y" && line != "" {
 			assertionError := testutils.AssertionErrorString(exercise.Name, "y", line)
 			logger.File.Printf("[%s KO]: invalid output: %v", exercise.Name, assertionError)
 			return false

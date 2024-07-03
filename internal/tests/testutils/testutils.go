@@ -68,7 +68,7 @@ func RunCode(executablePath string, options ...RunCodeOption) (string, error) {
 
 	if err := cmd.Run(); err != nil {
 		if ctxErr := cmd.ProcessState.ExitCode(); ctxErr == -1 {
-			return "", ErrTimeout
+			return stdout.String(), ErrTimeout
 		}
 		return stderr.String(), fmt.Errorf("%v", err)
 	}
