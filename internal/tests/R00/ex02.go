@@ -4,7 +4,6 @@ import (
 	"time"
 
 	Exercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
-	IExercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/tests/testutils"
 )
@@ -16,7 +15,7 @@ fn main() {
 `
 
 func yesBuilder() Exercise.Exercise {
-	return IExercise.NewExercise("EX02", "ex02", "yes.rs", "function", "yes()", []string{"println"}, nil, nil, nil)
+	return Exercise.NewExercise("EX02", "ex02", "yes.rs", "function", "yes()", []string{"println"}, nil, nil, nil)
 }
 
 func yes() bool {
@@ -43,7 +42,7 @@ func print_bytes() bool {
 	return true
 }
 
-func ex02Test(exercise *IExercise.Exercise) bool {
+func ex02Test(exercise *Exercise.Exercise) bool {
 	if yes() && collatz() && print_bytes() {
 		return true
 	}
@@ -51,5 +50,5 @@ func ex02Test(exercise *IExercise.Exercise) bool {
 }
 
 func ex02() Exercise.Exercise {
-	return IExercise.NewExercise("EX02", "ex02", "", "", "", nil, nil, nil, ex02Test)
+	return Exercise.NewExercise("EX02", "ex02", "", "", "", nil, nil, nil, ex02Test)
 }
