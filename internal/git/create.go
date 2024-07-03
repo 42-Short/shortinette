@@ -40,6 +40,16 @@ func sendHTTPRequest(request *http.Request) (*http.Response, error) {
 	return response, nil
 }
 
+func checkResponseStatus(response *http.Response) (bool, error) {
+	if response.StatusCode == http.StatusOK {
+		return true, nil
+	} else if response.StatusCode == http.StatusNotFound {
+		return false, nil
+	} else {
+		return false, fmt.Errorf(response.Status)
+	}
+}
+
 func RepoExists(repo string) (bool, error) {
 	url := buildRepoURL(repo)
 	request, err := createHTTPRequest("GET", url, os.Getenv("GITHUB_TOKEN"), nil)
@@ -53,13 +63,7 @@ func RepoExists(repo string) (bool, error) {
 	}
 	defer response.Body.Close()
 
-	if response.StatusCode == http.StatusOK {
-		return true, nil
-	} else if response.StatusCode == http.StatusNotFound {
-		return false, nil
-	} else {
-		return false, fmt.Errorf(response.Status)
-	}
+	return checkResponseStatus(response)
 }
 
 func createRepository(name string) error {

@@ -8,20 +8,20 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/42-Short/shortinette/internal/datastructures"
 	"github.com/42-Short/shortinette/internal/errors"
+	IExercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/templates"
 )
 
-func initCompilingEnvironment(allowedItems datastructures.AllowedItems, exercise string) error {
+func initCompilingEnvironment(test IExercise.Exercise, exercise string) error {
 	libFilePath := "compile-environment/allowedfunctions/src/lib.rs"
 	file, err := createFileWithDirs(libFilePath)
 	if err != nil {
 		return err
 	}
 
-	if err := writeAllowedItemsLib(allowedItems, file, exercise); err != nil {
+	if err := writeAllowedItemsLib(test, file, exercise); err != nil {
 		return err
 	}
 
@@ -63,9 +63,9 @@ func prependHeadersToStudentCode(filePath, exerciseNumber string, exerciseType s
 	if _, err := tempFile.Write(originalContent); err != nil {
 		return fmt.Errorf("could not write original content to temp file: %w", err)
 	}
+
 	if exerciseType == "function" {
 		main := fmt.Sprintf(templates.DummyMain, dummyCall)
-
 		if _, err := tempFile.Write([]byte(main)); err != nil {
 			return fmt.Errorf("could not write dummy main to temp file: %w", err)
 		}
@@ -125,18 +125,18 @@ func handleCompileError(output string) error {
 	}
 }
 
-func Execute(exerciseConfig datastructures.Exercise, repoId string) (err error) {
-	if err = initCompilingEnvironment(exerciseConfig.AllowedItems, exerciseConfig.TurnInDirectory); err != nil {
+func Execute(test IExercise.Exercise, repoId string) (err error) {
+	if err = initCompilingEnvironment(test, test.TurnInDirectory); err != nil {
 		return err
 	}
 
-	exercisePath := fmt.Sprintf("compile-environment/src/%s/%s", exerciseConfig.TurnInDirectory, exerciseConfig.TurnInFile)
-	err = lintStudentCode(exercisePath, exerciseConfig)
+	exercisePath := fmt.Sprintf("compile-environment/src/%s/%s", test.TurnInDirectory, test.TurnInFile)
+	err = lintStudentCode(exercisePath, test)
 	if err != nil {
 		return err
 	}
 
-	err = prependHeadersToStudentCode(exercisePath, exerciseConfig.TurnInDirectory, exerciseConfig.Type, exerciseConfig.DummyCall)
+	err = prependHeadersToStudentCode(exercisePath, test.TurnInDirectory, test.ExerciseType, test.Prototype)
 	if err != nil {
 		return err
 	}
@@ -146,7 +146,6 @@ func Execute(exerciseConfig datastructures.Exercise, repoId string) (err error) 
 		return handleCompileError(output)
 	}
 
-	logger.Info.Printf("no forbidden items/keywords found in %s", exerciseConfig.TurnInDirectory+"/"+exerciseConfig.TurnInFile)
-
+	logger.Info.Printf("no forbidden items/keywords found in %s", test.TurnInDirectory+"/"+test.TurnInFile)
 	return nil
 }
