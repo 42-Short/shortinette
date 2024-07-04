@@ -11,8 +11,31 @@ import (
 	"syscall"
 	"time"
 
-	IExercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
+	"github.com/42-Short/shortinette/internal/functioncheck"
+	Exercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
+	"github.com/42-Short/shortinette/internal/logger"
 )
+
+func CompileWithRustc(dir string, turnInFile string) error {
+	cmd := exec.Command("rustc", turnInFile)
+	cmd.Dir = dir
+
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		logger.Error.Println(err)
+		return fmt.Errorf("invalid compilation: %s", err)
+	}
+	logger.Info.Printf("%s/%s compiled with rustc\n", dir, turnInFile)
+	return nil
+}
+
+func ForbiddenItemsCheck(exercise Exercise.Exercise, repoId string) error {
+	if err := functioncheck.Execute(exercise, "shortinette-test-R00"); err != nil {
+		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
+		return err
+	}
+	return nil
+}
 
 func AssertionErrorString(testName string, expected string, got string) string {
 	expectedReplaced := strings.ReplaceAll(expected, "\n", "\\n")
@@ -32,6 +55,22 @@ func AppendStringToFile(source string, destFilePath string) error {
 		return err
 	}
 	return nil
+}
+
+func DeleteStringFromFile(targetString, filePath string) error {
+    content, err := os.ReadFile(filePath)
+    if err != nil {
+        return err
+    }
+
+    modifiedContent := strings.ReplaceAll(string(content), targetString, "")
+
+    err = os.WriteFile(filePath, []byte(modifiedContent), 0666)
+    if err != nil {
+        return err
+    }
+
+    return nil
 }
 
 type RunCodeOption func(*exec.Cmd)
@@ -77,11 +116,11 @@ func RunCode(executablePath string, options ...RunCodeOption) (string, error) {
 	return stdout.String(), nil
 }
 
-func FullTurnInFilePath(codeDirectory string, exercise IExercise.Exercise) string {
+func FullTurnInFilePath(codeDirectory string, exercise Exercise.Exercise) string {
 	return fmt.Sprintf("%s/%s/%s", codeDirectory, exercise.TurnInDirectory, exercise.TurnInFile)
 }
 
-func FullTurnInDirectory(codeDirectory string, exercise IExercise.Exercise) string {
+func FullTurnInDirectory(codeDirectory string, exercise Exercise.Exercise) string {
 	return fmt.Sprintf("%s/%s", codeDirectory, exercise.TurnInDirectory)
 }
 
