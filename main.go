@@ -17,5 +17,6 @@ func main() {
 		logger.Error.Println(err.Error())
 		return
 	}
+	logger.Info.Println("all dependencies are already installed")
 	R00.R00("shortinette-test-R00", "studentcode")
 }
