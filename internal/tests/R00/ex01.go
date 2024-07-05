@@ -71,7 +71,6 @@ func ex01Test(exercise *Exercise.Exercise) bool {
 	if output, err := testutils.RunCode(strings.TrimSuffix(filePath, ".rs")); err != nil {
 		logger.File.Printf("[%s KO]: invalid output: %v", exercise.Name, output)
 	}
-	logger.File.Printf("[%s OK]", exercise.Name)
 	return true
 }
 

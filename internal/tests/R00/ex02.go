@@ -58,7 +58,6 @@ func yes() bool {
 			return false
 		}
 	}
-	logger.File.Printf("[%s.0 OK]", exercise.Name)
 	return true
 }
 
@@ -142,7 +141,6 @@ func collatz() bool {
 	if !collatzAssertionTest(exercise) {
 		return false
 	}
-	logger.File.Println("[EX02.1 OK]")
 	return true
 }
 
@@ -190,13 +188,11 @@ func printBytes() bool {
 	if !printBytesAssertionTest(exercise) {
 		return false
 	}
-	logger.File.Println("[EX02.2 OK]")
 	return true
 }
 
 func ex02Test(exercise *Exercise.Exercise) bool {
 	if yes() && collatz() && printBytes() {
-		logger.File.Println("[EX02 OK]")
 		return true
 	}
 	return false

@@ -59,6 +59,11 @@ func (m *Module) Run() []Exercise.Result {
 		for _, exercise := range m.Exercises {
 			res := exercise.Run()
 			results = append(results, res)
+			if res.Passed {
+				logger.File.Printf("[%s OK]", exercise.Name)
+			} else {
+				logger.File.Printf("[%s KO]", exercise.Name)
+			}
 		}
 	}
 	return results
