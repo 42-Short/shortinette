@@ -14,7 +14,7 @@ import (
 )
 
 func ex00Compile(test *Exercise.Exercise) error {
-	cmd := exec.Command("rustc", test.TurnInFile)
+	cmd := exec.Command("rustc", test.TurnInFiles[0])
 	cmd.Dir = fmt.Sprintf("studentcode/%s/", test.TurnInDirectory)
 
 	output, err := cmd.CombinedOutput()
@@ -22,7 +22,7 @@ func ex00Compile(test *Exercise.Exercise) error {
 		logger.Error.Println(err)
 		return errors.NewSubmissionError(errors.ErrInvalidCompilation, string(output))
 	}
-	logger.Info.Printf("%s/%s compiled with rustc\n", cmd.Dir, test.TurnInFile)
+	logger.Info.Printf("%s/%s compiled with rustc\n", cmd.Dir, test.TurnInFiles[0])
 	return nil
 }
 
@@ -48,7 +48,7 @@ func ex00Test(test *Exercise.Exercise) bool {
 		logger.File.Printf("[%s KO]: %v", test.Name, err)
 		return false
 	}
-	relativeFilePath := fmt.Sprintf("studentcode/%s/%s", test.TurnInDirectory, test.TurnInFile)
+	relativeFilePath := fmt.Sprintf("studentcode/%s/%s", test.TurnInDirectory, test.TurnInFiles[0])
 	executablePath := strings.TrimSuffix(relativeFilePath, ".rs")
 	output, err := runExecutable(executablePath)
 	if err != nil {
@@ -63,5 +63,5 @@ func ex00Test(test *Exercise.Exercise) bool {
 }
 
 func ex00() Exercise.Exercise {
-	return Exercise.NewExercise("EX00", "ex00", "hello.rs", "program", "", []string{"println"}, nil, map[string]int{"unsafe": 0}, ex00Test)
+	return Exercise.NewExercise("EX00", "ex00", []string{"hello.rs"}, "program", "", []string{"println"}, nil, map[string]int{"unsafe": 0}, ex00Test)
 }

@@ -57,14 +57,14 @@ func ex01Test(exercise *Exercise.Exercise) bool {
 		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
 		return false
 	}
-	filePath := fmt.Sprintf("studentcode/%s/%s", exercise.TurnInDirectory, exercise.TurnInFile)
+	filePath := fmt.Sprintf("studentcode/%s/%s", exercise.TurnInDirectory, exercise.TurnInFiles[0])
 	if err := testutils.AppendStringToFile(CargoTest, filePath); err != nil {
 		logger.Error.Printf("could not write to %s: %v", filePath, err)
 		logger.File.Printf("internal error: could not write to %s: %v", filePath, err)
 		return false
 	}
 	turnInDirectory := fmt.Sprintf("studentcode/%s", exercise.TurnInDirectory)
-	if err := compileWithRustcTestOption(turnInDirectory, exercise.TurnInFile); err != nil {
+	if err := compileWithRustcTestOption(turnInDirectory, exercise.TurnInFiles[0]); err != nil {
 		logger.File.Printf("[%s KO]: invalid compilation: %v", exercise.Name, err)
 		return false
 	}
@@ -75,5 +75,5 @@ func ex01Test(exercise *Exercise.Exercise) bool {
 }
 
 func ex01() Exercise.Exercise {
-	return Exercise.NewExercise("EX01", "ex01", "min.rs", "function", "min(0, 0)", []string{"println"}, nil, map[string]int{"unsafe": 0}, ex01Test)
+	return Exercise.NewExercise("EX01", "ex01", []string{"min.rs"}, "function", "min(0, 0)", []string{"println"}, nil, map[string]int{"unsafe": 0}, ex01Test)
 }

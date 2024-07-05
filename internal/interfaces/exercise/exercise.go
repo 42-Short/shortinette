@@ -7,7 +7,7 @@ type Result struct {
 type Exercise struct {
 	Name             string
 	TurnInDirectory  string
-	TurnInFile       string
+	TurnInFiles      []string
 	ExerciseType     string
 	Prototype        string
 	AllowedMacros    []string
@@ -17,14 +17,14 @@ type Exercise struct {
 }
 
 // NewExercise initializes and returns an Exercise struct
-func NewExercise(name, turnInDirectory, turnInFile, exerciseType, prototype string,
-	allowedMacros, allowedFunctions []string, allowedKeywords map[string]int,
+func NewExercise(name string, turnInDirectory string, turnInFiles []string, exerciseType string, prototype string,
+	allowedMacros []string, allowedFunctions []string, allowedKeywords map[string]int,
 	executer func(test *Exercise) bool) Exercise {
 
 	return Exercise{
 		Name:             name,
 		TurnInDirectory:  turnInDirectory,
-		TurnInFile:       turnInFile,
+		TurnInFiles:      turnInFiles,
 		ExerciseType:     exerciseType,
 		Prototype:        prototype,
 		AllowedMacros:    allowedMacros,

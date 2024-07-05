@@ -58,19 +58,19 @@ func AppendStringToFile(source string, destFilePath string) error {
 }
 
 func DeleteStringFromFile(targetString, filePath string) error {
-    content, err := os.ReadFile(filePath)
-    if err != nil {
-        return err
-    }
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
 
-    modifiedContent := strings.ReplaceAll(string(content), targetString, "")
+	modifiedContent := strings.ReplaceAll(string(content), targetString, "")
 
-    err = os.WriteFile(filePath, []byte(modifiedContent), 0666)
-    if err != nil {
-        return err
-    }
+	err = os.WriteFile(filePath, []byte(modifiedContent), 0666)
+	if err != nil {
+		return err
+	}
 
-    return nil
+	return nil
 }
 
 type RunCodeOption func(*exec.Cmd)
@@ -116,8 +116,8 @@ func RunCode(executablePath string, options ...RunCodeOption) (string, error) {
 	return stdout.String(), nil
 }
 
-func FullTurnInFilePath(codeDirectory string, exercise Exercise.Exercise) string {
-	return fmt.Sprintf("%s/%s/%s", codeDirectory, exercise.TurnInDirectory, exercise.TurnInFile)
+func FullTurnInFilePath(codeDirectory string, exercise Exercise.Exercise, turnInFile string) string {
+	return fmt.Sprintf("%s/%s/%s", codeDirectory, exercise.TurnInDirectory, turnInFile)
 }
 
 func FullTurnInDirectory(codeDirectory string, exercise Exercise.Exercise) string {

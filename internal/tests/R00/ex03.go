@@ -33,11 +33,11 @@ func doFizzBuzz() string {
 
 func ex03Test(exercise *Exercise.Exercise) bool {
 	directory := testutils.FullTurnInDirectory("studentcode", *exercise)
-	if err := testutils.CompileWithRustc(directory, exercise.TurnInFile); err != nil {
+	if err := testutils.CompileWithRustc(directory, exercise.TurnInFiles[0]); err != nil {
 		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
 		return false
 	}
-	fullTurnInFilePath := testutils.FullTurnInFilePath("studentcode", *exercise)
+	fullTurnInFilePath := testutils.FullTurnInFilePath("studentcode", *exercise, exercise.TurnInFiles[0])
 	executablePath := testutils.ExecutablePath(fullTurnInFilePath, ".rs")
 	output, err := testutils.RunCode(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err != nil {
@@ -55,5 +55,5 @@ func ex03Test(exercise *Exercise.Exercise) bool {
 }
 
 func ex03() Exercise.Exercise {
-	return Exercise.NewExercise("EX03", "ex03", "fizzbuzz.rs", "program", "", []string{"println"}, nil, map[string]int{"match": 1, "for": 1}, ex03Test)
+	return Exercise.NewExercise("EX03", "ex03", []string{"fizzbuzz.rs"}, "program", "", []string{"println"}, nil, map[string]int{"match": 1, "for": 1}, ex03Test)
 }
