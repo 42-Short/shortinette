@@ -23,6 +23,12 @@ fn main() {
 }
 `
 
+const PrintBytesMain = `
+fn main() {
+	print_bytes("%s")
+}
+`
+
 func yes() bool {
 	exercise := Exercise.NewExercise("EX02", "ex02", "yes.rs", "function", "yes()", []string{"println"}, nil, nil, nil)
 	if err := testutils.ForbiddenItemsCheck(exercise, "shortinette-test-R00"); err != nil {
@@ -140,12 +146,56 @@ func collatz() bool {
 	return true
 }
 
-func print_bytes() bool {
+func doPrintBytes(s string) string {
+    var result strings.Builder
+    for i := 0; i < len(s); i++ {
+        result.WriteString(fmt.Sprintf("%d\n", s[i]))
+    }
+    return result.String()
+}
+
+func printBytesAssertionTest(exercise Exercise.Exercise) bool {
+	fullTurnInFilePath := testutils.FullTurnInFilePath("studentcode", exercise)
+	main := fmt.Sprintf(PrintBytesMain, "Hello, World!")
+	if err := testutils.AppendStringToFile(main, fullTurnInFilePath); err != nil {
+		logger.Error.Printf("internal error: %v", err)
+		return false
+	}
+	directory := testutils.FullTurnInDirectory("studentcode", exercise)
+	if err := testutils.CompileWithRustc(directory, exercise.TurnInFile); err != nil {
+		logger.File.Printf("[%s.2 KO]: %v", exercise.Name, err)
+		return false
+	}
+	executablePath := testutils.ExecutablePath(fullTurnInFilePath, ".rs")
+	output, err := testutils.RunCode(executablePath, testutils.WithTimeout(500*time.Millisecond))
+	if err != nil {
+		logger.File.Printf("[%s.2 KO]: runtime error: %v", exercise.Name, err)
+		return false
+	}
+	expectedOutput := doPrintBytes("Hello, World!")
+
+	if output != expectedOutput {
+		assertionError := testutils.AssertionErrorString(exercise.Name, expectedOutput, output)
+		logger.File.Printf(assertionError)
+		return false
+	}
+	return true
+}
+
+func printBytes() bool {
+	exercise := Exercise.NewExercise("EX02", "ex02", "print_bytes.rs", "function", "print_bytes(\"\")", []string{"println", "bytes"}, nil, nil, nil)
+	if err := testutils.ForbiddenItemsCheck(exercise, "shortinette-test-R00"); err != nil {
+		return false
+	}
+	if !printBytesAssertionTest(exercise) {
+		return false
+	}
+	logger.File.Println("[EX02.2 OK]")
 	return true
 }
 
 func ex02Test(exercise *Exercise.Exercise) bool {
-	if yes() && collatz() && print_bytes() {
+	if yes() && collatz() && printBytes() {
 		logger.File.Println("[EX02 OK]")
 		return true
 	}
