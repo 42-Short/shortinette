@@ -12,10 +12,29 @@ import (
 	"syscall"
 	"time"
 
+	toml "github.com/42-Short/shortinette/internal/datastructures"
 	"github.com/42-Short/shortinette/internal/functioncheck"
 	Exercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
 )
+
+func CheckCargoTomlContent(exercise Exercise.Exercise, expectedContent map[string]string) bool {
+	tomlPath := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory, "Cargo.toml")
+	fieldMap, err := toml.ReadToml(tomlPath)
+	if err != nil {
+		logger.Error.Printf("internal error: %s", err)
+		return false
+	}
+	for key, expectedValue := range expectedContent {
+		value, ok := fieldMap[key]
+		if !ok {
+			logger.File.Printf("[%s KO]: '%s' not found in Cargo.toml", exercise.Name, key)
+		} else if value != expectedValue {
+			logger.File.Printf("[%s KO]: Cargo.toml content mismatch, expected '%s', got '%s'", exercise.Name, expectedValue, value)
+		}
+	}
+	return true
+}
 
 func CompileWithRustc(turnInFile string) error {
 	cmd := exec.Command("rustc", filepath.Base(turnInFile))
