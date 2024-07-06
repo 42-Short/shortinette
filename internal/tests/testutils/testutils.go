@@ -127,7 +127,7 @@ func containsString(hayStack []string, needle string) bool {
 	return false
 }
 
-func TurnInFilesCheck(exercise Exercise.Exercise) {
+func TurnInFilesCheck(exercise Exercise.Exercise) bool {
 	fullTurnInFilesPaths := FullTurnInFilesPath(exercise)
 	parentDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
 	err := filepath.Walk(parentDirectory, func(path string, info os.FileInfo, err error) error {
@@ -140,7 +140,9 @@ func TurnInFilesCheck(exercise Exercise.Exercise) {
 	})
 	if err != nil {
 		logger.Error.Printf("walk error: %v", err)
+		return false
 	}
+	return true
 }
 
 func FullTurnInFilesPath(exercise Exercise.Exercise) []string {
