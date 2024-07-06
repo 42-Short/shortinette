@@ -39,8 +39,7 @@ func yes() bool {
 		logger.Error.Printf("internal error: %v", err)
 		return false
 	}
-	directory := testutils.FullTurnInDirectory("studentcode", exercise)
-	if err := testutils.CompileWithRustc(directory, exercise.TurnInFiles[0]); err != nil {
+	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
 		logger.File.Printf("[%s.0 KO]: %v", exercise.Name, err)
 		return false
 	}
@@ -67,8 +66,7 @@ func collatzInfiniteLoopTest(exercise Exercise.Exercise) bool {
 		logger.Error.Printf("internal error: %v", err)
 		return false
 	}
-	directory := testutils.FullTurnInDirectory("studentcode", exercise)
-	if err := testutils.CompileWithRustc(directory, exercise.TurnInFiles[0]); err != nil {
+	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
 		logger.File.Printf("[%s.1 KO]: %v", exercise.Name, err)
 		return false
 	}
@@ -102,18 +100,16 @@ func doCollatz(n int) string {
 }
 
 func collatzAssertionTest(exercise Exercise.Exercise) bool {
-	fullTurnInFilePath := testutils.FullTurnInFilePath("studentcode", exercise, exercise.TurnInFiles[0])
 	main := fmt.Sprintf(CollatzMain, "42")
-	if err := testutils.AppendStringToFile(main, fullTurnInFilePath); err != nil {
+	if err := testutils.AppendStringToFile(main, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
 		return false
 	}
-	directory := testutils.FullTurnInDirectory("studentcode", exercise)
-	if err := testutils.CompileWithRustc(directory, exercise.TurnInFiles[0]); err != nil {
+	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
 		logger.File.Printf("[%s.1 KO]: %v", exercise.Name, err)
 		return false
 	}
-	executablePath := testutils.ExecutablePath(fullTurnInFilePath, ".rs")
+	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], ".rs")
 	output, err := testutils.RunCode(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err != nil {
 		logger.File.Printf("[%s.1 KO]: runtime error: %v", exercise.Name, err)
@@ -153,18 +149,16 @@ func doPrintBytes(s string) string {
 }
 
 func printBytesAssertionTest(exercise Exercise.Exercise) bool {
-	fullTurnInFilePath := testutils.FullTurnInFilePath("studentcode", exercise, exercise.TurnInFiles[0])
 	main := fmt.Sprintf(PrintBytesMain, "Hello, World!")
-	if err := testutils.AppendStringToFile(main, fullTurnInFilePath); err != nil {
+	if err := testutils.AppendStringToFile(main, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
 		return false
 	}
-	directory := testutils.FullTurnInDirectory("studentcode", exercise)
-	if err := testutils.CompileWithRustc(directory, exercise.TurnInFiles[0]); err != nil {
+	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
 		logger.File.Printf("[%s.2 KO]: %v", exercise.Name, err)
 		return false
 	}
-	executablePath := testutils.ExecutablePath(fullTurnInFilePath, ".rs")
+	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], ".rs")
 	output, err := testutils.RunCode(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err != nil {
 		logger.File.Printf("[%s.2 KO]: runtime error: %v", exercise.Name, err)
@@ -182,14 +176,11 @@ func printBytesAssertionTest(exercise Exercise.Exercise) bool {
 
 func printBytes() bool {
 	exercise := Exercise.NewExercise("EX02", "studentcode", "ex02", []string{"print_bytes.rs"}, "function", "print_bytes(\"\")", []string{"println", "bytes"}, nil, nil, nil)
-	exercise.TurnInFiles = testutils.FullTurnInFilesPath(exercise)
 	if err := testutils.ForbiddenItemsCheck(exercise, "shortinette-test-R00"); err != nil {
 		return false
 	}
-	if !printBytesAssertionTest(exercise) {
-		return false
-	}
-	return true
+	exercise.TurnInFiles = testutils.FullTurnInFilesPath(exercise)
+	return printBytesAssertionTest(exercise)
 }
 
 func ex02Test(exercise *Exercise.Exercise) bool {

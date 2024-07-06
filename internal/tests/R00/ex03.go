@@ -32,8 +32,7 @@ func doFizzBuzz() string {
 }
 
 func ex03Test(exercise *Exercise.Exercise) bool {
-	directory := testutils.FullTurnInDirectory("studentcode", *exercise)
-	if err := testutils.CompileWithRustc(directory, exercise.TurnInFiles[0]); err != nil {
+	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
 		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
 		return false
 	}
