@@ -43,7 +43,7 @@ func ex03Test(exercise *Exercise.Exercise) bool {
 		return false
 	}
 	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], filepath.Ext(exercise.TurnInFiles[0]))
-	output, err := testutils.RunCode(executablePath, testutils.WithTimeout(500*time.Millisecond))
+	output, err := testutils.RunExecutable(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err != nil {
 		logger.File.Printf("[%s KO]: runtime error: %v", exercise.Name, err)
 		return false

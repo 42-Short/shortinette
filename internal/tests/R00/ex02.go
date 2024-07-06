@@ -44,7 +44,7 @@ func yes() bool {
 		return false
 	}
 	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], ".rs")
-	output, err := testutils.RunCode(executablePath, testutils.WithTimeout(500*time.Millisecond))
+	output, err := testutils.RunExecutable(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err == nil || !errors.Is(err, testutils.ErrTimeout) {
 		logger.File.Printf("[%s.0 KO]: runtime error: %v", exercise.Name, err)
 		return false
@@ -71,7 +71,7 @@ func collatzInfiniteLoopTest(exercise Exercise.Exercise) bool {
 		return false
 	}
 	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], ".rs")
-	_, err := testutils.RunCode(executablePath, testutils.WithTimeout(500*time.Millisecond))
+	_, err := testutils.RunExecutable(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err != nil {
 		logger.File.Printf("[%s.1 KO]: runtime error: %v", exercise.Name, err)
 		return false
@@ -110,7 +110,7 @@ func collatzAssertionTest(exercise Exercise.Exercise) bool {
 		return false
 	}
 	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], ".rs")
-	output, err := testutils.RunCode(executablePath, testutils.WithTimeout(500*time.Millisecond))
+	output, err := testutils.RunExecutable(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err != nil {
 		logger.File.Printf("[%s.1 KO]: runtime error: %v", exercise.Name, err)
 		return false
@@ -159,7 +159,7 @@ func printBytesAssertionTest(exercise Exercise.Exercise) bool {
 		return false
 	}
 	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], ".rs")
-	output, err := testutils.RunCode(executablePath, testutils.WithTimeout(500*time.Millisecond))
+	output, err := testutils.RunExecutable(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err != nil {
 		logger.File.Printf("[%s.2 KO]: runtime error: %v", exercise.Name, err)
 		return false

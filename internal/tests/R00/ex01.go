@@ -67,7 +67,7 @@ func ex01Test(exercise *Exercise.Exercise) bool {
 		logger.File.Printf("[%s KO]: invalid compilation: %v", exercise.Name, err)
 		return false
 	}
-	if output, err := testutils.RunCode(strings.TrimSuffix(exercise.TurnInFiles[0], ".rs")); err != nil {
+	if output, err := testutils.RunExecutable(strings.TrimSuffix(exercise.TurnInFiles[0], ".rs")); err != nil {
 		logger.File.Printf("[%s KO]: invalid output: %v", exercise.Name, output)
 	}
 	return true

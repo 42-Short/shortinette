@@ -13,7 +13,7 @@ func main() {
 		logger.Error.Println(err.Error())
 		return
 	}
-	if _, err := testutils.RunCode("./scripts/check_dependencies.sh"); err != nil {
+	if _, err := testutils.RunExecutable("./scripts/check_dependencies.sh"); err != nil {
 		logger.Error.Println(err.Error())
 		return
 	}

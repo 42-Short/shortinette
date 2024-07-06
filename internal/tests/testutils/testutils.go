@@ -94,12 +94,12 @@ func DeleteStringFromFile(targetString, filePath string) error {
 	return nil
 }
 
-type RunCodeOption func(*exec.Cmd)
+type RunExecutableOption func(*exec.Cmd)
 
 var ErrTimeout = errors.New("command timed out")
 
 // WithTimeout allows setting a timeout for the code execution
-func WithTimeout(d time.Duration) RunCodeOption {
+func WithTimeout(d time.Duration) RunExecutableOption {
 	return func(cmd *exec.Cmd) {
 		ctx, cancel := context.WithTimeout(context.Background(), d)
 		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
@@ -117,8 +117,35 @@ func WithTimeout(d time.Duration) RunCodeOption {
 }
 
 // RunCode runs the executable at the given path with the provided options.
-func RunCode(executablePath string, options ...RunCodeOption) (string, error) {
+func RunExecutable(executablePath string, options ...RunExecutableOption) (string, error) {
 	cmd := exec.Command(executablePath)
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	for _, opt := range options {
+		opt(cmd)
+	}
+
+	if err := cmd.Run(); err != nil {
+		if ctxErr := cmd.ProcessState.ExitCode(); ctxErr == -1 {
+			return stdout.String(), ErrTimeout
+		}
+		return stderr.String(), fmt.Errorf("%v", err)
+	}
+	return stdout.String(), nil
+}
+
+// RunCommand runs the command line with the provided options.
+func RunCommandLine(workingDirectory string, commandLine string, options ...RunExecutableOption) (string, error) {
+	fields := strings.Fields(commandLine)
+	if len(fields) == 0 {
+		return "", fmt.Errorf("no command provided")
+	}
+
+	cmd := exec.Command(fields[0], fields[1:]...)
+	cmd.Dir = workingDirectory
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &stdout
