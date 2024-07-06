@@ -9,21 +9,20 @@ import (
 	"github.com/42-Short/shortinette/internal/tests/testutils"
 )
 
-func checkCargoTomlContent(exercise Exercise.Exercise) bool {
+func checkCargoTomlContent(exercise Exercise.Exercise, expectedContent map[string]string) bool {
 	tomlPath := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory, "Cargo.toml")
-	tomlConfig, err := toml.ReadToml(tomlPath)
+	fieldMap, err := toml.ReadToml(tomlPath)
 	if err != nil {
 		logger.Error.Printf("internal error: %s", err)
-	}
-	if tomlConfig.Package.Name != "module00-ex04" {
-		logger.File.Printf("[%s KO]: Cargo.toml content mismatch, expected '%s', got '%s'", exercise.Name, "module00-ex04", tomlConfig.Package.Name)
 		return false
 	}
-	if tomlConfig.Package.Edition != "2021" {
-		return false
-	}
-	if tomlConfig.Package.Description != "my answer to the fifth exercise of the first module of 42's Rust Piscine" {
-		return false
+	for key, expectedValue := range expectedContent {
+		value, ok := fieldMap[key]
+		if !ok {
+			logger.File.Printf("[%s KO]: '%s' not found in Cargo.toml", exercise.Name, key)
+		} else if value != expectedValue {
+			logger.File.Printf("[%s KO]: Cargo.toml content mismatch, expected '%s', got '%s'", exercise.Name, expectedValue, value)
+		}
 	}
 	return true
 }
@@ -36,11 +35,12 @@ func ex04Test(exercise *Exercise.Exercise) bool {
 		return false
 	}
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
-	if !checkCargoTomlContent(*exercise) {
-		return false
-	} else {
-		return true
+	expectedContent := map[string]string{
+		"package.name":        "module00-ex04",
+		"package.edition":     "2021",
+		"package.description": "my answer to the fifth exercise of the first module of 42's Rust Piscine",
 	}
+	return checkCargoTomlContent(*exercise, expectedContent)
 }
 
 func ex04() Exercise.Exercise {
