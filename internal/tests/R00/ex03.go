@@ -2,6 +2,7 @@ package R00
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -32,12 +33,16 @@ func doFizzBuzz() string {
 }
 
 func ex03Test(exercise *Exercise.Exercise) bool {
+	if err := testutils.ForbiddenItemsCheck(*exercise, "shortinette-test-R00"); err != nil {
+		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
+		return false
+	}
+	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
 	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
 		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
 		return false
 	}
-	fullTurnInFilePath := testutils.FullTurnInFilePath("studentcode", *exercise, exercise.TurnInFiles[0])
-	executablePath := testutils.ExecutablePath(fullTurnInFilePath, ".rs")
+	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], filepath.Ext(exercise.TurnInFiles[0]))
 	output, err := testutils.RunCode(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err != nil {
 		logger.File.Printf("[%s KO]: runtime error: %v", exercise.Name, err)

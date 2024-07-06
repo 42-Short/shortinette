@@ -21,9 +21,10 @@ func CompileWithRustc(turnInFile string) error {
 	cmd := exec.Command("rustc", filepath.Base(turnInFile))
 	cmd.Dir = filepath.Dir(turnInFile)
 
-	_, err := cmd.CombinedOutput()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
 		logger.Error.Println(err)
+		logger.Error.Println(string(output))
 		return fmt.Errorf("invalid compilation: %s", err)
 	}
 	logger.Info.Printf("%s/%s compiled with rustc\n", cmd.Dir, turnInFile)
