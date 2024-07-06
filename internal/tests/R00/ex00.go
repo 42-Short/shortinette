@@ -2,7 +2,6 @@ package R00
 
 import (
 	"bytes"
-	"fmt"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -29,9 +28,7 @@ func ex00Compile(exercise *Exercise.Exercise) error {
 
 func runExecutable(executablePath string) (string, error) {
 	cmd := exec.Command("./" + filepath.Base(executablePath))
-	fmt.Println(filepath.Base(executablePath))
 	cmd.Dir = filepath.Dir(executablePath)
-	fmt.Println(cmd.Dir)
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &stdout

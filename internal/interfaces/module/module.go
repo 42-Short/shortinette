@@ -46,14 +46,14 @@ func setUpEnvironment(repoId string, testDirectory string) error {
 
 // Run executes the exercises and returns the results
 func (m *Module) Run() []Exercise.Result {
-	// defer func() {
-	// 	if err := os.RemoveAll("compile-environment"); err != nil {
-	// 		logger.Error.Printf("could not tear down testing environment: %v", err)
-	// 	}
-	// 	if err := os.RemoveAll("studentcode"); err != nil {
-	// 		logger.Error.Printf("could not tear down testing environment: %v", err)
-	// 	}
-	// }()
+	defer func() {
+		if err := os.RemoveAll("compile-environment"); err != nil {
+			logger.Error.Printf("could not tear down testing environment: %v", err)
+		}
+		if err := os.RemoveAll("studentcode"); err != nil {
+			logger.Error.Printf("could not tear down testing environment: %v", err)
+		}
+	}()
 	var results []Exercise.Result
 	if m.Exercises != nil {
 		for _, exercise := range m.Exercises {
