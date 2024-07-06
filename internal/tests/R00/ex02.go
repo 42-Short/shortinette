@@ -30,12 +30,12 @@ fn main() {
 `
 
 func yes() bool {
-	exercise := Exercise.NewExercise("EX02", "ex02", []string{"yes.rs"}, "function", "yes()", []string{"println"}, nil, nil, nil)
+	exercise := Exercise.NewExercise("EX02", "studentcode", "ex02", []string{"yes.rs"}, "function", "yes()", []string{"println"}, nil, nil, nil)
 	if err := testutils.ForbiddenItemsCheck(exercise, "shortinette-test-R00"); err != nil {
 		return false
 	}
-	fullTurnInFilePath := testutils.FullTurnInFilePath("studentcode", exercise, exercise.TurnInFiles[0])
-	if err := testutils.AppendStringToFile(YesMain, fullTurnInFilePath); err != nil {
+	exercise.TurnInFiles = testutils.FullTurnInFilesPath(exercise)
+	if err := testutils.AppendStringToFile(YesMain, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
 		return false
 	}
@@ -44,7 +44,7 @@ func yes() bool {
 		logger.File.Printf("[%s.0 KO]: %v", exercise.Name, err)
 		return false
 	}
-	executablePath := testutils.ExecutablePath(fullTurnInFilePath, ".rs")
+	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], ".rs")
 	output, err := testutils.RunCode(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err == nil || !errors.Is(err, testutils.ErrTimeout) {
 		logger.File.Printf("[%s.0 KO]: runtime error: %v", exercise.Name, err)
@@ -62,9 +62,8 @@ func yes() bool {
 }
 
 func collatzInfiniteLoopTest(exercise Exercise.Exercise) bool {
-	fullTurnInFilePath := testutils.FullTurnInFilePath("studentcode", exercise, exercise.TurnInFiles[0])
 	main := fmt.Sprintf(CollatzMain, "0")
-	if err := testutils.AppendStringToFile(main, fullTurnInFilePath); err != nil {
+	if err := testutils.AppendStringToFile(main, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
 		return false
 	}
@@ -73,13 +72,13 @@ func collatzInfiniteLoopTest(exercise Exercise.Exercise) bool {
 		logger.File.Printf("[%s.1 KO]: %v", exercise.Name, err)
 		return false
 	}
-	executablePath := testutils.ExecutablePath(fullTurnInFilePath, ".rs")
+	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], ".rs")
 	_, err := testutils.RunCode(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err != nil {
 		logger.File.Printf("[%s.1 KO]: runtime error: %v", exercise.Name, err)
 		return false
 	}
-	if err := testutils.DeleteStringFromFile(main, fullTurnInFilePath); err != nil {
+	if err := testutils.DeleteStringFromFile(main, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
 		return false
 	}
@@ -131,10 +130,11 @@ func collatzAssertionTest(exercise Exercise.Exercise) bool {
 }
 
 func collatz() bool {
-	exercise := Exercise.NewExercise("EX02", "ex02", []string{"collatz.rs"}, "function", "collatz(42)", []string{"println"}, nil, nil, nil)
+	exercise := Exercise.NewExercise("EX02", "studentcode", "ex02", []string{"collatz.rs"}, "function", "collatz(42)", []string{"println"}, nil, nil, nil)
 	if err := testutils.ForbiddenItemsCheck(exercise, "shortinette-test-R00"); err != nil {
 		return false
 	}
+	exercise.TurnInFiles = testutils.FullTurnInFilesPath(exercise)
 	if !collatzInfiniteLoopTest(exercise) {
 		return false
 	}
@@ -181,7 +181,8 @@ func printBytesAssertionTest(exercise Exercise.Exercise) bool {
 }
 
 func printBytes() bool {
-	exercise := Exercise.NewExercise("EX02", "ex02", []string{"print_bytes.rs"}, "function", "print_bytes(\"\")", []string{"println", "bytes"}, nil, nil, nil)
+	exercise := Exercise.NewExercise("EX02", "studentcode", "ex02", []string{"print_bytes.rs"}, "function", "print_bytes(\"\")", []string{"println", "bytes"}, nil, nil, nil)
+	exercise.TurnInFiles = testutils.FullTurnInFilesPath(exercise)
 	if err := testutils.ForbiddenItemsCheck(exercise, "shortinette-test-R00"); err != nil {
 		return false
 	}
@@ -199,5 +200,5 @@ func ex02Test(exercise *Exercise.Exercise) bool {
 }
 
 func ex02() Exercise.Exercise {
-	return Exercise.NewExercise("EX02", "ex02", nil, "", "", nil, nil, nil, ex02Test)
+	return Exercise.NewExercise("EX02", "studentcode", "ex02", nil, "", "", nil, nil, nil, ex02Test)
 }

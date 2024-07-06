@@ -57,6 +57,7 @@ func ex01Test(exercise *Exercise.Exercise) bool {
 		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
 		return false
 	}
+	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
 	filePath := fmt.Sprintf("studentcode/%s/%s", exercise.TurnInDirectory, exercise.TurnInFiles[0])
 	if err := testutils.AppendStringToFile(CargoTest, filePath); err != nil {
 		logger.Error.Printf("could not write to %s: %v", filePath, err)
@@ -75,5 +76,5 @@ func ex01Test(exercise *Exercise.Exercise) bool {
 }
 
 func ex01() Exercise.Exercise {
-	return Exercise.NewExercise("EX01", "ex01", []string{"min.rs"}, "function", "min(0, 0)", []string{"println"}, nil, map[string]int{"unsafe": 0}, ex01Test)
+	return Exercise.NewExercise("EX01", "studentcode", "ex01", []string{"min.rs"}, "function", "min(0, 0)", []string{"println"}, nil, map[string]int{"unsafe": 0}, ex01Test)
 }

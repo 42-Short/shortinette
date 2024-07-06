@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -114,6 +115,41 @@ func RunCode(executablePath string, options ...RunCodeOption) (string, error) {
 		return stderr.String(), fmt.Errorf("%v", err)
 	}
 	return stdout.String(), nil
+}
+
+func containsString(hayStack []string, needle string) bool {
+	for _, str := range hayStack {
+		if str == needle {
+			return true
+		}
+	}
+	return false
+}
+
+func TurnInFilesCheck(exercise Exercise.Exercise) {
+	fullTurnInFilesPaths := FullTurnInFilesPath(exercise)
+	parentDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
+	err := filepath.Walk(parentDirectory, func(path string, info os.FileInfo, err error) error {
+		if filepath.Base(path)[0] == '.' || path == parentDirectory || info.IsDir() {
+			return nil
+		} else if !containsString(fullTurnInFilesPaths, path) {
+			return fmt.Errorf("'%s' not in allowed turn in files", path)
+		}
+		return nil
+	})
+	if err != nil {
+		logger.Error.Printf("walk error: %v", err)
+	}
+}
+
+func FullTurnInFilesPath(exercise Exercise.Exercise) []string {
+	var fullFilePaths []string
+
+	for _, path := range exercise.TurnInFiles {
+		fullPath := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory, path)
+		fullFilePaths = append(fullFilePaths, fullPath)
+	}
+	return fullFilePaths
 }
 
 func FullTurnInFilePath(codeDirectory string, exercise Exercise.Exercise, turnInFile string) string {
