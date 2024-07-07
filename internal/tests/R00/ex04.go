@@ -27,7 +27,7 @@ func testNmReleaseMode(exercise Exercise.Exercise) bool {
 		return false
 	}
 	if output != "" {
-		logger.File.Println(testutils.AssertionErrorString(exercise.Name, "...{no symbols}...\n", output))
+		logger.File.Println(testutils.AssertionErrorString(exercise.Name, "", output))
 		return false
 	}
 	return true

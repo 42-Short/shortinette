@@ -32,12 +32,7 @@ func doFizzBuzz() string {
 	return result.String()
 }
 
-func ex03Test(exercise *Exercise.Exercise) bool {
-	if err := testutils.ForbiddenItemsCheck(*exercise, "shortinette-test-R00"); err != nil {
-		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
-		return false
-	}
-	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
+func fizzBuzzOutputTest(exercise Exercise.Exercise) bool {
 	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
 		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
 		return false
@@ -56,6 +51,18 @@ func ex03Test(exercise *Exercise.Exercise) bool {
 		return false
 	}
 	return true
+}
+
+func ex03Test(exercise *Exercise.Exercise) bool {
+	if !testutils.TurnInFilesCheck(*exercise) {
+		return false
+	}
+	if err := testutils.ForbiddenItemsCheck(*exercise, "shortinette-test-R00"); err != nil {
+		return false
+	}
+	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
+
+	return fizzBuzzOutputTest(*exercise)
 }
 
 func ex03() Exercise.Exercise {

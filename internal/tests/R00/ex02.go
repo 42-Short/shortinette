@@ -184,6 +184,9 @@ func printBytes() bool {
 }
 
 func ex02Test(exercise *Exercise.Exercise) bool {
+	if !testutils.TurnInFilesCheck(*exercise) {
+		return false
+	}
 	if yes() && collatz() && printBytes() {
 		return true
 	}
@@ -191,5 +194,5 @@ func ex02Test(exercise *Exercise.Exercise) bool {
 }
 
 func ex02() Exercise.Exercise {
-	return Exercise.NewExercise("EX02", "studentcode", "ex02", nil, "", "", nil, nil, nil, ex02Test)
+	return Exercise.NewExercise("EX02", "studentcode", "ex02", []string{"collatz.rs", "print_bytes.rs", "yes.rs"}, "", "", nil, nil, nil, ex02Test)
 }

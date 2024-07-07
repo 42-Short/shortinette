@@ -53,8 +53,10 @@ func compileWithRustcTestOption(turnInFile string) error {
 }
 
 func ex01Test(exercise *Exercise.Exercise) bool {
+	if !testutils.TurnInFilesCheck(*exercise) {
+		return false
+	}
 	if err := functioncheck.Execute(*exercise, "shortinette-test-R00"); err != nil {
-		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
 		return false
 	}
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
