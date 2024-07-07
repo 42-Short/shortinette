@@ -15,6 +15,7 @@ func RequireEnv() error {
 		"GITHUB_USER":         os.Getenv("GITHUB_USER"),
 		"GITHUB_TOKEN":        os.Getenv("GITHUB_TOKEN"),
 		"GITHUB_ORGANISATION": os.Getenv("GITHUB_ORGANISATION"),
+		"CONFIG_PATH":         os.Getenv("CONFIG_PATH"),
 	}
 	for key, value := range vars {
 		if value == "" {
