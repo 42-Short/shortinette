@@ -2,8 +2,10 @@ package git
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 
@@ -44,11 +46,12 @@ func sendRequest(request *http.Request) error {
 	}
 	defer response.Body.Close()
 
-	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("could not add collaborator: %s", response.Status)
+	if response.StatusCode != 200 && response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(response.Body)
+		return fmt.Errorf("request failed: %s, %s", response.Status, body)
 	}
 
-	logger.Info.Println("collaborator added successfully")
+	logger.Info.Println("operation successful")
 	return nil
 }
 
@@ -56,6 +59,103 @@ func addCollaborator(repo, username, permission string) error {
 	url := buildCollaboratorURL(repo, username)
 
 	request, err := createCollaboratorRequest(url, os.Getenv("GITHUB_TOKEN"), permission)
+	if err != nil {
+		return err
+	}
+
+	return sendRequest(request)
+}
+
+func buildPushURL(repo string) string {
+	return fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s", os.Getenv("GITHUB_ORGANISATION"), repo, "subject.md")
+}
+
+func getFileSHA(url, token string) (string, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("Accept", "application/vnd.github+json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return "", nil
+	} else if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("failed to get file SHA: %s, %s", resp.Status, body)
+	}
+
+	var result map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", err
+	}
+
+	if sha, ok := result["sha"].(string); ok {
+		return sha, nil
+	}
+
+	return "", fmt.Errorf("SHA not found in response")
+}
+
+func createPushRequest(url string, token string, targetFilePath string, encodedContent string, sha string) (*http.Request, error) {
+	requestDetails := map[string]interface{}{
+		"message": "Good Luck!",
+		"committer": map[string]string{
+			"name":  "Arthur Bied-Charreton",
+			"email": "abied-ch@student.42vienna.com",
+		},
+		"content": encodedContent,
+		"path":    targetFilePath,
+	}
+	if sha != "" {
+		requestDetails["sha"] = sha
+	}
+
+	requestDetailsJSON, err := json.Marshal(requestDetails)
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := http.NewRequest("PUT", url, bytes.NewBuffer(requestDetailsJSON))
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	request.Header.Set("Accept", "application/vnd.github+json")
+	request.Header.Set("Content-Type", "application/json")
+
+	return request, nil
+}
+
+func uploadFile(repoId string, localFilePath string, targetFilePath string) error {
+	originalFile, err := os.Open(localFilePath)
+	if err != nil {
+		return fmt.Errorf("could not open original file: %w", err)
+	}
+	defer originalFile.Close()
+	fileContent, err := io.ReadAll(originalFile)
+	if err != nil {
+		return err
+	}
+	encodedContent := base64.StdEncoding.EncodeToString(fileContent)
+
+	url := buildPushURL(repoId)
+
+	sha, err := getFileSHA(url, os.Getenv("GITHUB_TOKEN"))
+	if err != nil {
+		return err
+	}
+
+	request, err := createPushRequest(url, os.Getenv("GITHUB_TOKEN"), targetFilePath, encodedContent, sha)
 	if err != nil {
 		return err
 	}

@@ -3,7 +3,10 @@ package short
 import (
 	"fmt"
 
+	"github.com/42-Short/shortinette/internal/git"
+	Module "github.com/42-Short/shortinette/internal/interfaces/module"
 	"github.com/42-Short/shortinette/internal/logger"
+	"github.com/42-Short/shortinette/internal/tests/R00"
 )
 
 type HourlyTestMode struct {
@@ -44,11 +47,28 @@ type Short struct {
 	// modules [excercises]
 }
 
+func startModule(module Module.Module, config Config) error {
+	for _, participant := range config.Participants {
+		repoId := fmt.Sprintf("%s-%s", participant.GithubUserName, module.Name)
+		if err := git.Create(repoId); err != nil {
+			return err
+		}
+		if err := git.AddCollaborator(repoId, participant.GithubUserName, "push"); err != nil {
+			return err
+		}
+		if err := git.UploadFile(repoId, "internal/git/README.md", "README.md"); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func Run() {
 	config, err := getConfig()
 	if err != nil {
 		logger.Error.Printf("internal error: %v", err)
 	}
-	
-	fmt.Println(config)
+	if err := startModule(*R00.R00(), *config); err != nil {
+		logger.Error.Printf("internal error: %v", err)
+	}
 }
