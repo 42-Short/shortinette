@@ -9,12 +9,12 @@ import (
 	"strings"
 
 	"github.com/42-Short/shortinette/internal/errors"
-	IExercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
+	Exercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/templates"
 )
 
-func initCompilingEnvironment(test IExercise.Exercise, exercise string) error {
+func initCompilingEnvironment(test Exercise.Exercise, exercise string) error {
 	libFilePath := "compile-environment/allowedfunctions/src/lib.rs"
 	file, err := createFileWithDirs(libFilePath)
 	if err != nil {
@@ -125,12 +125,12 @@ func handleCompileError(output string) error {
 	}
 }
 
-func Execute(test IExercise.Exercise, repoId string) (err error) {
+func Execute(test Exercise.Exercise, repoId string) (err error) {
 	if err = initCompilingEnvironment(test, test.TurnInDirectory); err != nil {
 		return err
 	}
 
-	exercisePath := fmt.Sprintf("compile-environment/src/%s/%s", test.TurnInDirectory, test.TurnInFile)
+	exercisePath := fmt.Sprintf("compile-environment/src/%s/%s", test.TurnInDirectory, test.TurnInFiles[0])
 	err = lintStudentCode(exercisePath, test)
 	if err != nil {
 		return err
@@ -146,6 +146,6 @@ func Execute(test IExercise.Exercise, repoId string) (err error) {
 		return handleCompileError(output)
 	}
 
-	logger.Info.Printf("no forbidden items/keywords found in %s", test.TurnInDirectory+"/"+test.TurnInFile)
+	logger.Info.Printf("no forbidden items/keywords found in %s", test.TurnInDirectory+"/"+test.TurnInFiles[0])
 	return nil
 }
