@@ -1,7 +1,13 @@
 package short
 
+import (
+	"fmt"
+
+	"github.com/42-Short/shortinette/internal/logger"
+)
+
 type HourlyTestMode struct {
-	Delay int
+	Delay             int
 	FrequenzyDuration int
 }
 
@@ -28,7 +34,7 @@ func NewMainBranchTestMode(mainBranch *MainBranchTestMode) TestMode {
 }
 
 // type SubjectSupplyMode enum {
-	
+
 // }
 
 type Short struct {
@@ -38,9 +44,11 @@ type Short struct {
 	// modules [excercises]
 }
 
-// YML
-// - start date
-// - end date
-// - github credentials
-// array of github usernames (maybe with intranet usernames)
-// organisation url/name 
+func Run() {
+	config, err := getConfig()
+	if err != nil {
+		logger.Error.Printf("internal error: %v", err)
+	}
+	
+	fmt.Println(config)
+}
