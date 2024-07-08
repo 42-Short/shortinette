@@ -47,9 +47,24 @@ type Short struct {
 	// modules [excercises]
 }
 
+func endModule(module Module.Module, config Config) error {
+	for _, participant := range config.Participants {
+		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
+		// if err := git.RemoveCollaborator(repoId, participant.GithubUserName); err != nil {
+		// 	return err
+		// }
+		if err := git.AddCollaborator(repoId, participant.GithubUserName, "read"); err != nil {
+			return err
+		}
+		// TODO: Maybe final grading here?
+	}
+	return nil
+}
+
 func startModule(module Module.Module, config Config) error {
 	for _, participant := range config.Participants {
-		repoId := fmt.Sprintf("%s-%s", participant.GithubUserName, module.Name)
+
+		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
 		if err := git.Create(repoId); err != nil {
 			return err
 		}
@@ -67,8 +82,15 @@ func Run() {
 	config, err := getConfig()
 	if err != nil {
 		logger.Error.Printf("internal error: %v", err)
+		return
 	}
+
 	if err := startModule(*R00.R00(), *config); err != nil {
 		logger.Error.Printf("internal error: %v", err)
+		return
 	}
+	// if err := endModule(*R00.R00(), *config); err != nil {
+	// 	logger.Error.Printf("internal error: %v", err)
+	// 	return
+	// }
 }

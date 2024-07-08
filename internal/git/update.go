@@ -162,3 +162,38 @@ func uploadFile(repoId string, localFilePath string, targetFilePath string) erro
 
 	return sendRequest(request)
 }
+
+func buildRemoveCollaboratorURL(repoId string, collaborator string) string {
+	return fmt.Sprintf("https://api.github.com/repos/%s/%s/collaborators/%s", os.Getenv("GITHUB_ORGANISATION"), repoId, collaborator)
+}
+
+func createRemoveCollaboratorRequest(url string, token string) (*http.Request, error) {
+	requestDetails := map[string]interface{}{}
+
+	requestDetailsJSON, err := json.Marshal(requestDetails)
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := http.NewRequest("DELETE", url, bytes.NewBuffer(requestDetailsJSON))
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	request.Header.Set("Accept", "application/vnd.github+json")
+	request.Header.Set("Content-Type", "application/json")
+
+	return request, nil
+}
+
+func removeCollaborator(repo string, username string) error {
+	url := buildRemoveCollaboratorURL(repo, username)
+
+	request, err := createRemoveCollaboratorRequest(url, os.Getenv("GITHUB_TOKEN"))
+	if err != nil {
+		return err
+	}
+
+	return sendRequest(request)
+}

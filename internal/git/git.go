@@ -26,7 +26,7 @@ func Create(name string) error {
 
 // Add a collaborator with the specified permissions to the repo
 func AddCollaborator(repoId string, name string, permission string) error {
-	if err := addCollaborator(repoId, name, "push"); err != nil {
+	if err := addCollaborator(repoId, name, permission); err != nil {
 		logger.Error.Println(err)
 		return fmt.Errorf("could not add %s to repo %s: %w", name, repoId, err)
 	}
@@ -43,6 +43,14 @@ func UploadFile(repoId string, localFilePath string, targetFilePath string) erro
 	if err := uploadFile(repoId, localFilePath, targetFilePath); err != nil {
 		logger.Error.Println(err)
 		return fmt.Errorf("could not upload %s to repo %s: %w", localFilePath, repoId, err)
+	}
+	return nil
+}
+
+func RemoveCollaborator(repoId string, collaborator string) error {
+	if err := removeCollaborator(repoId, collaborator); err != nil {
+		logger.Error.Println(err)
+		return fmt.Errorf("could not remove collaborator %s from repo %s: %w", collaborator, repoId, err)
 	}
 	return nil
 }

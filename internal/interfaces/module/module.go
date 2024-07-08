@@ -17,11 +17,7 @@ type Module struct {
 }
 
 // NewModule initializes and returns a Module struct
-func NewModule(name string, exercises []Exercise.Exercise, repoId string, testDirectory string) (Module, error) {
-	if err := setUpEnvironment(repoId, testDirectory); err != nil {
-		return Module{}, err
-	}
-
+func NewModule(name string, exercises []Exercise.Exercise) (Module, error) {
 	return Module{
 		Name:      name,
 		Exercises: exercises,
@@ -45,7 +41,7 @@ func setUpEnvironment(repoId string, testDirectory string) error {
 }
 
 // Run executes the exercises and returns the results
-func (m *Module) Run() []Exercise.Result {
+func (m *Module) Run(repoId string, testDirectory string) []Exercise.Result {
 	defer func() {
 		if err := os.RemoveAll("compile-environment"); err != nil {
 			logger.Error.Printf("could not tear down testing environment: %v", err)
@@ -54,6 +50,9 @@ func (m *Module) Run() []Exercise.Result {
 			logger.Error.Printf("could not tear down testing environment: %v", err)
 		}
 	}()
+	if err := setUpEnvironment(repoId, testDirectory); err != nil {
+		return nil
+	}
 	var results []Exercise.Result
 	if m.Exercises != nil {
 		for _, exercise := range m.Exercises {
