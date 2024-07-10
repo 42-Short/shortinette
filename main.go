@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/short"
+	"github.com/42-Short/shortinette/internal/short/testmodes/webhooktestmode"
 	"github.com/42-Short/shortinette/internal/tests/testutils"
 	"github.com/42-Short/shortinette/internal/utils"
 )
@@ -18,5 +19,6 @@ func main() {
 		return
 	}
 	logger.Info.Println("all dependencies are already installed")
-	short.Run()
+	short := short.NewShort("Rust Piscine 1.0", webhook.NewWebhookTestMode())
+	short.TestMode.Run()
 }

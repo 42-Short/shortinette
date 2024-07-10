@@ -1,22 +1,13 @@
 package short
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"sync"
-	"time"
 
 	"github.com/42-Short/shortinette/internal/git"
 	Module "github.com/42-Short/shortinette/internal/interfaces/module"
 	"github.com/42-Short/shortinette/internal/logger"
-	"github.com/42-Short/shortinette/internal/tests/R00"
+	ITestMode "github.com/42-Short/shortinette/internal/short/testmodes"
 )
-
-type ITestMode interface {
-	Run()
-}
 
 type HourlyTestMode struct {
 	Delay              int
@@ -28,86 +19,19 @@ func (h HourlyTestMode) Run() {
 	// TODO
 }
 
-type MainBranchTestMode struct {
-	MonitoringFunction func()
-}
-
-type GitHubWebhookPayload struct {
-	Ref        string `json:"ref"`
-	Repository struct {
-		Name string `json:"name"`
-	} `json:"repository"`
-	Pusher struct {
-		Name string `json:"name"`
-	} `json:"pusher"`
-}
-
-var (
-	lastGradedTime time.Time
-	mu             sync.Mutex
-)
-
-func handleWebhook(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "invalid request method", http.StatusMethodNotAllowed)
-		return
-	}
-
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "failed to read request body", http.StatusInternalServerError)
-		return
-	}
-
-	var payload GitHubWebhookPayload
-	if err := json.Unmarshal(body, &payload); err != nil {
-		http.Error(w, "failed to parse request body", http.StatusInternalServerError)
-		return
-	}
-
-	if payload.Ref == "refs/heads/main" {
-		fmt.Printf("Received push event to main branch of %s by %s\n", payload.Repository.Name, payload.Pusher.Name)
-		config, err := getConfig()
-		if err != nil {
-			http.Error(w, "failed to get module config", http.StatusInternalServerError)
-			return
-		}
-
-		mu.Lock()
-		defer mu.Unlock()
-
-		if time.Since(lastGradedTime) < time.Minute {
-			http.Error(w, "grading process is already running", http.StatusTooManyRequests)
-			return
-		}
-
-		lastGradedTime = time.Now()
-
-		go func() {
-			if err := gradeModule(*R00.R00(), *config); err != nil {
-				logger.Error.Printf("error grading module: %v", err)
-			}
-		}()
-	}
-}
-
-func (m MainBranchTestMode) Run() {
-	// TODO
-}
-
 type Short struct {
 	Name     string
-	TestMode ITestMode
+	TestMode ITestMode.ITestMode
 }
 
-func NewShort(name string, testMode ITestMode) Short {
+func NewShort(name string, testMode ITestMode.ITestMode) Short {
 	return Short{
 		Name:     name,
 		TestMode: testMode,
 	}
 }
 
-func gradeModule(module Module.Module, config Config) error {
+func GradeModule(module Module.Module, config Config) error {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
 		result, tracesPath := module.Run(repoId, "studentcode")
@@ -126,7 +50,7 @@ func endModule(module Module.Module, config Config) {
 		if err := git.AddCollaborator(repoId, participant.GithubUserName, "read"); err != nil {
 			logger.Error.Printf("error adding collaborator: %v", err)
 		}
-		if err := gradeModule(module, config); err != nil {
+		if err := GradeModule(module, config); err != nil {
 			logger.Error.Printf("error grading module: %v", err)
 		}
 	}
@@ -145,11 +69,6 @@ func startModule(module Module.Module, config Config) {
 			logger.Error.Printf("error uploading file: %v", err)
 		}
 	}
-}
-
-func Run() {
-	http.HandleFunc("/webhook", handleWebhook)
-	http.ListenAndServe(":8080", nil)
 }
 
 // c := cron.New(cron.WithSeconds())
