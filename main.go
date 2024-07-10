@@ -28,4 +28,5 @@ func main() {
 	}
 	Short.StartModule(*R00.R00(), *config)
 	short.TestMode.Run()
+	Short.EndModule(*R00.R00(), *config)
 }

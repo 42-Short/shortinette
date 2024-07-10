@@ -18,7 +18,9 @@ func NewWebhookTestMode() WebhookTestMode {
 	return WebhookTestMode{
 		MonitoringFunction: func() {
 			http.HandleFunc("/webhook", handleWebhook)
-			http.ListenAndServe(":8080", nil)
+			if err := http.ListenAndServe(":8080", nil); err != nil {
+				logger.Error.Printf("failed to start http server: %v", err)
+			}
 		},
 	}
 }
