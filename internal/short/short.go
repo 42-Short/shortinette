@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
+	"time"
 
 	"github.com/42-Short/shortinette/internal/git"
 	Module "github.com/42-Short/shortinette/internal/interfaces/module"
@@ -40,6 +42,11 @@ type GitHubWebhookPayload struct {
 	} `json:"pusher"`
 }
 
+var (
+	lastGradedTime time.Time
+	mu             sync.Mutex
+)
+
 func handleWebhook(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "invalid request method", http.StatusMethodNotAllowed)
@@ -65,7 +72,22 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "failed to get module config", http.StatusInternalServerError)
 			return
 		}
-		go gradeModule(*R00.R00(), *config)
+
+		mu.Lock()
+		defer mu.Unlock()
+
+		if time.Since(lastGradedTime) < time.Minute {
+			http.Error(w, "grading process is already running", http.StatusTooManyRequests)
+			return
+		}
+
+		lastGradedTime = time.Now()
+
+		go func() {
+			if err := gradeModule(*R00.R00(), *config); err != nil {
+				logger.Error.Printf("error grading module: %v", err)
+			}
+		}()
 	}
 }
 
