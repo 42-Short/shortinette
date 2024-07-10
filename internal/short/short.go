@@ -93,7 +93,10 @@ func Run() {
 		logger.Error.Printf("internal error: %v", err)
 		return
 	}
-	gradeModule(*R00.R00(), *config)
+	if err := gradeModule(*R00.R00(), *config); err != nil {
+		logger.Error.Printf("internal error: %v", err)
+		return
+	}
 	if err := endModule(*R00.R00(), *config); err != nil {
 		logger.Error.Printf("internal error: %v", err)
 		return
