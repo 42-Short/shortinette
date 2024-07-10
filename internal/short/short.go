@@ -69,7 +69,7 @@ func endModule(module Module.Module, config Config) {
 	}
 }
 
-func startModule(module Module.Module, config Config) error {
+func startModule(module Module.Module, config Config) {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
 		if err := git.Create(repoId); err != nil {
@@ -82,7 +82,6 @@ func startModule(module Module.Module, config Config) error {
 			logger.Error.Printf("error uploading file: %v", err)
 		}
 	}
-	return nil
 }
 
 func Run() {
