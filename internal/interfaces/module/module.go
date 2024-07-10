@@ -17,35 +17,31 @@ type Module struct {
 }
 
 // NewModule initializes and returns a Module struct
-func NewModule(name string, exercises []Exercise.Exercise, repoId string, testDirectory string) (Module, error) {
-	if err := setUpEnvironment(repoId, testDirectory); err != nil {
-		return Module{}, err
-	}
-
+func NewModule(name string, exercises []Exercise.Exercise) (Module, error) {
 	return Module{
 		Name:      name,
 		Exercises: exercises,
 	}, nil
 }
 
-func setUpEnvironment(repoId string, testDirectory string) error {
+func setUpEnvironment(repoId string, testDirectory string) (tracesPath string, err error) {
 	repoLink := fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId)
 	if err := git.Get(repoLink, testDirectory); err != nil {
 		errorMessage := fmt.Sprintf("failed to clone repository: %v", err)
-		return errors.NewInternalError(errors.ErrInternal, errorMessage)
+		return "", errors.NewInternalError(errors.ErrInternal, errorMessage)
 	}
-	if err := logger.InitializeTraceLogger(repoId); err != nil {
+	if tracesPath, err = logger.InitializeTraceLogger(repoId); err != nil {
 		errorMessage := fmt.Sprintf("failed to initalize logging system (%v), does the ./traces directory exist?", err)
-		return errors.NewInternalError(errors.ErrInternal, errorMessage)
+		return "", errors.NewInternalError(errors.ErrInternal, errorMessage)
 	}
 	if err := git.Get(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId), "compile-environment/src/"); err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return tracesPath, nil
 }
 
-// Run executes the exercises and returns the results
-func (m *Module) Run() []Exercise.Result {
+// Run executes the exercises and returns the results and the path to the traces
+func (m *Module) Run(repoId string, testDirectory string) (results []Exercise.Result, tracesPath string) {
 	defer func() {
 		if err := os.RemoveAll("compile-environment"); err != nil {
 			logger.Error.Printf("could not tear down testing environment: %v", err)
@@ -54,17 +50,18 @@ func (m *Module) Run() []Exercise.Result {
 			logger.Error.Printf("could not tear down testing environment: %v", err)
 		}
 	}()
-	var results []Exercise.Result
+	tracesPath, err := setUpEnvironment(repoId, testDirectory)
+	if err != nil {
+		return nil, tracesPath
+	}
 	if m.Exercises != nil {
 		for _, exercise := range m.Exercises {
 			res := exercise.Run()
 			results = append(results, res)
 			if res.Passed {
 				logger.File.Printf("[%s OK]", exercise.Name)
-			} else {
-				logger.File.Printf("[%s KO]", exercise.Name)
 			}
 		}
 	}
-	return results
+	return results, tracesPath
 }

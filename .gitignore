@@ -1,6 +1,7 @@
 # SECRETS
 
 .env
+shortconfig/
 
 # TESTS
 
@@ -18,7 +19,3 @@ node_modules
 
 logs/
 traces/
-
-# LEGACY CODE
-
-legacy/
