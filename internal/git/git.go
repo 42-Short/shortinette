@@ -39,8 +39,8 @@ func AddCollaborator(repoId string, name string, permission string) error {
 //   - repoId: The name of the organisation repository
 //   - localFilePath: The source file whose content is to be uploaded
 //   - targetFilePath: The file to be created/updated on the remote
-func UploadFile(repoId string, localFilePath string, targetFilePath string) error {
-	if err := uploadFile(repoId, localFilePath, targetFilePath); err != nil {
+func UploadFile(repoId string, localFilePath string, targetFilePath string, commitMessage string) error {
+	if err := uploadFile(repoId, localFilePath, targetFilePath, commitMessage); err != nil {
 		logger.Error.Println(err)
 		return fmt.Errorf("could not upload %s to repo %s: %w", localFilePath, repoId, err)
 	}

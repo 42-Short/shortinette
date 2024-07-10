@@ -65,8 +65,8 @@ func addCollaborator(repo, username, permission string) error {
 	return sendRequest(request)
 }
 
-func buildPushURL(repo string) string {
-	return fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s", os.Getenv("GITHUB_ORGANISATION"), repo, "subject.md")
+func buildPushURL(repo string, targetFilePath string) string {
+	return fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s", os.Getenv("GITHUB_ORGANISATION"), repo, targetFilePath)
 }
 
 func getFileSHA(url, token string) (string, error) {
@@ -104,9 +104,9 @@ func getFileSHA(url, token string) (string, error) {
 	return "", fmt.Errorf("SHA not found in response")
 }
 
-func createPushRequest(url string, token string, targetFilePath string, encodedContent string, sha string) (*http.Request, error) {
+func createPushRequest(url string, token string, targetFilePath string, commitMessage string, encodedContent string, sha string) (*http.Request, error) {
 	requestDetails := map[string]interface{}{
-		"message": "Good Luck!",
+		"message": commitMessage,
 		"committer": map[string]string{
 			"name":  os.Getenv("GITHUB_USER"),
 			"email": os.Getenv("GITHUB_EMAIL"),
@@ -135,7 +135,7 @@ func createPushRequest(url string, token string, targetFilePath string, encodedC
 	return request, nil
 }
 
-func uploadFile(repoId string, localFilePath string, targetFilePath string) error {
+func uploadFile(repoId string, localFilePath string, targetFilePath string, commitMessage string) error {
 	originalFile, err := os.Open(localFilePath)
 	if err != nil {
 		return fmt.Errorf("could not open original file: %w", err)
@@ -147,14 +147,14 @@ func uploadFile(repoId string, localFilePath string, targetFilePath string) erro
 	}
 	encodedContent := base64.StdEncoding.EncodeToString(fileContent)
 
-	url := buildPushURL(repoId)
+	url := buildPushURL(repoId, targetFilePath)
 
 	sha, err := getFileSHA(url, os.Getenv("GITHUB_TOKEN"))
 	if err != nil {
 		return err
 	}
 
-	request, err := createPushRequest(url, os.Getenv("GITHUB_TOKEN"), targetFilePath, encodedContent, sha)
+	request, err := createPushRequest(url, os.Getenv("GITHUB_TOKEN"), targetFilePath, commitMessage, encodedContent, sha)
 	if err != nil {
 		return err
 	}

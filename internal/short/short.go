@@ -51,7 +51,7 @@ func gradeModule(module Module.Module, config Config) error {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
 		result, tracesPath := module.Run(repoId, "studentcode")
-		if err := git.UploadFile(repoId, tracesPath, "hello"); err != nil {
+		if err := git.UploadFile(repoId, tracesPath, tracesPath, fmt.Sprintf("Traces for module %s: %s", module.Name, tracesPath)); err != nil {
 			return err
 		}
 		fmt.Println(result)
@@ -81,7 +81,7 @@ func startModule(module Module.Module, config Config) error {
 		if err := git.AddCollaborator(repoId, participant.GithubUserName, "push"); err != nil {
 			return err
 		}
-		if err := git.UploadFile(repoId, "internal/git/README.md", "README.md"); err != nil {
+		if err := git.UploadFile(repoId, "subjects/R00.md", "README.md", fmt.Sprintf("Subject for module %s. Good Luck!", module.Name)); err != nil {
 			return err
 		}
 	}
