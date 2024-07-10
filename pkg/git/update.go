@@ -108,7 +108,7 @@ func createPushRequest(url string, token string, targetFilePath string, commitMe
 	requestDetails := map[string]interface{}{
 		"message": commitMessage,
 		"committer": map[string]string{
-			"name":  os.Getenv("GITHUB_USER"),
+			"name":  os.Getenv("GITHUB_ADMIN"),
 			"email": os.Getenv("GITHUB_EMAIL"),
 		},
 		"content": encodedContent,

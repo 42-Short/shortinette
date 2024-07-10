@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/42-Short/shortinette/internal/errors"
-	Exercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/templates"
+	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 )
 
 func initCompilingEnvironment(test Exercise.Exercise, exercise string) error {

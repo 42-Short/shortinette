@@ -3,16 +3,11 @@ package short
 import (
 	"fmt"
 
-	"github.com/42-Short/shortinette/internal/git"
-	Module "github.com/42-Short/shortinette/internal/interfaces/module"
 	"github.com/42-Short/shortinette/internal/logger"
-	"github.com/42-Short/shortinette/internal/tests/R00"
-	"github.com/robfig/cron/v3"
+	"github.com/42-Short/shortinette/pkg/git"
+	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
+	ITestMode "github.com/42-Short/shortinette/pkg/short/testmodes"
 )
-
-type ITestMode interface {
-	Run()
-}
 
 type HourlyTestMode struct {
 	Delay              int
@@ -24,27 +19,19 @@ func (h HourlyTestMode) Run() {
 	// TODO
 }
 
-type MainBranchTestMode struct {
-	MonitoringFunction func()
-}
-
-func (m MainBranchTestMode) Run() {
-	// TODO
-}
-
 type Short struct {
 	Name     string
-	TestMode ITestMode
+	TestMode ITestMode.ITestMode
 }
 
-func NewShort(name string, testMode ITestMode) Short {
+func NewShort(name string, testMode ITestMode.ITestMode) Short {
 	return Short{
-		Name: name,
+		Name:     name,
 		TestMode: testMode,
 	}
 }
 
-func gradeModule(module Module.Module, config Config) error {
+func GradeModule(module Module.Module, config Config) error {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
 		result, tracesPath := module.Run(repoId, "studentcode")
@@ -56,20 +43,20 @@ func gradeModule(module Module.Module, config Config) error {
 	return nil
 }
 
-func endModule(module Module.Module, config Config) {
+func EndModule(module Module.Module, config Config) {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
 		// INFO: Giving read access to a user will remove their push rights
 		if err := git.AddCollaborator(repoId, participant.GithubUserName, "read"); err != nil {
 			logger.Error.Printf("error adding collaborator: %v", err)
 		}
-		if err := gradeModule(module, config); err != nil {
+		if err := GradeModule(module, config); err != nil {
 			logger.Error.Printf("error grading module: %v", err)
 		}
 	}
 }
 
-func startModule(module Module.Module, config Config) {
+func StartModule(module Module.Module, config Config) {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
 		if err := git.Create(repoId); err != nil {
@@ -82,32 +69,4 @@ func startModule(module Module.Module, config Config) {
 			logger.Error.Printf("error uploading file: %v", err)
 		}
 	}
-}
-
-func Run() {
-	config, err := getConfig()
-	if err != nil {
-		logger.Error.Printf("internal error: %v", err)
-		return
-	}
-	c := cron.New(cron.WithSeconds())
-
-	if _, err = c.AddFunc("0 * * * * ?", func() {
-		module := R00.R00()
-		logger.Info.Printf("starting module %s", module.Name)
-		startModule(*module, *config)
-	}); err != nil {
-		logger.Error.Printf("failed scheduling start module task: %v", err)
-		return
-	}
-	if _, err = c.AddFunc("59 * * * * ?", func() {
-		module := R00.R00()
-		logger.Info.Printf("ending module %s", module.Name)
-		endModule(*module, *config)
-	}); err != nil {
-		logger.Error.Printf("failed scheduling end module task: %v", err)
-		return
-	}
-	c.Start()
-	select {}
 }

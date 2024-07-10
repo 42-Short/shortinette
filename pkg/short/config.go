@@ -18,7 +18,7 @@ type Config struct {
 	Participants []Participant
 }
 
-func getConfig() (*Config, error) {
+func GetConfig() (*Config, error) {
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
 		return nil, fmt.Errorf("CONFIG_PATH environment variable not set")
@@ -33,7 +33,7 @@ func getConfig() (*Config, error) {
 		StartDate    string `json:"start_date"`
 		EndDate      string `json:"end_date"`
 		Participants []struct {
-			GithubUserName string `json:"github_username"`
+			GithubUserName string `json:"GITHUB_ADMINname"`
 			IntraLogin     string `json:"intra_login"`
 		} `json:"participants"`
 	}

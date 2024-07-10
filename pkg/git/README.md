@@ -47,7 +47,7 @@ func main() {
 ```
 ## Environment Variables
 The following environment variables need to be set:
-* **`GITHUB_USER`**: GitHub username for authentication.
+* **`GITHUB_ADMIN`**: GitHub username for authentication.
 * **`GITHUB_TOKEN`**: GitHub personal access token for authentication
 
 ## Error Handling

@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	Exercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/templates"
+	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 )
 
 func searchForKeyword(keywords map[string]int, word string) (keyword string, found bool) {

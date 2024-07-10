@@ -10,6 +10,41 @@ import (
 	"github.com/42-Short/shortinette/internal/logger"
 )
 
+func addWebhook(repoId string) error {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/hooks", os.Getenv("GITHUB_ORGANISATION"), repoId)
+	webhookConfig := map[string]interface{}{
+		"name":   "web",
+		"active": true,
+		"events": []string{"push"},
+		"config": map[string]string{
+			"url":          os.Getenv("WEBHOOK_URL"),
+			"content_type": "json",
+		},
+	}
+	webhookConfigJSON, err := json.Marshal(webhookConfig)
+	if err != nil {
+		return err
+	}
+
+	request, err := createHTTPRequest("POST", url, os.Getenv("GITHUB_TOKEN"), webhookConfigJSON)
+	if err != nil {
+		return err
+	}
+
+	response, err := sendHTTPRequest(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusCreated {
+		return fmt.Errorf(response.Status)
+	}
+
+	logger.Info.Printf("webhook added successfully to %s", repoId)
+	return nil
+}
+
 func buildRepoURL(repo string) string {
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s", os.Getenv("GITHUB_ORGANISATION"), repo)
 }
@@ -90,6 +125,10 @@ func createRepository(name string) error {
 
 	if response.StatusCode != http.StatusCreated {
 		return fmt.Errorf(response.Status)
+	}
+
+	if err := addWebhook(name); err != nil {
+		return fmt.Errorf("failed to add webhook: %w", err)
 	}
 
 	fmt.Println("repository created successfully")

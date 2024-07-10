@@ -1,8 +1,8 @@
 package R00
 
 import (
-	Exercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/tests/testutils"
+	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 )
 
 func ex05Test(exercise *Exercise.Exercise) bool {

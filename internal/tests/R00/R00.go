@@ -1,9 +1,9 @@
 package R00
 
 import (
-	Exercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
-	Module "github.com/42-Short/shortinette/internal/interfaces/module"
 	"github.com/42-Short/shortinette/internal/logger"
+	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
+	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
 )
 
 func R00() *Module.Module {
