@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	Exercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
+	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/templates"
 )
 

@@ -3,7 +3,7 @@ package R00
 import (
 	"path/filepath"
 
-	Exercise "github.com/42-Short/shortinette/internal/interfaces/exercise"
+	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/tests/testutils"
 )

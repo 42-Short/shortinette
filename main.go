@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/42-Short/shortinette/internal/logger"
-	"github.com/42-Short/shortinette/internal/short"
-	"github.com/42-Short/shortinette/internal/short/testmodes/webhooktestmode"
+	"github.com/42-Short/shortinette/pkg/short"
+	"github.com/42-Short/shortinette/pkg/short/testmodes/webhooktestmode"
 	"github.com/42-Short/shortinette/internal/tests/testutils"
 	"github.com/42-Short/shortinette/internal/utils"
 )

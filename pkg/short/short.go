@@ -3,10 +3,10 @@ package short
 import (
 	"fmt"
 
-	"github.com/42-Short/shortinette/internal/git"
-	Module "github.com/42-Short/shortinette/internal/interfaces/module"
+	"github.com/42-Short/shortinette/pkg/git"
+	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
 	"github.com/42-Short/shortinette/internal/logger"
-	ITestMode "github.com/42-Short/shortinette/internal/short/testmodes"
+	ITestMode "github.com/42-Short/shortinette/pkg/short/testmodes"
 )
 
 type HourlyTestMode struct {
