@@ -8,9 +8,9 @@ import (
 
 	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/internal/functioncheck"
-	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/tests/testutils"
+	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 )
 
 func ex00Compile(exercise *Exercise.Exercise) error {

@@ -6,7 +6,7 @@ Therefore, you need to provide your credentials.
 2. This is how you need to fill it up:
 ```.env
 # These are used for identifying you when making requests on the GitHub API.
-GITHUB_USER="your GitHub username"
+GITHUB_ADMIN="your GitHub username"
 GITHUB_TOKEN="your GitHub personal access token"
 
 # This is the organization under which the repositories will be created. Please create your own for testing purposes.

@@ -3,9 +3,9 @@ package short
 import (
 	"fmt"
 
+	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/pkg/git"
 	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
-	"github.com/42-Short/shortinette/internal/logger"
 	ITestMode "github.com/42-Short/shortinette/pkg/short/testmodes"
 )
 
@@ -43,7 +43,7 @@ func GradeModule(module Module.Module, config Config) error {
 	return nil
 }
 
-func endModule(module Module.Module, config Config) {
+func EndModule(module Module.Module, config Config) {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
 		// INFO: Giving read access to a user will remove their push rights
@@ -56,7 +56,7 @@ func endModule(module Module.Module, config Config) {
 	}
 }
 
-func startModule(module Module.Module, config Config) {
+func StartModule(module Module.Module, config Config) {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
 		if err := git.Create(repoId); err != nil {
@@ -70,24 +70,3 @@ func startModule(module Module.Module, config Config) {
 		}
 	}
 }
-
-// c := cron.New(cron.WithSeconds())
-
-// if _, err = c.AddFunc("0 * * * * ?", func() {
-// 	module := R00.R00()
-// 	logger.Info.Printf("starting module %s", module.Name)
-// 	startModule(*module, *config)
-// }); err != nil {
-// 	logger.Error.Printf("failed scheduling start module task: %v", err)
-// 	return
-// }
-// if _, err = c.AddFunc("59 * * * * ?", func() {
-// 	module := R00.R00()
-// 	logger.Info.Printf("ending module %s", module.Name)
-// 	endModule(*module, *config)
-// }); err != nil {
-// 	logger.Error.Printf("failed scheduling end module task: %v", err)
-// 	return
-// }
-// c.Start()
-// select {}

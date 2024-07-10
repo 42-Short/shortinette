@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/42-Short/shortinette/internal/logger"
-	"github.com/42-Short/shortinette/pkg/short"
 	"github.com/42-Short/shortinette/internal/tests/R00"
+	"github.com/42-Short/shortinette/pkg/short"
 )
 
 func NewWebhookTestMode() WebhookTestMode {
@@ -59,7 +60,7 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if payload.Ref == "refs/heads/main" {
+	if payload.Ref == "refs/heads/main" && payload.Pusher.Name != os.Getenv("GITHUB_ADMIN") {
 		fmt.Printf("Received push event to main branch of %s by %s\n", payload.Repository.Name, payload.Pusher.Name)
 		config, err := short.GetConfig()
 		if err != nil {

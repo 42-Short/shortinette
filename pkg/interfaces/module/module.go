@@ -5,9 +5,9 @@ import (
 	"os"
 
 	"github.com/42-Short/shortinette/internal/errors"
+	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/pkg/git"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
-	"github.com/42-Short/shortinette/internal/logger"
 )
 
 type Module struct {

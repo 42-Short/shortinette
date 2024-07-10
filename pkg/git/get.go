@@ -16,7 +16,7 @@ func cloneRepository(repoURL, targetDir string) (*git.Repository, error) {
 	repo, err := git.PlainClone(targetDir, false, &git.CloneOptions{
 		URL: repoURL,
 		Auth: &http.BasicAuth{
-			Username: os.Getenv("GITHUB_USER"),
+			Username: os.Getenv("GITHUB_ADMIN"),
 			Password: os.Getenv("GITHUB_TOKEN"),
 		},
 	})
@@ -54,7 +54,7 @@ func pullLatestChanges(repo *git.Repository) error {
 		RemoteName:    "origin",
 		ReferenceName: plumbing.Main,
 		Auth: &http.BasicAuth{
-			Username: os.Getenv("GITHUB_USER"),
+			Username: os.Getenv("GITHUB_ADMIN"),
 			Password: os.Getenv("GITHUB_TOKEN"),
 		},
 		Progress: os.Stdout,
