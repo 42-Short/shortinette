@@ -50,7 +50,10 @@ type Short struct {
 func gradeModule(module Module.Module, config Config) error {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
-		result := module.Run(repoId, "studentcode")
+		result, tracesPath := module.Run(repoId, "studentcode")
+		if err := git.UploadFile(repoId, tracesPath, "hello"); err != nil {
+			return err
+		}
 		fmt.Println(result)
 	}
 	return nil

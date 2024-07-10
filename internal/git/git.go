@@ -44,5 +44,6 @@ func UploadFile(repoId string, localFilePath string, targetFilePath string) erro
 		logger.Error.Println(err)
 		return fmt.Errorf("could not upload %s to repo %s: %w", localFilePath, repoId, err)
 	}
+	logger.Info.Printf("%s successfully uploaded to %s/%s", localFilePath, repoId, targetFilePath)
 	return nil
 }

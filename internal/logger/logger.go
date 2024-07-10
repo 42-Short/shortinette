@@ -13,17 +13,17 @@ var (
 	File  *log.Logger
 )
 
-func InitializeTraceLogger(repoId string) error {
+func InitializeTraceLogger(repoId string) (string, error) {
 	t := time.Now()
 	formattedTime := t.Format("20060102_150405")
 	fileName := fmt.Sprintf("traces/%s-%s.log", repoId, formattedTime)
 
 	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
-		return err
+		return fileName, err
 	}
 	File = log.New(file, "", log.Ldate|log.Ltime)
-	return nil
+	return fileName, nil
 }
 
 func InitializeStandardLoggers() {

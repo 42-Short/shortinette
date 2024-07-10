@@ -50,7 +50,6 @@ func sendRequest(request *http.Request) error {
 		body, _ := io.ReadAll(response.Body)
 		return fmt.Errorf("request failed: %s, %s", response.Status, body)
 	}
-
 	logger.Info.Println("operation successful")
 	return nil
 }
@@ -109,8 +108,8 @@ func createPushRequest(url string, token string, targetFilePath string, encodedC
 	requestDetails := map[string]interface{}{
 		"message": "Good Luck!",
 		"committer": map[string]string{
-			"name":  "Arthur Bied-Charreton",
-			"email": "abied-ch@student.42vienna.com",
+			"name":  os.Getenv("GITHUB_USER"),
+			"email": os.Getenv("GITHUB_EMAIL"),
 		},
 		"content": encodedContent,
 		"path":    targetFilePath,
