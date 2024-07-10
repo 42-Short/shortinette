@@ -53,7 +53,7 @@ func gradeModule(module Module.Module, config Config) error {
 		result := module.Run(repoId, "studentcode")
 		fmt.Println(result)
 	}
-	return nil 
+	return nil
 }
 
 func endModule(module Module.Module, config Config) error {
@@ -62,7 +62,9 @@ func endModule(module Module.Module, config Config) error {
 		if err := git.AddCollaborator(repoId, participant.GithubUserName, "read"); err != nil {
 			return err
 		}
-		// TODO: Maybe final grading here?
+		if err := gradeModule(module, config); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -90,10 +92,6 @@ func Run() {
 		return
 	}
 	if err := startModule(*R00.R00(), *config); err != nil {
-		logger.Error.Printf("internal error: %v", err)
-		return
-	}
-	if err := gradeModule(*R00.R00(), *config); err != nil {
 		logger.Error.Printf("internal error: %v", err)
 		return
 	}
