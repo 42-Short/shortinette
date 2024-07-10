@@ -10,42 +10,38 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
+type ITestMode interface {
+	Run()
+}
+
 type HourlyTestMode struct {
-	Delay             int
-	FrequenzyDuration int
+	Delay              int
+	FrequencyDuration  int
+	MonitoringFunction func()
+}
+
+func (h HourlyTestMode) Run() {
+	// TODO
 }
 
 type MainBranchTestMode struct {
+	MonitoringFunction func()
 }
 
-// TODO: find better name
-type TestMode struct {
-	Hourly     *HourlyTestMode
-	MainBranch *MainBranchTestMode
+func (m MainBranchTestMode) Run() {
+	// TODO
 }
-
-func NewHourlyTestMode(hourly *HourlyTestMode) TestMode {
-	return TestMode{
-		Hourly:     hourly,
-		MainBranch: nil,
-	}
-}
-func NewMainBranchTestMode(mainBranch *MainBranchTestMode) TestMode {
-	return TestMode{
-		Hourly:     nil,
-		MainBranch: mainBranch,
-	}
-}
-
-// type SubjectSupplyMode enum {
-
-// }
 
 type Short struct {
 	Name     string
-	TestMode TestMode
-	// Is it one per day or are users automatically assigne if they have the previous Subject at XX% --SubjectSupplyMode
-	// modules [excercises]
+	TestMode ITestMode
+}
+
+func NewShort(name string, testMode ITestMode) Short {
+	return Short{
+		Name: name,
+		TestMode: testMode,
+	}
 }
 
 func gradeModule(module Module.Module, config Config) error {
@@ -60,31 +56,30 @@ func gradeModule(module Module.Module, config Config) error {
 	return nil
 }
 
-func endModule(module Module.Module, config Config) error {
+func endModule(module Module.Module, config Config) {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
 		// INFO: Giving read access to a user will remove their push rights
 		if err := git.AddCollaborator(repoId, participant.GithubUserName, "read"); err != nil {
-			return err
+			logger.Error.Printf("error adding collaborator: %v", err)
 		}
 		if err := gradeModule(module, config); err != nil {
-			return err
+			logger.Error.Printf("error grading module: %v", err)
 		}
 	}
-	return nil
 }
 
 func startModule(module Module.Module, config Config) error {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
 		if err := git.Create(repoId); err != nil {
-			return err
+			logger.Error.Printf("error creating git repository: %v", err)
 		}
 		if err := git.AddCollaborator(repoId, participant.GithubUserName, "push"); err != nil {
-			return err
+			logger.Error.Printf("error adding collaborator: %v", err)
 		}
 		if err := git.UploadFile(repoId, "subjects/R00.md", "README.md", fmt.Sprintf("Subject for module %s. Good Luck!", module.Name)); err != nil {
-			return err
+			logger.Error.Printf("error uploading file: %v", err)
 		}
 	}
 	return nil
