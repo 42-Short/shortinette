@@ -46,11 +46,3 @@ func UploadFile(repoId string, localFilePath string, targetFilePath string) erro
 	}
 	return nil
 }
-
-func RemoveCollaborator(repoId string, collaborator string) error {
-	if err := removeCollaborator(repoId, collaborator); err != nil {
-		logger.Error.Println(err)
-		return fmt.Errorf("could not remove collaborator %s from repo %s: %w", collaborator, repoId, err)
-	}
-	return nil
-}

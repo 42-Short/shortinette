@@ -17,6 +17,6 @@ func main() {
 		logger.Error.Println(err.Error())
 		return
 	}
-	short.Run()
 	logger.Info.Println("all dependencies are already installed")
+	short.Run()
 }

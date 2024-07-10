@@ -60,8 +60,6 @@ func (m *Module) Run(repoId string, testDirectory string) []Exercise.Result {
 			results = append(results, res)
 			if res.Passed {
 				logger.File.Printf("[%s OK]", exercise.Name)
-			} else {
-				logger.File.Printf("[%s KO]", exercise.Name)
 			}
 		}
 	}
