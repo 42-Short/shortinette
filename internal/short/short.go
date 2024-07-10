@@ -7,6 +7,7 @@ import (
 	Module "github.com/42-Short/shortinette/internal/interfaces/module"
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/tests/R00"
+	"github.com/robfig/cron/v3"
 )
 
 type HourlyTestMode struct {
@@ -62,6 +63,7 @@ func gradeModule(module Module.Module, config Config) error {
 func endModule(module Module.Module, config Config) error {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
+		// INFO: Giving read access to a user will remove their push rights
 		if err := git.AddCollaborator(repoId, participant.GithubUserName, "read"); err != nil {
 			return err
 		}
@@ -94,12 +96,24 @@ func Run() {
 		logger.Error.Printf("internal error: %v", err)
 		return
 	}
-	if err := startModule(*R00.R00(), *config); err != nil {
-		logger.Error.Printf("internal error: %v", err)
+	c := cron.New(cron.WithSeconds())
+
+	if _, err = c.AddFunc("0 * * * * ?", func() {
+		module := R00.R00()
+		logger.Info.Printf("starting module %s", module.Name)
+		startModule(*module, *config)
+	}); err != nil {
+		logger.Error.Printf("failed scheduling start module task: %v", err)
 		return
 	}
-	if err := endModule(*R00.R00(), *config); err != nil {
-		logger.Error.Printf("internal error: %v", err)
+	if _, err = c.AddFunc("59 * * * * ?", func() {
+		module := R00.R00()
+		logger.Info.Printf("ending module %s", module.Name)
+		endModule(*module, *config)
+	}); err != nil {
+		logger.Error.Printf("failed scheduling end module task: %v", err)
 		return
 	}
+	c.Start()
+	select {}
 }
