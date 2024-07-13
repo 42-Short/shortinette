@@ -20,13 +20,13 @@ import (
 	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
 )
 
+// Initializes and returns a module object.
 func module00() *Module.Module {
-	r00, err := Module.NewModule("module00", []Exercise.Exercise{ex00(), ...})
+	r00, err := Module.NewModule("module00", []Exercise.Exercise{ex00(), ..., exXX()})
 	if err != nil {
 		logger.Error.Printf("internal error: %v", err)
 		return nil
 	}
 	return &r00
 }
-
 ```
