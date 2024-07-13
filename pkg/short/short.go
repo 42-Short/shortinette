@@ -24,6 +24,11 @@ type Short struct {
 	TestMode ITestMode.ITestMode
 }
 
+// Returns a Short object, the wrapper for the whole Short configuration.
+//
+//   - name: the display name of your Short
+//   - testMode: a ITestMode object, determining how the submission testing will
+//     be triggered
 func NewShort(name string, testMode ITestMode.ITestMode) Short {
 	return Short{
 		Name:     name,
@@ -31,31 +36,42 @@ func NewShort(name string, testMode ITestMode.ITestMode) Short {
 	}
 }
 
-func GradeModule(module Module.Module, config Config) error {
-	for _, participant := range config.Participants {
-		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
-		result, tracesPath := module.Run(repoId, "studentcode")
-		if err := git.UploadFile(repoId, tracesPath, tracesPath, fmt.Sprintf("Traces for module %s: %s", module.Name, tracesPath)); err != nil {
-			return err
-		}
-		fmt.Println(result)
+// Grades one participant's module and upload trace
+func GradeModule(module Module.Module, repoId string) error {
+	_, tracesPath := module.Run(repoId, "studentcode")
+	commitMessage := fmt.Sprintf("Traces for module %s: %s", module.Name, tracesPath)
+	if err := git.UploadFile(repoId, tracesPath, tracesPath, commitMessage); err != nil {
+		return err
 	}
 	return nil
 }
 
+// Grades all participant's modules and upload traces.
+func GradeAll(module Module.Module, config Config) error {
+	for _, participant := range config.Participants {
+		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
+		if err := GradeModule(module, repoId); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Grades all repos from a module and removes write access for all participants.
 func EndModule(module Module.Module, config Config) {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
-		// INFO: Giving read access to a user will remove their push rights
 		if err := git.AddCollaborator(repoId, participant.GithubUserName, "read"); err != nil {
 			logger.Error.Printf("error adding collaborator: %v", err)
 		}
-		if err := GradeModule(module, config); err != nil {
+		if err := GradeAll(module, config); err != nil {
 			logger.Error.Printf("error grading module: %v", err)
 		}
 	}
 }
 
+// Creates a new repo for each participant, gives them write access and
+// upload the module's subject on the repo.
 func StartModule(module Module.Module, config Config) {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)

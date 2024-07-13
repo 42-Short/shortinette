@@ -19,7 +19,7 @@ func Clone(repoURL string, targetDirectory string) error {
 
 // Check if repo exists, if not create it under the configured organisation.
 // Also adds a webhook for easy recording of repository activity.
-// 
+//
 // See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
 func Create(name string) error {
 	if err := create(name); err != nil {
@@ -31,9 +31,10 @@ func Create(name string) error {
 
 // Add a collaborator with the specified permissions to the repo.
 //
-//	- repoId: The name of the organisation repository
-//	- username: The GitHub username of the collaborator
-//	- permission: The access level to be given to the user
+//   - repoId: name of the organisation repository
+//   - username: GitHub username of the collaborator
+//   - permission: access level to be given to the user
+//
 // NOTE: Using this function will overwrite the user's previous rights - use test
 // accounts, or you might lock yourself out of your repos.
 //
@@ -48,9 +49,10 @@ func AddCollaborator(repoId string, username string, permission string) error {
 
 // Add/Update a file on a repository
 //
-//   - repoId: The name of the organisation repository
-//   - localFilePath: The source file to be uploaded
-//   - targetFilePath: The file to be created/updated on the remote
+//   - repoId: name of the organisation repository
+//   - localFilePath: source file to be uploaded
+//   - targetFilePath: file to be created/updated on the remote
+//
 // See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
 func UploadFile(repoId string, localFilePath string, targetFilePath string, commitMessage string) error {
 	if err := uploadFile(repoId, localFilePath, targetFilePath, commitMessage); err != nil {

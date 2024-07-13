@@ -64,11 +64,6 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 
 	if payload.Ref == "refs/heads/main" && payload.Pusher.Name != os.Getenv("GITHUB_ADMIN") {
 		fmt.Printf("Received push event to main branch of %s by %s\n", payload.Repository.Name, payload.Pusher.Name)
-		config, err := short.GetConfig()
-		if err != nil {
-			http.Error(w, "failed to get module config", http.StatusInternalServerError)
-			return
-		}
 
 		mu.Lock()
 		defer mu.Unlock()
@@ -81,7 +76,7 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 		lastGradedTime = time.Now()
 
 		go func() {
-			if err := short.GradeModule(*R00.R00(), *config); err != nil {
+			if err := short.GradeModule(*R00.R00(), payload.Repository.Name); err != nil {
 				logger.Error.Printf("error grading module: %v", err)
 			}
 		}()
