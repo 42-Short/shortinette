@@ -1,5 +1,5 @@
 # Exercise Package
-## `[exercise.go](~/pkg/exercise/exercise.go)`
+## `exercise.go`
 The `Exercise` package defines the structure and behavior of an exercise. 
 It includes fields for exercise metadata, allowed resources, and 1 (!) function for executing
 the tests for the exercise.
@@ -23,31 +23,32 @@ Below is an implementation example for a simple exercise compiling a Rust exerci
 
 ```go
 func doTest(*exercise) bool {
-  // Put your tests here.
+    // Put your tests here.
 }
 
 // Implementation of the test function. Runs tests and returns a boolean
 // indicating whether the test was successful.
 func ex04Test(exercise *Exercise.Exercise) bool {
-  // Ensures only the allowed files are present in the turn in directory.
-	if !testutils.TurnInFilesCheck(*exercise) {
-		return false
+    // Ensures only the allowed files are present in the turn in directory.
+    if !testutils.TurnInFilesCheck(*exercise) {
+        return false
+    }
+
+    // Ensures no forbidden items have been used.
+    if err := testutils.ForbiddenItemsCheck(*exercise, "shortinette-test-R00"); err != nil {
+        return false
 	}
 
-  // Ensures no forbidden items have been used.
-	if err := testutils.ForbiddenItemsCheck(*exercise, "shortinette-test-R00"); err != nil {
-		return false
-	}
+    // Converts all turn in file paths to be relative to the project's root directory.
+    // This is an important step to avoid later undefined behavior.
+    exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
 
-  // Converts all turn in file paths to be relative to the project's root directory.
-  // This is an important step to avoid later undefined behavior.
-	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
-
-  // Returns a boolean value indicating whether the exercise is passed.
-  return doTest(*exercise)
+    // Returns a boolean value indicating whether the exercise is passed.
+    return doTest(*exercise)
 }
+
 // Creates the exercise object to be passed to the module.
 func ex04() Exercise.Exercise {
-	return Exercise.NewExercise("EX04", "studentcode", "ex04", []string{"src/main.rs", "Cargo.toml"}, "", "", []string{"println"}, nil, nil, ex04Test)
+    return Exercise.NewExercise("EX04", "studentcode", "ex04", []string{"src/main.rs", "Cargo.toml"}, "", "", []string{"println"}, nil, nil, ex04Test)
 }
 ```
