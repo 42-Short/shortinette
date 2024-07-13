@@ -6,7 +6,9 @@ import (
 	"github.com/42-Short/shortinette/internal/logger"
 )
 
-// Clone the repo & pull the latest changes into targetDirectory
+// Clone a GitHub repo into targetDirectory.
+//
+// See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
 func Clone(repoURL string, targetDirectory string) error {
 	if err := get(repoURL, targetDirectory); err != nil {
 		logger.Error.Println(err)
@@ -15,7 +17,10 @@ func Clone(repoURL string, targetDirectory string) error {
 	return nil
 }
 
-// Check if repo exists, if not create it and add a webhook to it.
+// Check if repo exists, if not create it under the configured organisation.
+// Also adds a webhook for easy recording of repository activity.
+// 
+// See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
 func Create(name string) error {
 	if err := create(name); err != nil {
 		logger.Error.Println(err)
@@ -24,21 +29,29 @@ func Create(name string) error {
 	return nil
 }
 
-// Add a collaborator with the specified permissions to the repo
-func AddCollaborator(repoId string, name string, permission string) error {
-	if err := addCollaborator(repoId, name, permission); err != nil {
+// Add a collaborator with the specified permissions to the repo.
+//
+//	- repoId: The name of the organisation repository
+//	- username: The GitHub username of the collaborator
+//	- permission: The access level to be given to the user
+// NOTE: Using this function will overwrite the user's previous rights - use test
+// accounts, or you might lock yourself out of your repos.
+//
+// See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
+func AddCollaborator(repoId string, username string, permission string) error {
+	if err := addCollaborator(repoId, username, permission); err != nil {
 		logger.Error.Println(err)
-		return fmt.Errorf("could not add %s to repo %s: %w", name, repoId, err)
+		return fmt.Errorf("could not add %s to repo %s: %w", username, repoId, err)
 	}
 	return nil
 }
 
 // Add/Update a file on a repository
 //
-// @params:
 //   - repoId: The name of the organisation repository
-//   - localFilePath: The source file whose content is to be uploaded
+//   - localFilePath: The source file to be uploaded
 //   - targetFilePath: The file to be created/updated on the remote
+// See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
 func UploadFile(repoId string, localFilePath string, targetFilePath string, commitMessage string) error {
 	if err := uploadFile(repoId, localFilePath, targetFilePath, commitMessage); err != nil {
 		logger.Error.Println(err)

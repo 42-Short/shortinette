@@ -31,7 +31,7 @@ func main() {
 	}
 
 	// Clone or open the repository and pull the latest changes
-	if err := git.Clone(repoURL, targetDir); err != nil {
+	if err := git.Get(repoURL, targetDir); err != nil {
 		log.Fatalf("Failed to get repository: %v", err)
 	} else {
 		log.Println("Repository cloned/pulled successfully.")
