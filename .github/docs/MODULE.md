@@ -15,18 +15,18 @@ Below is an example of how to set up and run a module with exercises, using the 
 package module00
 
 import (
-	"github.com/42-Short/shortinette/internal/logger"
-	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
-	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
+    "github.com/42-Short/shortinette/internal/logger"
+    Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
+    Module "github.com/42-Short/shortinette/pkg/interfaces/module"
 )
 
 // Initializes and returns a module object.
 func module00() *Module.Module {
-	r00, err := Module.NewModule("module00", []Exercise.Exercise{ex00(), ..., exXX()})
-	if err != nil {
-		logger.Error.Printf("internal error: %v", err)
-		return nil
-	}
-	return &r00
+    r00, err := Module.NewModule("module00", []Exercise.Exercise{ex00(), ..., exXX()})
+    if err != nil {
+        logger.Error.Printf("internal error: %v", err)
+        return nil
+    }
+    return &r00
 }
 ```
