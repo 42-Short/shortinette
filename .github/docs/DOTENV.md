@@ -1,14 +1,17 @@
 # Documentation for `.env` File Configuration
-The `shortinette` backend needs to interact with the GitHub API in order to create/pull from repositories.
-Therefore, you need to provide your credentials.
-
-1. Create a `.env` file at the root of your repository.
-2. This is how you need to fill it up:
+Create a `.env` file at the root of your repository and fill it up like below:
 ```.env
 # These are used for identifying you when making requests on the GitHub API.
-GITHUB_ADMIN="your GitHub username"
-GITHUB_TOKEN="your GitHub personal access token"
+GITHUB_ADMIN="Your GitHub username"
+GITHUB_EMAIL="Your GitHub email"
+GITHUB_TOKEN="Your GitHub personal access token"
 
-# This is the organization under which the repositories will be created. Please create your own for testing purposes.
-GITHUB_ORGANISATION="your GitHub organization's name"
+# We use Webhooks to record events on repositories.
+WEBHOOK_URL="<HOST>:8080/webhook"
+
+# This is the organization under which the repositories will be created.
+GITHUB_ORGANISATION="Your GitHub organization's name"
+
+CONFIG_PATH="Path to your Short config"
+
 ```
