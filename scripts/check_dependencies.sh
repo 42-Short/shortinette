@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 # GNU's nm is required in order for exercises where binary stripping
 # to be testable in a robust way.

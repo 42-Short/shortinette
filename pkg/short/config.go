@@ -33,7 +33,7 @@ func GetConfig() (*Config, error) {
 		StartDate    string `json:"start_date"`
 		EndDate      string `json:"end_date"`
 		Participants []struct {
-			GithubUserName string `json:"GITHUB_ADMINname"`
+			GithubUserName string `json:"github_username"`
 			IntraLogin     string `json:"intra_login"`
 		} `json:"participants"`
 	}
