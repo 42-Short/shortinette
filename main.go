@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/tests/R00"
-	"github.com/42-Short/shortinette/internal/tests/testutils"
+	"github.com/42-Short/shortinette/pkg/testutils"
 	"github.com/42-Short/shortinette/internal/utils"
 	Short "github.com/42-Short/shortinette/pkg/short"
 	webhook "github.com/42-Short/shortinette/pkg/short/testmodes/webhooktestmode"

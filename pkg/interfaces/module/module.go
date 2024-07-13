@@ -16,6 +16,9 @@ type Module struct {
 }
 
 // NewModule initializes and returns a Module struct
+//
+// 	- name: module display name
+//	- exercises: list of all Exercise.Exercise objects belonging into the module
 func NewModule(name string, exercises []Exercise.Exercise) (Module, error) {
 	return Module{
 		Name:      name,
@@ -39,7 +42,7 @@ func setUpEnvironment(repoId string, testDirectory string) (tracesPath string, e
 	return tracesPath, nil
 }
 
-// Run executes the exercises and returns the results and the path to the traces
+// Executes the exercises, returns the results and the path to the traces
 func (m *Module) Run(repoId string, testDirectory string) (results []Exercise.Result, tracesPath string) {
 	defer func() {
 		if err := os.RemoveAll("compile-environment"); err != nil {
