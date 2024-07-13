@@ -13,7 +13,6 @@ import (
 type Module struct {
 	Name      string
 	Exercises []Exercise.Exercise
-	// duration
 }
 
 // NewModule initializes and returns a Module struct
@@ -26,7 +25,7 @@ func NewModule(name string, exercises []Exercise.Exercise) (Module, error) {
 
 func setUpEnvironment(repoId string, testDirectory string) (tracesPath string, err error) {
 	repoLink := fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId)
-	if err := git.Get(repoLink, testDirectory); err != nil {
+	if err := git.Clone(repoLink, testDirectory); err != nil {
 		errorMessage := fmt.Sprintf("failed to clone repository: %v", err)
 		return "", errors.NewInternalError(errors.ErrInternal, errorMessage)
 	}
@@ -34,7 +33,7 @@ func setUpEnvironment(repoId string, testDirectory string) (tracesPath string, e
 		errorMessage := fmt.Sprintf("failed to initalize logging system (%v), does the ./traces directory exist?", err)
 		return "", errors.NewInternalError(errors.ErrInternal, errorMessage)
 	}
-	if err := git.Get(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId), "compile-environment/src/"); err != nil {
+	if err := git.Clone(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId), "compile-environment/src/"); err != nil {
 		return "", err
 	}
 	return tracesPath, nil

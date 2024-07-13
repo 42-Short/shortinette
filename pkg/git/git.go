@@ -6,8 +6,8 @@ import (
 	"github.com/42-Short/shortinette/internal/logger"
 )
 
-// Clone or open the repo & pull the latest changes into targetDirectory
-func Get(repoURL string, targetDirectory string) error {
+// Clone the repo & pull the latest changes into targetDirectory
+func Clone(repoURL string, targetDirectory string) error {
 	if err := get(repoURL, targetDirectory); err != nil {
 		logger.Error.Println(err)
 		return err
@@ -15,7 +15,7 @@ func Get(repoURL string, targetDirectory string) error {
 	return nil
 }
 
-// Check if repo exists, if not create it.
+// Check if repo exists, if not create it and add a webhook to it.
 func Create(name string) error {
 	if err := create(name); err != nil {
 		logger.Error.Println(err)
