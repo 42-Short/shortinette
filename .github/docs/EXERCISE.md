@@ -22,6 +22,8 @@ the tests for the exercise.
 Below is an implementation example for a simple exercise compiling a Rust exercise with Cargo and checking its output. 
 
 ```go
+package module00
+
 // Creates the exercise object to be passed to the module.
 func ex04() Exercise.Exercise {
     return Exercise.NewExercise("EX04", "studentcode", "ex04", []string{"src/main.rs", "Cargo.toml"}, "", "", []string{"println"}, nil, nil, ex04Test)
