@@ -22,18 +22,9 @@ the tests for the exercise.
 Below is an implementation example for a simple exercise compiling a Rust exercise with Cargo and checking its output. 
 
 ```go
-func doTest(*exercise) bool {
-    workingDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
-    output, err := testutils.RunCommandLine(workingDirectory, "cargo run")
-    if err != nil {
-        logger.File.Printf("[%s KO]: runtime error %v", exercise.Name, err)
-        return false
-    }
-    if output != "Hello, cargo!\n" {
-        logger.File.Println(testutils.AssertionErrorString(exercise.Name, "Hello, cargo!", output))
-        return false
-    }
-    return true
+// Creates the exercise object to be passed to the module.
+func ex04() Exercise.Exercise {
+    return Exercise.NewExercise("EX04", "studentcode", "ex04", []string{"src/main.rs", "Cargo.toml"}, "", "", []string{"println"}, nil, nil, ex04Test)
 }
 
 // Implementation of the test function. Runs tests and returns a boolean
@@ -57,8 +48,17 @@ func ex04Test(exercise *Exercise.Exercise) bool {
     return doTest(*exercise)
 }
 
-// Creates the exercise object to be passed to the module.
-func ex04() Exercise.Exercise {
-    return Exercise.NewExercise("EX04", "studentcode", "ex04", []string{"src/main.rs", "Cargo.toml"}, "", "", []string{"println"}, nil, nil, ex04Test)
+func doTest(*exercise) bool {
+    workingDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
+    output, err := testutils.RunCommandLine(workingDirectory, "cargo run")
+    if err != nil {
+        logger.File.Printf("[%s KO]: runtime error %v", exercise.Name, err)
+        return false
+    }
+    if output != "Hello, cargo!\n" {
+        logger.File.Println(testutils.AssertionErrorString(exercise.Name, "Hello, cargo!", output))
+        return false
+    }
+    return true
 }
 ```
