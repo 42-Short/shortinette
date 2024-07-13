@@ -23,7 +23,17 @@ Below is an implementation example for a simple exercise compiling a Rust exerci
 
 ```go
 func doTest(*exercise) bool {
-    // Put your tests here.
+    workingDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
+    output, err := testutils.RunCommandLine(workingDirectory, "cargo run")
+    if err != nil {
+        logger.File.Printf("[%s KO]: runtime error %v", exercise.Name, err)
+        return false
+    }
+    if output != "Hello, cargo!\n" {
+        logger.File.Println(testutils.AssertionErrorString(exercise.Name, "Hello, cargo!", output))
+        return false
+    }
+    return true
 }
 
 // Implementation of the test function. Runs tests and returns a boolean
