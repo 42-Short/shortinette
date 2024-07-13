@@ -17,10 +17,34 @@ type Exercise struct {
 	Executer         func(test *Exercise) bool
 }
 
-// NewExercise initializes and returns an Exercise struct
-func NewExercise(name string, repoDirectory string, turnInDirectory string, turnInFiles []string, exerciseType string, prototype string,
-	allowedMacros []string, allowedFunctions []string, allowedKeywords map[string]int,
-	executer func(test *Exercise) bool) Exercise {
+// NewExercise initializes and returns an Exercise struct with all the necessary data
+// for submission grading.
+//
+// 	- name: exercise's display name
+//	- repoDirectory: the target directory for cloning repositories, used to construct
+//	filepaths
+//	- turnInDirectory: the directory in which the exercise's file can be found, relative
+//	to the repository's root (e.g., ex00/)
+//	- turnInFiles: list of all files allowed to be turned in
+//	- exerciseType (TO BE DEPRECATED): function/program/package, used for exercises which do not use any
+//	package managers 
+//	- prototype (TO BE DEPRECATED): function prototype used for compiling single functions
+//	- allowedMacros: list of macros to be allowed in this exercise
+//	- allowedFunctions: list of functions to be allowed in this exercise
+//	- allowedKeywords: list of keywords to be allowed in this exercise
+//	- executer: testing function with this signature: "func(test *Exercise) bool", will be run by the module for grading
+func NewExercise(
+	name string,
+	repoDirectory string,
+	turnInDirectory string,
+	turnInFiles []string,
+	exerciseType string,
+	prototype string,
+	allowedMacros []string,
+	allowedFunctions []string,
+	allowedKeywords map[string]int,
+	executer func(test *Exercise) bool,
+	) Exercise {
 
 	return Exercise{
 		Name:             name,
@@ -36,7 +60,7 @@ func NewExercise(name string, repoDirectory string, turnInDirectory string, turn
 	}
 }
 
-// Run executes the exercise and returns the result
+// Run runs the Executer function and returns the result
 func (e *Exercise) Run() Result {
 	if e.Executer != nil {
 		return Result{Passed: e.Executer(e)}

@@ -14,6 +14,8 @@ import (
 	"github.com/42-Short/shortinette/pkg/short"
 )
 
+// Initializes the webhook TestMode, which triggers submission grading 
+// as soon as activity is recorded on a user's main branch.
 func NewWebhookTestMode() WebhookTestMode {
 	return WebhookTestMode{
 		MonitoringFunction: func() {

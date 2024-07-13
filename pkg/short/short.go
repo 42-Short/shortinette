@@ -71,7 +71,7 @@ func EndModule(module Module.Module, config Config) {
 }
 
 // Creates a new repo for each participant, gives them write access and
-// upload the module's subject on the repo.
+// uploads the module's subject on the repo.
 func StartModule(module Module.Module, config Config) {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
