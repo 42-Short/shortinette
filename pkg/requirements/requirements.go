@@ -1,13 +1,14 @@
-package utils
+package requirements
 
 import (
 	"fmt"
 	"os"
 
+	"github.com/42-Short/shortinette/pkg/testutils"
 	"github.com/joho/godotenv"
 )
 
-func RequireEnv() error {
+func requireEnv() error {
 	if err := godotenv.Load(); err != nil {
 		return fmt.Errorf("could not load .env file: %v", err)
 	}
@@ -23,6 +24,16 @@ func RequireEnv() error {
 		if value == "" {
 			return fmt.Errorf("%s environment variable not set", key)
 		}
+	}
+	return nil
+}
+
+func ValidateRequirements() error {
+	if err := requireEnv(); err != nil {
+		return err
+	}
+	if _, err := testutils.RunExecutable("./scripts/check_dependencies.sh"); err != nil {
+		return err
 	}
 	return nil
 }
