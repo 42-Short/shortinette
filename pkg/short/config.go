@@ -18,11 +18,13 @@ type Config struct {
 	Participants []Participant
 }
 
+// Reads the configuration from CONFIG_PATH.
+// 
+// Returns a Config object containing the information set in your json.
+//
+// See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on .env configuration.
 func GetConfig() (*Config, error) {
 	configPath := os.Getenv("CONFIG_PATH")
-	if configPath == "" {
-		return nil, fmt.Errorf("CONFIG_PATH environment variable not set")
-	}
 
 	data, err := os.ReadFile(configPath)
 	if err != nil {

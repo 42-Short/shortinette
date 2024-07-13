@@ -3,10 +3,10 @@
 The `git` package provides utilities to interact with the GitHub repos. It supports creating/cloning repos, pulling changes and adding collaborators.
 
 ## Package Structure
-* **create.go**: Repo creating utils.
-* **get.go**: Cloning/opening/pulling utils.
-* **update.go**: Adding collaborators utils.
-* **git.go**: High-level wrappers for all the above.
+* **create.go**: Repo creation
+* **clone.go**: Cloning
+* **update.go**: Collaborators updates, file uploads
+* **git.go**: High-level wrappers for all the above
 
 ## Usage
 ### Example
