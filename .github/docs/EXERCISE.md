@@ -37,7 +37,7 @@ func ex04Test(exercise *Exercise.Exercise) bool {
     // Ensures no forbidden items have been used.
     if err := testutils.ForbiddenItemsCheck(*exercise, "shortinette-test-R00"); err != nil {
         return false
-	}
+    }
 
     // Converts all turn in file paths to be relative to the project's root directory.
     // This is an important step to avoid later undefined behavior.
