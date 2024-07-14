@@ -25,32 +25,24 @@ var ModulesLookupTable = map[string]interface{}{
 	"00": ModuleOne,
 }
 
-func dockerExecMode(args []string) error {
-	module, ok := ModulesLookupTable[args[1]]
+func dockerExecMode(args []string, short Short.Short) error {
+	exercise, ok := short.Modules[args[1]].Exercises[args[2]]
 	if !ok {
-		return fmt.Errorf("module not found")
+		return fmt.Errorf("could not find exercise")
 	}
-
-	moduleMap, ok := module.(map[string]bool)
-	if !ok {
-		return fmt.Errorf("invalid module type")
-	}
-
-	if _, ok := moduleMap[args[2]]; !ok {
-		return fmt.Errorf("exercise not found in module")
-	}
+	exercise.Run()
 	return nil
 }
 
 func main() {
 	logger.InitializeStandardLoggers()
+	short := Short.NewShort("Rust Piscine 1.0", map[string]Module.Module{"00": *R00.R00()}, webhook.NewWebhookTestMode())
 	if len(os.Args) == 4 {
-		if err := dockerExecMode(os.Args); err != nil {
+		if err := dockerExecMode(os.Args, short); err != nil {
 			logger.Error.Println(err)
 			return
 		}
 		return
-
 	} else if len(os.Args) != 1 {
 		logger.Error.Println("invalid number of arguments")
 		return
@@ -59,7 +51,6 @@ func main() {
 		logger.Error.Println(err.Error())
 		return
 	}
-	short := Short.NewShort("Rust Piscine 1.0", map[string]Module.Module{"00": *R00.R00()}, webhook.NewWebhookTestMode())
 	config, err := Short.GetConfig()
 	if err != nil {
 		logger.Error.Println(err.Error())
