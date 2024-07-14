@@ -21,6 +21,7 @@ func (h HourlyTestMode) Run() {
 
 type Short struct {
 	Name     string
+	Modules  map[string]Module.Module
 	TestMode ITestMode.ITestMode
 }
 
@@ -29,9 +30,10 @@ type Short struct {
 //   - name: the display name of your Short
 //   - testMode: a ITestMode object, determining how the submission testing will
 //     be triggered
-func NewShort(name string, testMode ITestMode.ITestMode) Short {
+func NewShort(name string, modules map[string]Module.Module, testMode ITestMode.ITestMode) Short {
 	return Short{
 		Name:     name,
+		Modules:  modules,
 		TestMode: testMode,
 	}
 }
