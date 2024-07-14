@@ -9,5 +9,5 @@ The project is build with various packages to manage exercises, modules, and the
 * **[Module](MODULE.md)**: Manages groups of exercises.
 * **[Short](SHORT.md)**: Manages the high-level configuration and execution of exercises in a modular fashion.
 * **[Git](GIT.md)**: Handles Git operations such as cloning repositories, adding collaborators, and uploading files.
-* **[Requirements](REQUIREMENTS.md)**: Validates the required environment variables and dependencies.
+* **[Test Utils](TESTUTILS.md)**: Testing utilities suite.
 
