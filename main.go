@@ -12,25 +12,12 @@ import (
 	webhook "github.com/42-Short/shortinette/pkg/short/testmodes/webhooktestmode"
 )
 
-var ModuleOne = map[string]bool{
-	"00": true,
-	"01": true,
-	"02": true,
-	"03": true,
-	"04": true,
-	"05": true,
-}
-
-var ModulesLookupTable = map[string]interface{}{
-	"00": ModuleOne,
-}
-
 func dockerExecMode(args []string, short Short.Short) error {
-	exercise, ok := short.Modules[args[1]].Exercises[args[2]]
+	exercise, ok := short.Modules[args[1]]
 	if !ok {
 		return fmt.Errorf("could not find exercise")
 	}
-	exercise.Run()
+	exercise.Run("abied-ch-R00", "studentcode")
 	return nil
 }
 
