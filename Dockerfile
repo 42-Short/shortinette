@@ -16,6 +16,4 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR /app
 
-COPY . .
-
-CMD ["sh", "-c", "go build -o myapp && ./myapp"]
+CMD ["sh", "-c", "go run . hello world"]

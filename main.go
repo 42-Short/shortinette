@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/tests/R00"
 	"github.com/42-Short/shortinette/pkg/requirements"
@@ -14,7 +17,13 @@ func main() {
 		logger.Error.Println(err.Error())
 		return
 	}
-	logger.Info.Println("all dependencies are already installed")
+	fmt.Println(os.Args)
+	if len(os.Args) == 3 {
+		fmt.Println(os.Args[1], os.Args[2])
+	} else if len(os.Args) != 1 {
+		logger.Error.Println("invalid number of arguments")
+		return
+	}
 	short := Short.NewShort("Rust Piscine 1.0", webhook.NewWebhookTestMode())
 	config, err := Short.GetConfig()
 	if err != nil {
