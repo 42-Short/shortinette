@@ -59,7 +59,7 @@ func ex00Test(exercise *Exercise.Exercise) bool {
 		return false
 	}
 	if output != "Hello, World!\n" {
-		logger.File.Printf(testutils.AssertionErrorString(exercise.Name, "Hello, World\n", output))
+		logger.File.Printf(testutils.AssertionErrorString(exercise.Name, "Hello, World!\n", output))
 		return false
 	}
 	return true
