@@ -58,6 +58,7 @@ func ForbiddenItemsCheck(exercise Exercise.Exercise, repoId string) error {
 	return nil
 }
 
+// Formats an error message for assertion errors
 func AssertionErrorString(testName string, expected string, got string) string {
 	expectedReplaced := strings.ReplaceAll(expected, "\n", "\\n")
 	gotReplaced := strings.ReplaceAll(got, "\n", "\\n")
@@ -65,6 +66,7 @@ func AssertionErrorString(testName string, expected string, got string) string {
 	return fmt.Sprintf("[%s KO]: %v", testName, outputComparison)
 }
 
+// Append source to destFilePath (e.g., a main for testing single funtions)
 func AppendStringToFile(source string, destFilePath string) error {
 	destFile, err := os.OpenFile(destFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
@@ -78,6 +80,7 @@ func AppendStringToFile(source string, destFilePath string) error {
 	return nil
 }
 
+// Delete the first occurrence of targetString from filePath
 func DeleteStringFromFile(targetString, filePath string) error {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
@@ -199,10 +202,6 @@ func FullTurnInFilesPath(exercise Exercise.Exercise) []string {
 		fullFilePaths = append(fullFilePaths, fullPath)
 	}
 	return fullFilePaths
-}
-
-func FullTurnInFilePath(codeDirectory string, exercise Exercise.Exercise, turnInFile string) string {
-	return fmt.Sprintf("%s/%s/%s", codeDirectory, exercise.TurnInDirectory, turnInFile)
 }
 
 func FullTurnInDirectory(codeDirectory string, exercise Exercise.Exercise) string {
