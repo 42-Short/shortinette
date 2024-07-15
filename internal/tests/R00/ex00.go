@@ -48,13 +48,13 @@ func ex00Test(exercise *Exercise.Exercise) bool {
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
 
 	if err := ex00Compile(exercise); err != nil {
-		logger.Error.Printf("[%s KO]: %v", exercise.Name, err)
+		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
 		return false
 	}
 	executablePath := strings.TrimSuffix(exercise.TurnInFiles[0], filepath.Ext(exercise.TurnInFiles[0]))
 	output, err := runExecutable(executablePath)
 	if err != nil {
-		// logger.File.Printf("[%s KO]: %v", exercise.Name, err)
+		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
 		logger.Error.Printf("[%s KO]: %v", exercise.Name, err)
 		return false
 	}

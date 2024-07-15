@@ -27,20 +27,16 @@ func NewModule(name string, exercises map[string]Exercise.Exercise) (Module, err
 	}, nil
 }
 
-func setUpEnvironment(repoId string, testDirectory string) (tracesPath string, err error) {
+func setUpEnvironment(repoId string, testDirectory string) error {
 	repoLink := fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId)
 	if err := git.Clone(repoLink, testDirectory); err != nil {
 		errorMessage := fmt.Sprintf("failed to clone repository: %v", err)
-		return "", errors.NewInternalError(errors.ErrInternal, errorMessage)
-	}
-	if tracesPath, err = logger.InitializeTraceLogger(repoId); err != nil {
-		errorMessage := fmt.Sprintf("failed to initalize logging system (%v), does the ./traces directory exist?", err)
-		return "", errors.NewInternalError(errors.ErrInternal, errorMessage)
+		return errors.NewInternalError(errors.ErrInternal, errorMessage)
 	}
 	if err := git.Clone(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId), "compile-environment/src/"); err != nil {
-		return "", err
+		return err
 	}
-	return tracesPath, nil
+	return nil
 }
 
 // Executes the exercises, returns the results and the path to the traces
@@ -53,10 +49,11 @@ func (m *Module) Run(repoId string, testDirectory string) (results []Exercise.Re
 			logger.Error.Printf("could not tear down testing environment: %v", err)
 		}
 	}()
-	tracesPath, err := setUpEnvironment(repoId, testDirectory)
+	err := setUpEnvironment(repoId, testDirectory)
 	if err != nil {
 		return nil, tracesPath
 	}
+	tracesPath = logger.GetNewTraceFile(repoId)
 	if m.Exercises != nil {
 		for _, exercise := range m.Exercises {
 			command := "docker"
@@ -69,7 +66,7 @@ func (m *Module) Run(repoId string, testDirectory string) (results []Exercise.Re
 				"testenv",
 				"sh",
 				"-c",
-				fmt.Sprintf("go run . \"%s\" \"%s\" test", m.Name, exercise.Name),
+				fmt.Sprintf("go run . \"%s\" \"%s\" \"%s\"", m.Name, exercise.Name, tracesPath),
 			}
 			output, err := testutils.RunCommandLine(".", command, args)
 			if err != nil {
