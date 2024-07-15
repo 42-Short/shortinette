@@ -30,7 +30,7 @@ fn main() {
 `
 
 func yes() bool {
-	exercise := Exercise.NewExercise("EX02", "studentcode", "ex02", []string{"yes.rs"}, "function", "yes()", []string{"println"}, nil, nil, nil)
+	exercise := Exercise.NewExercise("02", "studentcode", "ex02", []string{"yes.rs"}, "function", "yes()", []string{"println"}, nil, nil, nil)
 	if err := testutils.ForbiddenItemsCheck(exercise, "shortinette-test-R00"); err != nil {
 		return false
 	}
@@ -126,7 +126,7 @@ func collatzAssertionTest(exercise Exercise.Exercise) bool {
 }
 
 func collatz() bool {
-	exercise := Exercise.NewExercise("EX02", "studentcode", "ex02", []string{"collatz.rs"}, "function", "collatz(42)", []string{"println"}, nil, nil, nil)
+	exercise := Exercise.NewExercise("02", "studentcode", "ex02", []string{"collatz.rs"}, "function", "collatz(42)", []string{"println"}, nil, nil, nil)
 	if err := testutils.ForbiddenItemsCheck(exercise, "shortinette-test-R00"); err != nil {
 		return false
 	}
@@ -175,7 +175,7 @@ func printBytesAssertionTest(exercise Exercise.Exercise) bool {
 }
 
 func printBytes() bool {
-	exercise := Exercise.NewExercise("EX02", "studentcode", "ex02", []string{"print_bytes.rs"}, "function", "print_bytes(\"\")", []string{"println", "bytes"}, nil, nil, nil)
+	exercise := Exercise.NewExercise("02", "studentcode", "ex02", []string{"print_bytes.rs"}, "function", "print_bytes(\"\")", []string{"println", "bytes"}, nil, nil, nil)
 	if err := testutils.ForbiddenItemsCheck(exercise, "shortinette-test-R00"); err != nil {
 		return false
 	}
@@ -194,5 +194,5 @@ func ex02Test(exercise *Exercise.Exercise) bool {
 }
 
 func ex02() Exercise.Exercise {
-	return Exercise.NewExercise("EX02", "studentcode", "ex02", []string{"collatz.rs", "print_bytes.rs", "yes.rs"}, "", "", nil, nil, nil, ex02Test)
+	return Exercise.NewExercise("02", "studentcode", "ex02", []string{"collatz.rs", "print_bytes.rs", "yes.rs"}, "", "", nil, nil, nil, ex02Test)
 }

@@ -101,5 +101,5 @@ func ex04Test(exercise *Exercise.Exercise) bool {
 }
 
 func ex04() Exercise.Exercise {
-	return Exercise.NewExercise("EX04", "studentcode", "ex04", []string{"src/main.rs", "src/overflow.rs", "src/other.rs", "Cargo.toml"}, "", "", []string{"println"}, nil, nil, ex04Test)
+	return Exercise.NewExercise("04", "studentcode", "ex04", []string{"src/main.rs", "src/overflow.rs", "src/other.rs", "Cargo.toml"}, "", "", []string{"println"}, nil, nil, ex04Test)
 }

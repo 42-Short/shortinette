@@ -76,5 +76,5 @@ func ex01Test(exercise *Exercise.Exercise) bool {
 }
 
 func ex01() Exercise.Exercise {
-	return Exercise.NewExercise("EX01", "studentcode", "ex01", []string{"min.rs"}, "function", "min(0, 0)", []string{"println"}, nil, map[string]int{"unsafe": 0}, ex01Test)
+	return Exercise.NewExercise("01", "studentcode", "ex01", []string{"min.rs"}, "function", "min(0, 0)", []string{"println"}, nil, map[string]int{"unsafe": 0}, ex01Test)
 }

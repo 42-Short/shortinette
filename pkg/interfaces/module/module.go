@@ -8,6 +8,7 @@ import (
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/pkg/git"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
+	"github.com/42-Short/shortinette/pkg/testutils"
 )
 
 type Module struct {
@@ -17,8 +18,8 @@ type Module struct {
 
 // NewModule initializes and returns a Module struct
 //
-// 	- name: module display name
-//	- exercises: list of all Exercise.Exercise objects belonging into the module
+//   - name: module display name
+//   - exercises: list of all Exercise.Exercise objects belonging into the module
 func NewModule(name string, exercises map[string]Exercise.Exercise) (Module, error) {
 	return Module{
 		Name:      name,
@@ -58,10 +59,10 @@ func (m *Module) Run(repoId string, testDirectory string) (results []Exercise.Re
 	}
 	if m.Exercises != nil {
 		for _, exercise := range m.Exercises {
-			res := exercise.Run()
-			results = append(results, res)
-			if res.Passed {
-				logger.File.Printf("[%s OK]", exercise.Name)
+			commandLine := fmt.Sprintf("docker run -i --rm -v /root/shortinette:/app test-env sh -c 'go run . %s %s test'", m.Name, exercise.Name)
+			output, err := testutils.RunCommandLine(".", commandLine)
+			if err != nil {
+				logger.Error.Printf("error running containerized test: %v: %s", err, output)
 			}
 		}
 	}

@@ -15,7 +15,7 @@ func R00() *Module.Module {
 		"04": ex04(),
 		"05": ex05(),
 	}
-	r00, err := Module.NewModule("R00", exercises)
+	r00, err := Module.NewModule("00", exercises)
 	if err != nil {
 		logger.Error.Printf("internal error: %v", err)
 		return nil
