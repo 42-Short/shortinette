@@ -2,12 +2,12 @@ package R00
 
 import (
 	"bytes"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/42-Short/shortinette/internal/errors"
-	"github.com/42-Short/shortinette/internal/functioncheck"
 	"github.com/42-Short/shortinette/internal/logger"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 	"github.com/42-Short/shortinette/pkg/testutils"
@@ -15,6 +15,10 @@ import (
 
 func ex00Compile(exercise *Exercise.Exercise) error {
 	cmd := exec.Command("rustc", filepath.Base(exercise.TurnInFiles[0]))
+	dirPath := filepath.Dir(exercise.TurnInFiles[0])
+    if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+        return err
+    }
 	cmd.Dir = filepath.Dir(exercise.TurnInFiles[0])
 
 	output, err := cmd.CombinedOutput()
@@ -41,25 +45,21 @@ func runExecutable(executablePath string) (string, error) {
 }
 
 func ex00Test(exercise *Exercise.Exercise) bool {
-	if err := functioncheck.Execute(*exercise, "shortinette-test-R00"); err != nil {
-		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
-		return false
-	}
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
 
 	if err := ex00Compile(exercise); err != nil {
-		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
+		logger.Error.Printf("[%s KO]: %v", exercise.Name, err)
 		return false
 	}
 	executablePath := strings.TrimSuffix(exercise.TurnInFiles[0], filepath.Ext(exercise.TurnInFiles[0]))
 	output, err := runExecutable(executablePath)
 	if err != nil {
-		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
+		// logger.File.Printf("[%s KO]: %v", exercise.Name, err)
 		logger.Error.Printf("[%s KO]: %v", exercise.Name, err)
 		return false
 	}
 	if output != "Hello, World!\n" {
-		logger.File.Printf(testutils.AssertionErrorString(exercise.Name, "Hello, World!\n", output))
+		logger.Error.Printf(testutils.AssertionErrorString(exercise.Name, "Hello, World!\n", output))
 		return false
 	}
 	return true

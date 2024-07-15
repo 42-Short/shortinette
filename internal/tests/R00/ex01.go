@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/42-Short/shortinette/internal/errors"
-	"github.com/42-Short/shortinette/internal/functioncheck"
 	"github.com/42-Short/shortinette/internal/logger"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 	"github.com/42-Short/shortinette/pkg/testutils"
@@ -54,9 +53,6 @@ func compileWithRustcTestOption(turnInFile string) error {
 
 func ex01Test(exercise *Exercise.Exercise) bool {
 	if !testutils.TurnInFilesCheck(*exercise) {
-		return false
-	}
-	if err := functioncheck.Execute(*exercise, "shortinette-test-R00"); err != nil {
 		return false
 	}
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)

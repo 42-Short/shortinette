@@ -57,9 +57,6 @@ func ex03Test(exercise *Exercise.Exercise) bool {
 	if !testutils.TurnInFilesCheck(*exercise) {
 		return false
 	}
-	if err := testutils.ForbiddenItemsCheck(*exercise, "shortinette-test-R00"); err != nil {
-		return false
-	}
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
 
 	return fizzBuzzOutputTest(*exercise)

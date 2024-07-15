@@ -28,11 +28,11 @@ import (
 //	and al results should be appended to the same trace file, which will then be handled by the main program on
 //	the host machine.
 func dockerExecMode(args []string, short Short.Short) error {
-	exercise, ok := short.Modules[args[1]]
+	exercise, ok := short.Modules[args[1]].Exercises[args[2]]
 	if !ok {
 		return fmt.Errorf("could not find exercise")
 	}
-	exercise.Run("abied-ch-R00", "studentcode")
+	exercise.Run()
 	return nil
 }
 

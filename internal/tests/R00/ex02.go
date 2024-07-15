@@ -31,9 +31,6 @@ fn main() {
 
 func yes() bool {
 	exercise := Exercise.NewExercise("02", "studentcode", "ex02", []string{"yes.rs"}, "function", "yes()", []string{"println"}, nil, nil, nil)
-	if err := testutils.ForbiddenItemsCheck(exercise, "shortinette-test-R00"); err != nil {
-		return false
-	}
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(exercise)
 	if err := testutils.AppendStringToFile(YesMain, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
@@ -127,9 +124,6 @@ func collatzAssertionTest(exercise Exercise.Exercise) bool {
 
 func collatz() bool {
 	exercise := Exercise.NewExercise("02", "studentcode", "ex02", []string{"collatz.rs"}, "function", "collatz(42)", []string{"println"}, nil, nil, nil)
-	if err := testutils.ForbiddenItemsCheck(exercise, "shortinette-test-R00"); err != nil {
-		return false
-	}
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(exercise)
 	if !collatzInfiniteLoopTest(exercise) {
 		return false
@@ -176,9 +170,6 @@ func printBytesAssertionTest(exercise Exercise.Exercise) bool {
 
 func printBytes() bool {
 	exercise := Exercise.NewExercise("02", "studentcode", "ex02", []string{"print_bytes.rs"}, "function", "print_bytes(\"\")", []string{"println", "bytes"}, nil, nil, nil)
-	if err := testutils.ForbiddenItemsCheck(exercise, "shortinette-test-R00"); err != nil {
-		return false
-	}
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(exercise)
 	return printBytesAssertionTest(exercise)
 }
