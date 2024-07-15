@@ -59,11 +59,23 @@ func (m *Module) Run(repoId string, testDirectory string) (results []Exercise.Re
 	}
 	if m.Exercises != nil {
 		for _, exercise := range m.Exercises {
-			commandLine := fmt.Sprintf("docker run -i --rm -v /root/shortinette:/app test-env sh -c 'go run . %s %s test'", m.Name, exercise.Name)
-			output, err := testutils.RunCommandLine(".", commandLine)
+			command := "docker"
+			args := []string{
+				"run",
+				"-i",
+				"--rm",
+				"-v",
+				"/root/shortinette:/app",
+				"testenv",
+				"sh",
+				"-c",
+				fmt.Sprintf("go run . \"%s\" \"%s\" test", m.Name, exercise.Name),
+			}
+			output, err := testutils.RunCommandLine(".", command, args)
 			if err != nil {
 				logger.Error.Printf("error running containerized test: %v: %s", err, output)
 			}
+			logger.Info.Println("output:", output)
 		}
 	}
 	return results, tracesPath

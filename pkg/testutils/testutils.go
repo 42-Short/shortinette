@@ -141,13 +141,8 @@ func RunExecutable(executablePath string, options ...RunExecutableOption) (strin
 }
 
 // RunCommand runs the command line with the provided options.
-func RunCommandLine(workingDirectory string, commandLine string, options ...RunExecutableOption) (string, error) {
-	fields := strings.Fields(commandLine)
-	if len(fields) == 0 {
-		return "", fmt.Errorf("no command provided")
-	}
-
-	cmd := exec.Command(fields[0], fields[1:]...)
+func RunCommandLine(workingDirectory string, command string, args []string, options ...RunExecutableOption) (string, error) {
+	cmd := exec.Command(command, args...)
 	cmd.Dir = workingDirectory
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -164,7 +159,7 @@ func RunCommandLine(workingDirectory string, commandLine string, options ...RunE
 		}
 		return stderr.String(), fmt.Errorf("%v", err)
 	}
-	return stdout.String(), nil
+	return stdout.String() + stderr.String(), nil
 }
 
 func containsString(hayStack []string, needle string) bool {

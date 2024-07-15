@@ -16,12 +16,12 @@ var expectedTomlContent = map[string]string{
 
 func testNmReleaseMode(exercise Exercise.Exercise) bool {
 	workingDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
-	_, err := testutils.RunCommandLine(workingDirectory, "cargo build --release")
+	_, err := testutils.RunCommandLine(workingDirectory, "cargo", []string{"build", "--release"})
 	if err != nil {
 		logger.File.Printf("[%s KO]: compilation error %v", exercise.Name, err)
 		return false
 	}
-	output, err := testutils.RunCommandLine(workingDirectory, "nm target/release/module00-ex04")
+	output, err := testutils.RunCommandLine(workingDirectory, "nm", []string{"target/release/module00-ex04"})
 	if err != nil {
 		logger.File.Printf("[%s KO]: runtime error %v", exercise.Name, err)
 		return false
@@ -35,7 +35,7 @@ func testNmReleaseMode(exercise Exercise.Exercise) bool {
 
 func testCargoRunBinOtherReleaseMode(exercise Exercise.Exercise) bool {
 	workingDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
-	output, err := testutils.RunCommandLine(workingDirectory, "cargo run --release --bin other")
+	output, err := testutils.RunCommandLine(workingDirectory, "cargo", []string{"run", "--release", "--bin", "other"})
 	if err != nil {
 		logger.File.Printf("[%s KO]: runtime error %v", exercise.Name, err)
 		return false
@@ -49,7 +49,7 @@ func testCargoRunBinOtherReleaseMode(exercise Exercise.Exercise) bool {
 
 func testCargoRunBinOther(exercise Exercise.Exercise) bool {
 	workingDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
-	output, err := testutils.RunCommandLine(workingDirectory, "cargo run --bin other")
+	output, err := testutils.RunCommandLine(workingDirectory, "cargo", []string{"run", "--bin", "other"})
 	if err != nil {
 		logger.File.Printf("[%s KO]: runtime error %v", exercise.Name, err)
 		return false
@@ -63,7 +63,7 @@ func testCargoRunBinOther(exercise Exercise.Exercise) bool {
 
 func testCargoRun(exercise Exercise.Exercise) bool {
 	workingDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
-	output, err := testutils.RunCommandLine(workingDirectory, "cargo run")
+	output, err := testutils.RunCommandLine(workingDirectory, "cargo", []string{"run"})
 	if err != nil {
 		logger.File.Printf("[%s KO]: runtime error %v", exercise.Name, err)
 		return false
