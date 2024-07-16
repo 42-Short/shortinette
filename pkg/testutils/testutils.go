@@ -47,7 +47,7 @@ func CompileWithRustc(turnInFile string) error {
 	if err != nil {
 		logger.Error.Println(err)
 		logger.Error.Println(string(output))
-		return fmt.Errorf("invalid compilation: %s", err)
+		return err
 	}
 	logger.Info.Printf("%s/%s compiled with rustc\n", cmd.Dir, turnInFile)
 	return nil

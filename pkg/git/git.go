@@ -54,8 +54,8 @@ func AddCollaborator(repoId string, username string, permission string) error {
 //   - targetFilePath: file to be created/updated on the remote
 //
 // See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
-func UploadFile(repoId string, localFilePath string, targetFilePath string, commitMessage string) error {
-	if err := uploadFile(repoId, localFilePath, targetFilePath, commitMessage); err != nil {
+func UploadFile(repoId string, localFilePath string, targetFilePath string, commitMessage string, branch string) error {
+	if err := uploadFile(repoId, localFilePath, targetFilePath, commitMessage, branch); err != nil {
 		logger.Error.Println(err)
 		return fmt.Errorf("could not upload %s to repo %s: %w", localFilePath, repoId, err)
 	}
