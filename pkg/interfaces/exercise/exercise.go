@@ -2,6 +2,7 @@ package Exercise
 
 type Result struct {
 	Passed bool
+	Output string
 }
 
 type Exercise struct {
@@ -14,7 +15,7 @@ type Exercise struct {
 	AllowedMacros    []string
 	AllowedFunctions []string
 	AllowedKeywords  map[string]int
-	Executer         func(test *Exercise) bool
+	Executer         func(test *Exercise) Result
 }
 
 // NewExercise initializes and returns an Exercise struct with all the necessary data
@@ -43,7 +44,7 @@ func NewExercise(
 	allowedMacros []string,
 	allowedFunctions []string,
 	allowedKeywords map[string]int,
-	executer func(test *Exercise) bool,
+	executer func(test *Exercise) Result,
 ) Exercise {
 
 	return Exercise{

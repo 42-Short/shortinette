@@ -72,7 +72,6 @@ func (m *Module) Run(repoId string, testDirectory string) (results []Exercise.Re
 			if err != nil {
 				logger.Error.Printf("error running containerized test: %v: %s", err, output)
 			}
-			logger.Info.Println("output:", output)
 		}
 	}
 	return results, tracesPath

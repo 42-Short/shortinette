@@ -14,8 +14,8 @@ import (
 
 	toml "github.com/42-Short/shortinette/internal/datastructures"
 	"github.com/42-Short/shortinette/internal/functioncheck"
-	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
+	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 )
 
 func CheckCargoTomlContent(exercise Exercise.Exercise, expectedContent map[string]string) bool {
