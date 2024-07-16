@@ -44,25 +44,24 @@ func runExecutable(executablePath string) (string, error) {
 	return stdout.String(), nil
 }
 
-func ex00Test(exercise *Exercise.Exercise) bool {
+func ex00Test(exercise *Exercise.Exercise) Exercise.Result {
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
 
 	if err := ex00Compile(exercise); err != nil {
 		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: err.Error()}
 	}
 	executablePath := strings.TrimSuffix(exercise.TurnInFiles[0], filepath.Ext(exercise.TurnInFiles[0]))
 	output, err := runExecutable(executablePath)
 	if err != nil {
-		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
 		logger.Error.Printf("[%s KO]: %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: err.Error()}
 	}
 	if output != "Hello, World!\n" {
-		logger.Error.Printf(testutils.AssertionErrorString(exercise.Name, "Hello, World!\n", output))
-		return false
+		assertionErrorMessage := testutils.AssertionErrorString(exercise.Name, "Hello, World!\n", output)
+		return Exercise.Result{Passed: false, Output: assertionErrorMessage}
 	}
-	return true
+	return Exercise.Result{Passed: true, Output: ""}
 }
 
 func ex00() Exercise.Exercise {

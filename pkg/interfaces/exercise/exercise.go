@@ -1,5 +1,7 @@
 package Exercise
 
+import "fmt"
+
 type Result struct {
 	Passed bool
 	Output string
@@ -64,7 +66,7 @@ func NewExercise(
 // Run runs the Executer function and returns the result
 func (e *Exercise) Run() Result {
 	if e.Executer != nil {
-		return Result{Passed: e.Executer(e)}
+		return e.Executer(e)
 	}
-	return Result{Passed: false}
+	return Result{Passed: false, Output: fmt.Sprintf("no executer found for exercise %s", e.Name)}
 }
