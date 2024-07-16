@@ -63,7 +63,7 @@ func AssertionErrorString(testName string, expected string, got string) string {
 	expectedReplaced := strings.ReplaceAll(expected, "\n", "\\n")
 	gotReplaced := strings.ReplaceAll(got, "\n", "\\n")
 	outputComparison := fmt.Sprintf("invalid output: expected '%s', got '%s'", expectedReplaced, gotReplaced)
-	return fmt.Sprintf("[%s KO]: %v", testName, outputComparison)
+	return outputComparison
 }
 
 // Append source to destFilePath (e.g., a main for testing single funtions)
