@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/42-Short/shortinette/internal/logger"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 	"github.com/42-Short/shortinette/pkg/testutils"
 )
@@ -32,30 +31,27 @@ func doFizzBuzz() string {
 	return result.String()
 }
 
-func fizzBuzzOutputTest(exercise Exercise.Exercise) bool {
+func fizzBuzzOutputTest(exercise Exercise.Exercise) Exercise.Result {
 	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
-		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("compilation error: %v", err)}
 	}
 	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], filepath.Ext(exercise.TurnInFiles[0]))
 	output, err := testutils.RunExecutable(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err != nil {
-		logger.File.Printf("[%s KO]: runtime error: %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %v", err)}
 	}
 	expectedOutput := doFizzBuzz()
 
 	if output != expectedOutput {
 		assertionError := testutils.AssertionErrorString(exercise.Name, expectedOutput, output)
-		logger.File.Printf(assertionError)
-		return false
+		return Exercise.Result{Passed: false, Output: assertionError}
 	}
-	return true
+	return Exercise.Result{Passed: true, Output: ""}
 }
 
-func ex03Test(exercise *Exercise.Exercise) bool {
+func ex03Test(exercise *Exercise.Exercise) Exercise.Result {
 	if !testutils.TurnInFilesCheck(*exercise) {
-		return false
+		return Exercise.Result{Passed: false, Output: "invalid files found in turn in directory"}
 	}
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
 
