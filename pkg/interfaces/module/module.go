@@ -40,7 +40,7 @@ func setUpEnvironment(repoId string, testDirectory string) error {
 }
 
 // Executes the exercises, returns the results and the path to the traces
-func (m *Module) Run(repoId string, testDirectory string) (results []Exercise.Result, tracesPath string) {
+func (m *Module) Run(repoId string, testDirectory string) (map[string]bool, string) {
 	defer func() {
 		if err := os.RemoveAll("compile-environment"); err != nil {
 			logger.Error.Printf("could not tear down testing environment: %v", err)
@@ -51,9 +51,11 @@ func (m *Module) Run(repoId string, testDirectory string) (results []Exercise.Re
 	}()
 	err := setUpEnvironment(repoId, testDirectory)
 	if err != nil {
-		return nil, tracesPath
+		logger.Error.Println(err)
+		return nil, ""
 	}
-	tracesPath = logger.GetNewTraceFile(repoId)
+	results := make(map[string]bool)
+	tracesPath := logger.GetNewTraceFile(repoId)
 	if m.Exercises != nil {
 		for _, exercise := range m.Exercises {
 			command := "docker"
@@ -68,9 +70,11 @@ func (m *Module) Run(repoId string, testDirectory string) (results []Exercise.Re
 				"-c",
 				fmt.Sprintf("go run . \"%s\" \"%s\" \"%s\"", m.Name, exercise.Name, tracesPath),
 			}
-			output, err := testutils.RunCommandLine(".", command, args)
+			_, err := testutils.RunCommandLine(".", command, args)
 			if err != nil {
-				logger.Error.Printf("error running containerized test: %v: %s", err, output)
+				results[exercise.Name] = false
+			} else {
+				results[exercise.Name] = true
 			}
 		}
 	}

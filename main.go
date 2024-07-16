@@ -18,7 +18,13 @@ func dockerExecMode(args []string, short Short.Short) error {
 		return fmt.Errorf("could not find exercise")
 	}
 	logger.InitializeTraceLogger(args[3])
-	exercise.Run()
+	result := exercise.Run()	
+	logger.File.Printf("[MOD%s][EX%s]: %s", args[1], args[2], result.Output)
+	if result.Passed {
+		os.Exit(0)
+	} else {
+		os.Exit(1)
+	}
 	return nil
 }
 

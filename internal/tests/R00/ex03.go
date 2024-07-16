@@ -43,7 +43,7 @@ func fizzBuzzOutputTest(exercise Exercise.Exercise) Exercise.Result {
 	expectedOutput := doFizzBuzz()
 
 	if output != expectedOutput {
-		assertionError := testutils.AssertionErrorString(exercise.Name, expectedOutput, output)
+		assertionError := testutils.AssertionErrorString(expectedOutput, output)
 		return Exercise.Result{Passed: false, Output: assertionError}
 	}
 	return Exercise.Result{Passed: true, Output: ""}

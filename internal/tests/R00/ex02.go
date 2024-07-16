@@ -47,7 +47,7 @@ func yes() Exercise.Result {
 	lines := strings.Split(output, "\n")
 	for _, line := range lines {
 		if line != "y" && line != "" {
-			assertionError := testutils.AssertionErrorString(exercise.Name, "y", line)
+			assertionError := testutils.AssertionErrorString("y", line)
 			return Exercise.Result{Passed: false, Output: assertionError}
 		}
 	}
@@ -108,7 +108,7 @@ func collatzAssertionTest(exercise Exercise.Exercise) Exercise.Result {
 	expectedOutput := doCollatz(42)
 
 	if output != expectedOutput {
-		assertionError := testutils.AssertionErrorString(exercise.Name, expectedOutput, output)
+		assertionError := testutils.AssertionErrorString(expectedOutput, output)
 		logger.File.Printf(assertionError)
 		return Exercise.Result{Passed: false, Output: assertionError}
 	}
@@ -152,7 +152,7 @@ func printBytesAssertionTest(exercise Exercise.Exercise) Exercise.Result {
 	expectedOutput := doPrintBytes("Hello, World!")
 
 	if output != expectedOutput {
-		assertionError := testutils.AssertionErrorString(exercise.Name, expectedOutput, output)
+		assertionError := testutils.AssertionErrorString(expectedOutput, output)
 		return Exercise.Result{Passed: false, Output: assertionError}
 	}
 	return Exercise.Result{Passed: true, Output: ""}

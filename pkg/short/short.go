@@ -40,11 +40,12 @@ func NewShort(name string, modules map[string]Module.Module, testMode ITestMode.
 
 // Grades one participant's module and upload trace
 func GradeModule(module Module.Module, repoId string) error {
-	_, tracesPath := module.Run(repoId, "studentcode")
+	results, tracesPath := module.Run(repoId, "studentcode")
 	commitMessage := fmt.Sprintf("Traces for module %s: %s", module.Name, tracesPath)
 	if err := git.UploadFile(repoId, tracesPath, tracesPath, commitMessage); err != nil {
 		return err
 	}
+	fmt.Println(results)
 	return nil
 }
 
