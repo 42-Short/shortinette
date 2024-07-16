@@ -14,26 +14,29 @@ import (
 
 	toml "github.com/42-Short/shortinette/internal/datastructures"
 	"github.com/42-Short/shortinette/internal/functioncheck"
-	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 	"github.com/42-Short/shortinette/internal/logger"
+	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 )
 
-func CheckCargoTomlContent(exercise Exercise.Exercise, expectedContent map[string]string) bool {
+func CheckCargoTomlContent(exercise Exercise.Exercise, expectedContent map[string]string) Exercise.Result {
 	tomlPath := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory, "Cargo.toml")
 	fieldMap, err := toml.ReadToml(tomlPath)
 	if err != nil {
 		logger.Error.Printf("internal error: %s", err)
-		return false
+		return Exercise.Result{Passed: false, Output: "internal error"}
 	}
+	var result = Exercise.Result{Passed: true, Output: ""}
 	for key, expectedValue := range expectedContent {
 		value, ok := fieldMap[key]
 		if !ok {
-			logger.File.Printf("[%s KO]: '%s' not found in Cargo.toml", exercise.Name, key)
+			result.Passed = false
+			result.Output = result.Output + fmt.Sprintf("\n'%s' not found in Cargo.toml", key)
 		} else if value != expectedValue {
-			logger.File.Printf("[%s KO]: Cargo.toml content mismatch, expected '%s', got '%s'", exercise.Name, expectedValue, value)
+			result.Passed = false
+			result.Output = result.Output + fmt.Sprintf("\nCargo.toml content mismatch, expected '%s', got '%s'", expectedValue, value)
 		}
 	}
-	return true
+	return result
 }
 
 func CompileWithRustc(turnInFile string) error {
@@ -52,18 +55,17 @@ func CompileWithRustc(turnInFile string) error {
 
 func ForbiddenItemsCheck(exercise Exercise.Exercise, repoId string) error {
 	if err := functioncheck.Execute(exercise, "shortinette-test-R00"); err != nil {
-		logger.File.Printf("[%s KO]: %v", exercise.Name, err)
 		return err
 	}
 	return nil
 }
 
 // Formats an error message for assertion errors
-func AssertionErrorString(testName string, expected string, got string) string {
+func AssertionErrorString(expected string, got string) string {
 	expectedReplaced := strings.ReplaceAll(expected, "\n", "\\n")
 	gotReplaced := strings.ReplaceAll(got, "\n", "\\n")
 	outputComparison := fmt.Sprintf("invalid output: expected '%s', got '%s'", expectedReplaced, gotReplaced)
-	return fmt.Sprintf("[%s KO]: %v", testName, outputComparison)
+	return outputComparison
 }
 
 // Append source to destFilePath (e.g., a main for testing single funtions)
@@ -141,13 +143,8 @@ func RunExecutable(executablePath string, options ...RunExecutableOption) (strin
 }
 
 // RunCommand runs the command line with the provided options.
-func RunCommandLine(workingDirectory string, commandLine string, options ...RunExecutableOption) (string, error) {
-	fields := strings.Fields(commandLine)
-	if len(fields) == 0 {
-		return "", fmt.Errorf("no command provided")
-	}
-
-	cmd := exec.Command(fields[0], fields[1:]...)
+func RunCommandLine(workingDirectory string, command string, args []string, options ...RunExecutableOption) (string, error) {
+	cmd := exec.Command(command, args...)
 	cmd.Dir = workingDirectory
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -164,7 +161,7 @@ func RunCommandLine(workingDirectory string, commandLine string, options ...RunE
 		}
 		return stderr.String(), fmt.Errorf("%v", err)
 	}
-	return stdout.String(), nil
+	return stdout.String() + stderr.String(), nil
 }
 
 func containsString(hayStack []string, needle string) bool {
@@ -187,11 +184,7 @@ func TurnInFilesCheck(exercise Exercise.Exercise) bool {
 		}
 		return nil
 	})
-	if err != nil {
-		logger.File.Printf("[%s KO]: invalid file found in turn-in directory", exercise.Name)
-		return false
-	}
-	return true
+	return err == nil
 }
 
 func FullTurnInFilesPath(exercise Exercise.Exercise) []string {

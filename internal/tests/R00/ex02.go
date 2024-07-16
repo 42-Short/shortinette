@@ -29,58 +29,50 @@ fn main() {
 }
 `
 
-func yes() bool {
-	exercise := Exercise.NewExercise("EX02", "studentcode", "ex02", []string{"yes.rs"}, "function", "yes()", []string{"println"}, nil, nil, nil)
-	if err := testutils.ForbiddenItemsCheck(exercise, "shortinette-test-R00"); err != nil {
-		return false
-	}
+func yes() Exercise.Result {
+	exercise := Exercise.NewExercise("02", "studentcode", "ex02", []string{"yes.rs"}, "function", "yes()", []string{"println"}, nil, nil, nil)
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(exercise)
 	if err := testutils.AppendStringToFile(YesMain, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
-		return false
+		return Exercise.Result{Passed: false, Output: "internal error"}	
 	}
 	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
-		logger.File.Printf("[%s.0 KO]: %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("compilation error: %s", err)}
 	}
 	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], ".rs")
 	output, err := testutils.RunExecutable(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err == nil || !errors.Is(err, testutils.ErrTimeout) {
-		logger.File.Printf("[%s.0 KO]: runtime error: %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %v", err)}
 	}
 	lines := strings.Split(output, "\n")
 	for _, line := range lines {
 		if line != "y" && line != "" {
-			assertionError := testutils.AssertionErrorString(exercise.Name, "y", line)
-			logger.File.Printf(assertionError)
-			return false
+			assertionError := testutils.AssertionErrorString("y", line)
+			return Exercise.Result{Passed: false, Output: assertionError}
 		}
 	}
-	return true
+	return Exercise.Result{Passed: true, Output: ""}
 }
 
-func collatzInfiniteLoopTest(exercise Exercise.Exercise) bool {
+func collatzInfiniteLoopTest(exercise Exercise.Exercise) Exercise.Result {
 	main := fmt.Sprintf(CollatzMain, "0")
 	if err := testutils.AppendStringToFile(main, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
-		return false
+		return Exercise.Result{Passed: false, Output: "internal error"}
 	}
 	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
-		logger.File.Printf("[%s.1 KO]: %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("compilation error: %v", err)}
 	}
 	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], ".rs")
 	_, err := testutils.RunExecutable(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err != nil {
-		logger.File.Printf("[%s.1 KO]: runtime error: %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %v", err)}
 	}
 	if err := testutils.DeleteStringFromFile(main, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
-		return false
+		return Exercise.Result{Passed: false, Output: "internal error"}
 	}
-	return true
+	return Exercise.Result{Passed: true}
 }
 
 func doCollatz(n int) string {
@@ -99,45 +91,40 @@ func doCollatz(n int) string {
 	return strings.Join(results, "\n") + "\n"
 }
 
-func collatzAssertionTest(exercise Exercise.Exercise) bool {
+func collatzAssertionTest(exercise Exercise.Exercise) Exercise.Result {
 	main := fmt.Sprintf(CollatzMain, "42")
 	if err := testutils.AppendStringToFile(main, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
-		return false
+		return Exercise.Result{Passed: false, Output: "internal error"}
 	}
 	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
-		logger.File.Printf("[%s.1 KO]: %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("compilation error: %v", err)}
 	}
 	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], ".rs")
 	output, err := testutils.RunExecutable(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err != nil {
-		logger.File.Printf("[%s.1 KO]: runtime error: %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %v", err)}
 	}
 	expectedOutput := doCollatz(42)
 
 	if output != expectedOutput {
-		assertionError := testutils.AssertionErrorString(exercise.Name, expectedOutput, output)
+		assertionError := testutils.AssertionErrorString(expectedOutput, output)
 		logger.File.Printf(assertionError)
-		return false
+		return Exercise.Result{Passed: false, Output: assertionError}
 	}
-	return true
+	return Exercise.Result{Passed: false, Output: ""}
 }
 
-func collatz() bool {
-	exercise := Exercise.NewExercise("EX02", "studentcode", "ex02", []string{"collatz.rs"}, "function", "collatz(42)", []string{"println"}, nil, nil, nil)
-	if err := testutils.ForbiddenItemsCheck(exercise, "shortinette-test-R00"); err != nil {
-		return false
-	}
+func collatz() Exercise.Result {
+	exercise := Exercise.NewExercise("02", "studentcode", "ex02", []string{"collatz.rs"}, "function", "collatz(42)", []string{"println"}, nil, nil, nil)
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(exercise)
-	if !collatzInfiniteLoopTest(exercise) {
-		return false
+	if result := collatzInfiniteLoopTest(exercise); !result.Passed {
+		return result
 	}
-	if !collatzAssertionTest(exercise) {
-		return false
+	if result := collatzAssertionTest(exercise); !result.Passed {
+		return result
 	}
-	return true
+	return Exercise.Result{Passed: true, Output: ""}
 }
 
 func doPrintBytes(s string) string {
@@ -148,51 +135,51 @@ func doPrintBytes(s string) string {
 	return result.String()
 }
 
-func printBytesAssertionTest(exercise Exercise.Exercise) bool {
+func printBytesAssertionTest(exercise Exercise.Exercise) Exercise.Result {
 	main := fmt.Sprintf(PrintBytesMain, "Hello, World!")
 	if err := testutils.AppendStringToFile(main, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
-		return false
+		return Exercise.Result{Passed: false, Output: "internal error"}
 	}
 	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
-		logger.File.Printf("[%s.2 KO]: %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("compilation error: %v", err)}
 	}
 	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], ".rs")
 	output, err := testutils.RunExecutable(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err != nil {
-		logger.File.Printf("[%s.2 KO]: runtime error: %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %v", err)}
 	}
 	expectedOutput := doPrintBytes("Hello, World!")
 
 	if output != expectedOutput {
-		assertionError := testutils.AssertionErrorString(exercise.Name, expectedOutput, output)
-		logger.File.Printf(assertionError)
-		return false
+		assertionError := testutils.AssertionErrorString(expectedOutput, output)
+		return Exercise.Result{Passed: false, Output: assertionError}
 	}
-	return true
+	return Exercise.Result{Passed: true, Output: ""}
 }
 
-func printBytes() bool {
-	exercise := Exercise.NewExercise("EX02", "studentcode", "ex02", []string{"print_bytes.rs"}, "function", "print_bytes(\"\")", []string{"println", "bytes"}, nil, nil, nil)
-	if err := testutils.ForbiddenItemsCheck(exercise, "shortinette-test-R00"); err != nil {
-		return false
-	}
+func printBytes() Exercise.Result {
+	exercise := Exercise.NewExercise("02", "studentcode", "ex02", []string{"print_bytes.rs"}, "function", "print_bytes(\"\")", []string{"println", "bytes"}, nil, nil, nil)
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(exercise)
 	return printBytesAssertionTest(exercise)
 }
 
-func ex02Test(exercise *Exercise.Exercise) bool {
+func ex02Test(exercise *Exercise.Exercise) Exercise.Result {
 	if !testutils.TurnInFilesCheck(*exercise) {
-		return false
+		return Exercise.Result{Passed: false, Output: "invalid files found in turn in directory"}
 	}
-	if yes() && collatz() && printBytes() {
-		return true
+	if result := yes(); !result.Passed {
+		return result
+	} 
+	if result := collatz(); !result.Passed {
+		return result
+	} 
+	if result := printBytes(); !result.Passed {
+		return result
 	}
-	return false
+	return Exercise.Result{Passed: true, Output: ""}
 }
 
 func ex02() Exercise.Exercise {
-	return Exercise.NewExercise("EX02", "studentcode", "ex02", []string{"collatz.rs", "print_bytes.rs", "yes.rs"}, "", "", nil, nil, nil, ex02Test)
+	return Exercise.NewExercise("02", "studentcode", "ex02", []string{"collatz.rs", "print_bytes.rs", "yes.rs"}, "", "", nil, nil, nil, ex02Test)
 }

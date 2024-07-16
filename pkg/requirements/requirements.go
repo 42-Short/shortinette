@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/pkg/testutils"
 	"github.com/joho/godotenv"
 )
@@ -35,5 +36,6 @@ func ValidateRequirements() error {
 	if _, err := testutils.RunExecutable("./scripts/check_dependencies.sh"); err != nil {
 		return err
 	}
+	logger.Info.Println("all dependencies are already installed")
 	return nil
 }

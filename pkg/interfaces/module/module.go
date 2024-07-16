@@ -8,42 +8,39 @@ import (
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/pkg/git"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
+	"github.com/42-Short/shortinette/pkg/testutils"
 )
 
 type Module struct {
 	Name      string
-	Exercises []Exercise.Exercise
+	Exercises map[string]Exercise.Exercise
 }
 
 // NewModule initializes and returns a Module struct
 //
-// 	- name: module display name
-//	- exercises: list of all Exercise.Exercise objects belonging into the module
-func NewModule(name string, exercises []Exercise.Exercise) (Module, error) {
+//   - name: module display name
+//   - exercises: list of all Exercise.Exercise objects belonging into the module
+func NewModule(name string, exercises map[string]Exercise.Exercise) (Module, error) {
 	return Module{
 		Name:      name,
 		Exercises: exercises,
 	}, nil
 }
 
-func setUpEnvironment(repoId string, testDirectory string) (tracesPath string, err error) {
+func setUpEnvironment(repoId string, testDirectory string) error {
 	repoLink := fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId)
 	if err := git.Clone(repoLink, testDirectory); err != nil {
 		errorMessage := fmt.Sprintf("failed to clone repository: %v", err)
-		return "", errors.NewInternalError(errors.ErrInternal, errorMessage)
-	}
-	if tracesPath, err = logger.InitializeTraceLogger(repoId); err != nil {
-		errorMessage := fmt.Sprintf("failed to initalize logging system (%v), does the ./traces directory exist?", err)
-		return "", errors.NewInternalError(errors.ErrInternal, errorMessage)
+		return errors.NewInternalError(errors.ErrInternal, errorMessage)
 	}
 	if err := git.Clone(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId), "compile-environment/src/"); err != nil {
-		return "", err
+		return err
 	}
-	return tracesPath, nil
+	return nil
 }
 
 // Executes the exercises, returns the results and the path to the traces
-func (m *Module) Run(repoId string, testDirectory string) (results []Exercise.Result, tracesPath string) {
+func (m *Module) Run(repoId string, testDirectory string) (map[string]bool, string) {
 	defer func() {
 		if err := os.RemoveAll("compile-environment"); err != nil {
 			logger.Error.Printf("could not tear down testing environment: %v", err)
@@ -52,16 +49,32 @@ func (m *Module) Run(repoId string, testDirectory string) (results []Exercise.Re
 			logger.Error.Printf("could not tear down testing environment: %v", err)
 		}
 	}()
-	tracesPath, err := setUpEnvironment(repoId, testDirectory)
+	err := setUpEnvironment(repoId, testDirectory)
 	if err != nil {
-		return nil, tracesPath
+		logger.Error.Println(err)
+		return nil, ""
 	}
+	results := make(map[string]bool)
+	tracesPath := logger.GetNewTraceFile(repoId)
 	if m.Exercises != nil {
 		for _, exercise := range m.Exercises {
-			res := exercise.Run()
-			results = append(results, res)
-			if res.Passed {
-				logger.File.Printf("[%s OK]", exercise.Name)
+			command := "docker"
+			args := []string{
+				"run",
+				"-i",
+				"--rm",
+				"-v",
+				"/root/shortinette:/app",
+				"testenv",
+				"sh",
+				"-c",
+				fmt.Sprintf("go run . \"%s\" \"%s\" \"%s\"", m.Name, exercise.Name, tracesPath),
+			}
+			_, err := testutils.RunCommandLine(".", command, args)
+			if err != nil {
+				results[exercise.Name] = false
+			} else {
+				results[exercise.Name] = true
 			}
 		}
 	}

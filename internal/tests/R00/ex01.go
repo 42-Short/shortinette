@@ -1,12 +1,12 @@
 package R00
 
 import (
+	"fmt"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/42-Short/shortinette/internal/errors"
-	"github.com/42-Short/shortinette/internal/functioncheck"
 	"github.com/42-Short/shortinette/internal/logger"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 	"github.com/42-Short/shortinette/pkg/testutils"
@@ -52,29 +52,24 @@ func compileWithRustcTestOption(turnInFile string) error {
 	return nil
 }
 
-func ex01Test(exercise *Exercise.Exercise) bool {
+func ex01Test(exercise *Exercise.Exercise) Exercise.Result {
 	if !testutils.TurnInFilesCheck(*exercise) {
-		return false
-	}
-	if err := functioncheck.Execute(*exercise, "shortinette-test-R00"); err != nil {
-		return false
+		return Exercise.Result{Passed: false, Output: "invalid files found in turn in directory"}
 	}
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
 	if err := testutils.AppendStringToFile(CargoTest, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("could not write to %s: %v", exercise.TurnInFiles[0], err)
-		logger.File.Printf("internal error: could not write to %s: %v", exercise.TurnInFiles[0], err)
-		return false
+		return Exercise.Result{Passed: false, Output: err.Error()}
 	}
 	if err := compileWithRustcTestOption(exercise.TurnInFiles[0]); err != nil {
-		logger.File.Printf("[%s KO]: invalid compilation: %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("could not compile: %s", err)}
 	}
 	if output, err := testutils.RunExecutable(strings.TrimSuffix(exercise.TurnInFiles[0], ".rs")); err != nil {
-		logger.File.Printf("[%s KO]: invalid output: %v", exercise.Name, output)
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("invalid output: %s", output)}
 	}
-	return true
+	return Exercise.Result{Passed: true, Output: ""}
 }
 
 func ex01() Exercise.Exercise {
-	return Exercise.NewExercise("EX01", "studentcode", "ex01", []string{"min.rs"}, "function", "min(0, 0)", []string{"println"}, nil, map[string]int{"unsafe": 0}, ex01Test)
+	return Exercise.NewExercise("01", "studentcode", "ex01", []string{"min.rs"}, "function", "min(0, 0)", []string{"println"}, nil, map[string]int{"unsafe": 0}, ex01Test)
 }

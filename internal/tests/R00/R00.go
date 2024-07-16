@@ -7,7 +7,15 @@ import (
 )
 
 func R00() *Module.Module {
-	r00, err := Module.NewModule("R00", []Exercise.Exercise{ex00(), ex01(), ex02(), ex03(), ex04(), ex05()})
+	exercises := map[string]Exercise.Exercise{
+		"00": ex00(),
+		"01": ex01(),
+		"02": ex02(),
+		"03": ex03(),
+		"04": ex04(),
+		"05": ex05(),
+	}
+	r00, err := Module.NewModule("00", exercises)
 	if err != nil {
 		logger.Error.Printf("internal error: %v", err)
 		return nil

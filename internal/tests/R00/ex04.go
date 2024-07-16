@@ -1,9 +1,9 @@
 package R00
 
 import (
+	"fmt"
 	"path/filepath"
 
-	"github.com/42-Short/shortinette/internal/logger"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 	"github.com/42-Short/shortinette/pkg/testutils"
 )
@@ -14,92 +14,84 @@ var expectedTomlContent = map[string]string{
 	"package.description": "my answer to the fifth exercise of the first module of 42's Rust Piscine",
 }
 
-func testNmReleaseMode(exercise Exercise.Exercise) bool {
+func testNmReleaseMode(exercise Exercise.Exercise) Exercise.Result {
 	workingDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
-	_, err := testutils.RunCommandLine(workingDirectory, "cargo build --release")
+	_, err := testutils.RunCommandLine(workingDirectory, "cargo", []string{"build", "--release"})
 	if err != nil {
-		logger.File.Printf("[%s KO]: compilation error %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("compilation error: %v", err)}
 	}
-	output, err := testutils.RunCommandLine(workingDirectory, "nm target/release/module00-ex04")
+	output, err := testutils.RunCommandLine(workingDirectory, "nm", []string{"target/release/module00-ex04"})
 	if err != nil {
-		logger.File.Printf("[%s KO]: runtime error %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %v", err)}
 	}
 	if output != "" {
-		logger.File.Println(testutils.AssertionErrorString(exercise.Name, "", output))
-		return false
+		assertionError := testutils.AssertionErrorString("", output)
+		return Exercise.Result{Passed: false, Output: assertionError}
 	}
-	return true
+	return Exercise.Result{Passed: true, Output: ""}
 }
 
-func testCargoRunBinOtherReleaseMode(exercise Exercise.Exercise) bool {
+func testCargoRunBinOtherReleaseMode(exercise Exercise.Exercise) Exercise.Result {
 	workingDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
-	output, err := testutils.RunCommandLine(workingDirectory, "cargo run --release --bin other")
+	output, err := testutils.RunCommandLine(workingDirectory, "cargo", []string{"run", "--release", "--bin", "other"})
 	if err != nil {
-		logger.File.Printf("[%s KO]: runtime error %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %s", err)}
 	}
 	if output != "Hey! I'm the other bin target!\nI'm in release mode!\n" {
-		logger.File.Println(testutils.AssertionErrorString(exercise.Name, "Hey! I'm the other bin target!\nI'm in release mode!\n", output))
-		return false
+		assertionError := testutils.AssertionErrorString("Hey! I'm the other bin target!\nI'm in release mode!\n", output)
+		return Exercise.Result{Passed: false, Output: assertionError}
 	}
-	return true
+	return Exercise.Result{Passed: true, Output: ""}
 }
 
-func testCargoRunBinOther(exercise Exercise.Exercise) bool {
+func testCargoRunBinOther(exercise Exercise.Exercise) Exercise.Result {
 	workingDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
-	output, err := testutils.RunCommandLine(workingDirectory, "cargo run --bin other")
+	output, err := testutils.RunCommandLine(workingDirectory, "cargo", []string{"run", "--bin", "other"})
 	if err != nil {
-		logger.File.Printf("[%s KO]: runtime error %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %v", err)}
 	}
 	if output != "Hey! I'm the other bin target!\n" {
-		logger.File.Println(testutils.AssertionErrorString(exercise.Name, "Hey! I'm the other bin target!\n", output))
-		return false
+		assertionError := testutils.AssertionErrorString("Hey! I'm the other bin target!\n", output)
+		return Exercise.Result{Passed: false, Output: assertionError}
 	}
-	return true
+	return Exercise.Result{Passed: true, Output: ""}
 }
 
-func testCargoRun(exercise Exercise.Exercise) bool {
+func testCargoRun(exercise Exercise.Exercise) Exercise.Result {
 	workingDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
-	output, err := testutils.RunCommandLine(workingDirectory, "cargo run")
+	output, err := testutils.RunCommandLine(workingDirectory, "cargo", []string{"run"})
 	if err != nil {
-		logger.File.Printf("[%s KO]: runtime error %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %v", err)}
 	}
 	if output != "Hello, cargo!\n" {
-		logger.File.Println(testutils.AssertionErrorString(exercise.Name, "Hello, cargo!", output))
-		return false
+		assertionError := testutils.AssertionErrorString("Hello, cargo!", output)
+		return Exercise.Result{Passed: false, Output: assertionError}
 	}
-	return true
+	return Exercise.Result{Passed: true, Output: ""}
 }
 
-func ex04Test(exercise *Exercise.Exercise) bool {
+func ex04Test(exercise *Exercise.Exercise) Exercise.Result {
 	if !testutils.TurnInFilesCheck(*exercise) {
-		return false
-	}
-	if err := testutils.ForbiddenItemsCheck(*exercise, "shortinette-test-R00"); err != nil {
-		return false
+		return Exercise.Result{Passed: false, Output: "invalid files found in turn in directory"}
 	}
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
 
-	if !testCargoRun(*exercise) {
-		return false
+	if result := testCargoRun(*exercise); !result.Passed {
+		return result
 	}
-	if !testCargoRunBinOther(*exercise) {
-		return false
+	if result := testCargoRunBinOther(*exercise); !result.Passed {
+		return result
 	}
-	if !testCargoRunBinOtherReleaseMode(*exercise) {
-		return false
+	if result := testCargoRunBinOtherReleaseMode(*exercise); !result.Passed {
+		return result
 	}
-	if !testNmReleaseMode(*exercise) {
-		return false
+	if result := testNmReleaseMode(*exercise); !result.Passed {
+		return result
 	}
 
 	return testutils.CheckCargoTomlContent(*exercise, expectedTomlContent)
 }
 
 func ex04() Exercise.Exercise {
-	return Exercise.NewExercise("EX04", "studentcode", "ex04", []string{"src/main.rs", "src/overflow.rs", "src/other.rs", "Cargo.toml"}, "", "", []string{"println"}, nil, nil, ex04Test)
+	return Exercise.NewExercise("04", "studentcode", "ex04", []string{"src/main.rs", "src/overflow.rs", "src/other.rs", "Cargo.toml"}, "", "", []string{"println"}, nil, nil, ex04Test)
 }
