@@ -33,20 +33,19 @@ func doFizzBuzz() string {
 
 func fizzBuzzOutputTest(exercise Exercise.Exercise) Exercise.Result {
 	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
-		return Exercise.Result{Passed: false, Output: fmt.Sprintf("compilation error: %v", err)}
+		return Exercise.CompilationError(err.Error())
 	}
 	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], filepath.Ext(exercise.TurnInFiles[0]))
 	output, err := testutils.RunExecutable(executablePath, testutils.WithTimeout(500*time.Millisecond))
 	if err != nil {
-		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %v", err)}
+		return Exercise.RuntimeError(err.Error())
 	}
 	expectedOutput := doFizzBuzz()
 
 	if output != expectedOutput {
-		assertionError := testutils.AssertionErrorString(expectedOutput, output)
-		return Exercise.Result{Passed: false, Output: assertionError}
+		return Exercise.AssertionError(expectedOutput, output)
 	}
-	return Exercise.Result{Passed: true, Output: ""}
+	return Exercise.Passed("OK")
 }
 
 func ex03Test(exercise *Exercise.Exercise) Exercise.Result {

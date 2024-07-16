@@ -16,9 +16,9 @@ import (
 func ex00Compile(exercise *Exercise.Exercise) error {
 	cmd := exec.Command("rustc", filepath.Base(exercise.TurnInFiles[0]))
 	dirPath := filepath.Dir(exercise.TurnInFiles[0])
-    if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-        return err
-    }
+	if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+		return err
+	}
 	cmd.Dir = filepath.Dir(exercise.TurnInFiles[0])
 
 	output, err := cmd.CombinedOutput()
@@ -39,7 +39,7 @@ func runExecutable(executablePath string) (string, error) {
 	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
-		return stderr.String(), errors.NewSubmissionError(errors.ErrRuntime, err.Error())
+		return stderr.String(), err
 	}
 	return stdout.String(), nil
 }
@@ -48,18 +48,17 @@ func ex00Test(exercise *Exercise.Exercise) Exercise.Result {
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
 
 	if err := ex00Compile(exercise); err != nil {
-		return Exercise.Result{Passed: false, Output: err.Error()}
+		return Exercise.CompilationError(err.Error())
 	}
 	executablePath := strings.TrimSuffix(exercise.TurnInFiles[0], filepath.Ext(exercise.TurnInFiles[0]))
 	output, err := runExecutable(executablePath)
 	if err != nil {
-		return Exercise.Result{Passed: false, Output: err.Error()}
+		return Exercise.RuntimeError(err.Error())
 	}
 	if output != "Hello, World!\n" {
-		assertionErrorMessage := testutils.AssertionErrorString("Hello, World!\n", output)
-		return Exercise.Result{Passed: false, Output: assertionErrorMessage}
+		return Exercise.AssertionError("Hello, World!\n", output)
 	}
-	return Exercise.Result{Passed: true, Output: ""}
+	return Exercise.Passed("OK")
 }
 
 func ex00() Exercise.Exercise {

@@ -60,14 +60,6 @@ func ForbiddenItemsCheck(exercise Exercise.Exercise, repoId string) error {
 	return nil
 }
 
-// Formats an error message for assertion errors
-func AssertionErrorString(expected string, got string) string {
-	expectedReplaced := strings.ReplaceAll(expected, "\n", "\\n")
-	gotReplaced := strings.ReplaceAll(got, "\n", "\\n")
-	outputComparison := fmt.Sprintf("invalid output: expected '%s', got '%s'", expectedReplaced, gotReplaced)
-	return outputComparison
-}
-
 // Append source to destFilePath (e.g., a main for testing single funtions)
 func AppendStringToFile(source string, destFilePath string) error {
 	destFile, err := os.OpenFile(destFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
