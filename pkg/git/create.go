@@ -2,8 +2,10 @@ package git
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 
@@ -131,7 +133,43 @@ func createRepository(name string) error {
 		return fmt.Errorf("failed to add webhook: %w", err)
 	}
 
-	fmt.Println("repository created successfully")
+	logger.Info.Println("repository created successfully")
+	return nil
+}
+
+func initialCommit(repo, token string) error {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/README.md", os.Getenv("GITHUB_ORGANISATION"), repo)
+	requestBody := map[string]interface{}{
+		"message": "Initial commit",
+		"content": base64.StdEncoding.EncodeToString([]byte("")),
+		"branch":  "main",
+	}
+	requestBodyJSON, err := json.Marshal(requestBody)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(requestBodyJSON))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("failed to make initial commit: %s, %s", resp.Status, body)
+	}
+
 	return nil
 }
 
@@ -146,5 +184,20 @@ func create(name string) error {
 		return nil
 	}
 
-	return createRepository(name)
+	if err := createRepository(name); err != nil {
+		return err
+	}
+
+	if err := initialCommit(name, os.Getenv("GITHUB_TOKEN")); err != nil {
+		return err
+	}
+
+	sha, err := getDefaultBranchSHA(name, os.Getenv("GITHUB_TOKEN"))
+	if err != nil {
+		return err
+	}
+	if err := createBranch(name, os.Getenv("GITHUB_TOKEN"), "traces", sha); err != nil {
+		return err
+	}
+	return nil
 }

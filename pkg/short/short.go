@@ -42,7 +42,7 @@ func NewShort(name string, modules map[string]Module.Module, testMode ITestMode.
 func GradeModule(module Module.Module, repoId string) error {
 	results, tracesPath := module.Run(repoId, "studentcode")
 	commitMessage := fmt.Sprintf("Traces for module %s: %s", module.Name, tracesPath)
-	if err := git.UploadFile(repoId, tracesPath, tracesPath, commitMessage); err != nil {
+	if err := git.UploadFile(repoId, tracesPath, tracesPath, commitMessage, "traces"); err != nil {
 		return err
 	}
 	fmt.Println(results)
@@ -84,7 +84,7 @@ func StartModule(module Module.Module, config Config) {
 		if err := git.AddCollaborator(repoId, participant.GithubUserName, "push"); err != nil {
 			logger.Error.Printf("error adding collaborator: %v", err)
 		}
-		if err := git.UploadFile(repoId, "subjects/R00.md", "README.md", fmt.Sprintf("Subject for module %s. Good Luck!", module.Name)); err != nil {
+		if err := git.UploadFile(repoId, "subjects/R00.md", "subject/README.md", fmt.Sprintf("Subject for module %s. Good Luck!", module.Name), ""); err != nil {
 			logger.Error.Printf("error uploading file: %v", err)
 		}
 	}

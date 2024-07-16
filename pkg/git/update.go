@@ -12,11 +12,80 @@ import (
 	"github.com/42-Short/shortinette/internal/logger"
 )
 
-func buildCollaboratorURL(repo, username string) string {
+func getDefaultBranchSHA(repo, token string) (string, error) {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/git/refs/heads/main", os.Getenv("GITHUB_ORGANISATION"), repo)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("Accept", "application/vnd.github+json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("failed to get default branch SHA: %s, %s", resp.Status, body)
+	}
+
+	var result map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", err
+	}
+
+	if sha, ok := result["object"].(map[string]interface{})["sha"].(string); ok {
+		return sha, nil
+	}
+
+	return "", fmt.Errorf("SHA not found in response")
+}
+
+func createBranch(repo, token, branchName, sha string) error {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/git/refs", os.Getenv("GITHUB_ORGANISATION"), repo)
+	requestBody := map[string]interface{}{
+		"ref": fmt.Sprintf("refs/heads/%s", branchName),
+		"sha": sha,
+	}
+	requestBodyJSON, err := json.Marshal(requestBody)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBodyJSON))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusUnprocessableEntity {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("failed to create branch: %s, %s", resp.Status, body)
+	}
+
+	return nil
+}
+
+func buildCollaboratorURL(repo string, username string) string {
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/collaborators/%s", os.Getenv("GITHUB_ORGANISATION"), repo, username)
 }
 
-func createCollaboratorRequest(url, token, permission string) (*http.Request, error) {
+func createCollaboratorRequest(url string, token string, permission string) (*http.Request, error) {
 	collaboratorDetails := map[string]string{
 		"permission": permission,
 	}
@@ -46,7 +115,7 @@ func sendRequest(request *http.Request) error {
 	}
 	defer response.Body.Close()
 
-	if response.StatusCode != 200 && response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusNoContent {
+	if response.StatusCode != http.StatusOK && response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusNoContent {
 		body, _ := io.ReadAll(response.Body)
 		return fmt.Errorf("request failed: %s, %s", response.Status, body)
 	}
@@ -104,7 +173,7 @@ func getFileSHA(url, token string) (string, error) {
 	return "", fmt.Errorf("SHA not found in response")
 }
 
-func createPushRequest(url string, token string, targetFilePath string, commitMessage string, encodedContent string, sha string) (*http.Request, error) {
+func createPushRequest(url string, token string, targetFilePath string, commitMessage string, encodedContent string, sha string, branch string) (*http.Request, error) {
 	requestDetails := map[string]interface{}{
 		"message": commitMessage,
 		"committer": map[string]string{
@@ -116,6 +185,11 @@ func createPushRequest(url string, token string, targetFilePath string, commitMe
 	}
 	if sha != "" {
 		requestDetails["sha"] = sha
+	}
+
+	if branch != "" {
+		requestDetails["branch"] = branch
+		logger.Info.Printf("pushing to branch: %s", branch)
 	}
 
 	requestDetailsJSON, err := json.Marshal(requestDetails)
@@ -135,7 +209,7 @@ func createPushRequest(url string, token string, targetFilePath string, commitMe
 	return request, nil
 }
 
-func uploadFile(repoId string, localFilePath string, targetFilePath string, commitMessage string) error {
+func uploadFile(repoId string, localFilePath string, targetFilePath string, commitMessage string, branch string) error {
 	originalFile, err := os.Open(localFilePath)
 	if err != nil {
 		return fmt.Errorf("could not open original file: %w", err)
@@ -154,7 +228,7 @@ func uploadFile(repoId string, localFilePath string, targetFilePath string, comm
 		return err
 	}
 
-	request, err := createPushRequest(url, os.Getenv("GITHUB_TOKEN"), targetFilePath, commitMessage, encodedContent, sha)
+	request, err := createPushRequest(url, os.Getenv("GITHUB_TOKEN"), targetFilePath, commitMessage, encodedContent, sha, branch)
 	if err != nil {
 		return err
 	}

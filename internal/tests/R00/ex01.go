@@ -1,7 +1,6 @@
 package R00
 
 import (
-	"fmt"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -59,15 +58,15 @@ func ex01Test(exercise *Exercise.Exercise) Exercise.Result {
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
 	if err := testutils.AppendStringToFile(CargoTest, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("could not write to %s: %v", exercise.TurnInFiles[0], err)
-		return Exercise.Result{Passed: false, Output: err.Error()}
+		return Exercise.InternalError()
 	}
 	if err := compileWithRustcTestOption(exercise.TurnInFiles[0]); err != nil {
-		return Exercise.Result{Passed: false, Output: fmt.Sprintf("could not compile: %s", err)}
+		return Exercise.CompilationError(err.Error())
 	}
 	if output, err := testutils.RunExecutable(strings.TrimSuffix(exercise.TurnInFiles[0], ".rs")); err != nil {
-		return Exercise.Result{Passed: false, Output: fmt.Sprintf("invalid output: %s", output)}
+		return Exercise.AssertionError("", output)
 	}
-	return Exercise.Result{Passed: true, Output: ""}
+	return Exercise.Passed("OK")
 }
 
 func ex01() Exercise.Exercise {

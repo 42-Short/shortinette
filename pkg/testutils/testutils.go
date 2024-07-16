@@ -47,7 +47,7 @@ func CompileWithRustc(turnInFile string) error {
 	if err != nil {
 		logger.Error.Println(err)
 		logger.Error.Println(string(output))
-		return fmt.Errorf("invalid compilation: %s", err)
+		return err
 	}
 	logger.Info.Printf("%s/%s compiled with rustc\n", cmd.Dir, turnInFile)
 	return nil
@@ -58,14 +58,6 @@ func ForbiddenItemsCheck(exercise Exercise.Exercise, repoId string) error {
 		return err
 	}
 	return nil
-}
-
-// Formats an error message for assertion errors
-func AssertionErrorString(expected string, got string) string {
-	expectedReplaced := strings.ReplaceAll(expected, "\n", "\\n")
-	gotReplaced := strings.ReplaceAll(got, "\n", "\\n")
-	outputComparison := fmt.Sprintf("invalid output: expected '%s', got '%s'", expectedReplaced, gotReplaced)
-	return outputComparison
 }
 
 // Append source to destFilePath (e.g., a main for testing single funtions)

@@ -2,7 +2,6 @@ package webhook
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -14,7 +13,7 @@ import (
 	"github.com/42-Short/shortinette/pkg/short"
 )
 
-// Initializes the webhook TestMode, which triggers submission grading 
+// Initializes the webhook TestMode, which triggers submission grading
 // as soon as activity is recorded on a user's main branch.
 func NewWebhookTestMode() WebhookTestMode {
 	return WebhookTestMode{
@@ -65,7 +64,7 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if payload.Ref == "refs/heads/main" && payload.Pusher.Name != os.Getenv("GITHUB_ADMIN") {
-		fmt.Printf("Received push event to main branch of %s by %s\n", payload.Repository.Name, payload.Pusher.Name)
+		logger.Info.Printf("received push event to main branch of %s by %s\n", payload.Repository.Name, payload.Pusher.Name)
 
 		mu.Lock()
 		defer mu.Unlock()

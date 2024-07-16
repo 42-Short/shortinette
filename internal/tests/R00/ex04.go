@@ -25,8 +25,7 @@ func testNmReleaseMode(exercise Exercise.Exercise) Exercise.Result {
 		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %v", err)}
 	}
 	if output != "" {
-		assertionError := testutils.AssertionErrorString("", output)
-		return Exercise.Result{Passed: false, Output: assertionError}
+		return Exercise.AssertionError("", output)
 	}
 	return Exercise.Result{Passed: true, Output: ""}
 }
@@ -38,8 +37,7 @@ func testCargoRunBinOtherReleaseMode(exercise Exercise.Exercise) Exercise.Result
 		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %s", err)}
 	}
 	if output != "Hey! I'm the other bin target!\nI'm in release mode!\n" {
-		assertionError := testutils.AssertionErrorString("Hey! I'm the other bin target!\nI'm in release mode!\n", output)
-		return Exercise.Result{Passed: false, Output: assertionError}
+		return Exercise.AssertionError("Hey! I'm the other bin target!\nI'm in release mode!\n", output)
 	}
 	return Exercise.Result{Passed: true, Output: ""}
 }
@@ -51,8 +49,7 @@ func testCargoRunBinOther(exercise Exercise.Exercise) Exercise.Result {
 		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %v", err)}
 	}
 	if output != "Hey! I'm the other bin target!\n" {
-		assertionError := testutils.AssertionErrorString("Hey! I'm the other bin target!\n", output)
-		return Exercise.Result{Passed: false, Output: assertionError}
+		return Exercise.AssertionError("Hey! I'm the other bin target!\n", output)
 	}
 	return Exercise.Result{Passed: true, Output: ""}
 }
@@ -64,8 +61,7 @@ func testCargoRun(exercise Exercise.Exercise) Exercise.Result {
 		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %v", err)}
 	}
 	if output != "Hello, cargo!\n" {
-		assertionError := testutils.AssertionErrorString("Hello, cargo!", output)
-		return Exercise.Result{Passed: false, Output: assertionError}
+		return Exercise.AssertionError("Hello, cargo!\n", output)
 	}
 	return Exercise.Result{Passed: true, Output: ""}
 }
