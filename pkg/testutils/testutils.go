@@ -182,11 +182,7 @@ func TurnInFilesCheck(exercise Exercise.Exercise) bool {
 		}
 		return nil
 	})
-	if err != nil {
-		logger.File.Printf("[%s KO]: invalid file found in turn-in directory", exercise.Name)
-		return false
-	}
-	return true
+	return err == nil
 }
 
 func FullTurnInFilesPath(exercise Exercise.Exercise) []string {

@@ -1,6 +1,7 @@
 package R00
 
 import (
+	"fmt"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -51,24 +52,22 @@ func compileWithRustcTestOption(turnInFile string) error {
 	return nil
 }
 
-func ex01Test(exercise *Exercise.Exercise) bool {
+func ex01Test(exercise *Exercise.Exercise) Exercise.Result {
 	if !testutils.TurnInFilesCheck(*exercise) {
-		return false
+		return Exercise.Result{Passed: false, Output: "unallowed files found in turn in directory"}
 	}
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
 	if err := testutils.AppendStringToFile(CargoTest, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("could not write to %s: %v", exercise.TurnInFiles[0], err)
-		logger.File.Printf("internal error: could not write to %s: %v", exercise.TurnInFiles[0], err)
-		return false
+		return Exercise.Result{Passed: false, Output: err.Error()}
 	}
 	if err := compileWithRustcTestOption(exercise.TurnInFiles[0]); err != nil {
-		logger.File.Printf("[%s KO]: invalid compilation: %v", exercise.Name, err)
-		return false
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("could not compile: %s", err)}
 	}
 	if output, err := testutils.RunExecutable(strings.TrimSuffix(exercise.TurnInFiles[0], ".rs")); err != nil {
-		logger.File.Printf("[%s KO]: invalid output: %v", exercise.Name, output)
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("invalid output: %s", output)}
 	}
-	return true
+	return Exercise.Result{Passed: true, Output: ""}
 }
 
 func ex01() Exercise.Exercise {
