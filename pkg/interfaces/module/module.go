@@ -39,14 +39,39 @@ func setUpEnvironment(repoId string, testDirectory string) error {
 	return nil
 }
 
-// Executes the exercises, returns the results and the path to the traces
+func tearDownEnvironment() error {
+	if err := os.RemoveAll("compile-environment"); err != nil {
+		return fmt.Errorf("failed to tear down compiling environment: %v", err)
+	}
+	if err := os.RemoveAll("studentcode"); err != nil {
+		return fmt.Errorf("failed to tear down code directory: %v", err)
+	}
+	return nil
+}
+
+func runContainerized(module Module, exercise Exercise.Exercise, tracesPath string) bool {
+	command := "docker"
+	args := []string{
+		"run",
+		"-i",
+		"--rm",
+		"-v",
+		"/root/shortinette:/app",
+		"testenv",
+		"sh",
+		"-c",
+		fmt.Sprintf("go run . \"%s\" \"%s\" \"%s\"", module.Name, exercise.Name, tracesPath),
+	}
+	_, err := testutils.RunCommandLine(".", command, args)
+	return err == nil
+}
+
+// Executes the exercises, spawning a Docker container for each of them to prevent running
+// malicious code on your machine, returns the results and the path to the traces
 func (m *Module) Run(repoId string, testDirectory string) (map[string]bool, string) {
 	defer func() {
-		if err := os.RemoveAll("compile-environment"); err != nil {
-			logger.Error.Printf("could not tear down testing environment: %v", err)
-		}
-		if err := os.RemoveAll("studentcode"); err != nil {
-			logger.Error.Printf("could not tear down testing environment: %v", err)
+		if err := tearDownEnvironment(); err != nil {
+			logger.Error.Printf(err.Error())
 		}
 	}()
 	err := setUpEnvironment(repoId, testDirectory)
@@ -58,24 +83,7 @@ func (m *Module) Run(repoId string, testDirectory string) (map[string]bool, stri
 	tracesPath := logger.GetNewTraceFile(repoId)
 	if m.Exercises != nil {
 		for _, exercise := range m.Exercises {
-			command := "docker"
-			args := []string{
-				"run",
-				"-i",
-				"--rm",
-				"-v",
-				"/root/shortinette:/app",
-				"testenv",
-				"sh",
-				"-c",
-				fmt.Sprintf("go run . \"%s\" \"%s\" \"%s\"", m.Name, exercise.Name, tracesPath),
-			}
-			_, err := testutils.RunCommandLine(".", command, args)
-			if err != nil {
-				results[exercise.Name] = false
-			} else {
-				results[exercise.Name] = true
-			}
+			results[exercise.Name] = runContainerized(*m, exercise, tracesPath)
 		}
 	}
 	return results, tracesPath

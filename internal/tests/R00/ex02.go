@@ -34,7 +34,7 @@ func yes() Exercise.Result {
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(exercise)
 	if err := testutils.AppendStringToFile(YesMain, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
-		return Exercise.InternalError()
+		return Exercise.InternalError(err.Error())
 	}
 	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
 		return Exercise.CompilationError(err.Error())
@@ -57,7 +57,7 @@ func collatzInfiniteLoopTest(exercise Exercise.Exercise) Exercise.Result {
 	main := fmt.Sprintf(CollatzMain, "0")
 	if err := testutils.AppendStringToFile(main, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
-		return Exercise.InternalError()
+		return Exercise.InternalError(err.Error())
 	}
 	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
 		return Exercise.CompilationError(err.Error())
@@ -69,7 +69,7 @@ func collatzInfiniteLoopTest(exercise Exercise.Exercise) Exercise.Result {
 	}
 	if err := testutils.DeleteStringFromFile(main, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
-		return Exercise.InternalError()
+		return Exercise.InternalError(err.Error())
 	}
 	return Exercise.Result{Passed: true}
 }
@@ -94,7 +94,7 @@ func collatzAssertionTest(exercise Exercise.Exercise) Exercise.Result {
 	main := fmt.Sprintf(CollatzMain, "42")
 	if err := testutils.AppendStringToFile(main, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
-		return Exercise.InternalError()
+		return Exercise.InternalError(err.Error())
 	}
 	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
 		return Exercise.CompilationError(err.Error())
@@ -136,7 +136,7 @@ func printBytesAssertionTest(exercise Exercise.Exercise) Exercise.Result {
 	main := fmt.Sprintf(PrintBytesMain, "Hello, World!")
 	if err := testutils.AppendStringToFile(main, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
-		return Exercise.InternalError()
+		return Exercise.InternalError(err.Error())
 	}
 	if err := testutils.CompileWithRustc(exercise.TurnInFiles[0]); err != nil {
 		return Exercise.CompilationError(err.Error())
