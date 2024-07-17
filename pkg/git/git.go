@@ -62,3 +62,11 @@ func UploadFile(repoId string, localFilePath string, targetFilePath string, comm
 	logger.Info.Printf("%s successfully uploaded to %s/%s", localFilePath, repoId, targetFilePath)
 	return nil
 }
+
+func NewRelease(repoId string,  tagName string, releaseName string, body string, draft bool, prerelease bool) error {
+	if err := newRelease(repoId, tagName, releaseName, body, draft, prerelease); err != nil {
+		return err
+	}
+	logger.Info.Printf("successfully added new release to %s", repoId)
+	return nil
+}

@@ -235,3 +235,51 @@ func uploadFile(repoId string, localFilePath string, targetFilePath string, comm
 
 	return sendRequest(request)
 }
+
+func buildReleaseURL(repoId string) string {
+	return fmt.Sprintf("https://api.github.com/repos/%s/%s/releases", os.Getenv("GITHUB_ORGANISATION"), repoId)
+}
+
+func createReleaseRequest(url string, token string, tagName string, releaseName string, body string, draft bool, prerelease bool) (*http.Request, error) {
+	releaseDetails := map[string]interface{}{
+		"tag_name":   tagName,
+		"name":       releaseName,
+		"body":       body,
+		"draft":      draft,
+		"prerelease": prerelease,
+	}
+
+	releaseDetailsJSON, err := json.Marshal(releaseDetails)
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := http.NewRequest("POST", url, bytes.NewBuffer(releaseDetailsJSON))
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	request.Header.Set("Accept", "application/vnd.github+json")
+	request.Header.Set("Content-Type", "application/json")
+
+	return request, nil
+}
+
+func createRelease(repo string, tagName string, releaseName string, body string, draft bool, prerelease bool) error {
+	url := buildReleaseURL(repo)
+
+	request, err := createReleaseRequest(url, os.Getenv("GITHUB_TOKEN"), tagName, releaseName, body, draft, prerelease)
+	if err != nil {
+		return err
+	}
+
+	return sendRequest(request)
+}
+
+func newRelease(repoId string, tagName string, releaseName string, body string, draft bool, prerelease bool) error {
+	if err := createRelease(repoId, tagName, releaseName, body, draft, prerelease); err != nil {
+		return fmt.Errorf("could not create release: %w", err)
+	}
+	return nil
+}
