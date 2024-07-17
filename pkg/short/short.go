@@ -58,6 +58,12 @@ func getScore(results map[string]bool, module Module.Module) int {
 	return score
 }
 
+// TODO:
+// Before uploading:
+// 	1. Get latest release
+//	2. If current score is higher, delete old release and replace it with new one
+// Everytime:
+//	1. Append score to README on main with link to the traces
 func uploadScore(module Module.Module, repoId string, results map[string]bool) error {
 	score := getScore(results, module)
 	releaseName := fmt.Sprintf("%d/100", score)
