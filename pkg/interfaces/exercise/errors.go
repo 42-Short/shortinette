@@ -23,8 +23,8 @@ func AssertionError(expected string, got string) Result {
 	return Result{Passed: false, Output: fmt.Sprintf("invalid output: expected '%s', got '%s'", expectedReplaced, gotReplaced)}
 }
 
-func InternalError() Result {
-	return Result{Passed: true, Output: "no idea if you actually passed but the software broke so you have the benefit of the doubt"}
+func InternalError(errorMessage string) Result {
+	return Result{Passed: false, Output: fmt.Sprintf("internal error: %v", errorMessage)}
 }
 
 func Passed(message string) Result {

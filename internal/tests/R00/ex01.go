@@ -58,7 +58,7 @@ func ex01Test(exercise *Exercise.Exercise) Exercise.Result {
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
 	if err := testutils.AppendStringToFile(CargoTest, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("could not write to %s: %v", exercise.TurnInFiles[0], err)
-		return Exercise.InternalError()
+		return Exercise.InternalError(err.Error())
 	}
 	if err := compileWithRustcTestOption(exercise.TurnInFiles[0]); err != nil {
 		return Exercise.CompilationError(err.Error())
