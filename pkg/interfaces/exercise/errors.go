@@ -13,7 +13,6 @@ func CompilationError(errorMessage string) Result {
 	return Result{Passed: false, Output: fmt.Sprintf("compilation error: %s", errorMessage)}
 }
 
-
 func InvalidFileError() Result {
 	return Result{Passed: false, Output: "invalid file(s) found in turn in directory"}
 }
