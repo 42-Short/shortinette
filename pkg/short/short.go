@@ -2,6 +2,7 @@ package short
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/pkg/git"
@@ -38,6 +39,25 @@ func NewShort(name string, modules map[string]Module.Module, testMode ITestMode.
 	}
 }
 
+func getScore(results map[string]bool, module Module.Module) int {
+	var keys []string
+	for key := range results {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	score := 0
+
+	for _, key := range keys {
+		if !results[key] {
+			break
+		} else {
+			score += module.Exercises[key].Score
+		}
+	}
+	return score
+}
+
 // Grades one participant's module and upload trace
 func GradeModule(module Module.Module, repoId string) error {
 	results, tracesPath := module.Run(repoId, "studentcode")
@@ -45,7 +65,7 @@ func GradeModule(module Module.Module, repoId string) error {
 	if err := git.UploadFile(repoId, tracesPath, tracesPath, commitMessage, "traces"); err != nil {
 		return err
 	}
-	fmt.Println(results)
+	fmt.Println(getScore(results, module))
 	return nil
 }
 
