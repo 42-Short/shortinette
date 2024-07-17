@@ -17,6 +17,7 @@ type Exercise struct {
 	AllowedMacros    []string
 	AllowedFunctions []string
 	AllowedKeywords  map[string]int
+	Score            int
 	Executer         func(test *Exercise) Result
 }
 
@@ -46,6 +47,7 @@ func NewExercise(
 	allowedMacros []string,
 	allowedFunctions []string,
 	allowedKeywords map[string]int,
+	score int,
 	executer func(test *Exercise) Result,
 ) Exercise {
 
@@ -59,6 +61,7 @@ func NewExercise(
 		AllowedMacros:    allowedMacros,
 		AllowedFunctions: allowedFunctions,
 		AllowedKeywords:  allowedKeywords,
+		Score:            score,
 		Executer:         executer,
 	}
 }

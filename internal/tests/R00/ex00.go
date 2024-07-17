@@ -62,5 +62,5 @@ func ex00Test(exercise *Exercise.Exercise) Exercise.Result {
 }
 
 func ex00() Exercise.Exercise {
-	return Exercise.NewExercise("00", "studentcode", "ex00", []string{"hello.rs"}, "program", "", []string{"println"}, nil, map[string]int{"unsafe": 0}, ex00Test)
+	return Exercise.NewExercise("00", "studentcode", "ex00", []string{"hello.rs"}, "program", "", []string{"println"}, nil, map[string]int{"unsafe": 0}, 10, ex00Test)
 }

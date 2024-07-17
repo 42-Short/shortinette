@@ -58,5 +58,5 @@ func ex03Test(exercise *Exercise.Exercise) Exercise.Result {
 }
 
 func ex03() Exercise.Exercise {
-	return Exercise.NewExercise("03", "studentcode", "ex03", []string{"fizzbuzz.rs"}, "program", "", []string{"println"}, nil, map[string]int{"match": 1, "for": 1}, ex03Test)
+	return Exercise.NewExercise("03", "studentcode", "ex03", []string{"fizzbuzz.rs"}, "program", "", []string{"println"}, nil, map[string]int{"match": 1, "for": 1}, 10, ex03Test)
 }

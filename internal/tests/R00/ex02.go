@@ -30,7 +30,7 @@ fn main() {
 `
 
 func yes() Exercise.Result {
-	exercise := Exercise.NewExercise("02", "studentcode", "ex02", []string{"yes.rs"}, "function", "yes()", []string{"println"}, nil, nil, nil)
+	exercise := Exercise.NewExercise("02", "studentcode", "ex02", []string{"yes.rs"}, "function", "yes()", []string{"println"}, nil, nil, -1, nil)
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(exercise)
 	if err := testutils.AppendStringToFile(YesMain, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("internal error: %v", err)
@@ -113,7 +113,7 @@ func collatzAssertionTest(exercise Exercise.Exercise) Exercise.Result {
 }
 
 func collatz() Exercise.Result {
-	exercise := Exercise.NewExercise("02", "studentcode", "ex02", []string{"collatz.rs"}, "function", "collatz(42)", []string{"println"}, nil, nil, nil)
+	exercise := Exercise.NewExercise("02", "studentcode", "ex02", []string{"collatz.rs"}, "function", "collatz(42)", []string{"println"}, nil, nil, -1, nil)
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(exercise)
 	if result := collatzInfiniteLoopTest(exercise); !result.Passed {
 		return result
@@ -155,7 +155,7 @@ func printBytesAssertionTest(exercise Exercise.Exercise) Exercise.Result {
 }
 
 func printBytes() Exercise.Result {
-	exercise := Exercise.NewExercise("02", "studentcode", "ex02", []string{"print_bytes.rs"}, "function", "print_bytes(\"\")", []string{"println", "bytes"}, nil, nil, nil)
+	exercise := Exercise.NewExercise("02", "studentcode", "ex02", []string{"print_bytes.rs"}, "function", "print_bytes(\"\")", []string{"println", "bytes"}, nil, nil, -1, nil)
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(exercise)
 	return printBytesAssertionTest(exercise)
 }
@@ -177,5 +177,5 @@ func ex02Test(exercise *Exercise.Exercise) Exercise.Result {
 }
 
 func ex02() Exercise.Exercise {
-	return Exercise.NewExercise("02", "studentcode", "ex02", []string{"collatz.rs", "print_bytes.rs", "yes.rs"}, "", "", nil, nil, nil, ex02Test)
+	return Exercise.NewExercise("02", "studentcode", "ex02", []string{"collatz.rs", "print_bytes.rs", "yes.rs"}, "", "", nil, nil, nil, 20, ex02Test)
 }
