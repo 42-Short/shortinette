@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -283,27 +284,55 @@ func createRelease(repo string, tagName string, releaseName string, body string,
 	return sendRequest(request)
 }
 
+func extractNumberFromString(s string) (int, error) {
+	// Compile a regular expression to find a number followed by "min"
+	re := regexp.MustCompile(`(\d+)min`)
+	matches := re.FindStringSubmatch(s)
+
+	if len(matches) < 2 {
+		return 0, fmt.Errorf("no number found")
+	}
+
+	// Convert the found number (which is a string) to an int
+	number, err := strconv.Atoi(matches[1])
+	if err != nil {
+		return 0, fmt.Errorf("error converting string to int: %v", err)
+	}
+
+	return number, nil
+}
+
 func newRelease(repoId string, tagName string, releaseName string, body string, draft bool, prerelease bool) error {
+	newWaitTime, newScore, currentScore := 0, 0, 0
 	existingReleaseID, releaseTitle, err := getLatestRelease(repoId)
 	if err != nil {
 		return fmt.Errorf("could not check for existing release: %w", err)
 	}
 	if existingReleaseID != "" {
-		newScore, err := strconv.Atoi(strings.Split(releaseName, "/")[0])
+		newScore, err = strconv.Atoi(strings.Split(releaseName, "/")[0])
 		if err != nil {
 			return err
 		}
-		currentScore, err := strconv.Atoi(strings.Split(releaseTitle, "/")[0])
+		currentScore, err = strconv.Atoi(strings.Split(releaseTitle, "/")[0])
 		if err != nil {
 			return err
-		}
-		if newScore > currentScore {
-			return nil
 		}
 		if err := deleteRelease(repoId, existingReleaseID); err != nil {
 			return fmt.Errorf("could not delete existing release: %w", err)
 		}
 	}
+	if newScore > currentScore || existingReleaseID == "" {
+		newWaitTime = 15
+	} else {
+		oldWaitTime, err := extractNumberFromString(releaseTitle)
+		if err != nil {
+			return err
+		}
+		newWaitTime = max(oldWaitTime + 15, 60)
+	}
+
+
+	releaseName = fmt.Sprintf("%s - Retry in %dm", releaseName, newWaitTime)
 
 	if err := createRelease(repoId, tagName, releaseName, body, draft, prerelease); err != nil {
 		return fmt.Errorf("could not create release: %w", err)
