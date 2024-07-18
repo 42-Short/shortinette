@@ -6,9 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/42-Short/shortinette/internal/logger"
 )
@@ -283,13 +284,22 @@ func createRelease(repo string, tagName string, releaseName string, body string,
 }
 
 func newRelease(repoId string, tagName string, releaseName string, body string, draft bool, prerelease bool) error {
-	existingReleaseID, err := getLatestRelease(repoId)
+	existingReleaseID, releaseTitle, err := getLatestRelease(repoId)
 	if err != nil {
 		return fmt.Errorf("could not check for existing release: %w", err)
 	}
-
 	if existingReleaseID != "" {
-		fmt.Println(existingReleaseID)
+		currentScore, err := strconv.Atoi(strings.Split(releaseName, "/")[0])
+		if err != nil {
+			return err
+		}
+		newScore, err := strconv.Atoi(strings.Split(releaseTitle, "/")[0])
+		if err != nil {
+			return err
+		}
+		if newScore < currentScore {
+			return nil
+		}
 		if err := deleteRelease(repoId, existingReleaseID); err != nil {
 			return fmt.Errorf("could not delete existing release: %w", err)
 		}
@@ -301,13 +311,13 @@ func newRelease(repoId string, tagName string, releaseName string, body string, 
 	return nil
 }
 
-func getLatestRelease(repoId string) (string, error) {
+func getLatestRelease(repoId string) (string, string, error) {
 	url := buildLatestReleaseURL(repoId)
 	token := os.Getenv("GITHUB_TOKEN")
 
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	request.Header.Set("Accept", "application/vnd.github+json")
@@ -315,25 +325,25 @@ func getLatestRelease(repoId string) (string, error) {
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode == http.StatusNotFound {
-		return "", nil
+		return "", "", nil
 	}
 
 	if response.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(response.Body)
-		return "", fmt.Errorf("failed to get latest release with status %d: %s", response.StatusCode, string(body))
+		return "", "", fmt.Errorf("failed to get latest release with status %d: %s", response.StatusCode, string(body))
 	}
 
 	var release map[string]interface{}
 	if err := json.NewDecoder(response.Body).Decode(&release); err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return fmt.Sprintf("%.0f", release["id"].(float64)), nil
+	return fmt.Sprintf("%.0f", release["id"].(float64)), fmt.Sprintf("%s", release["name"]), nil
 
 }
 
@@ -356,7 +366,7 @@ func deleteRelease(repoId string, releaseID string) error {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusNoContent {
-		body, _ := ioutil.ReadAll(response.Body)
+		body, _ := io.ReadAll(response.Body)
 		return fmt.Errorf("failed to delete release with status %d: %s", response.StatusCode, string(body))
 	}
 
