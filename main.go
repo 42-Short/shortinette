@@ -1,11 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"io"
 	"os"
-	"os/exec"
 
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/tests/R00"
@@ -13,6 +10,7 @@ import (
 	"github.com/42-Short/shortinette/pkg/requirements"
 	Short "github.com/42-Short/shortinette/pkg/short"
 	webhook "github.com/42-Short/shortinette/pkg/short/testmodes/webhooktestmode"
+	"github.com/42-Short/shortinette/pkg/testutils"
 )
 
 func dockerExecMode(args []string, short Short.Short) error {
@@ -33,90 +31,17 @@ func dockerExecMode(args []string, short Short.Short) error {
 	return nil
 }
 
-func printCircular(lines []string) {
-	for range len(lines) {
-		fmt.Printf("\033[A")
-		fmt.Printf("\033[K")
-	}
-	for _, line := range lines {
-		fmt.Printf("\033[90m%s\033[0m\n", line)
-	}
-}
-
-func captureOutput(r io.Reader, done chan<- bool) []string {
-	scanner := bufio.NewScanner(r)
-	buffer := make([]string, 5)
-	var lines []string
-	idx := 0
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		lines = append(lines, line)
-
-		buffer[idx%5] = line
-		idx++
-		printCircular(buffer)
-	}
-
-	done <- true
-	return lines
-}
-
-func runCommandWithLimitedOutput(name string, args ...string) error {
-	cmd := exec.Command(name, args...)
-
-	stdoutPipe, err := cmd.StdoutPipe()
-	if err != nil {
-		return err
-	}
-	stderrPipe, err := cmd.StderrPipe()
-	if err != nil {
-		return err
-	}
-
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-
-	stdoutDone := make(chan bool)
-	stderrDone := make(chan bool)
-
-	go captureOutput(stdoutPipe, stdoutDone)
-	go captureOutput(stderrPipe, stderrDone)
-
-	<-stdoutDone
-	<-stderrDone
-
-	if err := cmd.Wait(); err != nil {
-		return err
-	}
-	return nil
-}
-
 func buildDockerTestEnvironment() error {
-	logger.Info.Println("pre-built testenv image not found, building from ./Dockerfile...")
-	err := runCommandWithLimitedOutput("sh", "-c", "docker image ls | grep testenv")
-	fmt.Printf("\033[S")
-	fmt.Printf("\033[S")
-	fmt.Printf("\033[S")
-	if err != nil {
-		err = runCommandWithLimitedOutput("docker", "build", "-t", "testenv", ".")
-		if err != nil {
-			logger.Info.Println("in order to compile and test submissions in a safe environment, you will need to add a Dockerfile with all necessary dependencies to the root of your project - see http://github.com/42-Short/shortinette/.github/docs for more details")
-			return err
-		}
-	}
-	return nil
+    cmd := "docker image ls | grep testenv"
+    
+    if _, err := testutils.RunCommandLine(".", "sh", []string{"-c", cmd}); err != nil {
+        return err
+    }
+    return nil
 }
 
 func main() {
 	logger.InitializeStandardLoggers()
-
-	if err := buildDockerTestEnvironment(); err != nil {
-		logger.Error.Println(err)
-		return
-	}
-
 	short := Short.NewShort("Rust Piscine 1.0", map[string]Module.Module{"00": *R00.R00()}, webhook.NewWebhookTestMode())
 	if len(os.Args) == 4 {
 		if err := dockerExecMode(os.Args, short); err != nil {
@@ -124,8 +49,13 @@ func main() {
 			return
 		}
 		return
-	} else if len(os.Args) != 1 {
-		logger.Error.Println("invalid number of arguments")
+		} else if len(os.Args) != 1 {
+			logger.Error.Println("invalid number of arguments")
+			return
+		}
+	if err := buildDockerTestEnvironment(); err != nil {
+		fmt.Println(err.Error())
+		logger.Info.Printf("in order to compile and test submissions in a safe environment, you will need to a pre-built Docker image containing all language-specific dependencies needed to compile the code which is to be tested - see http://github.com/42-Short/shortinette/.github/docs")
 		return
 	}
 	if err := requirements.ValidateRequirements(); err != nil {
