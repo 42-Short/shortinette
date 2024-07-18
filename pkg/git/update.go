@@ -289,15 +289,15 @@ func newRelease(repoId string, tagName string, releaseName string, body string, 
 		return fmt.Errorf("could not check for existing release: %w", err)
 	}
 	if existingReleaseID != "" {
-		currentScore, err := strconv.Atoi(strings.Split(releaseName, "/")[0])
+		newScore, err := strconv.Atoi(strings.Split(releaseName, "/")[0])
 		if err != nil {
 			return err
 		}
-		newScore, err := strconv.Atoi(strings.Split(releaseTitle, "/")[0])
+		currentScore, err := strconv.Atoi(strings.Split(releaseTitle, "/")[0])
 		if err != nil {
 			return err
 		}
-		if newScore < currentScore {
+		if newScore > currentScore {
 			return nil
 		}
 		if err := deleteRelease(repoId, existingReleaseID); err != nil {
