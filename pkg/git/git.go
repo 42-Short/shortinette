@@ -2,6 +2,8 @@ package git
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/42-Short/shortinette/internal/logger"
@@ -64,35 +66,57 @@ func UploadFile(repoId string, localFilePath string, targetFilePath string, comm
 	return nil
 }
 
-func NewRelease(repoId string, tagName string, releaseName string, draft bool, prerelease bool) error {
-	if err := newRelease(repoId, tagName, releaseName, draft, prerelease); err != nil {
+func NewRelease(repoId string, tagName string, releaseName string, draft bool, prerelease bool, formatReleaseName bool) error {
+	if err := newRelease(repoId, tagName, releaseName, draft, prerelease, formatReleaseName); err != nil {
 		return err
 	}
 	logger.Info.Printf("successfully added new release to %s", repoId)
 	return nil
 }
 
-func IsReadyToGrade(repoid string) bool {
+func IsReadyToGrade(repoid string) (waitTime time.Duration, score int) {
 	_, name, body, err := getLatestRelease(repoid)
 	if err != nil {
 		logger.Error.Println(err)
-		return false
-	}
-	waitTime, err := extractNumberFromString(name)
-	if err != nil {
-		waitTime = 15
+		return 1 * time.Minute, 0
 	}
 
+	wait, err := extractNumberFromString(name)
+	if err != nil {
+		waitTime = 15 * time.Minute
+	} else {
+		waitTime = time.Duration(wait) * time.Minute
+	}
 	if body == "" {
-		body = fmt.Sprintf("last grading time: %s", time.Now())
+		body = fmt.Sprintf("last grading time: %s", time.Now().Format("2006-01-02 15:04:05.999999999 -0700 MST"))
+	}
+
+	// Ensure the release name starts with an integer score
+	nameParts := strings.Split(name, "/")
+	if len(nameParts) == 0 {
+		logger.Error.Println("Invalid release name format")
+		return 1 * time.Minute, 0
+	}
+	score, err = strconv.Atoi(nameParts[0])
+	if err != nil {
+		logger.Error.Println("Error converting score:", err)
+		return 1 * time.Minute, 0
 	}
 
 	const timeStringLayout = "2006-01-02 15:04:05.999999999 -0700 MST"
-	lastGradingTime, err := time.Parse(timeStringLayout, body[19:59])
+	lastGradingTimeStr := body[19:59] // assuming fixed format "last grading time: 2024-07-19 15:45:30.123456789 -0700 MST"
+	lastGradingTime, err := time.Parse(timeStringLayout, lastGradingTimeStr)
 	if err != nil {
-		fmt.Println(err)
-		return false
+		logger.Error.Println("Error parsing last grading time:", err)
+		return 1 * time.Minute, score
 	}
-	return time.Since(lastGradingTime) > time.Duration(waitTime * int(time.Minute))
-	
+
+	timePassed := time.Since(lastGradingTime)
+	waitDuration := waitTime
+	if timePassed < waitDuration {
+		return waitDuration - timePassed, score
+	}
+
+	return 0, score
 }
+

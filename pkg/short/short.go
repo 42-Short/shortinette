@@ -63,7 +63,7 @@ func uploadScore(module Module.Module, repoId string, results map[string]bool) e
 	score := getScore(results, module)
 	releaseName := fmt.Sprintf("%d/100", score)
 
-	if err := git.NewRelease(repoId, "Grade", releaseName, false, false); err != nil {
+	if err := git.NewRelease(repoId, "Grade", releaseName, false, false, true); err != nil {
 		return err
 	}
 	return nil
@@ -71,8 +71,11 @@ func uploadScore(module Module.Module, repoId string, results map[string]bool) e
 
 // Grades one participant's module and upload trace
 func GradeModule(module Module.Module, repoId string) error {
-	if !git.IsReadyToGrade(repoId) {
-		logger.Error.Println("fuck off")
+	if waitTime, score := git.IsReadyToGrade(repoId); waitTime != 0 {
+		logger.Error.Println("attempted grading too early")
+		retryInMinutes := int(waitTime.Minutes())
+		git.NewRelease(repoId, "Grade", fmt.Sprintf("%d/100 - retry in %dm", score, retryInMinutes), false, false, false)
+		return nil
 	}
 	results, tracesPath := module.Run(repoId, "studentcode")
 	commitMessage := fmt.Sprintf("Traces for module %s: %s", module.Name, tracesPath)

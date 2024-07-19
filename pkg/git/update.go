@@ -301,7 +301,7 @@ func extractNumberFromString(s string) (int, error) {
 	return number, nil
 }
 
-func newRelease(repoId string, tagName string, releaseName string, draft bool, prerelease bool) error {
+func newRelease(repoId string, tagName string, releaseName string, draft bool, prerelease bool, formatReleaseName bool) error {
 	newWaitTime, newScore, currentScore := 0, 0, 0
 	existingReleaseID, releaseTitle, _, err := getLatestRelease(repoId)
 	if err != nil {
@@ -330,7 +330,10 @@ func newRelease(repoId string, tagName string, releaseName string, draft bool, p
 		newWaitTime = min(oldWaitTime+15, 60)
 	}
 	newBody := fmt.Sprintf("last grading time: %s", time.Now().String())
-	releaseName = fmt.Sprintf("%s - Retry in %dm", releaseName, newWaitTime)
+	
+	if formatReleaseName {
+		releaseName = fmt.Sprintf("%s - retry in %dm", releaseName, newWaitTime)
+	}
 
 	if err := createRelease(repoId, tagName, releaseName, newBody, draft, prerelease); err != nil {
 		return fmt.Errorf("could not create release: %w", err)
