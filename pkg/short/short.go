@@ -69,23 +69,26 @@ func uploadScore(module Module.Module, repoId string, results map[string]bool) e
 	return nil
 }
 
-// Grades one participant's module and upload trace
 func GradeModule(module Module.Module, repoId string) error {
-	if waitTime, score := git.IsReadyToGrade(repoId); waitTime != 0 {
-		logger.Error.Println("attempted grading too early")
-		retryInMinutes := int(waitTime.Minutes())
-		git.NewRelease(repoId, "Grade", fmt.Sprintf("%d/100 - retry in %dm", score, retryInMinutes), false, false, false)
-		return nil
-	}
-	results, tracesPath := module.Run(repoId, "studentcode")
-	commitMessage := fmt.Sprintf("Traces for module %s: %s", module.Name, tracesPath)
-	if err := git.UploadFile(repoId, tracesPath, tracesPath, commitMessage, "traces"); err != nil {
-		return err
-	}
-	if err := uploadScore(module, repoId, results); err != nil {
-		return err
-	}
-	return nil
+    if waitTime, score := git.IsReadyToGrade(repoId); waitTime != 0 {
+        logger.Error.Println("attempted grading too early")
+        retryInMinutes := int(waitTime.Minutes())
+        git.NewRelease(repoId, "Grade", fmt.Sprintf("%d/100 - retry in %dm", score, retryInMinutes), false, false, false)
+        return nil
+    }
+
+    results, tracesPath := module.Run(repoId, "studentcode")
+    commitMessage := fmt.Sprintf("Traces for module %s: %s", module.Name, tracesPath)
+
+    if err := git.UploadFile(repoId, tracesPath, tracesPath, commitMessage, "traces"); err != nil {
+        return err
+    }
+
+    if err := uploadScore(module, repoId, results); err != nil {
+        return err
+    }
+    
+    return nil
 }
 
 // Grades all participant's modules and upload traces.

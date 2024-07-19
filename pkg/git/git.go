@@ -75,48 +75,48 @@ func NewRelease(repoId string, tagName string, releaseName string, draft bool, p
 }
 
 func IsReadyToGrade(repoid string) (waitTime time.Duration, score int) {
-	_, name, body, err := getLatestRelease(repoid)
-	if err != nil {
-		logger.Error.Println(err)
-		return 1 * time.Minute, 0
-	}
+    _, name, body, err := getLatestRelease(repoid)
+    if err != nil {
+        logger.Error.Println(err)
+        return 15 * time.Minute, 0
+    }
+    wait, err := extractNumberFromString(name)
+    if err != nil {
+        waitTime = 15 * time.Minute
+    } else {
+        waitTime = time.Duration(wait) * time.Minute
+    }
 
-	wait, err := extractNumberFromString(name)
-	if err != nil {
-		waitTime = 15 * time.Minute
-	} else {
-		waitTime = time.Duration(wait) * time.Minute
-	}
-	if body == "" {
-		body = fmt.Sprintf("last grading time: %s", time.Now().Format("2006-01-02 15:04:05.999999999 -0700 MST"))
-	}
+    if body == "" {
+        body = fmt.Sprintf("last grading time: %s", time.Now().Format("2006-01-02 15:04:05.999999999 -0700 MST"))
+    }
 
-	// Ensure the release name starts with an integer score
-	nameParts := strings.Split(name, "/")
-	if len(nameParts) == 0 {
-		logger.Error.Println("Invalid release name format")
-		return 1 * time.Minute, 0
-	}
-	score, err = strconv.Atoi(nameParts[0])
-	if err != nil {
-		logger.Error.Println("Error converting score:", err)
-		return 1 * time.Minute, 0
-	}
+    nameParts := strings.Split(name, "/")
+    if len(nameParts) == 0 {
+        logger.Error.Println("Invalid release name format")
+        return 15 * time.Minute, 0
+    }
+    score, err = strconv.Atoi(nameParts[0])
+    if err != nil {
+        score = 0
+    }
 
-	const timeStringLayout = "2006-01-02 15:04:05.999999999 -0700 MST"
-	lastGradingTimeStr := body[19:59] // assuming fixed format "last grading time: 2024-07-19 15:45:30.123456789 -0700 MST"
-	lastGradingTime, err := time.Parse(timeStringLayout, lastGradingTimeStr)
-	if err != nil {
-		logger.Error.Println("Error parsing last grading time:", err)
-		return 1 * time.Minute, score
-	}
+    const timeStringLayout = "2006-01-02 15:04:05.999999999 -0700 MST"
+	startIndex := len("last grading time: ")
+	endIndex := strings.Index(body, "CEST") + len("CEST") 
+	lastGradingTimeStr := body[startIndex:endIndex]
+    lastGradingTime, err := time.Parse(timeStringLayout, lastGradingTimeStr)
+    if err != nil {
+        logger.Error.Println("Error parsing last grading time:", err)
+        return waitTime, score
+    }
 
-	timePassed := time.Since(lastGradingTime)
-	waitDuration := waitTime
-	if timePassed < waitDuration {
-		return waitDuration - timePassed, score
-	}
+    timePassed := time.Since(lastGradingTime)
 
-	return 0, score
+    if timePassed < waitTime {
+        return waitTime - timePassed, score
+    }
+
+    return 0, score
 }
 

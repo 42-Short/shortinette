@@ -303,7 +303,7 @@ func extractNumberFromString(s string) (int, error) {
 
 func newRelease(repoId string, tagName string, releaseName string, draft bool, prerelease bool, formatReleaseName bool) error {
 	newWaitTime, newScore, currentScore := 0, 0, 0
-	existingReleaseID, releaseTitle, _, err := getLatestRelease(repoId)
+	existingReleaseID, releaseTitle, body, err := getLatestRelease(repoId)
 	if err != nil {
 		return fmt.Errorf("could not check for existing release: %w", err)
 	}
@@ -329,8 +329,13 @@ func newRelease(repoId string, tagName string, releaseName string, draft bool, p
 		}
 		newWaitTime = min(oldWaitTime+15, 60)
 	}
-	newBody := fmt.Sprintf("last grading time: %s", time.Now().String())
-	
+	newBody := ""
+	if formatReleaseName {
+		newBody = fmt.Sprintf("last grading time: %s", time.Now().String())
+	} else {
+		newBody = body
+	}
+
 	if formatReleaseName {
 		releaseName = fmt.Sprintf("%s - retry in %dm", releaseName, newWaitTime)
 	}
