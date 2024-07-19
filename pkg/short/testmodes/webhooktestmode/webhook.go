@@ -41,7 +41,6 @@ type GitHubWebhookPayload struct {
 }
 
 var (
-	lastGradedTime time.Time
 	mu             sync.Mutex
 )
 
@@ -68,13 +67,6 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 
 		mu.Lock()
 		defer mu.Unlock()
-
-		if time.Since(lastGradedTime) < time.Minute {
-			http.Error(w, "grading process is already running", http.StatusTooManyRequests)
-			return
-		}
-
-		lastGradedTime = time.Now()
 
 		go func() {
 			if err := short.GradeModule(*R00.R00(), payload.Repository.Name); err != nil {
