@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/42-Short/shortinette/internal/logger"
 )
@@ -301,9 +302,9 @@ func extractNumberFromString(s string) (int, error) {
 	return number, nil
 }
 
-func newRelease(repoId string, tagName string, releaseName string, body string, draft bool, prerelease bool) error {
+func newRelease(repoId string, tagName string, releaseName string, draft bool, prerelease bool) error {
 	newWaitTime, newScore, currentScore := 0, 0, 0
-	existingReleaseID, releaseTitle, err := getLatestRelease(repoId)
+	existingReleaseID, releaseTitle, _, err := getLatestRelease(repoId)
 	if err != nil {
 		return fmt.Errorf("could not check for existing release: %w", err)
 	}
@@ -327,25 +328,25 @@ func newRelease(repoId string, tagName string, releaseName string, body string, 
 		if err != nil {
 			return err
 		}
-		newWaitTime = min(oldWaitTime + 15, 60)
+		newWaitTime = min(oldWaitTime+15, 60)
 	}
 
-
+	newBody := fmt.Sprintf("last grading time: %s", time.Now().String())
 	releaseName = fmt.Sprintf("%s - Retry in %dm", releaseName, newWaitTime)
 
-	if err := createRelease(repoId, tagName, releaseName, body, draft, prerelease); err != nil {
+	if err := createRelease(repoId, tagName, releaseName, newBody, draft, prerelease); err != nil {
 		return fmt.Errorf("could not create release: %w", err)
 	}
 	return nil
 }
 
-func getLatestRelease(repoId string) (string, string, error) {
+func getLatestRelease(repoId string) (string, string, string, error) {
 	url := buildLatestReleaseURL(repoId)
 	token := os.Getenv("GITHUB_TOKEN")
 
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	request.Header.Set("Accept", "application/vnd.github+json")
@@ -353,26 +354,25 @@ func getLatestRelease(repoId string) (string, string, error) {
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode == http.StatusNotFound {
-		return "", "", nil
+		return "", "", "", nil
 	}
 
 	if response.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(response.Body)
-		return "", "", fmt.Errorf("failed to get latest release with status %d: %s", response.StatusCode, string(body))
+		return "", "", "", fmt.Errorf("failed to get latest release with status %d: %s", response.StatusCode, string(body))
 	}
 
 	var release map[string]interface{}
 	if err := json.NewDecoder(response.Body).Decode(&release); err != nil {
-		return "", "", err
+		return "", "", "", err
 	}
 
-	return fmt.Sprintf("%.0f", release["id"].(float64)), fmt.Sprintf("%s", release["name"]), nil
-
+	return fmt.Sprintf("%.0f", release["id"].(float64)), fmt.Sprintf("%s", release["name"]), fmt.Sprintf("%s", release["body"]), nil
 }
 
 func deleteRelease(repoId string, releaseID string) error {

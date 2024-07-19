@@ -2,6 +2,7 @@ package git
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/42-Short/shortinette/internal/logger"
 )
@@ -63,10 +64,35 @@ func UploadFile(repoId string, localFilePath string, targetFilePath string, comm
 	return nil
 }
 
-func NewRelease(repoId string,  tagName string, releaseName string, body string, draft bool, prerelease bool) error {
-	if err := newRelease(repoId, tagName, releaseName, body, draft, prerelease); err != nil {
+func NewRelease(repoId string, tagName string, releaseName string, draft bool, prerelease bool) error {
+	if err := newRelease(repoId, tagName, releaseName, draft, prerelease); err != nil {
 		return err
 	}
 	logger.Info.Printf("successfully added new release to %s", repoId)
 	return nil
+}
+
+func IsReadyToGrade(repoid string) bool {
+	_, name, body, err := getLatestRelease(repoid)
+	if err != nil {
+		logger.Error.Println(err)
+		return false
+	}
+	waitTime, err := extractNumberFromString(name)
+	if err != nil {
+		waitTime = 15
+	}
+
+	if body == "" {
+		body = fmt.Sprintf("last grading time: %s", time.Now())
+	}
+
+	const timeStringLayout = "2006-01-02 15:04:05.999999999 -0700 MST"
+	lastGradingTime, err := time.Parse(timeStringLayout, body[19:])
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	fmt.Println("last graded:", lastGradingTime, "now:", time.Now())
+	return time.Since(lastGradingTime) > time.Duration(waitTime)
 }

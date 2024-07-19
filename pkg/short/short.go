@@ -59,18 +59,11 @@ func getScore(results map[string]bool, module Module.Module) int {
 	return score
 }
 
-// TODO:
-// Before uploading:
-//  1. Get latest release
-//  2. If current score is higher, delete old release and replace it with new one
-//
-// Everytime:
-//  1. Append score to README on main with link to the traces
 func uploadScore(module Module.Module, repoId string, results map[string]bool) error {
 	score := getScore(results, module)
 	releaseName := fmt.Sprintf("%d/100", score)
 
-	if err := git.NewRelease(repoId, "Grade", releaseName, "GG", false, false); err != nil {
+	if err := git.NewRelease(repoId, "Grade", releaseName, false, false); err != nil {
 		return err
 	}
 	return nil
@@ -78,6 +71,9 @@ func uploadScore(module Module.Module, repoId string, results map[string]bool) e
 
 // Grades one participant's module and upload trace
 func GradeModule(module Module.Module, repoId string) error {
+	if !git.IsReadyToGrade(repoId) {
+		logger.Error.Println("fuck off")
+	}
 	results, tracesPath := module.Run(repoId, "studentcode")
 	commitMessage := fmt.Sprintf("Traces for module %s: %s", module.Name, tracesPath)
 	if err := git.UploadFile(repoId, tracesPath, tracesPath, commitMessage, "traces"); err != nil {
