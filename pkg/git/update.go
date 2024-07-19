@@ -285,7 +285,6 @@ func createRelease(repo string, tagName string, releaseName string, body string,
 }
 
 func extractNumberFromString(s string) (int, error) {
-	// Compile a regular expression to find a number followed by "min"
 	re := regexp.MustCompile(`(\d+)min`)
 	matches := re.FindStringSubmatch(s)
 
@@ -293,7 +292,6 @@ func extractNumberFromString(s string) (int, error) {
 		return 0, fmt.Errorf("no number found")
 	}
 
-	// Convert the found number (which is a string) to an int
 	number, err := strconv.Atoi(matches[1])
 	if err != nil {
 		return 0, fmt.Errorf("error converting string to int: %v", err)

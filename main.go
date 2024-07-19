@@ -55,7 +55,7 @@ func main() {
 		}
 	if err := buildDockerTestEnvironment(); err != nil {
 		fmt.Println(err.Error())
-		logger.Info.Printf("in order to compile and test submissions in a safe environment, you will need to a pre-built Docker image containing all language-specific dependencies needed to compile the code which is to be tested - see http://github.com/42-Short/shortinette/.github/docs")
+		logger.Info.Printf("in order to compile and test submissions in a safe environment, you will need to a pre-built Docker image containing all language-specific dependencies needed to compile the code which is to be tested - see http://github.com/42-Short/shortinette/tree/main/.github/docs")
 		return
 	}
 	if err := requirements.ValidateRequirements(); err != nil {
