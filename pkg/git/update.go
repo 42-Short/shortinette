@@ -330,7 +330,6 @@ func newRelease(repoId string, tagName string, releaseName string, draft bool, p
 		}
 		newWaitTime = min(oldWaitTime+15, 60)
 	}
-
 	newBody := fmt.Sprintf("last grading time: %s", time.Now().String())
 	releaseName = fmt.Sprintf("%s - Retry in %dm", releaseName, newWaitTime)
 

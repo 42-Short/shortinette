@@ -88,11 +88,11 @@ func IsReadyToGrade(repoid string) bool {
 	}
 
 	const timeStringLayout = "2006-01-02 15:04:05.999999999 -0700 MST"
-	lastGradingTime, err := time.Parse(timeStringLayout, body[19:])
+	lastGradingTime, err := time.Parse(timeStringLayout, body[19:59])
 	if err != nil {
 		fmt.Println(err)
 		return false
 	}
-	fmt.Println("last graded:", lastGradingTime, "now:", time.Now())
+	
 	return time.Since(lastGradingTime) > time.Duration(waitTime)
 }
