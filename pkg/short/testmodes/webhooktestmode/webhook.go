@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"sync"
-	"time"
 
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/tests/R00"
@@ -41,7 +40,7 @@ type GitHubWebhookPayload struct {
 }
 
 var (
-	mu             sync.Mutex
+	mu sync.Mutex
 )
 
 func handleWebhook(w http.ResponseWriter, r *http.Request) {
