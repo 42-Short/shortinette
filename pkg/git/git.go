@@ -93,6 +93,6 @@ func IsReadyToGrade(repoid string) bool {
 		fmt.Println(err)
 		return false
 	}
+	return time.Since(lastGradingTime) > time.Duration(waitTime * int(time.Minute))
 	
-	return time.Since(lastGradingTime) > time.Duration(waitTime)
 }

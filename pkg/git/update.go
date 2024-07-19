@@ -286,7 +286,6 @@ func createRelease(repo string, tagName string, releaseName string, body string,
 }
 
 func extractNumberFromString(s string) (int, error) {
-	fmt.Println(s)
 	re := regexp.MustCompile(`(\d+)m`)
 	matches := re.FindStringSubmatch(s)
 
