@@ -285,7 +285,8 @@ func createRelease(repo string, tagName string, releaseName string, body string,
 }
 
 func extractNumberFromString(s string) (int, error) {
-	re := regexp.MustCompile(`(\d+)min`)
+	fmt.Println(s)
+	re := regexp.MustCompile(`(\d+)m`)
 	matches := re.FindStringSubmatch(s)
 
 	if len(matches) < 2 {
@@ -326,7 +327,7 @@ func newRelease(repoId string, tagName string, releaseName string, body string, 
 		if err != nil {
 			return err
 		}
-		newWaitTime = max(oldWaitTime + 15, 60)
+		newWaitTime = min(oldWaitTime + 15, 60)
 	}
 
 
