@@ -248,13 +248,11 @@ func buildLatestReleaseURL(repoId string) string {
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", os.Getenv("GITHUB_ORGANISATION"), repoId)
 }
 
-func createReleaseRequest(url string, token string, tagName string, releaseName string, body string, draft bool, prerelease bool) (*http.Request, error) {
+func createReleaseRequest(url string, token string, tagName string, releaseName string, body string) (*http.Request, error) {
 	releaseDetails := map[string]interface{}{
-		"tag_name":   tagName,
-		"name":       releaseName,
-		"body":       body,
-		"draft":      draft,
-		"prerelease": prerelease,
+		"tag_name": tagName,
+		"name":     releaseName,
+		"body":     body,
 	}
 
 	releaseDetailsJSON, err := json.Marshal(releaseDetails)
@@ -274,10 +272,10 @@ func createReleaseRequest(url string, token string, tagName string, releaseName 
 	return request, nil
 }
 
-func createRelease(repo string, tagName string, releaseName string, body string, draft bool, prerelease bool) error {
+func createRelease(repo string, tagName string, releaseName string, body string) error {
 	url := buildReleaseURL(repo)
 
-	request, err := createReleaseRequest(url, os.Getenv("GITHUB_TOKEN"), tagName, releaseName, body, draft, prerelease)
+	request, err := createReleaseRequest(url, os.Getenv("GITHUB_TOKEN"), tagName, releaseName, body)
 	if err != nil {
 		return err
 	}
@@ -301,7 +299,7 @@ func extractNumberFromString(s string) (int, error) {
 	return number, nil
 }
 
-func newRelease(repoId string, tagName string, releaseName string, draft bool, prerelease bool, formatReleaseName bool) error {
+func newRelease(repoId string, tagName string, releaseName string, formatReleaseName bool) error {
 	newWaitTime, newScore, currentScore := 0, 0, 0
 	existingReleaseID, releaseTitle, body, err := getLatestRelease(repoId)
 	if err != nil {
@@ -340,13 +338,13 @@ func newRelease(repoId string, tagName string, releaseName string, draft bool, p
 		releaseName = fmt.Sprintf("%s - retry in %dm", releaseName, newWaitTime)
 	}
 
-	if err := createRelease(repoId, tagName, releaseName, newBody, draft, prerelease); err != nil {
+	if err := createRelease(repoId, tagName, releaseName, newBody); err != nil {
 		return fmt.Errorf("could not create release: %w", err)
 	}
 	return nil
 }
 
-func getLatestRelease(repoId string) (string, string, string, error) {
+func getLatestRelease(repoId string) (id string, name string, body string, err error) {
 	url := buildLatestReleaseURL(repoId)
 	token := os.Getenv("GITHUB_TOKEN")
 
@@ -374,7 +372,7 @@ func getLatestRelease(repoId string) (string, string, string, error) {
 	}
 
 	var release map[string]interface{}
-	if err := json.NewDecoder(response.Body).Decode(&release); err != nil {
+	if err = json.NewDecoder(response.Body).Decode(&release); err != nil {
 		return "", "", "", err
 	}
 

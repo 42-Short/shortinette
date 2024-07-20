@@ -63,7 +63,7 @@ func uploadScore(module Module.Module, repoId string, results map[string]bool) e
 	score := getScore(results, module)
 	releaseName := fmt.Sprintf("%d/100", score)
 
-	if err := git.NewRelease(repoId, "Grade", releaseName, false, false, true); err != nil {
+	if err := git.NewRelease(repoId, "Grade", releaseName, true); err != nil {
 		return err
 	}
 	return nil
@@ -73,7 +73,7 @@ func GradeModule(module Module.Module, repoId string) error {
     if waitTime, score := git.IsReadyToGrade(repoId); waitTime != 0 {
         logger.Error.Println("attempted grading too early")
         retryInMinutes := int(waitTime.Minutes())
-        git.NewRelease(repoId, "Grade", fmt.Sprintf("%d/100 - retry in %dm", score, retryInMinutes), false, false, false)
+        git.NewRelease(repoId, "Grade", fmt.Sprintf("%d/100 - retry in %dm", score, retryInMinutes), false)
         return nil
     }
 
