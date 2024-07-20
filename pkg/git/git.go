@@ -2,6 +2,8 @@ package git
 
 import (
 	"fmt"
+	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -111,7 +113,6 @@ func IsReadyToGrade(repoid string) (waitTime time.Duration, score int) {
 		score = 0
 	}
 
-
 	const timeStringLayout = "2006-01-02 15:04:05.999999999 -0700 MST"
 	startIndex := len("last grading time: ")
 	endIndex := strings.Index(releaseBody, "CEST") + len("CEST")
@@ -129,4 +130,38 @@ func IsReadyToGrade(repoid string) (waitTime time.Duration, score int) {
 	}
 
 	return 0, score
+}
+
+func DeleteRepo(repoId string) error {
+	if err := deleteRepo(repoId); err != nil {
+		logger.Error.Println(err)
+		return fmt.Errorf("could not delete repo %s: %w", repoId, err)
+	}
+	logger.Info.Printf("successfully deleted repo %s", repoId)
+	return nil
+}
+
+// Actual implementation of the delete repo logic
+func deleteRepo(repoId string) error {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s", os.Getenv("GITHUB_ORGANISATION"), repoId)
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("GITHUB_TOKEN"))
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("failed to delete repo: %s", resp.Status)
+	}
+
+	return nil
 }
