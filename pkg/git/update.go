@@ -301,16 +301,17 @@ func extractNumberFromString(s string) (int, error) {
 
 func newRelease(repoId string, tagName string, releaseName string, formatReleaseName bool) error {
 	newWaitTime, newScore, currentScore := 0, 0, 0
-	existingReleaseID, releaseTitle, body, err := getLatestRelease(repoId)
+	existingReleaseID, existingReleaseTitle, existingReleaseBody, err := getLatestRelease(repoId)
 	if err != nil {
 		return fmt.Errorf("could not check for existing release: %w", err)
 	}
+
 	if existingReleaseID != "" {
 		newScore, err = strconv.Atoi(strings.Split(releaseName, "/")[0])
 		if err != nil {
 			return err
 		}
-		currentScore, err = strconv.Atoi(strings.Split(releaseTitle, "/")[0])
+		currentScore, err = strconv.Atoi(strings.Split(existingReleaseTitle, "/")[0])
 		if err != nil {
 			return err
 		}
@@ -321,7 +322,7 @@ func newRelease(repoId string, tagName string, releaseName string, formatRelease
 	if newScore > currentScore || existingReleaseID == "" {
 		newWaitTime = 15
 	} else {
-		oldWaitTime, err := extractNumberFromString(releaseTitle)
+		oldWaitTime, err := extractNumberFromString(existingReleaseTitle)
 		if err != nil {
 			return err
 		}
@@ -331,7 +332,7 @@ func newRelease(repoId string, tagName string, releaseName string, formatRelease
 	if formatReleaseName {
 		newBody = fmt.Sprintf("last grading time: %s", time.Now().String())
 	} else {
-		newBody = body
+		newBody = existingReleaseBody
 	}
 
 	if formatReleaseName {

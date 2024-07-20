@@ -42,7 +42,17 @@ func buildDockerTestEnvironment() error {
 
 func main() {
 	logger.InitializeStandardLoggers()
-	short := Short.NewShort("Rust Piscine 1.0", map[string]Module.Module{"00": *R00.R00()}, webhook.NewWebhookTestMode())
+	if err := requirements.ValidateRequirements(); err != nil {
+		logger.Error.Println(err.Error())
+		return
+	}
+	config, err := Short.GetConfig()
+	if err != nil {
+		logger.Error.Println(err.Error())
+		return
+	}
+	repositories := Short.GetRepositories(*config, "00")
+	short := Short.NewShort("Rust Piscine 1.0", map[string]Module.Module{"00": *R00.R00()}, webhook.NewWebhookTestMode(repositories))
 	if len(os.Args) == 4 {
 		if err := dockerExecMode(os.Args, short); err != nil {
 			logger.Error.Println(err)
@@ -58,17 +68,8 @@ func main() {
 		logger.Info.Printf("in order to compile and test submissions in a safe environment, you will need to a pre-built Docker image containing all language-specific dependencies needed to compile the code which is to be tested - see http://github.com/42-Short/shortinette/tree/main/.github/docs")
 		return
 	}
-	if err := requirements.ValidateRequirements(); err != nil {
-		logger.Error.Println(err.Error())
-		return
-	}
-	config, err := Short.GetConfig()
-	if err != nil {
-		logger.Error.Println(err.Error())
-		return
-	}
 
 	Short.StartModule(*R00.R00(), *config)
 	short.TestMode.Run()
-	Short.EndModule(*R00.R00(), *config)
+	Short.EndModule(*R00.R00(), *config, repositories)
 }

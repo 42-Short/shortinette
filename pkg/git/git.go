@@ -125,8 +125,14 @@ func IsReadyToGrade(repoid string) (waitTime time.Duration, score int) {
 
 	timePassed := time.Since(lastGradingTime)
 
+	fmt.Println("last grading time:", lastGradingTime)
+	fmt.Println("wait time:", waitTime)
+	fmt.Println("time since last grading:", timePassed*time.Minute)
+	fmt.Println("time until able to grade again:", waitTime)
+	fmt.Println("last grading time:", lastGradingTimeStr)
+
 	if timePassed < waitTime {
-		return waitTime - timePassed, score
+		return waitTime - timePassed*time.Minute, score
 	}
 
 	return 0, score

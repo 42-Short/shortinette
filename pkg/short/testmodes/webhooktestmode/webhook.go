@@ -14,10 +14,15 @@ import (
 
 // Initializes the webhook TestMode, which triggers submission grading
 // as soon as activity is recorded on a user's main branch.
-func NewWebhookTestMode() WebhookTestMode {
+func NewWebhookTestMode(repositories map[string]short.Repository) WebhookTestMode {
+	handler := func(repositories map[string]short.Repository) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			handleWebhook(repositories, w, r)
+		}
+	}
 	return WebhookTestMode{
 		MonitoringFunction: func() {
-			http.HandleFunc("/webhook", handleWebhook)
+			http.HandleFunc("/webhook", handler(repositories))
 			if err := http.ListenAndServe(":8080", nil); err != nil {
 				logger.Error.Printf("failed to start http server: %v", err)
 			}
@@ -26,6 +31,7 @@ func NewWebhookTestMode() WebhookTestMode {
 }
 
 type WebhookTestMode struct {
+	Repositories       short.Repository
 	MonitoringFunction func()
 }
 
@@ -43,7 +49,7 @@ var (
 	mu sync.Mutex
 )
 
-func handleWebhook(w http.ResponseWriter, r *http.Request) {
+func handleWebhook(repositories map[string]short.Repository, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -68,7 +74,7 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 		defer mu.Unlock()
 
 		go func() {
-			if err := short.GradeModule(*R00.R00(), payload.Repository.Name); err != nil {
+			if err := short.GradeModule(*R00.R00(), payload.Repository.Name, repositories); err != nil {
 				logger.Error.Printf("error grading module: %v", err)
 			}
 		}()

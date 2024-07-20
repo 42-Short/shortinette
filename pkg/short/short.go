@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+	"time"
 
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/pkg/git"
@@ -17,8 +18,10 @@ type HourlyTestMode struct {
 	MonitoringFunction func()
 }
 
-func (h HourlyTestMode) Run() {
-	// TODO
+type Repository struct {
+	FirstAttempt    bool
+	LastGradingTime time.Time
+	WaitingTime     time.Duration
 }
 
 type Short struct {
@@ -69,33 +72,38 @@ func uploadScore(module Module.Module, repoId string, results map[string]bool) e
 	return nil
 }
 
-func GradeModule(module Module.Module, repoId string) error {
-    if waitTime, score := git.IsReadyToGrade(repoId); waitTime != 0 {
-        logger.Error.Println("attempted grading too early")
-        retryInMinutes := int(waitTime.Minutes())
-        git.NewRelease(repoId, "Grade", fmt.Sprintf("%d/100 - retry in %dm", score, retryInMinutes), false)
-        return nil
-    }
+func GradeModule(module Module.Module, repoId string, repositories map[string]Repository) error {
+	fmt.Println(repositories)
+	repo := repositories[repoId]
+	repo.LastGradingTime = time.Now()
+	repo.FirstAttempt = false 
+	repositories[repoId] = repo
+	if waitTime, score := git.IsReadyToGrade(repoId); waitTime != 0 {
+		logger.Error.Println("attempted grading too early")
+		retryInMinutes := int(waitTime.Minutes())
+		git.NewRelease(repoId, "Grade", fmt.Sprintf("%d/100 - retry in %dm", score, retryInMinutes), false)
+		return nil
+	}
 
-    results, tracesPath := module.Run(repoId, "studentcode")
-    commitMessage := fmt.Sprintf("Traces for module %s: %s", module.Name, tracesPath)
+	results, tracesPath := module.Run(repoId, "studentcode")
+	commitMessage := fmt.Sprintf("Traces for module %s: %s", module.Name, tracesPath)
 
-    if err := git.UploadFile(repoId, tracesPath, tracesPath, commitMessage, "traces"); err != nil {
-        return err
-    }
+	if err := git.UploadFile(repoId, tracesPath, tracesPath, commitMessage, "traces"); err != nil {
+		return err
+	}
 
-    if err := uploadScore(module, repoId, results); err != nil {
-        return err
-    }
-    
-    return nil
+	if err := uploadScore(module, repoId, results); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Grades all participant's modules and upload traces.
-func GradeAll(module Module.Module, config Config) error {
+func GradeAll(module Module.Module, config Config, repositories map[string]Repository) error {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
-		if err := GradeModule(module, repoId); err != nil {
+		if err := GradeModule(module, repoId, repositories); err != nil {
 			return err
 		}
 	}
@@ -103,16 +111,34 @@ func GradeAll(module Module.Module, config Config) error {
 }
 
 // Grades all repos from a module and removes write access for all participants.
-func EndModule(module Module.Module, config Config) {
+func EndModule(module Module.Module, config Config, repositories map[string]Repository) {
 	for _, participant := range config.Participants {
 		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
 		if err := git.AddCollaborator(repoId, participant.GithubUserName, "read"); err != nil {
 			logger.Error.Printf("error adding collaborator: %v", err)
 		}
-		if err := GradeAll(module, config); err != nil {
+		if err := GradeAll(module, config, repositories); err != nil {
 			logger.Error.Printf("error grading module: %v", err)
 		}
 	}
+}
+
+func newRepository() Repository {
+	return Repository{
+		FirstAttempt:    true,
+		LastGradingTime: time.Time{},
+		WaitingTime:     time.Duration(0),
+	}
+}
+
+func GetRepositories(config Config, moduleName string) map[string]Repository {
+	repositories := make(map[string]Repository)
+
+	for _, participant := range config.Participants {
+		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, moduleName)
+		repositories[repoId] = newRepository()
+	}
+	return repositories
 }
 
 // StartModule creates a new repo for each participant, gives them write access, and uploads the module's subject on the repo.
@@ -121,10 +147,8 @@ func StartModule(module Module.Module, config Config) {
 
 	for _, participant := range config.Participants {
 		wg.Add(1)
-
 		go func(participant Participant) {
 			defer wg.Done()
-
 			repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
 			if err := git.Create(repoId); err != nil {
 				logger.Error.Printf("error creating git repository: %v", err)
@@ -137,6 +161,5 @@ func StartModule(module Module.Module, config Config) {
 			}
 		}(participant)
 	}
-
 	wg.Wait()
 }
