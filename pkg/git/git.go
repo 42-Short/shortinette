@@ -68,74 +68,32 @@ func UploadFile(repoId string, localFilePath string, targetFilePath string, comm
 	return nil
 }
 
-func NewRelease(repoId string, tagName string, releaseName string, formatReleaseName bool) error {
-	if err := newRelease(repoId, tagName, releaseName, formatReleaseName); err != nil {
+func NewRelease(repoId string, tagName string, releaseName string, formatReleaseName bool, newWaitingTime time.Duration) error {
+	if err := newRelease(repoId, tagName, releaseName, formatReleaseName, newWaitingTime); err != nil {
 		return err
 	}
 	logger.Info.Printf("successfully added new release to %s", repoId)
 	return nil
 }
 
-func getWaitTime(releaseName string) time.Duration {
-	if releaseName == "" {
-		logger.Info.Println("exercise has not been graded yet")
-		return 0
-	}
-	waitTime, err := extractNumberFromString(releaseName)
-	if err != nil {
-		logger.Error.Printf("could not parse wait time from '%s'", releaseName)
-		return 15 * time.Minute
-	} else {
-		return time.Duration(waitTime) * time.Minute
-	}
-}
-
-func IsReadyToGrade(repoid string) (waitTime time.Duration, score int) {
-	_, releaseName, releaseBody, err := getLatestRelease(repoid)
+func GetLatestScore(repoid string) int {
+	_, releaseName, _, err := getLatestRelease(repoid)
 	if err != nil {
 		logger.Error.Printf("failed getting the latest release for repo %s: %v", repoid, err)
-		return 15 * time.Minute, 0
-	}
-
-	waitTime = getWaitTime(releaseName)
-
-	if releaseBody == "" {
-		return waitTime, 0
+		return 0
 	}
 
 	nameParts := strings.Split(releaseName, "/")
 	if len(nameParts) == 0 {
 		logger.Error.Printf("invalid release name format: %s", releaseName)
-		return 15 * time.Minute, 0
+		return 0
 	}
-	score, err = strconv.Atoi(nameParts[0])
+	score, err := strconv.Atoi(nameParts[0])
 	if err != nil {
 		score = 0
 	}
 
-	const timeStringLayout = "2006-01-02 15:04:05.999999999 -0700 MST"
-	startIndex := len("last grading time: ")
-	endIndex := strings.Index(releaseBody, "CEST") + len("CEST")
-	lastGradingTimeStr := releaseBody[startIndex:endIndex]
-	lastGradingTime, err := time.Parse(timeStringLayout, lastGradingTimeStr)
-	if err != nil {
-		logger.Error.Println("Error parsing last grading time:", err)
-		return waitTime, score
-	}
-
-	timePassed := time.Since(lastGradingTime)
-
-	fmt.Println("last grading time:", lastGradingTime)
-	fmt.Println("wait time:", waitTime)
-	fmt.Println("time since last grading:", timePassed*time.Minute)
-	fmt.Println("time until able to grade again:", waitTime)
-	fmt.Println("last grading time:", lastGradingTimeStr)
-
-	if timePassed < waitTime {
-		return waitTime - timePassed*time.Minute, score
-	}
-
-	return 0, score
+	return score
 }
 
 func DeleteRepo(repoId string) error {

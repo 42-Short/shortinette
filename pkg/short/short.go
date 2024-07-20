@@ -62,11 +62,11 @@ func getScore(results map[string]bool, module Module.Module) int {
 	return score
 }
 
-func uploadScore(module Module.Module, repoId string, results map[string]bool) error {
+func uploadScore(module Module.Module, repoId string, results map[string]bool, newWaitingTime time.Duration) error {
 	score := getScore(results, module)
 	releaseName := fmt.Sprintf("%d/100", score)
 
-	if err := git.NewRelease(repoId, "Grade", releaseName, true); err != nil {
+	if err := git.NewRelease(repoId, "Grade", releaseName, true, newWaitingTime); err != nil {
 		return err
 	}
 	return nil
@@ -75,27 +75,41 @@ func uploadScore(module Module.Module, repoId string, results map[string]bool) e
 func GradeModule(module Module.Module, repoId string, repositories map[string]Repository) error {
 	fmt.Println(repositories)
 	repo := repositories[repoId]
-	repo.LastGradingTime = time.Now()
-	repo.FirstAttempt = false 
-	repositories[repoId] = repo
-	if waitTime, score := git.IsReadyToGrade(repoId); waitTime != 0 {
-		logger.Error.Println("attempted grading too early")
-		retryInMinutes := int(waitTime.Minutes())
-		git.NewRelease(repoId, "Grade", fmt.Sprintf("%d/100 - retry in %dm", score, retryInMinutes), false)
-		return nil
+	if repo.LastGradingTime.IsZero() {
+		repo.LastGradingTime = time.Now()
+		repo.FirstAttempt = false
+	}
+
+	oldScore := git.GetLatestScore(repoId)
+
+	if repo.WaitingTime > time.Since(repo.LastGradingTime) {
+		logger.Info.Printf("repo '%s' attempted grading too early", repoId)
+		scoreString := fmt.Sprintf("%d/100", oldScore)
+		waitingTime := time.Duration(repo.WaitingTime - time.Since(repo.LastGradingTime))
+		if err := git.NewRelease(repoId, "Grade", scoreString, true, waitingTime); err != nil {
+			return err
+		}
 	}
 
 	results, tracesPath := module.Run(repoId, "studentcode")
+
+	if getScore(results, module) > module.MinimumGrade {
+		repo.WaitingTime = 15 * time.Minute
+	} else {
+		repo.WaitingTime = min(repo.WaitingTime+15*time.Minute, 60*time.Minute)
+	}
+
 	commitMessage := fmt.Sprintf("Traces for module %s: %s", module.Name, tracesPath)
 
 	if err := git.UploadFile(repoId, tracesPath, tracesPath, commitMessage, "traces"); err != nil {
 		return err
 	}
 
-	if err := uploadScore(module, repoId, results); err != nil {
+	if err := uploadScore(module, repoId, results, repo.WaitingTime); err != nil {
 		return err
 	}
 
+	repositories[repoId] = repo
 	return nil
 }
 

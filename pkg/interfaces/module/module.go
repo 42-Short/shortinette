@@ -13,18 +13,20 @@ import (
 )
 
 type Module struct {
-	Name      string
-	Exercises map[string]Exercise.Exercise
+	Name         string
+	MinimumGrade int
+	Exercises    map[string]Exercise.Exercise
 }
 
 // NewModule initializes and returns a Module struct
 //
 //   - name: module display name
 //   - exercises: list of all Exercise.Exercise objects belonging into the module
-func NewModule(name string, exercises map[string]Exercise.Exercise) (Module, error) {
+func NewModule(name string, minimumGrade int, exercises map[string]Exercise.Exercise) (Module, error) {
 	return Module{
-		Name:      name,
-		Exercises: exercises,
+		Name:         name,
+		MinimumGrade: minimumGrade,
+		Exercises:    exercises,
 	}, nil
 }
 

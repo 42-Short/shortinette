@@ -8,9 +8,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"regexp"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/42-Short/shortinette/internal/logger"
@@ -283,51 +280,18 @@ func createRelease(repo string, tagName string, releaseName string, body string)
 	return sendRequest(request)
 }
 
-func extractNumberFromString(s string) (int, error) {
-	re := regexp.MustCompile(`(\d+)m`)
-	matches := re.FindStringSubmatch(s)
-
-	if len(matches) < 2 {
-		return 0, fmt.Errorf("no number found")
-	}
-
-	number, err := strconv.Atoi(matches[1])
-	if err != nil {
-		return 0, fmt.Errorf("error converting string to int: %v", err)
-	}
-
-	return number, nil
-}
-
-func newRelease(repoId string, tagName string, releaseName string, formatReleaseName bool) error {
-	newWaitTime, newScore, currentScore := 0, 0, 0
-	existingReleaseID, existingReleaseTitle, existingReleaseBody, err := getLatestRelease(repoId)
+func newRelease(repoId string, tagName string, releaseName string, formatReleaseName bool, newWaitingTime time.Duration) error {
+	existingReleaseID, _, existingReleaseBody, err := getLatestRelease(repoId)
 	if err != nil {
 		return fmt.Errorf("could not check for existing release: %w", err)
 	}
 
 	if existingReleaseID != "" {
-		newScore, err = strconv.Atoi(strings.Split(releaseName, "/")[0])
-		if err != nil {
-			return err
-		}
-		currentScore, err = strconv.Atoi(strings.Split(existingReleaseTitle, "/")[0])
-		if err != nil {
-			return err
-		}
 		if err := deleteRelease(repoId, existingReleaseID); err != nil {
 			return fmt.Errorf("could not delete existing release: %w", err)
 		}
 	}
-	if newScore > currentScore || existingReleaseID == "" {
-		newWaitTime = 15
-	} else {
-		oldWaitTime, err := extractNumberFromString(existingReleaseTitle)
-		if err != nil {
-			return err
-		}
-		newWaitTime = min(oldWaitTime+15, 60)
-	}
+
 	newBody := ""
 	if formatReleaseName {
 		newBody = fmt.Sprintf("last grading time: %s", time.Now().String())
@@ -336,7 +300,7 @@ func newRelease(repoId string, tagName string, releaseName string, formatRelease
 	}
 
 	if formatReleaseName {
-		releaseName = fmt.Sprintf("%s - retry in %dm", releaseName, newWaitTime)
+		releaseName = fmt.Sprintf("%s - retry in %dm", releaseName, int(newWaitingTime.Minutes()))
 	}
 
 	if err := createRelease(repoId, tagName, releaseName, newBody); err != nil {
