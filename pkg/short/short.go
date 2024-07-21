@@ -39,10 +39,10 @@ func NewShort(name string, modules map[string]Module.Module, testMode ITestMode.
 	}
 }
 
-func updateRelease(repoId string, newWaitingTime time.Duration, score int) error {
-	releaseName := fmt.Sprintf("%d/100 - retry in %dm", score, int(newWaitingTime.Minutes()))
+func updateRelease(repo db.Repository, newWaitingTime time.Duration, tracesPath string) error {
+	releaseName := fmt.Sprintf("%d/100 - retry in %dm", repo.Score, int(newWaitingTime.Minutes()))
 
-	if err := git.NewRelease(repoId, "Grade", releaseName, true); err != nil {
+	if err := git.NewRelease(repo.ID, "Grade", releaseName, tracesPath, true); err != nil {
 		return err
 	}
 	return nil
@@ -107,7 +107,7 @@ func GradeModule(module Module.Module, repoId string) (err error) {
 
 	if repo.WaitingTime > time.Since(repo.LastGradingTime) {
 		logger.Info.Printf("repo %s attempted to grade too early", repo.ID)
-		if err = updateRelease(repo.ID, repo.WaitingTime-time.Since(repo.LastGradingTime), repo.Score); err != nil {
+		if err = updateRelease(repo, repo.WaitingTime-time.Since(repo.LastGradingTime), ""); err != nil {
 			return err
 		}
 		return nil
@@ -122,15 +122,16 @@ func GradeModule(module Module.Module, repoId string) (err error) {
 		repo.WaitingTime = min(repo.WaitingTime+15*time.Minute, 60*time.Minute)
 	}
 
+	repo.Score = score
+
 	if err = uploadResults(repo, tracesPath, module.Name, results); err != nil {
 		return err
 	}
 
-	if err = updateRelease(repoId, repo.WaitingTime, score); err != nil {
+	if err = updateRelease(repo, repo.WaitingTime, tracesPath); err != nil {
 		return err
 	}
 
-	repo.Score = score
 	if err = db.UpdateRepository(module.Name, repo); err != nil {
 		logger.Error.Printf("could not update %s: %v", repo.ID, err)
 	}

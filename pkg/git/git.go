@@ -70,8 +70,8 @@ func UploadRaw(repoId string, data string, targetFilePath string, commitMessage 
 	return nil
 }
 
-func NewRelease(repoId string, tagName string, releaseName string, graded bool) error {
-	if err := newRelease(repoId, tagName, releaseName, graded); err != nil {
+func NewRelease(repoId string, tagName string, releaseName string, tracesPath string, graded bool) error {
+	if err := newRelease(repoId, tagName, releaseName, tracesPath, graded); err != nil {
 		return err
 	}
 	logger.Info.Printf("added new release '%s' to %s", releaseName, repoId)

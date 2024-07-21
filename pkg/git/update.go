@@ -298,7 +298,7 @@ func createRelease(repo string, tagName string, releaseName string, body string)
 	return sendRequest(request)
 }
 
-func newRelease(repoId string, tagName string, releaseName string, graded bool) error {
+func newRelease(repoId string, tagName string, releaseName string, tracesPath string, graded bool) error {
 	existingReleaseID, _, existingReleaseBody, err := getLatestRelease(repoId)
 	if err != nil {
 		return fmt.Errorf("could not check for existing release: %w", err)
@@ -312,7 +312,7 @@ func newRelease(repoId string, tagName string, releaseName string, graded bool) 
 
 	newBody := existingReleaseBody
 	if graded {
-		newBody = fmt.Sprintf("last grading time: %s", time.Now().String())
+		newBody = fmt.Sprintf("**Last Graded:**\n- %s\n\n**Last Traces:**\n- https://github.com/42-Short/%s/tree/traces/%s", time.Now().Format("Monday, January 2, 2006 at 3:04 PM"), repoId, tracesPath)
 	}
 
 	if err := createRelease(repoId, tagName, releaseName, newBody); err != nil {
