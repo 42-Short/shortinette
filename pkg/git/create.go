@@ -43,7 +43,7 @@ func addWebhook(repoId string) error {
 		return fmt.Errorf(response.Status)
 	}
 
-	logger.Info.Printf("webhook added successfully to %s", repoId)
+	logger.Info.Printf("webhook added to %s", repoId)
 	return nil
 }
 
@@ -133,7 +133,7 @@ func createRepository(name string) error {
 		return fmt.Errorf("failed to add webhook: %w", err)
 	}
 
-	logger.Info.Println("repository created successfully")
+	logger.Info.Printf("repository %s created in %s", name, os.Getenv("GITHUB_ORGANISATION"))
 	return nil
 }
 

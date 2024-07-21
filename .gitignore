@@ -22,3 +22,7 @@ traces/
 # DEBUGGER
 
 .vscode/
+
+# DATABASE
+
+sqlite3/

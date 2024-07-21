@@ -22,7 +22,6 @@ func GetNewTraceFile(repoId string) string {
 
 func InitializeTraceLogger(filePath string) error {
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-	fmt.Println(filePath)
 	if err != nil {
 		return err
 	}
