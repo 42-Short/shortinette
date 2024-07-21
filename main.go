@@ -31,7 +31,7 @@ func dockerExecMode(args []string, short Short.Short) error {
 	return nil
 }
 
-func buildDockerTestEnvironment() error {
+func verifyImage() error {
 	cmd := "docker image ls | grep testenv"
 
 	if _, err := testutils.RunCommandLine(".", "sh", []string{"-c", cmd}); err != nil {
@@ -63,7 +63,7 @@ func main() {
 		logger.Error.Println("invalid number of arguments")
 		return
 	}
-	if err := buildDockerTestEnvironment(); err != nil {
+	if err := verifyImage(); err != nil {
 		fmt.Println(err.Error())
 		logger.Info.Printf("in order to compile and test submissions in a safe environment, you will need to a pre-built Docker image containing all language-specific dependencies needed to compile the code which is to be tested - see http://github.com/42-Short/shortinette/tree/main/.github/docs")
 		return

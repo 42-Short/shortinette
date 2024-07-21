@@ -68,8 +68,8 @@ func UploadFile(repoId string, localFilePath string, targetFilePath string, comm
 	return nil
 }
 
-func NewRelease(repoId string, tagName string, releaseName string, formatReleaseName bool, newWaitingTime time.Duration) error {
-	if err := newRelease(repoId, tagName, releaseName, formatReleaseName, newWaitingTime); err != nil {
+func NewRelease(repoId string, tagName string, releaseName string, newWaitingTime time.Duration, graded bool) error {
+	if err := newRelease(repoId, tagName, releaseName, newWaitingTime, graded); err != nil {
 		return err
 	}
 	logger.Info.Printf("successfully added new release to %s", repoId)

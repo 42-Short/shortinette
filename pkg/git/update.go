@@ -280,7 +280,7 @@ func createRelease(repo string, tagName string, releaseName string, body string)
 	return sendRequest(request)
 }
 
-func newRelease(repoId string, tagName string, releaseName string, formatReleaseName bool, newWaitingTime time.Duration) error {
+func newRelease(repoId string, tagName string, releaseName string, newWaitingTime time.Duration, graded bool) error {
 	existingReleaseID, _, existingReleaseBody, err := getLatestRelease(repoId)
 	if err != nil {
 		return fmt.Errorf("could not check for existing release: %w", err)
@@ -292,16 +292,12 @@ func newRelease(repoId string, tagName string, releaseName string, formatRelease
 		}
 	}
 
-	newBody := ""
-	if formatReleaseName {
+	newBody := existingReleaseBody
+	if graded {
 		newBody = fmt.Sprintf("last grading time: %s", time.Now().String())
-	} else {
-		newBody = existingReleaseBody
-	}
+	} 
 
-	if formatReleaseName {
-		releaseName = fmt.Sprintf("%s - retry in %dm", releaseName, int(newWaitingTime.Minutes()))
-	}
+	releaseName = fmt.Sprintf("%s - retry in %dm", releaseName, int(newWaitingTime.Minutes()))
 
 	if err := createRelease(repoId, tagName, releaseName, newBody); err != nil {
 		return fmt.Errorf("could not create release: %w", err)
