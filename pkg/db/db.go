@@ -27,15 +27,7 @@ func GetRepositoryData(moduleName string, repoId string) (repo Repository, err e
 
 	tableName := fmt.Sprintf("repositories_%s", moduleName)
 
-	query := fmt.Sprintf(`
-	SELECT
-		id,
-		first_attempt,
-		last_graded,
-		wait_time,
-		score
-	FROM %s
-	WHERE id = ?`, tableName)
+	query := fmt.Sprintf(templates.RepoById, tableName)
 	row := db.QueryRow(query, repoId)
 
 	var lastGraded string
@@ -55,6 +47,7 @@ func GetRepositoryData(moduleName string, repoId string) (repo Repository, err e
 
 	return repo, nil
 }
+
 func tableExists(db *sql.DB, tableName string) (bool, error) {
 	query := fmt.Sprintf(`
 	SELECT
@@ -145,7 +138,7 @@ func UpdateRepository(moduleName string, repo Repository) (err error) {
 		`
 	_, err = db.Exec(fmt.Sprintf(updateQuery, tableName),
 		repo.FirstAttempt,
-		repo.LastGradingTime.Format("2006-01-02 15:04:05"),
+		time.Now().Format("2006-01-02 15:04:05"),
 		int(repo.WaitingTime.Seconds()),
 		repo.Score,
 		repo.ID)
