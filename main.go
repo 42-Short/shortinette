@@ -3,14 +3,17 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/tests/R00"
 	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
 	"github.com/42-Short/shortinette/pkg/requirements"
+	"github.com/42-Short/shortinette/pkg/short"
 	Short "github.com/42-Short/shortinette/pkg/short"
 	webhook "github.com/42-Short/shortinette/pkg/short/testmodes/webhooktestmode"
 	"github.com/42-Short/shortinette/pkg/testutils"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func dockerExecMode(args []string, short Short.Short) error {
@@ -40,6 +43,24 @@ func verifyImage() error {
 	return nil
 }
 
+func newRepository() short.Repository {
+	return short.Repository{
+		FirstAttempt:    true,
+		LastGradingTime: time.Time{},
+		WaitingTime:     time.Duration(0),
+	}
+}
+
+func GetRepositories(config short.Config, moduleName string) map[string]short.Repository {
+	repositories := make(map[string]short.Repository)
+
+	for _, participant := range config.Participants {
+		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, moduleName)
+		repositories[repoId] = newRepository()
+	}
+	return repositories
+}
+
 func main() {
 	logger.InitializeStandardLoggers()
 	if err := requirements.ValidateRequirements(); err != nil {
@@ -51,8 +72,7 @@ func main() {
 		logger.Error.Println(err.Error())
 		return
 	}
-	repositories := Short.GetRepositories(*config, "00")
-	short := Short.NewShort("Rust Piscine 1.0", map[string]Module.Module{"00": *R00.R00()}, webhook.NewWebhookTestMode(repositories))
+	short := Short.NewShort("Rust Piscine 1.0", map[string]Module.Module{"00": *R00.R00()}, webhook.NewWebhookTestMode())
 	if len(os.Args) == 4 {
 		if err := dockerExecMode(os.Args, short); err != nil {
 			logger.Error.Println(err)
@@ -71,5 +91,5 @@ func main() {
 
 	Short.StartModule(*R00.R00(), *config)
 	short.TestMode.Run()
-	Short.EndModule(*R00.R00(), *config, repositories)
+	Short.EndModule(*R00.R00(), *config)
 }
