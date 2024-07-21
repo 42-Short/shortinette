@@ -58,7 +58,7 @@ func GradeModule(module Module.Module, repoId string) (err error) {
 
 	if repo.WaitingTime > time.Since(repo.LastGradingTime) {
 		logger.Info.Printf("repo %s attempted to grade too early", repo.ID)
-		if err = updateRelease(repo.ID, repo.WaitingTime-time.Since(repo.LastGradingTime) - 2 * time.Hour, oldScore); err != nil {
+		if err = updateRelease(repo.ID, repo.WaitingTime-time.Since(repo.LastGradingTime), oldScore); err != nil {
 			return err
 		}
 		return nil
