@@ -86,7 +86,7 @@ func CreateTable(tableName string) (bool, error) {
 		}
 		created = true
 	}
-	logger.Info.Printf("table %s successfully created", tableName)
+	logger.Info.Printf("table %s created", tableName)
 	return created, nil
 }
 

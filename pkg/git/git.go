@@ -2,11 +2,8 @@ package git
 
 import (
 	"fmt"
-	"net/http"
-	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/42-Short/shortinette/internal/logger"
 )
@@ -61,18 +58,17 @@ func AddCollaborator(repoId string, username string, permission string) error {
 // See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
 func UploadFile(repoId string, localFilePath string, targetFilePath string, commitMessage string, branch string) error {
 	if err := uploadFile(repoId, localFilePath, targetFilePath, commitMessage, branch); err != nil {
-		logger.Error.Println(err)
 		return fmt.Errorf("could not upload %s to repo %s: %w", localFilePath, repoId, err)
 	}
-	logger.Info.Printf("%s successfully uploaded to %s/%s", localFilePath, repoId, targetFilePath)
+	logger.Info.Printf("uploaded %s to repo %s", localFilePath, repoId)
 	return nil
 }
 
-func NewRelease(repoId string, tagName string, releaseName string, newWaitingTime time.Duration, graded bool) error {
-	if err := newRelease(repoId, tagName, releaseName, newWaitingTime, graded); err != nil {
+func NewRelease(repoId string, tagName string, releaseName string, graded bool) error {
+	if err := newRelease(repoId, tagName, releaseName, graded); err != nil {
 		return err
 	}
-	logger.Info.Printf("successfully added new release to %s", repoId)
+	logger.Info.Printf("added new release '%s' to %s", releaseName, repoId)
 	return nil
 }
 
@@ -94,38 +90,4 @@ func GetLatestScore(repoid string) int {
 	}
 
 	return score
-}
-
-func DeleteRepo(repoId string) error {
-	if err := deleteRepo(repoId); err != nil {
-		logger.Error.Println(err)
-		return fmt.Errorf("could not delete repo %s: %w", repoId, err)
-	}
-	logger.Info.Printf("successfully deleted repo %s", repoId)
-	return nil
-}
-
-// Actual implementation of the delete repo logic
-func deleteRepo(repoId string) error {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s", os.Getenv("GITHUB_ORGANISATION"), repoId)
-	req, err := http.NewRequest("DELETE", url, nil)
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Authorization", "Bearer "+os.Getenv("GITHUB_TOKEN"))
-	req.Header.Set("Accept", "application/vnd.github.v3+json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("failed to delete repo: %s", resp.Status)
-	}
-
-	return nil
 }

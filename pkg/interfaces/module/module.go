@@ -3,6 +3,7 @@ package Module
 import (
 	"fmt"
 	"os"
+	"sort"
 	"sync"
 
 	"github.com/42-Short/shortinette/internal/errors"
@@ -110,4 +111,25 @@ func (m *Module) Run(repoId string, testDirectory string) (map[string]bool, stri
 		}
 	}
 	return results, tracesPath
+}
+
+func (m *Module) GetScore(results map[string]bool) (score int, passed bool) {
+	var keys []string
+	for key := range results {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	score = 0
+
+	for _, key := range keys {
+		if !results[key] {
+			break
+		} else {
+			score += m.Exercises[key].Score
+		}
+	}
+	passed = score >= m.MinimumGrade
+
+	return score, passed
 }
