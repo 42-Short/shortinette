@@ -2,6 +2,11 @@ package git
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/42-Short/shortinette/internal/logger"
 )
@@ -60,5 +65,67 @@ func UploadFile(repoId string, localFilePath string, targetFilePath string, comm
 		return fmt.Errorf("could not upload %s to repo %s: %w", localFilePath, repoId, err)
 	}
 	logger.Info.Printf("%s successfully uploaded to %s/%s", localFilePath, repoId, targetFilePath)
+	return nil
+}
+
+func NewRelease(repoId string, tagName string, releaseName string, newWaitingTime time.Duration, graded bool) error {
+	if err := newRelease(repoId, tagName, releaseName, newWaitingTime, graded); err != nil {
+		return err
+	}
+	logger.Info.Printf("successfully added new release to %s", repoId)
+	return nil
+}
+
+func GetLatestScore(repoid string) int {
+	_, releaseName, _, err := getLatestRelease(repoid)
+	if err != nil {
+		logger.Error.Printf("failed getting the latest release for repo %s: %v", repoid, err)
+		return 0
+	}
+
+	nameParts := strings.Split(releaseName, "/")
+	if len(nameParts) == 0 {
+		logger.Error.Printf("invalid release name format: %s", releaseName)
+		return 0
+	}
+	score, err := strconv.Atoi(nameParts[0])
+	if err != nil {
+		score = 0
+	}
+
+	return score
+}
+
+func DeleteRepo(repoId string) error {
+	if err := deleteRepo(repoId); err != nil {
+		logger.Error.Println(err)
+		return fmt.Errorf("could not delete repo %s: %w", repoId, err)
+	}
+	logger.Info.Printf("successfully deleted repo %s", repoId)
+	return nil
+}
+
+// Actual implementation of the delete repo logic
+func deleteRepo(repoId string) error {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s", os.Getenv("GITHUB_ORGANISATION"), repoId)
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("GITHUB_TOKEN"))
+	req.Header.Set("Accept", "application/vnd.github.v3+json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("failed to delete repo: %s", resp.Status)
+	}
+
 	return nil
 }

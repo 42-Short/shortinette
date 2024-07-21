@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -94,6 +95,14 @@ func DeleteStringFromFile(targetString, filePath string) error {
 type RunExecutableOption func(*exec.Cmd)
 
 var ErrTimeout = errors.New("command timed out")
+
+// WithRealTimeOutput allows the command to show output in real-time.
+func WithRealTimeOutput() RunExecutableOption {
+	return func(cmd *exec.Cmd) {
+		cmd.Stdout = io.MultiWriter(os.Stdout, cmd.Stdout)
+		cmd.Stderr = io.MultiWriter(os.Stderr, cmd.Stderr)
+	}
+}
 
 // WithTimeout allows setting a timeout for the code execution
 func WithTimeout(d time.Duration) RunExecutableOption {

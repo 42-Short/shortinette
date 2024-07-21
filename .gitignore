@@ -18,3 +18,7 @@ node_modules
 # LOGS
 
 traces/
+
+# DEBUGGER
+
+.vscode/
