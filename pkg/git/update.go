@@ -209,6 +209,25 @@ func createPushRequest(url string, token string, targetFilePath string, commitMe
 	return request, nil
 }
 
+func uploadRaw(repoId string, data string, targetFilePath string, commitMessage string, branch string) (err error) {
+	encodedData := base64.StdEncoding.EncodeToString([]byte(data))
+
+	url := buildPushURL(repoId, targetFilePath)
+	shaURL := buildFileURL(repoId, branch, targetFilePath)
+
+	sha, err := getFileSHA(shaURL, os.Getenv("GITHUB_TOKEN"))
+	if err != nil {
+		return err
+	}
+
+	request, err := createPushRequest(url, os.Getenv("GITHUB_TOKEN"), targetFilePath, commitMessage, encodedData, sha, branch)
+	if err != nil {
+		return err
+	}
+
+	return sendRequest(request)
+}
+
 func uploadFile(repoId string, localFilePath string, targetFilePath string, commitMessage string, branch string) error {
 	originalFile, err := os.Open(localFilePath)
 	if err != nil {
@@ -361,4 +380,47 @@ func deleteRelease(repoId string, releaseID string) error {
 	}
 
 	return nil
+}
+
+func buildFileURL(repoId, branch, filePath string) string {
+	return fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s?ref=%s", os.Getenv("GITHUB_ORGANISATION"), repoId, filePath, branch)
+}
+
+func getFile(repoId, branch, filePath string) (string, error) {
+	url := buildFileURL(repoId, branch, filePath)
+
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", os.Getenv("GITHUB_TOKEN")))
+	request.Header.Set("Accept", "application/vnd.github+json")
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return "", err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(response.Body)
+		return "", fmt.Errorf("failed to get %s from %s: %d - %s", filePath, repoId, response.StatusCode, string(body))
+	}
+
+	var content struct {
+		Content string `json:"content"`
+	}
+
+	if err := json.NewDecoder(response.Body).Decode(&content); err != nil {
+		return "", err
+	}
+
+	decodedContent, err := base64.StdEncoding.DecodeString(content.Content)
+	if err != nil {
+		return "", err
+	}
+
+	return string(decodedContent), nil
 }

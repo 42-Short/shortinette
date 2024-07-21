@@ -16,6 +16,7 @@ type Repository struct {
 	LastGradingTime time.Time
 	WaitingTime     time.Duration
 	Score           int
+	Attempts        int
 }
 
 func GetRepositoryData(moduleName string, repoId string) (repo Repository, err error) {
@@ -33,7 +34,7 @@ func GetRepositoryData(moduleName string, repoId string) (repo Repository, err e
 	var lastGraded string
 	var waitTime int64
 
-	err = row.Scan(&repo.ID, &repo.FirstAttempt, &lastGraded, &waitTime, &repo.Score)
+	err = row.Scan(&repo.ID, &repo.FirstAttempt, &lastGraded, &waitTime, &repo.Score, &repo.Attempts)
 	if err != nil {
 		return Repository{}, err
 	}
@@ -125,6 +126,7 @@ func UpdateRepository(moduleName string, repo Repository) (err error) {
 		(time.Now()).Add(-2*time.Hour).Format("2006-01-02 15:04:05"),
 		int(repo.WaitingTime.Seconds()),
 		repo.Score,
+		repo.Attempts+1,
 		repo.ID)
 	if err != nil {
 		logger.Error.Printf("could not update repo: %v", err)
