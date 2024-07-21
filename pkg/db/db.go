@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/42-Short/shortinette/internal/logger"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type Repository struct {

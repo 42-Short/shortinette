@@ -28,6 +28,7 @@ type Short struct {
 // Returns a Short object, the wrapper for the whole Short configuration.
 //
 //   - name: the display name of your Short
+//	 - modules: a map of strings to Module.Module objects, used for quicker lookups during grading
 //   - testMode: a ITestMode object, determining how the submission testing will
 //     be triggered
 func NewShort(name string, modules map[string]Module.Module, testMode ITestMode.ITestMode) Short {
@@ -76,7 +77,6 @@ func GradeModule(module Module.Module, repoId string) (err error) {
 	repo.FirstAttempt = false
 
 	oldScore := git.GetLatestScore(repoId)
-	logger.Info.Println("latest score fetched")
 	if repo.WaitingTime > time.Since(repo.LastGradingTime) {
 		logger.Info.Printf("repo '%s' attempted grading too early", repoId)
 		scoreString := fmt.Sprintf("%d/100", oldScore)
@@ -88,7 +88,6 @@ func GradeModule(module Module.Module, repoId string) (err error) {
 	}
 
 	results, tracesPath := module.Run(repoId, "studentcode")
-	logger.Info.Println("tests run")
 
 	if getScore(results, module) > module.MinimumGrade {
 		repo.WaitingTime = 15 * time.Minute
@@ -105,7 +104,6 @@ func GradeModule(module Module.Module, repoId string) (err error) {
 	if err := uploadScore(module, repoId, results, repo.WaitingTime); err != nil {
 		return err
 	}
-	logger.Info.Println("score uploaded")
 	repo.Score = getScore(results, module)
 	if err = db.UpdateRepository(module.Name, repo); err != nil {
 		logger.Error.Printf("could not update %s: %v", repo.ID, err)
@@ -116,15 +114,15 @@ func GradeModule(module Module.Module, repoId string) (err error) {
 }
 
 // Grades all participant's modules and upload traces.
-// func GradeAll(module Module.Module, config Config) error {
-// 	for _, participant := range config.Participants {
-// 		// repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
-// 		// if err := GradeModule(module, repoId); err != nil {
-// 		// 	return err
-// 		// }
-// 	}
-// 	return nil
-// }
+func GradeAll(module Module.Module, config Config) error {
+	for _, participant := range config.Participants {
+		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
+		if err := GradeModule(module, repoId); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 // Grades all repos from a module and removes write access for all participants.
 func EndModule(module Module.Module, config Config) {

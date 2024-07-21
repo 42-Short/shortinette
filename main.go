@@ -11,7 +11,6 @@ import (
 	Short "github.com/42-Short/shortinette/pkg/short"
 	webhook "github.com/42-Short/shortinette/pkg/short/testmodes/webhooktestmode"
 	"github.com/42-Short/shortinette/pkg/testutils"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func dockerExecMode(args []string, short Short.Short) error {
@@ -65,7 +64,7 @@ func main() {
 	}
 	if err := verifyImage(); err != nil {
 		fmt.Println(err.Error())
-		logger.Info.Printf("in order to compile and test submissions in a safe environment, you will need to a pre-built Docker image containing all language-specific dependencies needed to compile the code which is to be tested - see http://github.com/42-Short/shortinette/tree/main/.github/docs")
+		logger.Info.Printf("in order to compile and test submissions in a safe environment, you will need a pre-built Docker image containing all language-specific dependencies needed to compile the code which is to be tested - see http://github.com/42-Short/shortinette/tree/main/.github/docs")
 		return
 	}
 
