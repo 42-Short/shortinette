@@ -86,6 +86,7 @@ func CreateTable(tableName string) (bool, error) {
 		}
 		created = true
 	}
+	logger.Info.Printf("table %s successfully created", tableName)
 	return created, nil
 }
 
@@ -101,11 +102,11 @@ func InitModuleTable(participants [][]string, moduleName string) (err error) {
 	for _, participant := range participants {
 		repoID := fmt.Sprintf("%s-%s", participant[1], moduleName)
 		query := fmt.Sprintf("INSERT INTO `%s` (id) VALUES(?)", tableName)
-		fmt.Println(query, repoID)
 		if _, err = db.Exec(query, repoID); err != nil {
 			return err
 		}
 	}
+	logger.Info.Printf("initialized table %s with participant data", tableName)
 	return nil
 }
 
@@ -133,6 +134,6 @@ func UpdateRepository(moduleName string, repo Repository) (err error) {
 		logger.Error.Printf("could not update repo: %v", err)
 		return err
 	}
-
+	logger.Info.Printf("updated row with id %s in table %s", repo.ID, tableName)
 	return nil
 }

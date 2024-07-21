@@ -73,7 +73,6 @@ func GradeModule(module Module.Module, repoId string) (err error) {
 	if err != nil {
 		return err
 	}
-	fmt.Println(repo)
 	repo.FirstAttempt = false
 
 	oldScore := git.GetLatestScore(repoId)
@@ -108,8 +107,6 @@ func GradeModule(module Module.Module, repoId string) (err error) {
 	if err = db.UpdateRepository(module.Name, repo); err != nil {
 		logger.Error.Printf("could not update %s: %v", repo.ID, err)
 	}
-	logger.Info.Println("repo updated")
-
 	return nil
 }
 
