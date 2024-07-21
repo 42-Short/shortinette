@@ -27,7 +27,15 @@ func GetRepositoryData(moduleName string, repoId string) (repo Repository, err e
 
 	tableName := fmt.Sprintf("repositories_%s", moduleName)
 
-	query := fmt.Sprintf("SELECT id, first_attempt, last_graded, wait_time, score FROM `%s` WHERE id = ?", tableName)
+	query := fmt.Sprintf(`
+	SELECT
+		id,
+		first_attempt,
+		last_graded,
+		wait_time,
+		score
+	FROM %s
+	WHERE id = ?`, tableName)
 	row := db.QueryRow(query, repoId)
 
 	var lastGraded string
@@ -48,7 +56,11 @@ func GetRepositoryData(moduleName string, repoId string) (repo Repository, err e
 	return repo, nil
 }
 func tableExists(db *sql.DB, tableName string) (bool, error) {
-	query := fmt.Sprintf("SELECT name FROM sqlite_master WHERE type='table' AND name='%s'", tableName)
+	query := fmt.Sprintf(`
+	SELECT
+		name
+	FROM sqlite_master
+	WHERE type='table' AND name='%s'`, tableName)
 	var name string
 	err := db.QueryRow(query).Scan(&name)
 	if err == sql.ErrNoRows {
@@ -79,7 +91,14 @@ func CreateTable(tableName string) (bool, error) {
 	}
 
 	if !exists {
-		query := fmt.Sprintf("CREATE TABLE `%s` (`id` TEXT PRIMARY KEY, `first_attempt` BOOLEAN DEFAULT 1, `last_graded` TEXT DEFAULT (datetime('now')), `wait_time` INTEGER DEFAULT 0, `score` INTEGER DEFAULT 0)", tableName)
+		query := fmt.Sprintf(`
+		CREATE TABLE %s (
+			id TEXT PRIMARY KEY,
+			first_attempt BOOLEAN DEFAULT 1,
+			last_graded TEXT DEFAULT (datetime('now')),
+			wait_time INTEGER DEFAULT 0,
+			score INTEGER DEFAULT 0
+		)`, tableName)
 		_, err = db.Exec(query)
 		if err != nil {
 			return created, err
@@ -101,7 +120,7 @@ func InitModuleTable(participants [][]string, moduleName string) (err error) {
 
 	for _, participant := range participants {
 		repoID := fmt.Sprintf("%s-%s", participant[1], moduleName)
-		query := fmt.Sprintf("INSERT INTO `%s` (id) VALUES(?)", tableName)
+		query := fmt.Sprintf("INSERT INTO %s (id) VALUES(?)", tableName)
 		if _, err = db.Exec(query, repoID); err != nil {
 			return err
 		}
