@@ -2,6 +2,7 @@ package short
 
 import (
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 
@@ -38,10 +39,60 @@ func NewShort(name string, modules map[string]Module.Module, testMode ITestMode.
 	}
 }
 
-func updateRelease(repoId string, newWaitingTime time.Duration, score int) error {
-	releaseName := fmt.Sprintf("%d/100 - retry in %dm", score, int(newWaitingTime.Minutes()))
+func updateRelease(repo db.Repository, newWaitingTime time.Duration, tracesPath string) error {
+	releaseName := fmt.Sprintf("%d/100 - retry in %dm", repo.Score, int(newWaitingTime.Minutes()))
 
-	if err := git.NewRelease(repoId, "Grade", releaseName, true); err != nil {
+	if err := git.NewRelease(repo.ID, "Grade", releaseName, tracesPath, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+var tableRow = `<tr>
+	<th>%s</th>
+	<th>%s</th>
+</tr>`
+
+func getUpdatedReadme(repo db.Repository, results map[string]bool) (newReadme string, err error) {
+	var keys []string
+	for key := range results {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	oldContent, err := git.GetDecodedFile(repo.ID, "traces", "README.md")
+	if err != nil {
+		logger.Info.Printf("README.md not found in %s", repo.ID)
+		oldContent = ""
+	}
+
+	var currentResult string
+	newReadme = fmt.Sprintf("%s<h1 align=\"center\">ATTEMPT %d - SCORE %d/100</h1><div align=\"center\"><table>", oldContent, repo.Score, repo.Attempts)
+	for _, key := range keys {
+		if results[key] {
+			currentResult = "OK"
+		} else {
+			currentResult = "KO"
+		}
+		newReadme = fmt.Sprintf("%s%s", newReadme, fmt.Sprintf(tableRow, key, currentResult))
+	}
+	newReadme = fmt.Sprintf("%s</table></div>", newReadme)
+	return newReadme, nil
+}
+
+func uploadResults(repo db.Repository, tracesPath string, moduleName string, results map[string]bool) (err error) {
+	commitMessage := fmt.Sprintf("Traces for module %s: %s", moduleName, tracesPath)
+	if err := git.UploadFile(repo.ID, tracesPath, tracesPath, commitMessage, "traces"); err != nil {
+		return err
+	}
+
+	updatedReadme, err := getUpdatedReadme(repo, results)
+	if err != nil {
+		return err
+	}
+
+	commitMessage = fmt.Sprintf("Results for module %s", moduleName)
+	if err := git.UploadRaw(repo.ID, updatedReadme, "README.md", commitMessage, "traces"); err != nil {
 		return err
 	}
 	return nil
@@ -54,13 +105,12 @@ func GradeModule(module Module.Module, repoId string) (err error) {
 	}
 	repo.FirstAttempt = false
 
-	oldScore := git.GetLatestScore(repoId)
-
 	if repo.WaitingTime > time.Since(repo.LastGradingTime) {
 		logger.Info.Printf("repo %s attempted to grade too early", repo.ID)
-		if err = updateRelease(repo.ID, repo.WaitingTime-time.Since(repo.LastGradingTime), oldScore); err != nil {
+		if err = updateRelease(repo, repo.WaitingTime-time.Since(repo.LastGradingTime), ""); err != nil {
 			return err
 		}
+		return nil
 	}
 
 	results, tracesPath := module.Run(repoId, "studentcode")
@@ -72,16 +122,16 @@ func GradeModule(module Module.Module, repoId string) (err error) {
 		repo.WaitingTime = min(repo.WaitingTime+15*time.Minute, 60*time.Minute)
 	}
 
-	commitMessage := fmt.Sprintf("Traces for module %s: %s", module.Name, tracesPath)
-
-	if err := git.UploadFile(repoId, tracesPath, tracesPath, commitMessage, "traces"); err != nil {
-		return err
-	}
-
-	if err := updateRelease(repoId, repo.WaitingTime, score); err != nil {
-		return err
-	}
 	repo.Score = score
+
+	if err = uploadResults(repo, tracesPath, module.Name, results); err != nil {
+		return err
+	}
+
+	if err = updateRelease(repo, repo.WaitingTime, tracesPath); err != nil {
+		return err
+	}
+
 	if err = db.UpdateRepository(module.Name, repo); err != nil {
 		logger.Error.Printf("could not update %s: %v", repo.ID, err)
 	}
@@ -106,9 +156,9 @@ func EndModule(module Module.Module, config Config) {
 		if err := git.AddCollaborator(repoId, participant.GithubUserName, "read"); err != nil {
 			logger.Error.Printf("error adding collaborator: %v", err)
 		}
-		// if err := GradeAll(module, config); err != nil {
-		// 	logger.Error.Printf("error grading module: %v", err)
-		// }
+		if err := GradeAll(module, config); err != nil {
+			logger.Error.Printf("error grading module: %v", err)
+		}
 	}
 }
 

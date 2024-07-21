@@ -16,6 +16,7 @@ type Repository struct {
 	LastGradingTime time.Time
 	WaitingTime     time.Duration
 	Score           int
+	Attempts        int
 }
 
 func GetRepositoryData(moduleName string, repoId string) (repo Repository, err error) {
@@ -27,13 +28,13 @@ func GetRepositoryData(moduleName string, repoId string) (repo Repository, err e
 
 	tableName := fmt.Sprintf("repositories_%s", moduleName)
 
-	query := fmt.Sprintf("SELECT id, first_attempt, last_graded, wait_time, score FROM `%s` WHERE id = ?", tableName)
+	query := fmt.Sprintf(sqliteTemplates.RepoById, tableName)
 	row := db.QueryRow(query, repoId)
 
 	var lastGraded string
 	var waitTime int64
 
-	err = row.Scan(&repo.ID, &repo.FirstAttempt, &lastGraded, &waitTime, &repo.Score)
+	err = row.Scan(&repo.ID, &repo.FirstAttempt, &lastGraded, &waitTime, &repo.Score, &repo.Attempts)
 	if err != nil {
 		return Repository{}, err
 	}
@@ -47,8 +48,9 @@ func GetRepositoryData(moduleName string, repoId string) (repo Repository, err e
 
 	return repo, nil
 }
+
 func tableExists(db *sql.DB, tableName string) (bool, error) {
-	query := fmt.Sprintf("SELECT name FROM sqlite_master WHERE type='table' AND name='%s'", tableName)
+	query := fmt.Sprintf(sqliteTemplates.TableByName, tableName)
 	var name string
 	err := db.QueryRow(query).Scan(&name)
 	if err == sql.ErrNoRows {
@@ -79,7 +81,7 @@ func CreateTable(tableName string) (bool, error) {
 	}
 
 	if !exists {
-		query := fmt.Sprintf("CREATE TABLE `%s` (`id` TEXT PRIMARY KEY, `first_attempt` BOOLEAN DEFAULT 1, `last_graded` TEXT DEFAULT (datetime('now')), `wait_time` INTEGER DEFAULT 0, `score` INTEGER DEFAULT 0)", tableName)
+		query := fmt.Sprintf(sqliteTemplates.CreateRepoTable, tableName)
 		_, err = db.Exec(query)
 		if err != nil {
 			return created, err
@@ -101,7 +103,7 @@ func InitModuleTable(participants [][]string, moduleName string) (err error) {
 
 	for _, participant := range participants {
 		repoID := fmt.Sprintf("%s-%s", participant[1], moduleName)
-		query := fmt.Sprintf("INSERT INTO `%s` (id) VALUES(?)", tableName)
+		query := fmt.Sprintf(sqliteTemplates.NewRepoRow, tableName)
 		if _, err = db.Exec(query, repoID); err != nil {
 			return err
 		}
@@ -119,16 +121,12 @@ func UpdateRepository(moduleName string, repo Repository) (err error) {
 
 	tableName := fmt.Sprintf("repositories_%s", moduleName)
 
-	updateQuery := `
-			UPDATE %s
-			SET first_attempt = ?, last_graded = ?, wait_time = ?, score = ?
-			WHERE id = ?
-		`
-	_, err = db.Exec(fmt.Sprintf(updateQuery, tableName),
+	_, err = db.Exec(fmt.Sprintf(sqliteTemplates.UpdateRepo, tableName),
 		repo.FirstAttempt,
-		repo.LastGradingTime.Format("2006-01-02 15:04:05"),
+		(time.Now()).Add(-2*time.Hour).Format("2006-01-02 15:04:05"),
 		int(repo.WaitingTime.Seconds()),
 		repo.Score,
+		repo.Attempts+1,
 		repo.ID)
 	if err != nil {
 		logger.Error.Printf("could not update repo: %v", err)

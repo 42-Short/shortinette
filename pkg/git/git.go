@@ -2,8 +2,6 @@ package git
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/42-Short/shortinette/internal/logger"
 )
@@ -64,30 +62,27 @@ func UploadFile(repoId string, localFilePath string, targetFilePath string, comm
 	return nil
 }
 
-func NewRelease(repoId string, tagName string, releaseName string, graded bool) error {
-	if err := newRelease(repoId, tagName, releaseName, graded); err != nil {
+func UploadRaw(repoId string, data string, targetFilePath string, commitMessage string, branch string) error {
+	if err := uploadRaw(repoId, data, targetFilePath, commitMessage, branch); err != nil {
+		return fmt.Errorf("could not upload raw data to repo %s: %w", repoId, err)
+	}
+	logger.Info.Printf("uploaded raw data to repo %s", repoId)
+	return nil
+}
+
+func NewRelease(repoId string, tagName string, releaseName string, tracesPath string, graded bool) error {
+	if err := newRelease(repoId, tagName, releaseName, tracesPath, graded); err != nil {
 		return err
 	}
 	logger.Info.Printf("added new release '%s' to %s", releaseName, repoId)
 	return nil
 }
 
-func GetLatestScore(repoid string) int {
-	_, releaseName, _, err := getLatestRelease(repoid)
+// GetDecodedFile gets the decoded file content from the specified repo, branch, and path.
+func GetDecodedFile(repoId, branch, filePath string) (string, error) {
+	content, err := getFile(repoId, branch, filePath)
 	if err != nil {
-		logger.Error.Printf("failed getting the latest release for repo %s: %v", repoid, err)
-		return 0
+		return "", err
 	}
-
-	nameParts := strings.Split(releaseName, "/")
-	if len(nameParts) == 0 {
-		logger.Error.Printf("invalid release name format: %s", releaseName)
-		return 0
-	}
-	score, err := strconv.Atoi(nameParts[0])
-	if err != nil {
-		score = 0
-	}
-
-	return score
+	return content, nil
 }
