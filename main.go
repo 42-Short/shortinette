@@ -3,13 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/tests/R00"
 	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
 	"github.com/42-Short/shortinette/pkg/requirements"
-	"github.com/42-Short/shortinette/pkg/short"
 	Short "github.com/42-Short/shortinette/pkg/short"
 	webhook "github.com/42-Short/shortinette/pkg/short/testmodes/webhooktestmode"
 	"github.com/42-Short/shortinette/pkg/testutils"
@@ -41,24 +39,6 @@ func verifyImage() error {
 		return err
 	}
 	return nil
-}
-
-func newRepository() short.Repository {
-	return short.Repository{
-		FirstAttempt:    true,
-		LastGradingTime: time.Time{},
-		WaitingTime:     time.Duration(0),
-	}
-}
-
-func GetRepositories(config short.Config, moduleName string) map[string]short.Repository {
-	repositories := make(map[string]short.Repository)
-
-	for _, participant := range config.Participants {
-		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, moduleName)
-		repositories[repoId] = newRepository()
-	}
-	return repositories
 }
 
 func main() {

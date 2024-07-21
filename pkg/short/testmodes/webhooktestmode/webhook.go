@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/42-Short/shortinette/internal/logger"
+	"github.com/42-Short/shortinette/internal/tests/R00"
 	"github.com/42-Short/shortinette/pkg/short"
 )
 
@@ -25,7 +26,6 @@ func NewWebhookTestMode() WebhookTestMode {
 }
 
 type WebhookTestMode struct {
-	Repositories       short.Repository
 	MonitoringFunction func()
 }
 
@@ -67,11 +67,11 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		defer mu.Unlock()
 
-		// go func() {
-		// 	if err := short.GradeModule(*R00.R00(), payload.Repository.Name); err != nil {
-		// 		logger.Error.Printf("error grading module: %v", err)
-		// 	}
-		// }()
+		go func() {
+			if err := short.GradeModule(*R00.R00(), payload.Repository.Name); err != nil {
+				logger.Error.Printf("error grading module: %v", err)
+			}
+		}()
 	}
 }
 
