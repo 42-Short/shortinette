@@ -43,7 +43,7 @@ func addWebhook(repoID string) error {
 		return fmt.Errorf(response.Status)
 	}
 
-	logger.Info.Printf("webhook added to %s", repoID)
+	logger.Info.Printf("added webhook to %s", repoID)
 	return nil
 }
 
@@ -168,6 +168,9 @@ func create(name string) error {
 		return err
 	}
 	if err := createBranch(name, os.Getenv("GITHUB_TOKEN"), "traces", sha); err != nil {
+		return err
+	}
+	if err := addBranchProtection(name, "traces"); err != nil {
 		return err
 	}
 	return nil
