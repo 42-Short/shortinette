@@ -31,13 +31,13 @@ func NewModule(name string, minimumGrade int, exercises map[string]Exercise.Exer
 	}, nil
 }
 
-func setUpEnvironment(repoId string, testDirectory string) error {
-	repoLink := fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId)
+func setUpEnvironment(repoID string, testDirectory string) error {
+	repoLink := fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoID)
 	if err := git.Clone(repoLink, testDirectory); err != nil {
 		errorMessage := fmt.Sprintf("failed to clone repository: %v", err)
 		return errors.NewInternalError(errors.ErrInternal, errorMessage)
 	}
-	if err := git.Clone(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoId), "compile-environment/src/"); err != nil {
+	if err := git.Clone(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoID), "compile-environment/src/"); err != nil {
 		return err
 	}
 	return nil
@@ -77,19 +77,19 @@ type exerciseResult struct {
 
 // Executes the exercises, spawning a Docker container for each of them to prevent running
 // malicious code on your machine, returns the results and the path to the traces
-func (m *Module) Run(repoId string, testDirectory string) (map[string]bool, string) {
+func (m *Module) Run(repoID string, testDirectory string) (map[string]bool, string) {
 	defer func() {
 		if err := tearDownEnvironment(); err != nil {
 			logger.Error.Printf(err.Error())
 		}
 	}()
-	err := setUpEnvironment(repoId, testDirectory)
+	err := setUpEnvironment(repoID, testDirectory)
 	if err != nil {
 		logger.Error.Println(err)
 		return nil, ""
 	}
 	results := make(map[string]bool)
-	tracesPath := logger.GetNewTraceFile(repoId)
+	tracesPath := logger.GetNewTraceFile(repoID)
 	if m.Exercises != nil {
 		resultsChannel := make(chan exerciseResult, len(m.Exercises))
 		var waitGroup sync.WaitGroup

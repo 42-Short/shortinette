@@ -98,8 +98,8 @@ func uploadResults(repo db.Repository, tracesPath string, moduleName string, res
 	return nil
 }
 
-func GradeModule(module Module.Module, repoId string) (err error) {
-	repo, err := db.GetRepositoryData(module.Name, repoId)
+func GradeModule(module Module.Module, repoID string) (err error) {
+	repo, err := db.GetRepositoryData(module.Name, repoID)
 	if err != nil {
 		return err
 	}
@@ -113,7 +113,7 @@ func GradeModule(module Module.Module, repoId string) (err error) {
 		return nil
 	}
 
-	results, tracesPath := module.Run(repoId, "studentcode")
+	results, tracesPath := module.Run(repoID, "studentcode")
 
 	score, passed := module.GetScore(results)
 	if passed {
@@ -141,8 +141,8 @@ func GradeModule(module Module.Module, repoId string) (err error) {
 // Grades all participant's modules and upload traces.
 func GradeAll(module Module.Module, config Config) error {
 	for _, participant := range config.Participants {
-		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
-		if err := GradeModule(module, repoId); err != nil {
+		repoID := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
+		if err := GradeModule(module, repoID); err != nil {
 			return err
 		}
 	}
@@ -152,8 +152,8 @@ func GradeAll(module Module.Module, config Config) error {
 // Grades all repos from a module and removes write access for all participants.
 func EndModule(module Module.Module, config Config) {
 	for _, participant := range config.Participants {
-		repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
-		if err := git.AddCollaborator(repoId, participant.GithubUserName, "read"); err != nil {
+		repoID := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
+		if err := git.AddCollaborator(repoID, participant.GithubUserName, "read"); err != nil {
 			logger.Error.Printf("error adding collaborator: %v", err)
 		}
 		if err := GradeAll(module, config); err != nil {
@@ -186,14 +186,14 @@ func StartModule(module Module.Module, config Config) {
 		wg.Add(1)
 		go func(participant Participant) {
 			defer wg.Done()
-			repoId := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
-			if err := git.Create(repoId); err != nil {
+			repoID := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
+			if err := git.Create(repoID); err != nil {
 				logger.Error.Printf("error creating git repository: %v", err)
 			}
-			if err := git.AddCollaborator(repoId, participant.GithubUserName, "push"); err != nil {
+			if err := git.AddCollaborator(repoID, participant.GithubUserName, "push"); err != nil {
 				logger.Error.Printf("error adding collaborator: %v", err)
 			}
-			if err := git.UploadFile(repoId, "subjects/R00.md", "subject/README.md", fmt.Sprintf("Subject for module %s. Good Luck!", module.Name), ""); err != nil {
+			if err := git.UploadFile(repoID, "subjects/R00.md", "subject/README.md", fmt.Sprintf("Subject for module %s. Good Luck!", module.Name), ""); err != nil {
 				logger.Error.Printf("error uploading file: %v", err)
 			}
 		}(participant)

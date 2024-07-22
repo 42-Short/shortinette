@@ -54,7 +54,7 @@ func CompileWithRustc(turnInFile string) error {
 	return nil
 }
 
-func ForbiddenItemsCheck(exercise Exercise.Exercise, repoId string) error {
+func ForbiddenItemsCheck(exercise Exercise.Exercise, repoID string) error {
 	if err := functioncheck.Execute(exercise, "shortinette-test-R00"); err != nil {
 		return err
 	}

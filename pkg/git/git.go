@@ -1,12 +1,43 @@
 package git
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"net/http"
 
 	"github.com/42-Short/shortinette/internal/logger"
 )
 
-// Clone a GitHub repo into targetDirectory.
+func sendHTTPRequest(request *http.Request) (response *http.Response, err error) {
+	client := &http.Client{}
+	response, err = client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK && response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(response.Body)
+		return response, fmt.Errorf("request failed: %s, %s", response.Status, body)
+	}
+	return response, nil
+}
+
+func createHTTPRequest(method, url, token string, body []byte) (*http.Request, error) {
+	request, err := http.NewRequest(method, url, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, fmt.Errorf("could not create HTTP request: %w", err)
+	}
+
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	request.Header.Set("Accept", "application/vnd.github+json")
+	request.Header.Set("Content-Type", "application/json")
+
+	return request, nil
+}
+
+// Clone a GitHub repo from repoURL into targetDirectory.
 //
 // See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
 func Clone(repoURL string, targetDirectory string) error {
@@ -31,7 +62,7 @@ func Create(name string) error {
 
 // Add a collaborator with the specified permissions to the repo.
 //
-//   - repoId: name of the organisation repository
+//   - repoID: name of the organisation repository
 //   - username: GitHub username of the collaborator
 //   - permission: access level to be given to the user
 //
@@ -39,48 +70,75 @@ func Create(name string) error {
 // accounts, or you might lock yourself out of your repos.
 //
 // See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
-func AddCollaborator(repoId string, username string, permission string) error {
-	if err := addCollaborator(repoId, username, permission); err != nil {
+func AddCollaborator(repoID string, username string, permission string) error {
+	if err := addCollaborator(repoID, username, permission); err != nil {
 		logger.Error.Println(err)
-		return fmt.Errorf("could not add %s to repo %s: %w", username, repoId, err)
+		return fmt.Errorf("could not add %s to repo %s: %w", username, repoID, err)
 	}
 	return nil
 }
 
 // Add/Update a file on a repository
 //
-//   - repoId: name of the organisation repository
+//   - repoID: name of the organisation repository
 //   - localFilePath: source file to be uploaded
 //   - targetFilePath: file to be created/updated on the remote
+//   - commitMessage: the message which will be added to the commit
+//   - branch: the branch the data is to be pushed to
 //
 // See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
-func UploadFile(repoId string, localFilePath string, targetFilePath string, commitMessage string, branch string) error {
-	if err := uploadFile(repoId, localFilePath, targetFilePath, commitMessage, branch); err != nil {
-		return fmt.Errorf("could not upload %s to repo %s: %w", localFilePath, repoId, err)
+func UploadFile(repoID string, localFilePath string, targetFilePath string, commitMessage string, branch string) error {
+	if err := uploadFile(repoID, localFilePath, targetFilePath, commitMessage, branch); err != nil {
+		return fmt.Errorf("could not upload %s to repo %s: %w", localFilePath, repoID, err)
 	}
-	logger.Info.Printf("uploaded %s to repo %s", localFilePath, repoId)
+	logger.Info.Printf("uploaded %s to repo %s", localFilePath, repoID)
 	return nil
 }
 
-func UploadRaw(repoId string, data string, targetFilePath string, commitMessage string, branch string) error {
-	if err := uploadRaw(repoId, data, targetFilePath, commitMessage, branch); err != nil {
-		return fmt.Errorf("could not upload raw data to repo %s: %w", repoId, err)
+// Uploads data directly to targetFilePath in repoID
+//
+//   - repoID: name of the organisation repository
+//   - data: raw data (string)
+//   - targetFilePath: file to be created/updated on remote
+//   - commitMessage: the message which will be added to the commit
+//   - branch: the branch the data is to be pushed to
+//
+// See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
+func UploadRaw(repoID string, data string, targetFilePath string, commitMessage string, branch string) error {
+	if err := uploadRaw(repoID, data, targetFilePath, commitMessage, branch); err != nil {
+		return fmt.Errorf("could not upload raw data to repo %s: %w", repoID, err)
 	}
-	logger.Info.Printf("uploaded raw data to repo %s", repoId)
+	logger.Info.Printf("uploaded raw data to repo %s", repoID)
 	return nil
 }
 
-func NewRelease(repoId string, tagName string, releaseName string, tracesPath string, graded bool) error {
-	if err := newRelease(repoId, tagName, releaseName, tracesPath, graded); err != nil {
+// Adds a release to repoID with tagName & releaseName.
+// Adds the path to the traces and the last graded timestamp to the release body.
+//
+//   - repoID: name of the organisation repository
+//   - tagName: tag under which the release is to be created
+//   - releaseName: name/title of the release
+//   - tracesPath: path to the traces, used for adding a link to them to the release body
+//   - graded: if set to true, the last graded timestamp in the release will be updated
+//
+// See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
+func NewRelease(repoID string, tagName string, releaseName string, tracesPath string, graded bool) error {
+	if err := newRelease(repoID, tagName, releaseName, tracesPath, graded); err != nil {
 		return err
 	}
-	logger.Info.Printf("added new release '%s' to %s", releaseName, repoId)
+	logger.Info.Printf("added new release '%s' to %s", releaseName, repoID)
 	return nil
 }
 
-// GetDecodedFile gets the decoded file content from the specified repo, branch, and path.
-func GetDecodedFile(repoId, branch, filePath string) (string, error) {
-	content, err := getFile(repoId, branch, filePath)
+// Gets the decoded file content from the specified repo, branch, and path as a string.
+//
+//   - repoID: name of the organisation repository
+//   - branch: branch you would like to pull from
+//   - filePath: file on the remote you would like to pull
+//
+// See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
+func GetDecodedFile(repoID string, branch string, filePath string) (content string, err error) {
+	content, err = getFile(repoID, branch, filePath)
 	if err != nil {
 		return "", err
 	}

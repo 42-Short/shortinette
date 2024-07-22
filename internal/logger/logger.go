@@ -13,10 +13,10 @@ var (
 	File  *log.Logger
 )
 
-func GetNewTraceFile(repoId string) string {
+func GetNewTraceFile(repoID string) string {
 	t := time.Now()
 	formattedTime := t.Format("20060102_150405")
-	return fmt.Sprintf("traces/%s-%s.log", repoId, formattedTime)
+	return fmt.Sprintf("traces/%s-%s.log", repoID, formattedTime)
 
 }
 

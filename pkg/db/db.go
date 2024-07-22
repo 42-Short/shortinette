@@ -19,7 +19,7 @@ type Repository struct {
 	Attempts        int
 }
 
-func GetRepositoryData(moduleName string, repoId string) (repo Repository, err error) {
+func GetRepositoryData(moduleName string, repoID string) (repo Repository, err error) {
 	db, err := sql.Open("sqlite3", "./sqlite3/repositories.db")
 	if err != nil {
 		return Repository{}, err
@@ -29,7 +29,7 @@ func GetRepositoryData(moduleName string, repoId string) (repo Repository, err e
 	tableName := fmt.Sprintf("repositories_%s", moduleName)
 
 	query := fmt.Sprintf(sqliteTemplates.RepoById, tableName)
-	row := db.QueryRow(query, repoId)
+	row := db.QueryRow(query, repoID)
 
 	var lastGraded string
 	var waitTime int64

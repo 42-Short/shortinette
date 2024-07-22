@@ -125,7 +125,7 @@ func handleCompileError(output string) error {
 	}
 }
 
-func Execute(test Exercise.Exercise, repoId string) (err error) {
+func Execute(test Exercise.Exercise, repoID string) (err error) {
 	if err = initCompilingEnvironment(test, test.TurnInDirectory); err != nil {
 		return err
 	}
