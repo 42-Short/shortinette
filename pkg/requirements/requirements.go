@@ -33,7 +33,20 @@ func ValidateRequirements() error {
 	if err := requireEnv(); err != nil {
 		return err
 	}
-	if output, err := testutils.RunExecutable("./scripts/startup.sh"); err != nil {
+	command := "bash"
+	args := []string{
+		"-c",
+		"docker image ls | grep testenv",
+	}
+	if output, err := testutils.RunCommandLine(".", command, args); err != nil {
+		return fmt.Errorf(output)
+	}
+	command = "bash"
+	args = []string{
+		"-c",
+		"docker build -t testenv .",
+	}
+	if output, err := testutils.RunCommandLine(".", command, args); err != nil {
 		return fmt.Errorf(output)
 	}
 	logger.Info.Println("all dependencies are already installed")
