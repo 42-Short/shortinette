@@ -33,8 +33,8 @@ func ValidateRequirements() error {
 	if err := requireEnv(); err != nil {
 		return err
 	}
-	if _, err := testutils.RunExecutable("./scripts/check_dependencies.sh"); err != nil {
-		return err
+	if output, err := testutils.RunExecutable("./scripts/startup.sh"); err != nil {
+		return fmt.Errorf(output)
 	}
 	logger.Info.Println("all dependencies are already installed")
 	return nil
