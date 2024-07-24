@@ -39,15 +39,7 @@ func ValidateRequirements() error {
 		"docker image ls | grep testenv",
 	}
 	if output, err := testutils.RunCommandLine(".", command, args); err != nil {
-		return fmt.Errorf(output)
-	}
-	command = "bash"
-	args = []string{
-		"-c",
-		"docker build -t testenv .",
-	}
-	if output, err := testutils.RunCommandLine(".", command, args); err != nil {
-		return fmt.Errorf(output)
+		return fmt.Errorf("in order to reduce vulnerability to malicious code, shortinette requires you to have a pre-built Docker image containing all dependencies needed for testing submissions: %s", output)
 	}
 	logger.Info.Println("all dependencies are already installed")
 	return nil

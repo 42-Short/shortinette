@@ -170,8 +170,9 @@ func create(name string) error {
 	if err := createBranch(name, os.Getenv("GITHUB_TOKEN"), "traces", sha); err != nil {
 		return err
 	}
-	if err := addBranchProtection(name, "traces"); err != nil {
-		return err
-	}
+	// adding branch protections to private organisation repos only works with github enterprise
+	// if err := addBranchProtection(name, "traces"); err != nil { 
+	// 	return err
+	// }
 	return nil
 }

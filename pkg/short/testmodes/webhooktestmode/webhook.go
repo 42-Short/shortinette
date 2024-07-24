@@ -37,6 +37,9 @@ type GitHubWebhookPayload struct {
 	Pusher struct {
 		Name string `json:"name"`
 	} `json:"pusher"`
+	Commit struct {
+		Message string `json:"message"`
+	} `json:"head_commit"`
 }
 
 var (
