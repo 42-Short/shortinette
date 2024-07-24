@@ -75,9 +75,32 @@ type exerciseResult struct {
 	result bool
 }
 
+func gradingRoutine(module Module, tracesPath string) (results map[string]bool) {
+	resultsChannel := make(chan exerciseResult, len(module.Exercises))
+	var waitGroup sync.WaitGroup
+	results = make(map[string]bool)
+
+	for _, exercise := range module.Exercises {
+		waitGroup.Add(1)
+		go func(ex Exercise.Exercise) {
+			defer waitGroup.Done()
+			result := runContainerized(module, ex, tracesPath)
+			resultsChannel <- exerciseResult{name: ex.Name, result: result}
+		}(exercise)
+	}
+	go func() {
+		waitGroup.Wait()
+		close(resultsChannel)
+	}()
+	for result := range resultsChannel {
+		results[result.name] = result.result
+	}
+	return results
+}
+
 // Executes the exercises, spawning a Docker container for each of them to prevent running
 // malicious code on your machine, returns the results and the path to the traces
-func (m *Module) Run(repoID string, testDirectory string) (map[string]bool, string) {
+func (m *Module) Run(repoID string, testDirectory string) (results map[string]bool, tracesPath string) {
 	defer func() {
 		if err := tearDownEnvironment(); err != nil {
 			logger.Error.Printf(err.Error())
@@ -88,27 +111,9 @@ func (m *Module) Run(repoID string, testDirectory string) (map[string]bool, stri
 		logger.Error.Println(err)
 		return nil, ""
 	}
-	results := make(map[string]bool)
-	tracesPath := logger.GetNewTraceFile(repoID)
+	tracesPath = logger.GetNewTraceFile(repoID)
 	if m.Exercises != nil {
-		resultsChannel := make(chan exerciseResult, len(m.Exercises))
-		var waitGroup sync.WaitGroup
-
-		for _, exercise := range m.Exercises {
-			waitGroup.Add(1)
-			go func(ex Exercise.Exercise) {
-				defer waitGroup.Done()
-				result := runContainerized(*m, ex, tracesPath)
-				resultsChannel <- exerciseResult{name: ex.Name, result: result}
-			}(exercise)
-		}
-		go func() {
-			waitGroup.Wait()
-			close(resultsChannel)
-		}()
-		for result := range resultsChannel {
-			results[result.name] = result.result
-		}
+		results = gradingRoutine(*m, tracesPath)
 	}
 	return results, tracesPath
 }
