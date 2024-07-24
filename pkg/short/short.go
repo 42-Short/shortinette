@@ -98,6 +98,16 @@ func uploadResults(repo db.Repository, tracesPath string, moduleName string, res
 	return nil
 }
 
+func checkPrematureGradingAttempt(repo db.Repository) (err error) {
+	if repo.WaitingTime > time.Since(repo.LastGradingTime) {
+		if err = updateRelease(repo, repo.WaitingTime-time.Since(repo.LastGradingTime), ""); err != nil {
+			return err
+		}
+		return fmt.Errorf("premature grading attempt")
+	}
+	return nil
+}
+
 func GradeModule(module Module.Module, repoID string) (err error) {
 	repo, err := db.GetRepositoryData(module.Name, repoID)
 	if err != nil {
@@ -105,12 +115,8 @@ func GradeModule(module Module.Module, repoID string) (err error) {
 	}
 	repo.FirstAttempt = false
 
-	if repo.WaitingTime > time.Since(repo.LastGradingTime) {
-		logger.Info.Printf("repo %s attempted to grade too early", repo.ID)
-		if err = updateRelease(repo, repo.WaitingTime-time.Since(repo.LastGradingTime), ""); err != nil {
-			return err
-		}
-		return nil
+	if err = checkPrematureGradingAttempt(repo); err != nil {
+		return err
 	}
 
 	results, tracesPath := module.Run(repoID, "studentcode")

@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/42-Short/shortinette/internal/logger"
@@ -66,15 +67,20 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 
 	if payload.Ref == "refs/heads/main" && payload.Pusher.Name != os.Getenv("GITHUB_ADMIN") {
 		logger.Info.Printf("received push event to main branch of %s by %s\n", payload.Repository.Name, payload.Pusher.Name)
+		if strings.ToLower(payload.Commit.Message) == "grademe" {
+			logger.Info.Println("push event identified as submission, proceeding to grade..")
+			mu.Lock()
+			defer mu.Unlock()
 
-		mu.Lock()
-		defer mu.Unlock()
+			go func() {
+				if err := short.GradeModule(*R00.R00(), payload.Repository.Name); err != nil {
+					logger.Error.Printf("error grading module: %v", err)
+				}
+			}()
+		} else {
+			logger.Info.Println("false alarm")
+		}
 
-		go func() {
-			if err := short.GradeModule(*R00.R00(), payload.Repository.Name); err != nil {
-				logger.Error.Printf("error grading module: %v", err)
-			}
-		}()
 	}
 }
 
