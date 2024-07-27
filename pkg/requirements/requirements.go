@@ -21,10 +21,14 @@ func requireEnv() error {
 		"CONFIG_PATH":         os.Getenv("CONFIG_PATH"),
 		"WEBHOOK_URL":         os.Getenv("WEBHOOK_URL"),
 	}
+	var missingValuesString string
 	for key, value := range vars {
 		if value == "" {
-			return fmt.Errorf("%s environment variable not set", key)
+			missingValuesString += "\n" + key
 		}
+	}
+	if missingValuesString != "" {
+		return fmt.Errorf("missing environment variables:%s\nSee https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on .env configuration", missingValuesString)
 	}
 	return nil
 }
