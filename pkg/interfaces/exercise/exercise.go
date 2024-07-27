@@ -1,6 +1,10 @@
 package Exercise
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+)
 
 type Result struct {
 	Passed bool
@@ -66,8 +70,54 @@ func NewExercise(
 	}
 }
 
-// Run runs the Executer function and returns the result
+func (e *Exercise) fullTurnInFilesPath() []string {
+	var fullFilePaths []string
+
+	for _, path := range e.TurnInFiles {
+		fullPath := filepath.Join(e.RepoDirectory, e.TurnInDirectory, path)
+		fullFilePaths = append(fullFilePaths, fullPath)
+	}
+	return fullFilePaths
+}
+
+func containsString(hayStack []string, needle string) bool {
+	for _, str := range hayStack {
+		if str == needle {
+			return true
+		}
+	}
+	return false
+}
+
+func (e *Exercise) turnInFilesCheck() Result {
+	var foundTurnInFiles []string
+	fullTurnInFilesPaths := e.fullTurnInFilesPath()
+	parentDirectory := filepath.Join(e.RepoDirectory, e.TurnInDirectory)
+	err := filepath.Walk(parentDirectory, func(path string, info os.FileInfo, err error) error {
+		if filepath.Base(path)[0] == '.' || path == parentDirectory || info.IsDir() {
+			return nil
+		} else if !containsString(fullTurnInFilesPaths, path) {
+			return fmt.Errorf("'%s' not in allowed turn in files", path)
+		} else {
+			foundTurnInFiles = append(foundTurnInFiles, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return Result{Passed: false, Output: fmt.Sprintf("invalid file(s) found in %s/", e.TurnInDirectory)}
+	} else if len(foundTurnInFiles) != len(fullTurnInFilesPaths) {
+		return Result{Passed: false, Output: fmt.Sprintf("missing files in %s/", e.TurnInDirectory)}
+	}
+	return Result{Passed: true, Output: ""}
+}
+
+// Runs the Executer function and returns the result
 func (e *Exercise) Run() Result {
+	if result := e.turnInFilesCheck(); !result.Passed {
+		return result
+	}
+	e.TurnInFiles = e.fullTurnInFilesPath()
+
 	if e.Executer != nil {
 		return e.Executer(e)
 	}

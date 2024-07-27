@@ -10,7 +10,6 @@ import (
 	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/internal/logger"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
-	"github.com/42-Short/shortinette/pkg/testutils"
 )
 
 func ex00Compile(exercise *Exercise.Exercise) error {
@@ -45,8 +44,6 @@ func runExecutable(executablePath string) (string, error) {
 }
 
 func ex00Test(exercise *Exercise.Exercise) Exercise.Result {
-	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
-
 	if err := ex00Compile(exercise); err != nil {
 		return Exercise.CompilationError(err.Error())
 	}

@@ -161,9 +161,6 @@ func printBytes() Exercise.Result {
 }
 
 func ex02Test(exercise *Exercise.Exercise) Exercise.Result {
-	if !testutils.TurnInFilesCheck(*exercise) {
-		return Exercise.InvalidFileError()
-	}
 	if result := yes(); !result.Passed {
 		return result
 	} 

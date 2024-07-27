@@ -49,11 +49,6 @@ func fizzBuzzOutputTest(exercise Exercise.Exercise) Exercise.Result {
 }
 
 func ex03Test(exercise *Exercise.Exercise) Exercise.Result {
-	if !testutils.TurnInFilesCheck(*exercise) {
-		return Exercise.Result{Passed: false, Output: "invalid files found in turn in directory"}
-	}
-	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
-
 	return fizzBuzzOutputTest(*exercise)
 }
 

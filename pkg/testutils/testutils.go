@@ -75,6 +75,16 @@ func AppendStringToFile(source string, destFilePath string) error {
 	return nil
 }
 
+func FullTurnInFilesPath(exercise Exercise.Exercise) []string {
+	var fullFilePaths []string
+
+	for _, path := range exercise.TurnInFiles {
+		fullPath := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory, path)
+		fullFilePaths = append(fullFilePaths, fullPath)
+	}
+	return fullFilePaths
+}
+
 // Delete the first occurrence of targetString from filePath
 func DeleteStringFromFile(targetString, filePath string) error {
 	content, err := os.ReadFile(filePath)
@@ -163,39 +173,6 @@ func RunCommandLine(workingDirectory string, command string, args []string, opti
 		return stderr.String(), fmt.Errorf("%v", err)
 	}
 	return stdout.String() + stderr.String(), nil
-}
-
-func containsString(hayStack []string, needle string) bool {
-	for _, str := range hayStack {
-		if str == needle {
-			return true
-		}
-	}
-	return false
-}
-
-func TurnInFilesCheck(exercise Exercise.Exercise) bool {
-	fullTurnInFilesPaths := FullTurnInFilesPath(exercise)
-	parentDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
-	err := filepath.Walk(parentDirectory, func(path string, info os.FileInfo, err error) error {
-		if filepath.Base(path)[0] == '.' || path == parentDirectory || info.IsDir() {
-			return nil
-		} else if !containsString(fullTurnInFilesPaths, path) {
-			return fmt.Errorf("'%s' not in allowed turn in files", path)
-		}
-		return nil
-	})
-	return err == nil
-}
-
-func FullTurnInFilesPath(exercise Exercise.Exercise) []string {
-	var fullFilePaths []string
-
-	for _, path := range exercise.TurnInFiles {
-		fullPath := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory, path)
-		fullFilePaths = append(fullFilePaths, fullPath)
-	}
-	return fullFilePaths
 }
 
 func FullTurnInDirectory(codeDirectory string, exercise Exercise.Exercise) string {
