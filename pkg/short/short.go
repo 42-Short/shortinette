@@ -48,11 +48,6 @@ func updateRelease(repo db.Repository, newWaitingTime time.Duration, tracesPath 
 	return nil
 }
 
-var tableRow = `<tr>
-	<th>%s</th>
-	<th>%s</th>
-</tr>`
-
 func getUpdatedReadme(repo db.Repository, results map[string]bool) (newReadme string, err error) {
 	var keys []string
 	for key := range results {
@@ -65,7 +60,11 @@ func getUpdatedReadme(repo db.Repository, results map[string]bool) (newReadme st
 		logger.Info.Printf("README.md not found in %s", repo.ID)
 		oldContent = ""
 	}
-
+	var tableRow = `
+<tr>
+	<th>%s</th>
+	<th>%s</th>
+</tr>`
 	var currentResult string
 	newReadme = fmt.Sprintf("%s<h1 align=\"center\">ATTEMPT %d - SCORE %d/100</h1><div align=\"center\"><table>", oldContent, repo.Attempts, repo.Score)
 	for _, key := range keys {
@@ -108,6 +107,16 @@ func checkPrematureGradingAttempt(repo db.Repository) (err error) {
 	return nil
 }
 
+func updateNewWaitingTime(repo *db.Repository, module Module.Module, results map[string]bool) {
+	score, passed := module.GetScore(results)
+	if passed {
+		repo.WaitingTime = 15 * time.Minute
+	} else {
+		repo.WaitingTime = min(repo.WaitingTime+15*time.Minute, 60*time.Minute)
+	}
+	repo.Score = score
+}
+
 func GradeModule(module Module.Module, repoID string) (err error) {
 	repo, err := db.GetRepositoryData(module.Name, repoID)
 	if err != nil {
@@ -121,14 +130,7 @@ func GradeModule(module Module.Module, repoID string) (err error) {
 
 	results, tracesPath := module.Run(repoID, "studentcode")
 
-	score, passed := module.GetScore(results)
-	if passed {
-		repo.WaitingTime = 15 * time.Minute
-	} else {
-		repo.WaitingTime = min(repo.WaitingTime+15*time.Minute, 60*time.Minute)
-	}
-
-	repo.Score = score
+	updateNewWaitingTime(&repo, module, results)
 
 	if err = uploadResults(repo, tracesPath, module.Name, results); err != nil {
 		return err
