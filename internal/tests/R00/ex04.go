@@ -67,8 +67,6 @@ func testCargoRun(exercise Exercise.Exercise) Exercise.Result {
 }
 
 func ex04Test(exercise *Exercise.Exercise) Exercise.Result {
-	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
-
 	if result := testCargoRun(*exercise); !result.Passed {
 		return result
 	}

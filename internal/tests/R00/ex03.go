@@ -49,8 +49,6 @@ func fizzBuzzOutputTest(exercise Exercise.Exercise) Exercise.Result {
 }
 
 func ex03Test(exercise *Exercise.Exercise) Exercise.Result {
-	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
-
 	return fizzBuzzOutputTest(*exercise)
 }
 
