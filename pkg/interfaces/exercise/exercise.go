@@ -111,11 +111,13 @@ func (e *Exercise) turnInFilesCheck() Result {
 	return Result{Passed: true, Output: ""}
 }
 
-// Run runs the Executer function and returns the result
+// Runs the Executer function and returns the result
 func (e *Exercise) Run() Result {
 	if result := e.turnInFilesCheck(); !result.Passed {
 		return result
 	}
+	e.TurnInFiles = e.fullTurnInFilesPath()
+
 	if e.Executer != nil {
 		return e.Executer(e)
 	}
