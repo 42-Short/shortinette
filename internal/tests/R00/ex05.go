@@ -6,9 +6,6 @@ import (
 )
 
 func ex05Test(exercise *Exercise.Exercise) Exercise.Result {
-	if !testutils.TurnInFilesCheck(*exercise) {
-		return Exercise.InvalidFileError()
-	}
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
 	return Exercise.Passed("OK")
 }

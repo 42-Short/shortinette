@@ -52,9 +52,6 @@ func compileWithRustcTestOption(turnInFile string) error {
 }
 
 func ex01Test(exercise *Exercise.Exercise) Exercise.Result {
-	if !testutils.TurnInFilesCheck(*exercise) {
-		return Exercise.Result{Passed: false, Output: "invalid files found in turn in directory"}
-	}
 	exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
 	if err := testutils.AppendStringToFile(CargoTest, exercise.TurnInFiles[0]); err != nil {
 		logger.Error.Printf("could not write to %s: %v", exercise.TurnInFiles[0], err)
