@@ -52,7 +52,6 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
-
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "failed to read request body", http.StatusInternalServerError)
@@ -64,9 +63,7 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to parse request body", http.StatusInternalServerError)
 		return
 	}
-
 	if payload.Ref == "refs/heads/main" && payload.Pusher.Name != os.Getenv("GITHUB_ADMIN") {
-		logger.Info.Printf("received push event to main branch of %s by %s\n", payload.Repository.Name, payload.Pusher.Name)
 		if strings.ToLower(payload.Commit.Message) == "grademe" {
 			logger.Info.Println("push event identified as submission, proceeding to grade..")
 			mu.Lock()
@@ -77,10 +74,7 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 					logger.Error.Printf("error grading module: %v", err)
 				}
 			}()
-		} else {
-			logger.Info.Println("false alarm")
-		}
-
+		} 
 	}
 }
 

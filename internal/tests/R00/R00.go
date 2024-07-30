@@ -14,6 +14,8 @@ func R00() *Module.Module {
 		"03": ex03(),
 		"04": ex04(),
 		"05": ex05(),
+		"06": ex06(),
+		"07": ex07(),
 	}
 	r00, err := Module.NewModule("00", 70, exercises)
 	if err != nil {

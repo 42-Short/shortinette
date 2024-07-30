@@ -172,7 +172,7 @@ func RunCommandLine(workingDirectory string, command string, args []string, opti
 		}
 		return stderr.String(), fmt.Errorf("%v", err)
 	}
-	return stdout.String() + stderr.String(), nil
+	return stdout.String(), nil
 }
 
 func FullTurnInDirectory(codeDirectory string, exercise Exercise.Exercise) string {

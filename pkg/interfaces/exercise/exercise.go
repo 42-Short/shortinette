@@ -106,7 +106,7 @@ func (e *Exercise) turnInFilesCheck() Result {
 	if err != nil {
 		return Result{Passed: false, Output: fmt.Sprintf("invalid file(s) found in %s/", e.TurnInDirectory)}
 	} else if len(foundTurnInFiles) != len(fullTurnInFilesPaths) {
-		return Result{Passed: false, Output: fmt.Sprintf("missing files in %s/", e.TurnInDirectory)}
+		return Result{Passed: false, Output: fmt.Sprintf("missing files in %s/; found: %v", e.TurnInDirectory, foundTurnInFiles)}
 	}
 	return Result{Passed: true, Output: ""}
 }
