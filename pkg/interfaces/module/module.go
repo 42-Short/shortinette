@@ -67,7 +67,7 @@ func runContainerized(module Module, exercise Exercise.Exercise, tracesPath stri
 		fmt.Sprintf("go run . \"%s\" \"%s\" \"%s\"", module.Name, exercise.Name, tracesPath),
 	}
 	if _, err := testutils.RunCommandLine(".", command, args); err != nil {
-		logger.Info.Printf("\n%v", err)
+		logger.Info.Printf("EXERCISE %s:\n%v", exercise.Name, err)
 		return false
 	} 
 	return true

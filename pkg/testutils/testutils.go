@@ -25,7 +25,7 @@ func CheckCargoTomlContent(exercise Exercise.Exercise, expectedContent map[strin
 		logger.Error.Printf("internal error: %s", err)
 		return Exercise.Result{Passed: false, Output: "internal error"}
 	}
-	var result = Exercise.Result{Passed: true, Output: ""}
+	var result = Exercise.Result{Passed: true, Output: "OK"}
 	for key, expectedValue := range expectedContent {
 		value, ok := fieldMap[key]
 		if !ok {

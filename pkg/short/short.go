@@ -40,7 +40,8 @@ func NewShort(name string, modules map[string]Module.Module, testMode ITestMode.
 }
 
 func updateRelease(repo db.Repository, newWaitingTime time.Duration, tracesPath string) error {
-	releaseName := fmt.Sprintf("%d/100 - retry in %dm", repo.Score, int(newWaitingTime.Minutes()))
+	nextGradingAttemptTime := time.Now().Add(newWaitingTime).Format("15:04")
+	releaseName := fmt.Sprintf("%d/100 - retry at %s", repo.Score, nextGradingAttemptTime)
 
 	if err := git.NewRelease(repo.ID, "Grade", releaseName, tracesPath, true); err != nil {
 		return err
@@ -98,12 +99,12 @@ func uploadResults(repo db.Repository, tracesPath string, moduleName string, res
 }
 
 func checkPrematureGradingAttempt(repo db.Repository) (err error) {
-	// if repo.WaitingTime > time.Since(repo.LastGradingTime) {
-	// 	if err = updateRelease(repo, repo.WaitingTime-time.Since(repo.LastGradingTime), ""); err != nil {
-	// 		return err
-	// 	}
-	// 	return fmt.Errorf("premature grading attempt")
-	// }
+	if repo.WaitingTime > time.Since(repo.LastGradingTime) {
+		if err = updateRelease(repo, repo.WaitingTime-time.Since(repo.LastGradingTime), ""); err != nil {
+			return err
+		}
+		return fmt.Errorf("premature grading attempt")
+	}
 	return nil
 }
 
