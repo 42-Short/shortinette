@@ -59,8 +59,8 @@ func ex01Test(exercise *Exercise.Exercise) Exercise.Result {
 	if err := compileWithRustcTestOption(exercise.TurnInFiles[0]); err != nil {
 		return Exercise.CompilationError(err.Error())
 	}
-	if _, err := testutils.RunExecutable(strings.TrimSuffix(exercise.TurnInFiles[0], ".rs")); err != nil {
-		return Exercise.AssertionError("", err.Error())
+	if output, err := testutils.RunExecutable(strings.TrimSuffix(exercise.TurnInFiles[0], ".rs")); err != nil {
+		return Exercise.AssertionError("", err.Error() + output)
 	}
 	return Exercise.Passed("OK")
 }

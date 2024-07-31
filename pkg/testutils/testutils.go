@@ -138,9 +138,11 @@ func RunExecutable(executablePath string, options ...RunExecutableOption) (strin
 
 	if err := cmd.Run(); err != nil {
 		if ctxErr := cmd.ProcessState.ExitCode(); ctxErr == -1 {
+			logger.Error.Printf("%s timed out: %v", executablePath, ctxErr)
 			return stdout.String(), ErrTimeout
 		}
-		return stderr.String(), fmt.Errorf("%v", err)
+		output := fmt.Sprintf("error executing %s: %v\nstdout: %s\nstderr: %s", executablePath, err, stdout.String(), stderr.String())
+		return output, fmt.Errorf("%v", err)
 	}
 	return stdout.String(), nil
 }
@@ -164,7 +166,7 @@ func RunCommandLine(workingDirectory string, command string, args []string, opti
 		}
 		return stderr.String(), fmt.Errorf("%v", err)
 	}
-	return stdout.String(), nil
+	return stdout.String() + stderr.String(), nil
 }
 
 func FullTurnInDirectory(codeDirectory string, exercise Exercise.Exercise) string {
