@@ -44,23 +44,23 @@ func compileWithRustcTestOption(turnInFile string) error {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		logger.Error.Println(err)
+		logger.Exercise.Println(err)
 		return errors.NewSubmissionError(errors.ErrInvalidCompilation, string(output))
 	}
-	logger.Info.Printf("%s/%s compiled with rustc --test\n", cmd.Dir, turnInFile)
+	logger.Exercise.Printf("%s/%s compiled with rustc --test\n", cmd.Dir, turnInFile)
 	return nil
 }
 
 func ex01Test(exercise *Exercise.Exercise) Exercise.Result {
 	if err := testutils.AppendStringToFile(CargoTest, exercise.TurnInFiles[0]); err != nil {
-		logger.Error.Printf("could not write to %s: %v", exercise.TurnInFiles[0], err)
+		logger.Exercise.Printf("could not write to %s: %v", exercise.TurnInFiles[0], err)
 		return Exercise.InternalError(err.Error())
 	}
 	if err := compileWithRustcTestOption(exercise.TurnInFiles[0]); err != nil {
 		return Exercise.CompilationError(err.Error())
 	}
 	if output, err := testutils.RunExecutable(strings.TrimSuffix(exercise.TurnInFiles[0], ".rs")); err != nil {
-		return Exercise.AssertionError("", err.Error() + output)
+		return Exercise.AssertionError("", err.Error()+output)
 	}
 	return Exercise.Passed("OK")
 }

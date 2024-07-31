@@ -59,7 +59,7 @@ func ex07Test(exercise *Exercise.Exercise) Exercise.Result {
 	workingDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
 
 	if err := testutils.AppendStringToFile(TestMod, exercise.TurnInFiles[1]); err != nil {
-		logger.Error.Printf("internal error: %v", err)
+		logger.Exercise.Printf("internal error: %v", err)
 		return Exercise.InternalError(err.Error())
 	}
 

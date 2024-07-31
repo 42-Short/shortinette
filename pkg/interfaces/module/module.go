@@ -66,9 +66,11 @@ func runContainerized(module Module, exercise Exercise.Exercise, tracesPath stri
 		"-c",
 		fmt.Sprintf("go run . \"%s\" \"%s\" \"%s\"", module.Name, exercise.Name, tracesPath),
 	}
-	output, err := testutils.RunCommandLine(".", command, args)
-	fmt.Printf("output for container %s: %s", exercise.Name, output)
-	return err == nil
+	if _, err := testutils.RunCommandLine(".", command, args); err != nil {
+		logger.Info.Printf("\n%v", err)
+		return false
+	} 
+	return true
 }
 
 type exerciseResult struct {

@@ -22,7 +22,7 @@ func testNmReleaseMode(exercise Exercise.Exercise) Exercise.Result {
 	}
 	output, err := testutils.RunCommandLine(workingDirectory, "nm", []string{"target/release/module00-ex04"})
 	if err != nil {
-		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %v", err)}
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: nm did not execute as expected: %v", err)}
 	}
 	if output != "" {
 		return Exercise.AssertionError("", output)
@@ -34,7 +34,7 @@ func testCargoRunBinOtherReleaseMode(exercise Exercise.Exercise) Exercise.Result
 	workingDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
 	output, err := testutils.RunCommandLine(workingDirectory, "cargo", []string{"run", "--release", "--bin", "other"})
 	if err != nil {
-		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %s", err)}
+		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: cargo run: %s", err)}
 	}
 	if output != "Hey! I'm the other bin target!\nI'm in release mode!\n" {
 		return Exercise.AssertionError("Hey! I'm the other bin target!\nI'm in release mode!\n", output)
@@ -60,8 +60,8 @@ func testCargoRun(exercise Exercise.Exercise) Exercise.Result {
 	if err != nil {
 		return Exercise.Result{Passed: false, Output: fmt.Sprintf("runtime error: %v", err)}
 	}
-	if output != "Hello, cargo!\n" {
-		return Exercise.AssertionError("Hello, cargo!\n", output)
+	if output != "Hello, Cargo!\n" {
+		return Exercise.AssertionError("Hello, Cargo!\n", output)
 	}
 	return Exercise.Result{Passed: true, Output: ""}
 }

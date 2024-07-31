@@ -22,10 +22,10 @@ func ex00Compile(exercise *Exercise.Exercise) error {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		logger.Error.Println(err)
+		logger.Exercise.Println(err)
 		return errors.NewSubmissionError(errors.ErrInvalidCompilation, string(output))
 	}
-	logger.Info.Printf("%s compiled with rustc\n", exercise.TurnInFiles[0])
+	logger.Exercise.Printf("%s compiled with rustc\n", exercise.TurnInFiles[0])
 	return nil
 }
 

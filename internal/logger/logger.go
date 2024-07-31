@@ -8,9 +8,10 @@ import (
 )
 
 var (
-	Info  *log.Logger
-	Error *log.Logger
-	File  *log.Logger
+	Info     *log.Logger
+	Error    *log.Logger
+	File     *log.Logger
+	Exercise *log.Logger
 )
 
 func GetNewTraceFile(repoID string) string {
@@ -29,7 +30,8 @@ func InitializeTraceLogger(filePath string) error {
 	return nil
 }
 
-func InitializeStandardLoggers() {
+func InitializeStandardLoggers(exerciseId string) {
 	Info = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime)
 	Error = log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+	Exercise = log.New(os.Stderr, fmt.Sprintf("EXERCISE %s: ", exerciseId), log.Ldate|log.Ltime|log.Lshortfile)
 }

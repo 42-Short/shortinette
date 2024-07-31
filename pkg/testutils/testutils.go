@@ -164,9 +164,10 @@ func RunCommandLine(workingDirectory string, command string, args []string, opti
 		if ctxErr := cmd.ProcessState.ExitCode(); ctxErr == -1 {
 			return stdout.String(), ErrTimeout
 		}
-		return stderr.String(), fmt.Errorf("%v", err)
+		output := fmt.Sprintf("stderr: %s\nstdout: %s", stdout.String(), stderr.String())
+		return "", errors.New(output)
 	}
-	return stdout.String() + stderr.String(), nil
+	return stdout.String(), nil
 }
 
 func FullTurnInDirectory(codeDirectory string, exercise Exercise.Exercise) string {

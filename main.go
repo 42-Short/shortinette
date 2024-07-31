@@ -29,7 +29,11 @@ func dockerExecMode(args []string, short Short.Short) {
 }
 
 func main() {
-	logger.InitializeStandardLoggers()
+	if len(os.Args) == 4 {
+		logger.InitializeStandardLoggers(os.Args[2])
+	} else {
+		logger.InitializeStandardLoggers("")
+	}
 	if err := requirements.ValidateRequirements(); len(os.Args) != 4 && err != nil {
 		logger.Error.Println(err.Error())
 		return

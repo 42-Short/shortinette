@@ -3,6 +3,7 @@ package R00
 import (
 	"path/filepath"
 
+	"github.com/42-Short/shortinette/internal/logger"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 	"github.com/42-Short/shortinette/pkg/testutils"
 )
@@ -11,6 +12,7 @@ func ex05Test(exercise *Exercise.Exercise) Exercise.Result {
 	workingDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
 	output, err := testutils.RunCommandLine(workingDirectory, "cargo", []string{"test"})
 	if err != nil {
+		logger.Exercise.Printf("%v", err)
 		return Exercise.AssertionError("", output)
 	}
 	return Exercise.Passed("OK")
