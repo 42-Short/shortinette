@@ -98,12 +98,12 @@ func uploadResults(repo db.Repository, tracesPath string, moduleName string, res
 }
 
 func checkPrematureGradingAttempt(repo db.Repository) (err error) {
-	if repo.WaitingTime > time.Since(repo.LastGradingTime) {
-		if err = updateRelease(repo, repo.WaitingTime-time.Since(repo.LastGradingTime), ""); err != nil {
-			return err
-		}
-		return fmt.Errorf("premature grading attempt")
-	}
+	// if repo.WaitingTime > time.Since(repo.LastGradingTime) {
+	// 	if err = updateRelease(repo, repo.WaitingTime-time.Since(repo.LastGradingTime), ""); err != nil {
+	// 		return err
+	// 	}
+	// 	return fmt.Errorf("premature grading attempt")
+	// }
 	return nil
 }
 

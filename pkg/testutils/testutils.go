@@ -14,7 +14,6 @@ import (
 	"time"
 
 	toml "github.com/42-Short/shortinette/internal/datastructures"
-	"github.com/42-Short/shortinette/internal/functioncheck"
 	"github.com/42-Short/shortinette/internal/logger"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 )
@@ -51,13 +50,6 @@ func CompileWithRustc(turnInFile string) error {
 		return err
 	}
 	logger.Info.Printf("%s/%s compiled with rustc\n", cmd.Dir, turnInFile)
-	return nil
-}
-
-func ForbiddenItemsCheck(exercise Exercise.Exercise, repoID string) error {
-	if err := functioncheck.Execute(exercise, "shortinette-test-R00"); err != nil {
-		return err
-	}
 	return nil
 }
 

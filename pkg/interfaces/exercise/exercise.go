@@ -1,9 +1,13 @@
 package Exercise
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"github.com/42-Short/shortinette/internal/logger"
 )
 
 type Result struct {
@@ -70,6 +74,57 @@ func NewExercise(
 	}
 }
 
+func searchForKeyword(keywords map[string]int, word string) (keyword string, found bool) {
+	for keyword := range keywords {
+		if word == keyword {
+			return keyword, true
+		}
+	}
+	return keyword, false
+}
+
+func checkKeywordAmount(keywordCounts map[string]int, keywords map[string]int) (err error) {
+	foundKeywords := make([]string, 0, len(keywords))
+	for keyword, allowedAmount := range keywords {
+		if count, inMap := keywordCounts[keyword]; inMap {
+			if count > allowedAmount {
+				foundKeywords = append(foundKeywords, keyword)
+			}
+		}
+	}
+	if len(foundKeywords) > 0 {
+		return fmt.Errorf("keywords %s are used more often than allowed", strings.Join(foundKeywords, ", "))
+	}
+	return nil
+}
+
+func scanStudentFile(scanner *bufio.Scanner, allowedKeywords map[string]int) (err error) {
+	keywordCounts := make(map[string]int)
+	for scanner.Scan() {
+		word := scanner.Text()
+		keyword, found := searchForKeyword(allowedKeywords, word)
+		if found {
+			keywordCounts[keyword]++
+		}
+	}
+	err = checkKeywordAmount(keywordCounts, allowedKeywords)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func lintStudentCode(exercisePath string, test Exercise) (err error) {
+	file, err := os.Open(exercisePath)
+	if err != nil {
+		return fmt.Errorf("could not open %s: %w", exercisePath, err)
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanWords)
+	return scanStudentFile(scanner, test.AllowedKeywords)
+}
+
 func (e *Exercise) fullTurnInFilesPath() []string {
 	var fullFilePaths []string
 
@@ -111,9 +166,23 @@ func (e *Exercise) turnInFilesCheck() Result {
 	return Result{Passed: true, Output: ""}
 }
 
+func (e *Exercise) forbiddenItemsCheck() (result Result) {
+	exercisePath := fmt.Sprintf("compile-environment/%s/%s", e.TurnInDirectory, e.TurnInFiles[0])
+	err := lintStudentCode(exercisePath, *e)
+	if err != nil {
+		return Result{Passed: false, Output: "found forbidden items"}
+	}
+
+	logger.Info.Printf("no forbidden items/keywords found in %s", e.TurnInDirectory+"/"+e.TurnInFiles[0])
+	return Result{Passed: true, Output: ""}
+}
+
 // Runs the Executer function and returns the result
-func (e *Exercise) Run() Result {
-	if result := e.turnInFilesCheck(); !result.Passed {
+func (e *Exercise) Run() (result Result) {
+	if result = e.forbiddenItemsCheck(); !result.Passed {
+		return result
+	}
+	if result = e.turnInFilesCheck(); !result.Passed {
 		return result
 	}
 	e.TurnInFiles = e.fullTurnInFilesPath()

@@ -41,7 +41,7 @@ func yes() Exercise.Result {
 	}
 	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], ".rs")
 	output, err := testutils.RunExecutable(executablePath, testutils.WithTimeout(500*time.Millisecond))
-	if err == nil || !errors.Is(err, testutils.ErrTimeout) {
+	if err != nil && !errors.Is(err, testutils.ErrTimeout) {
 		return Exercise.RuntimeError(err.Error())
 	}
 	lines := strings.Split(output, "\n")
@@ -80,13 +80,14 @@ func doCollatz(n int) string {
 	}
 	var results []string
 	for n != 1 {
+		results = append(results, fmt.Sprintf("%d", n))
 		if n%2 == 0 {
 			n /= 2
 		} else {
 			n = 3*n + 1
 		}
-		results = append(results, fmt.Sprintf("%d", n))
 	}
+	results = append(results, "1")
 	return strings.Join(results, "\n") + "\n"
 }
 
@@ -107,7 +108,7 @@ func collatzAssertionTest(exercise Exercise.Exercise) Exercise.Result {
 	expectedOutput := doCollatz(42)
 
 	if output != expectedOutput {
-		return Exercise.AssertionError(output, expectedOutput)
+		return Exercise.AssertionError(expectedOutput, output)
 	}
 	return Exercise.Passed("OK")
 }

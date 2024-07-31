@@ -37,7 +37,7 @@ func setUpEnvironment(repoID string, testDirectory string) error {
 		errorMessage := fmt.Sprintf("failed to clone repository: %v", err)
 		return errors.NewInternalError(errors.ErrInternal, errorMessage)
 	}
-	if err := git.Clone(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoID), "compile-environment/src/"); err != nil {
+	if err := git.Clone(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoID), "compile-environment/"); err != nil {
 		return err
 	}
 	return nil
