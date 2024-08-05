@@ -3,11 +3,9 @@ package shortinette
 import (
 	"os"
 
-	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
 	"github.com/42-Short/shortinette/pkg/logger"
 	"github.com/42-Short/shortinette/pkg/requirements"
 	Short "github.com/42-Short/shortinette/pkg/short"
-	webhook "github.com/42-Short/shortinette/pkg/short/testmodes/webhooktestmode"
 )
 
 func dockerExecMode(args []string, short Short.Short) {
@@ -27,7 +25,23 @@ func dockerExecMode(args []string, short Short.Short) {
 	}
 }
 
-func Init(modules map[string]Module.Module) {
+func Start(short Short.Short, module string) {
+	config, err := Short.GetConfig()
+	if err != nil {
+		logger.Error.Println(err.Error())
+		return
+	}
+	Short.StartModule(short.Modules[module], *config)
+	short.TestMode.Run()
+	if len(os.Args) == 4 {
+		dockerExecMode(os.Args, short)
+	} else if len(os.Args) != 1 {
+		logger.Error.Println("invalid number of arguments")
+		return
+	}
+}
+
+func Init() {
 	if len(os.Args) == 4 {
 		logger.InitializeStandardLoggers(os.Args[2])
 	} else {
@@ -37,20 +51,4 @@ func Init(modules map[string]Module.Module) {
 		logger.Error.Println(err.Error())
 		return
 	}
-	config, err := Short.GetConfig()
-	if err != nil {
-		logger.Error.Println(err.Error())
-		return
-	}
-	short := Short.NewShort("Rust Piscine 1.0", modules, webhook.NewWebhookTestMode(modules["00"]))
-	if len(os.Args) == 4 {
-		dockerExecMode(os.Args, short)
-	} else if len(os.Args) != 1 {
-		logger.Error.Println("invalid number of arguments")
-		return
-	}
-
-	Short.StartModule(modules["00"], *config)
-	short.TestMode.Run()
-	Short.EndModule(modules["00"], *config)
 }
