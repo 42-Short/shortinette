@@ -8,26 +8,25 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/42-Short/shortinette/internal/tests/R00"
+	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
 	"github.com/42-Short/shortinette/pkg/logger"
 	"github.com/42-Short/shortinette/pkg/short"
 )
 
-// Initializes the webhook TestMode, which triggers submission grading
-// as soon as activity is recorded on a user's main branch.
-func NewWebhookTestMode() WebhookTestMode {
-	return WebhookTestMode{
-		MonitoringFunction: func() {
-			http.HandleFunc("/webhook", handleWebhook)
-			if err := http.ListenAndServe(":8080", nil); err != nil {
-				logger.Error.Printf("failed to start http server: %v", err)
-			}
-		},
-	}
-}
-
 type WebhookTestMode struct {
 	MonitoringFunction func()
+	CurrentModule      Module.Module
+}
+
+// Initializes the webhook TestMode, which triggers submission grading
+// as soon as activity is recorded on a user's main branch.
+func NewWebhookTestMode(currentModule Module.Module) WebhookTestMode {
+	wt := WebhookTestMode{MonitoringFunction: nil, CurrentModule: currentModule}
+	wt.MonitoringFunction = func() {
+		http.HandleFunc("/webhook", wt.handleWebhook)
+		http.ListenAndServe(":8080", nil)
+	}
+	return wt
 }
 
 type GitHubWebhookPayload struct {
@@ -47,7 +46,7 @@ var (
 	mu sync.Mutex
 )
 
-func handleWebhook(w http.ResponseWriter, r *http.Request) {
+func (wt *WebhookTestMode) handleWebhook(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -70,7 +69,7 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 			defer mu.Unlock()
 
 			go func() {
-				if err := short.GradeModule(*R00.R00(), payload.Repository.Name); err != nil {
+				if err := short.GradeModule(wt.CurrentModule, payload.Repository.Name); err != nil {
 					logger.Error.Printf("error grading module: %v", err)
 				}
 			}()

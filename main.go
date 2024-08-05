@@ -43,7 +43,8 @@ func main() {
 		logger.Error.Println(err.Error())
 		return
 	}
-	short := Short.NewShort("Rust Piscine 1.0", map[string]Module.Module{"00": *R00.R00()}, webhook.NewWebhookTestMode())
+	module := *R00.R00()
+	short := Short.NewShort("Rust Piscine 1.0", map[string]Module.Module{"00": module}, webhook.NewWebhookTestMode(module))
 	if len(os.Args) == 4 {
 		dockerExecMode(os.Args, short)
 	} else if len(os.Args) != 1 {
