@@ -6,10 +6,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/pkg/db"
 	"github.com/42-Short/shortinette/pkg/git"
 	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
+	"github.com/42-Short/shortinette/pkg/logger"
 	ITestMode "github.com/42-Short/shortinette/pkg/short/testmodes"
 )
 

@@ -7,9 +7,9 @@ import (
 	"sync"
 
 	"github.com/42-Short/shortinette/internal/errors"
-	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/pkg/git"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
+	"github.com/42-Short/shortinette/pkg/logger"
 	"github.com/42-Short/shortinette/pkg/testutils"
 )
 
@@ -69,7 +69,7 @@ func runContainerized(module Module, exercise Exercise.Exercise, tracesPath stri
 	if _, err := testutils.RunCommandLine(".", command, args); err != nil {
 		logger.Info.Printf("EXERCISE %s:\n%v", exercise.Name, err)
 		return false
-	} 
+	}
 	return true
 }
 

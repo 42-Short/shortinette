@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/tests/R00"
 	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
+	"github.com/42-Short/shortinette/pkg/logger"
 	"github.com/42-Short/shortinette/pkg/requirements"
 	Short "github.com/42-Short/shortinette/pkg/short"
 	webhook "github.com/42-Short/shortinette/pkg/short/testmodes/webhooktestmode"

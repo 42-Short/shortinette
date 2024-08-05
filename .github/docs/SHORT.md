@@ -36,7 +36,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/42-Short/shortinette/internal/logger"
+	"github.com/42-Short/shortinette/pkg/logger"
 	"github.com/42-Short/shortinette/pkg/git"
 	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
 	ITestMode "github.com/42-Short/shortinette/pkg/short/testmodes"

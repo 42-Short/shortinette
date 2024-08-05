@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/42-Short/shortinette/internal/logger"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
+	"github.com/42-Short/shortinette/pkg/logger"
 	"github.com/42-Short/shortinette/pkg/testutils"
 )
 
@@ -63,7 +63,7 @@ func collatzInfiniteLoopTest(exercise Exercise.Exercise) Exercise.Result {
 		return Exercise.CompilationError(err.Error())
 	}
 	executablePath := testutils.ExecutablePath(exercise.TurnInFiles[0], ".rs")
-	
+
 	if _, err := testutils.RunExecutable(executablePath, testutils.WithTimeout(500*time.Millisecond)); err != nil {
 		return Exercise.RuntimeError(err.Error())
 	}
@@ -164,10 +164,10 @@ func printBytes() Exercise.Result {
 func ex02Test(exercise *Exercise.Exercise) Exercise.Result {
 	if result := yes(); !result.Passed {
 		return result
-	} 
+	}
 	if result := collatz(); !result.Passed {
 		return result
-	} 
+	}
 	if result := printBytes(); !result.Passed {
 		return result
 	}

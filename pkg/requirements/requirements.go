@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/42-Short/shortinette/internal/logger"
+	"github.com/42-Short/shortinette/pkg/logger"
 	"github.com/42-Short/shortinette/pkg/testutils"
 	"github.com/joho/godotenv"
 )

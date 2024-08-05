@@ -15,7 +15,7 @@ Below is an example of how to set up and run a module with exercises, using the 
 package module00
 
 import (
-    "github.com/42-Short/shortinette/internal/logger"
+    "github.com/42-Short/shortinette/pkg/logger"
     Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
     Module "github.com/42-Short/shortinette/pkg/interfaces/module"
 )

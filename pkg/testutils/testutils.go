@@ -14,8 +14,8 @@ import (
 	"time"
 
 	toml "github.com/42-Short/shortinette/internal/datastructures"
-	"github.com/42-Short/shortinette/internal/logger"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
+	"github.com/42-Short/shortinette/pkg/logger"
 )
 
 func CheckCargoTomlContent(exercise Exercise.Exercise, expectedContent map[string]string) Exercise.Result {

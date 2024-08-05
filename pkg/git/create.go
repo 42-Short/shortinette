@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/42-Short/shortinette/internal/logger"
+	"github.com/42-Short/shortinette/pkg/logger"
 )
 
 func addWebhook(repoID string) error {
@@ -171,7 +171,7 @@ func create(name string) error {
 		return err
 	}
 	// adding branch protections to private organisation repos only works with github enterprise
-	// if err := addBranchProtection(name, "traces"); err != nil { 
+	// if err := addBranchProtection(name, "traces"); err != nil {
 	// 	return err
 	// }
 	return nil

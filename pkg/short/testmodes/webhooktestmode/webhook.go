@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/42-Short/shortinette/internal/logger"
 	"github.com/42-Short/shortinette/internal/tests/R00"
+	"github.com/42-Short/shortinette/pkg/logger"
 	"github.com/42-Short/shortinette/pkg/short"
 )
 
@@ -74,7 +74,7 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 					logger.Error.Printf("error grading module: %v", err)
 				}
 			}()
-		} 
+		}
 	}
 }
 

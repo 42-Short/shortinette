@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/42-Short/shortinette/internal/logger"
+	"github.com/42-Short/shortinette/pkg/logger"
 	_ "github.com/mattn/go-sqlite3"
 )
 

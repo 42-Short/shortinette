@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/42-Short/shortinette/internal/logger"
+	"github.com/42-Short/shortinette/pkg/logger"
 )
 
 func buildPushURL(repo string, targetFilePath string) string {

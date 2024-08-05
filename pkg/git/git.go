@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/42-Short/shortinette/internal/logger"
+	"github.com/42-Short/shortinette/pkg/logger"
 )
 
 func sendHTTPRequest(request *http.Request) (response *http.Response, err error) {
