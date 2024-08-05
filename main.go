@@ -1,9 +1,8 @@
-package main
+package shortinette
 
 import (
 	"os"
 
-	"github.com/42-Short/shortinette/internal/tests/R00"
 	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
 	"github.com/42-Short/shortinette/pkg/logger"
 	"github.com/42-Short/shortinette/pkg/requirements"
@@ -28,7 +27,7 @@ func dockerExecMode(args []string, short Short.Short) {
 	}
 }
 
-func main() {
+func Init(modules map[string]Module.Module) {
 	if len(os.Args) == 4 {
 		logger.InitializeStandardLoggers(os.Args[2])
 	} else {
@@ -43,8 +42,7 @@ func main() {
 		logger.Error.Println(err.Error())
 		return
 	}
-	module := *R00.R00()
-	short := Short.NewShort("Rust Piscine 1.0", map[string]Module.Module{"00": module}, webhook.NewWebhookTestMode(module))
+	short := Short.NewShort("Rust Piscine 1.0", modules, webhook.NewWebhookTestMode(modules["00"]))
 	if len(os.Args) == 4 {
 		dockerExecMode(os.Args, short)
 	} else if len(os.Args) != 1 {
@@ -52,7 +50,7 @@ func main() {
 		return
 	}
 
-	Short.StartModule(*R00.R00(), *config)
+	Short.StartModule(modules["00"], *config)
 	short.TestMode.Run()
-	Short.EndModule(*R00.R00(), *config)
+	Short.EndModule(modules["00"], *config)
 }

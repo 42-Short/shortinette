@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/pkg/logger"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
@@ -20,7 +19,7 @@ func cloneRepository(repoURL, targetDir string) (err error) {
 	})
 	if err != nil {
 		if err.Error() == "remote repository is empty" {
-			return errors.NewSubmissionError(errors.ErrEmptyRepo, "gg lol")
+			return fmt.Errorf("empty repository")
 		}
 		return fmt.Errorf("could not clone repository %s to directory %s: %w", repoURL, targetDir, err)
 	}

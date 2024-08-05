@@ -6,7 +6,6 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/42-Short/shortinette/internal/errors"
 	"github.com/42-Short/shortinette/pkg/git"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 	"github.com/42-Short/shortinette/pkg/logger"
@@ -35,7 +34,7 @@ func setUpEnvironment(repoID string, testDirectory string) error {
 	repoLink := fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoID)
 	if err := git.Clone(repoLink, testDirectory); err != nil {
 		errorMessage := fmt.Sprintf("failed to clone repository: %v", err)
-		return errors.NewInternalError(errors.ErrInternal, errorMessage)
+		return fmt.Errorf(errorMessage)
 	}
 	if err := git.Clone(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoID), "compile-environment/"); err != nil {
 		return err
