@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	toml "github.com/42-Short/shortinette/internal/datastructures"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 	"github.com/42-Short/shortinette/pkg/testutils"
 )
@@ -80,7 +81,7 @@ func ex04Test(exercise *Exercise.Exercise) Exercise.Result {
 		return result
 	}
 
-	return testutils.CheckCargoTomlContent(*exercise, expectedTomlContent)
+	return toml.CheckCargoTomlContent(*exercise, expectedTomlContent)
 }
 
 func ex04() Exercise.Exercise {
