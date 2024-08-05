@@ -24,7 +24,9 @@ func NewWebhookTestMode(currentModule Module.Module) WebhookTestMode {
 	wt := WebhookTestMode{MonitoringFunction: nil, CurrentModule: currentModule}
 	wt.MonitoringFunction = func() {
 		http.HandleFunc("/webhook", wt.handleWebhook)
-		http.ListenAndServe(":8080", nil)
+		if err := http.ListenAndServe(":8080", nil); err != nil {
+			return
+		}
 	}
 	return wt
 }
