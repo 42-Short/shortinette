@@ -1,4 +1,5 @@
 # Documentation for `functioncheck` Package
+_currently unused_
 ## Overview
 This package is designed to validate that no forbidden functions are used.
 
