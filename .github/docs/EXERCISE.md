@@ -3,9 +3,16 @@
 The `Exercise` package defines the structure and behavior of an exercise. 
 It includes fields for exercise metadata, allowed resources, and 1 (!) function for executing
 the tests for the exercise.
+The `Run()` method handles checking for forbidden items and wrong turn in files, you only need to implement the tests.
 
 ### Structs and Functions
-* **Result**: Represents the result of an exercise execution, with a **`Passed`** field indicating if the test was successful.
+* **Result**: Represents the result of an exercise execution, with a **`Passed`** field indicating whether the test was successful and an **`Output`** field, which will be written in the trace for the module.
+```go
+type Result struct {
+	Passed bool
+	Output string
+}
+```
 * **Exercise**: Represents an exercise with various metadata fields such as:
   * **Name**: The exercise's display name.
   * **RepoDirectory**: Target directory for cloning repositories, used to construct filepaths.
@@ -16,51 +23,47 @@ the tests for the exercise.
   * **AllowedMacros**: List of macros to be allowed in this exercise.
   * **AllowedFunctions**: List of functions to be allowed in this exercise.
   * **AllowedKeywords**: List of keywords to be allowed in this exercise.
+  * **Score**: Score given to students for passing this exercise.
   * **Executer**: Testing function which is to be run by the module for grading.
-
-## Exercise Setup Example
-Below is an implementation example for a simple exercise compiling a Rust exercise with Cargo and checking its output. 
-
 ```go
-package module00
+type Exercise struct {
+	Name             string
+	RepoDirectory    string
+	TurnInDirectory  string
+	TurnInFiles      []string
+	ExerciseType     string
+	Prototype        string
+	AllowedMacros    []string
+	AllowedFunctions []string
+	AllowedKeywords  map[string]int
+	Score            int
+	Executer         func(test *Exercise) Result
+}
+```
+## Exercise Setup Example
+Below is an implementation example for a simple exercise compiling a Rust exercise and checking its output. 
+```go
+// The Exercise (import "github.com/42-Short/shortinette/pkg/interfaces/exercise")
+// contains some functions returning premade Result structs, like the ones used below
+func ex00Test(exercise *Exercise.Exercise) Exercise.Result {
+	if err := compile(exercise); err != nil {
+		return Exercise.CompilationError(err.Error())
+	}
 
-// Creates the exercise object to be passed to the module.
-func ex04() Exercise.Exercise {
-    return Exercise.NewExercise("EX04", "studentcode", "ex04", []string{"src/main.rs", "Cargo.toml"}, "", "", []string{"println"}, nil, nil, ex04Test)
+	output, err := runExecutable(executablePath)
+	if err != nil {
+		return Exercise.RuntimeError(err.Error())
+	}
+
+	if output != "Hello, World!\n" {
+		return Exercise.AssertionError("Hello, World!\n", output)
+	}
+
+	return Exercise.Passed("OK")
 }
 
-// Implementation of the test function. Runs tests and returns a boolean
-// indicating whether the test was successful.
-func ex04Test(exercise *Exercise.Exercise) bool {
-    // Ensures only the allowed files are present in the turn in directory.
-    if !testutils.TurnInFilesCheck(*exercise) {
-        return false
-    }
-
-    // Ensures no forbidden items have been used.
-    if err := testutils.ForbiddenItemsCheck(*exercise, "shortinette-test-R00"); err != nil {
-        return false
-    }
-
-    // Converts all turn in file paths to be relative to the project's root directory.
-    // This is an important step to avoid later undefined behavior.
-    exercise.TurnInFiles = testutils.FullTurnInFilesPath(*exercise)
-
-    // Returns a boolean value indicating whether the exercise is passed.
-    return doTest(*exercise)
+func ex00() Exercise.Exercise {
+	return Exercise.NewExercise("00", "studentcode", "ex00", []string{"hello.rs"}, "program", "", []string{"println"}, nil, map[string]int{"unsafe": 0}, 10, ex00Test)
 }
 
-func doTest(*exercise) bool {
-    workingDirectory := filepath.Join(exercise.RepoDirectory, exercise.TurnInDirectory)
-    output, err := testutils.RunCommandLine(workingDirectory, "cargo run")
-    if err != nil {
-        logger.File.Printf("[%s KO]: runtime error %v", exercise.Name, err)
-        return false
-    }
-    if output != "Hello, cargo!\n" {
-        logger.File.Println(testutils.AssertionErrorString(exercise.Name, "Hello, cargo!", output))
-        return false
-    }
-    return true
-}
 ```
