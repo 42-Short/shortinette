@@ -34,28 +34,28 @@ Afterwards, the configuration file's path can be set in the [.env file](DOTENV.m
 package main
 
 import (
-	"fmt"
+	"rust-piscine/internal/tests/R00"
 
-	"github.com/42-Short/shortinette/pkg/logger"
-	"github.com/42-Short/shortinette/pkg/git"
+	"github.com/42-Short/shortinette"
+	"github.com/42-Short/shortinette/pkg/short/testmodes/webhooktestmode"
 	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
-	ITestMode "github.com/42-Short/shortinette/pkg/short/testmodes"
+	Short "github.com/42-Short/shortinette/pkg/short"
 )
 
 func main() {
-    // Initializes a new Short object with the Webhook test mode.
-	short := Short.NewShort("Rust Piscine 1.0", webhook.NewWebhookTestMode())
-    // Gets the short configuration to fetch all participants.
-	config, err := Short.GetConfig()
-	if err != nil {
-		logger.Error.Println(err.Error())
-		return
+	// Initializes shortinette, checks for requirements
+	shortinette.Init()
+
+	// Create a map with all of your Module objects in for shortinette
+	// to look them up easily
+	modules := map[string]Module.Module{
+		"00": *R00.R00(),
 	}
 
-    // Starts the module (repo creations, subject uploads, etc).
-	Short.StartModule(*R00.R00(), *config)
+	// Initialize the Short object and the WebhookTestMode
+	short := Short.NewShort("Rust Piscine 1.0", modules, webhook.NewWebhookTestMode(modules))
 
-    // Starts the grader, which will listen for webhook payloads on port 8080.
-	short.TestMode.Run()
+	// Start the module with the specified module name
+	shortinette.Start(short, "00")
 }
 ```
