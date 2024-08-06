@@ -21,15 +21,15 @@ type WebhookTestMode struct {
 
 // Initializes the webhook TestMode, which triggers submission grading
 // as soon as activity is recorded on a user's main branch.
-func NewWebhookTestMode(currentModule map[string]Module.Module) WebhookTestMode {
-	wt := WebhookTestMode{MonitoringFunction: nil, Modules: currentModule}
+func NewWebhookTestMode(modules map[string]Module.Module) *WebhookTestMode {
+	wt := WebhookTestMode{MonitoringFunction: nil, Modules: modules}
 	wt.MonitoringFunction = func() {
 		http.HandleFunc("/webhook", wt.handleWebhook)
 		if err := http.ListenAndServe(":8080", nil); err != nil {
 			return
 		}
 	}
-	return wt
+	return &wt
 }
 
 type GitHubWebhookPayload struct {
@@ -81,6 +81,5 @@ func (wt *WebhookTestMode) handleWebhook(w http.ResponseWriter, r *http.Request)
 }
 
 func (wt *WebhookTestMode) Run(currentModule string) {
-	wt.CurrentModule = currentModule
 	wt.MonitoringFunction()
 }
