@@ -27,6 +27,9 @@ func requireEnv() error {
 			missingValuesString += "\n" + key
 		}
 	}
+	if os.Getenv("DEV_MODE") == "" {
+		fmt.Printf("DEV_MODE environment variable not set, assuming production")
+	}
 	if missingValuesString != "" {
 		return fmt.Errorf("missing environment variables:%s\nSee https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on .env configuration", missingValuesString)
 	}

@@ -2,6 +2,7 @@ package short
 
 import (
 	"fmt"
+	"os"
 	"sort"
 	"sync"
 	"time"
@@ -99,6 +100,9 @@ func uploadResults(repo db.Repository, tracesPath string, moduleName string, res
 }
 
 func checkPrematureGradingAttempt(repo db.Repository) (err error) {
+	if os.Getenv("DEV_MODE") == "true" {
+		return nil
+	}
 	if repo.WaitingTime > time.Since(repo.LastGradingTime) {
 		if err = updateRelease(repo, repo.WaitingTime-time.Since(repo.LastGradingTime), ""); err != nil {
 			return err
