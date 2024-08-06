@@ -1,9 +1,10 @@
-package shortinette
+package main
 
 import (
 	"os"
 
 	"github.com/42-Short/shortinette/pkg/logger"
+
 	"github.com/42-Short/shortinette/pkg/requirements"
 )
 

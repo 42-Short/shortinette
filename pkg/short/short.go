@@ -237,12 +237,12 @@ func (s *Short) Start(module string) {
 		logger.Error.Println(err.Error())
 		return
 	}
-	StartModule(s.Modules[module], *config)
-	s.TestMode.Run(module)
 	if len(os.Args) == 4 {
 		dockerExecMode(os.Args, *s)
 	} else if len(os.Args) != 1 {
 		logger.Error.Println("invalid number of arguments")
 		return
 	}
+	StartModule(s.Modules[module], *config)
+	s.TestMode.Run(module)
 }

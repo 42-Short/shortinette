@@ -81,5 +81,6 @@ func (wt *WebhookTestMode) handleWebhook(w http.ResponseWriter, r *http.Request)
 }
 
 func (wt *WebhookTestMode) Run(currentModule string) {
+	wt.CurrentModule = currentModule
 	wt.MonitoringFunction()
 }
