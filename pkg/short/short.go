@@ -213,3 +213,36 @@ func StartModule(module Module.Module, config Config) {
 	}
 	wg.Wait()
 }
+
+func dockerExecMode(args []string, short Short) {
+	exercise, ok := short.Modules[args[1]].Exercises[args[2]]
+	if !ok {
+		os.Exit(1)
+	}
+	if err := logger.InitializeTraceLogger(args[3]); err != nil {
+		os.Exit(1)
+	}
+	result := exercise.Run()
+	logger.File.Printf("[MOD%s][EX%s]: %s", args[1], args[2], result.Output)
+	if result.Passed {
+		os.Exit(0)
+	} else {
+		os.Exit(1)
+	}
+}
+
+func (s *Short) Start(module string) {
+	config, err := GetConfig()
+	if err != nil {
+		logger.Error.Println(err.Error())
+		return
+	}
+	StartModule(s.Modules[module], *config)
+	s.TestMode.Run(module)
+	if len(os.Args) == 4 {
+		dockerExecMode(os.Args, *s)
+	} else if len(os.Args) != 1 {
+		logger.Error.Println("invalid number of arguments")
+		return
+	}
+}
