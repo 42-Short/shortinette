@@ -16,17 +16,19 @@ type Module struct {
 	Name         string
 	MinimumGrade int
 	Exercises    map[string]Exercise.Exercise
+	SubjectPath  string
 }
 
 // NewModule initializes and returns a Module struct
 //
 //   - name: module display name
 //   - exercises: list of all Exercise.Exercise objects belonging into the module
-func NewModule(name string, minimumGrade int, exercises map[string]Exercise.Exercise) (Module, error) {
+func NewModule(name string, minimumGrade int, exercises map[string]Exercise.Exercise, subjectPath string) (Module, error) {
 	return Module{
 		Name:         name,
 		MinimumGrade: minimumGrade,
 		Exercises:    exercises,
+		SubjectPath:  subjectPath,
 	}, nil
 }
 

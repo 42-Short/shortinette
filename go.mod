@@ -6,6 +6,7 @@ require (
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.22
+	github.com/pelletier/go-toml/v2 v2.2.2
 )
 
 require (

@@ -206,7 +206,7 @@ func StartModule(module Module.Module, config Config) {
 			if err := git.AddCollaborator(repoID, participant.GithubUserName, "push"); err != nil {
 				logger.Error.Printf("error adding collaborator: %v", err)
 			}
-			if err := git.UploadFile(repoID, "subjects/R00.md", "subject/README.md", fmt.Sprintf("Subject for module %s. Good Luck!", module.Name), ""); err != nil {
+			if err := git.UploadFile(repoID, module.SubjectPath, "README.md", fmt.Sprintf("Subject for module %s. Good Luck!", module.Name), ""); err != nil {
 				logger.Error.Printf("error uploading file: %v", err)
 			}
 		}(participant)

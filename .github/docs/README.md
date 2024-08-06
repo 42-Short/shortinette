@@ -33,7 +33,7 @@ _note: The intra\_login variable is used to build the names of the repos which w
 
 _note 2: The start\_ & end\_date from the config are not being taken into account by shortinette just yet, watch for future releases!_
 
-3. You're all set! Running the code below will start a Short with one module containing one exercise. A repo will be created for each participant. Your tests will be run on a repo when the participant pushes on the main branch of their repo with `grademe` as a commit message.
+3. You're all set! Running the code below will start a Short with one module containing one exercise. A repo will be created for each participant, and the subject you specified in the module creation will be uploaded as a `README.md` at the root of each repo. Your tests will be run on a repo when the participant pushes on the main branch of their repo with `grademe` as a commit message. The traces will be uploaded on a separate `traces` branch.
 ```go
 package main
 
@@ -62,7 +62,7 @@ func R00() *Module.Module {
 	exercises := map[string]Exercise.Exercise{
 		"00": ex00(),
 	}
-	r00, err := Module.NewModule("00", 70, exercises)
+	r00, err := Module.NewModule("00", 70, exercises, "subject.md")
 	if err != nil {
 		logger.Error.Printf("internal error: %v", err)
 		return nil

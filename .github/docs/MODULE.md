@@ -3,7 +3,7 @@
 The `Module` package groups multiple exercises into a single module and provides functions
 to execute and manage these exercises.
 ### **Structs and Functions**
-* **Module**: Represents a collection of exercises, with fields `Name` and `Exercises`.
+* **Module**: Represents a collection of exercises, with fields `Name` and `Exercises`, `MinimumGrade` and `SubjectPath`.
 * **NewModule**: Initializes and returns a **`Module`** struct.
 * **setUpEnvironment**: Prepares the environment for running the exercises by cloning the neessary repositories.
 * **Run**: Executes all exercises in the module, returning the results and the path to the trace logs.
@@ -22,7 +22,7 @@ import (
 
 // Initializes and returns a module object.
 func module00() *Module.Module {
-    r00, err := Module.NewModule("module00", []Exercise.Exercise{ex00(), ..., exXX()})
+    r00, err := Module.NewModule("00", map[string]Exercise.Exercise{ex00(), ..., exXX()}, 50, "subject.md")
     if err != nil {
         logger.Error.Printf("internal error: %v", err)
         return nil
