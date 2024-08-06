@@ -32,7 +32,7 @@ func Start(short Short.Short, module string) {
 		return
 	}
 	Short.StartModule(short.Modules[module], *config)
-	short.TestMode.Run()
+	short.TestMode.Run(module)
 	if len(os.Args) == 4 {
 		dockerExecMode(os.Args, short)
 	} else if len(os.Args) != 1 {

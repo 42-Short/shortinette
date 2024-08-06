@@ -15,13 +15,14 @@ import (
 
 type WebhookTestMode struct {
 	MonitoringFunction func()
-	CurrentModule      Module.Module
+	Modules            map[string]Module.Module
+	CurrentModule      string
 }
 
 // Initializes the webhook TestMode, which triggers submission grading
 // as soon as activity is recorded on a user's main branch.
-func NewWebhookTestMode(currentModule Module.Module) WebhookTestMode {
-	wt := WebhookTestMode{MonitoringFunction: nil, CurrentModule: currentModule}
+func NewWebhookTestMode(currentModule map[string]Module.Module) WebhookTestMode {
+	wt := WebhookTestMode{MonitoringFunction: nil, Modules: currentModule}
 	wt.MonitoringFunction = func() {
 		http.HandleFunc("/webhook", wt.handleWebhook)
 		if err := http.ListenAndServe(":8080", nil); err != nil {
@@ -71,7 +72,7 @@ func (wt *WebhookTestMode) handleWebhook(w http.ResponseWriter, r *http.Request)
 			defer mu.Unlock()
 
 			go func() {
-				if err := short.GradeModule(wt.CurrentModule, payload.Repository.Name); err != nil {
+				if err := short.GradeModule(wt.Modules[wt.CurrentModule], payload.Repository.Name); err != nil {
 					logger.Error.Printf("error grading module: %v", err)
 				}
 			}()
@@ -79,6 +80,7 @@ func (wt *WebhookTestMode) handleWebhook(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-func (m WebhookTestMode) Run() {
-	m.MonitoringFunction()
+func (wt *WebhookTestMode) Run(currentModule string) {
+	wt.CurrentModule = currentModule
+	wt.MonitoringFunction()
 }
