@@ -135,22 +135,38 @@ func containsString(hayStack []string, needle string) bool {
 	return false
 }
 
+func extractAfterExerciseName(exerciseName string, fullPath string) string {
+	index := strings.Index(fullPath, exerciseName)
+	if index == -1 {
+		return "" // or handle the error as needed
+	}
+	return fullPath[index+len(exerciseName):]
+}
+
 func (e *Exercise) turnInFilesCheck() Result {
 	var foundTurnInFiles []string
+	var errors []string
 	fullTurnInFilesPaths := e.fullTurnInFilesPath()
 	parentDirectory := filepath.Join(e.RepoDirectory, e.TurnInDirectory)
 	err := filepath.Walk(parentDirectory, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			errors = append(errors, err.Error())
+			return nil
+		}
 		if filepath.Base(path)[0] == '.' || path == parentDirectory || info.IsDir() {
 			return nil
 		} else if !containsString(fullTurnInFilesPaths, path) {
-			return fmt.Errorf("'%s' not in allowed turn in files", path)
+			errors = append(errors, fmt.Sprintf("'%s' not in allowed turn in files", path))
 		} else {
-			foundTurnInFiles = append(foundTurnInFiles, path)
+			foundTurnInFiles = append(foundTurnInFiles, extractAfterExerciseName(e.Name, path))
 		}
 		return nil
 	})
 	if err != nil {
-		return Result{Passed: false, Output: fmt.Sprintf("invalid file(s) found in %s/\nexpected: %s\nfound: %s", e.TurnInDirectory, strings.Join(e.TurnInFiles, ", "), strings.Join(foundTurnInFiles, ", "))}
+		errors = append(errors, err.Error())
+	}
+	if len(errors) > 0 {
+		return Result{Passed: false, Output: fmt.Sprintf("invalid files found in %s/\n%s", e.TurnInDirectory, strings.Join(errors, "\n"))}
 	} else if len(foundTurnInFiles) != len(fullTurnInFilesPaths) {
 		return Result{Passed: false, Output: fmt.Sprintf("missing files in %s/; found: %v", e.TurnInDirectory, foundTurnInFiles)}
 	}
