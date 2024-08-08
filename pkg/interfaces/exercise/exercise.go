@@ -140,7 +140,7 @@ func extractAfterExerciseName(exerciseName string, fullPath string) string {
 	if index == -1 {
 		return "" // or handle the error as needed
 	}
-	return "'" + fullPath[index+len(exerciseName):] + "'"
+	return "'" + fullPath[index+len(exerciseName)+1:] + "'"
 }
 
 func (e *Exercise) turnInFilesCheck() Result {
