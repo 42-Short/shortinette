@@ -20,8 +20,6 @@ type Exercise struct {
 	RepoDirectory    string
 	TurnInDirectory  string
 	TurnInFiles      []string
-	ExerciseType     string
-	Prototype        string
 	AllowedMacros    []string
 	AllowedFunctions []string
 	AllowedKeywords  map[string]int
@@ -50,8 +48,6 @@ func NewExercise(
 	repoDirectory string,
 	turnInDirectory string,
 	turnInFiles []string,
-	exerciseType string,
-	prototype string,
 	allowedMacros []string,
 	allowedFunctions []string,
 	allowedKeywords map[string]int,
@@ -64,8 +60,6 @@ func NewExercise(
 		RepoDirectory:    repoDirectory,
 		TurnInDirectory:  turnInDirectory,
 		TurnInFiles:      turnInFiles,
-		ExerciseType:     exerciseType,
-		Prototype:        prototype,
 		AllowedMacros:    allowedMacros,
 		AllowedFunctions: allowedFunctions,
 		AllowedKeywords:  allowedKeywords,
