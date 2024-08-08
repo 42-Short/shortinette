@@ -56,19 +56,19 @@ func tearDownEnvironment() error {
 
 func runContainerized(module Module, exercise Exercise.Exercise, tracesPath string) bool {
 	command := "docker"
+	dir, _ := os.Getwd()
 	args := []string{
 		"run",
 		"-i",
 		"--rm",
 		"-v",
-		"/root/shortinette:/app",
+		fmt.Sprintf("%s:/app", dir),
 		"testenv",
 		"sh",
 		"-c",
 		fmt.Sprintf("go run . \"%s\" \"%s\" \"%s\"", module.Name, exercise.Name, tracesPath),
 	}
-	if output, err := testutils.RunCommandLine(".", command, args, testutils.WithRealTimeOutput()); err != nil {
-		logger.Info.Printf(output)
+	if _, err := testutils.RunCommandLine(".", command, args, testutils.WithRealTimeOutput()); err != nil {
 		logger.Info.Printf("EXERCISE %s:\n%v", exercise.Name, err)
 		return false
 	}
