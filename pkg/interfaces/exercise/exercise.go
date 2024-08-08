@@ -161,7 +161,7 @@ func (e *Exercise) forbiddenItemsCheck() (result Result) {
 	exercisePath := fmt.Sprintf("compile-environment/%s/%s", e.TurnInDirectory, e.TurnInFiles[0])
 	err := lintStudentCode(exercisePath, *e)
 	if err != nil {
-		return Result{Passed: false, Output: "found forbidden items"}
+		return Result{Passed: false, Output: err.Error()}
 	}
 
 	logger.Info.Printf("no forbidden items/keywords found in %s", e.TurnInDirectory+"/"+e.TurnInFiles[0])
