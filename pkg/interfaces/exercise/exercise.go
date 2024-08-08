@@ -140,7 +140,7 @@ func extractAfterExerciseName(exerciseName string, fullPath string) string {
 	if index == -1 {
 		return "" // or handle the error as needed
 	}
-	return fullPath[index+len(exerciseName):]
+	return "'" + fullPath[index+len(exerciseName):] + "'"
 }
 
 func (e *Exercise) turnInFilesCheck() Result {
@@ -156,7 +156,7 @@ func (e *Exercise) turnInFilesCheck() Result {
 		if filepath.Base(path)[0] == '.' || path == parentDirectory || info.IsDir() {
 			return nil
 		} else if !containsString(fullTurnInFilesPaths, path) {
-			errors = append(errors, fmt.Sprintf("'%s' not in allowed turn in files", path))
+			errors = append(errors, extractAfterExerciseName(e.Name, path))
 		} else {
 			foundTurnInFiles = append(foundTurnInFiles, extractAfterExerciseName(e.Name, path))
 		}
@@ -166,7 +166,7 @@ func (e *Exercise) turnInFilesCheck() Result {
 		errors = append(errors, err.Error())
 	}
 	if len(errors) > 0 {
-		return Result{Passed: false, Output: fmt.Sprintf("invalid files found in %s/\n%s", e.TurnInDirectory, strings.Join(errors, "\n"))}
+		return Result{Passed: false, Output: fmt.Sprintf("invalid files found in %s/:\n%s\nnot in allowed turn in files", e.TurnInDirectory, strings.Join(errors, "\n"))}
 	} else if len(foundTurnInFiles) != len(fullTurnInFilesPaths) {
 		return Result{Passed: false, Output: fmt.Sprintf("missing files in %s/; found: %v", e.TurnInDirectory, foundTurnInFiles)}
 	}
