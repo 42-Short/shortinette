@@ -16,15 +16,14 @@ type Result struct {
 }
 
 type Exercise struct {
-	Name             string
-	RepoDirectory    string
-	TurnInDirectory  string
-	TurnInFiles      []string
-	AllowedMacros    []string
-	AllowedFunctions []string
-	AllowedKeywords  map[string]int
-	Score            int
-	Executer         func(test *Exercise) Result
+	Name            string
+	RepoDirectory   string
+	TurnInDirectory string
+	TurnInFiles     []string
+	AllowedSymbols  []string
+	AllowedKeywords map[string]int
+	Score           int
+	Executer        func(test *Exercise) Result
 }
 
 // NewExercise initializes and returns an Exercise struct with all the necessary data
@@ -48,23 +47,21 @@ func NewExercise(
 	repoDirectory string,
 	turnInDirectory string,
 	turnInFiles []string,
-	allowedMacros []string,
-	allowedFunctions []string,
+	allowedSymbols []string,
 	allowedKeywords map[string]int,
 	score int,
 	executer func(test *Exercise) Result,
 ) Exercise {
 
 	return Exercise{
-		Name:             name,
-		RepoDirectory:    repoDirectory,
-		TurnInDirectory:  turnInDirectory,
-		TurnInFiles:      turnInFiles,
-		AllowedMacros:    allowedMacros,
-		AllowedFunctions: allowedFunctions,
-		AllowedKeywords:  allowedKeywords,
-		Score:            score,
-		Executer:         executer,
+		Name:            name,
+		RepoDirectory:   repoDirectory,
+		TurnInDirectory: turnInDirectory,
+		TurnInFiles:     turnInFiles,
+		AllowedSymbols:  allowedSymbols,
+		AllowedKeywords: allowedKeywords,
+		Score:           score,
+		Executer:        executer,
 	}
 }
 
