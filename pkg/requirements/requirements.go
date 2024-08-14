@@ -1,3 +1,5 @@
+// Package requirements provides functions for validating the necessary environment variables
+// and dependencies required by the application.
 package requirements
 
 import (
@@ -9,6 +11,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// requireEnv checks for the presence of essential environment variables required by the application.
+// It attempts to load these variables from a .env file and validates that they are set.
+//
+// Returns an error if any required environment variables are missing.
 func requireEnv() error {
 	if err := godotenv.Load(); err != nil {
 		return fmt.Errorf("could not load .env file: %v", err)
@@ -36,6 +42,10 @@ func requireEnv() error {
 	return nil
 }
 
+// ValidateRequirements validates the required environment variables and checks for the presence
+// of a pre-built Docker image that contains all dependencies needed for testing submissions.
+//
+// Returns an error if any environment variables are missing or if the Docker image is not found.
 func ValidateRequirements() error {
 	if err := requireEnv(); err != nil {
 		return err
