@@ -22,7 +22,7 @@ type Config struct {
 // 
 // Returns a Config object containing the information set in your json.
 //
-// See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on .env configuration.
+// See https://github.com/42-Short/shortinette/README.md for details on .env configuration.
 func GetConfig() (*Config, error) {
 	configPath := os.Getenv("CONFIG_PATH")
 
