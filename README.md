@@ -80,7 +80,6 @@ import (
 // Define the test function for the exercise
 func helloWorldTest(ex *exercise.Exercise) exercise.Result {
 	// Compile the Rust file
-	turnInFile := testutils.FullTurnInFilesPath(*ex)[0]
 	if err := testutils.CompileWithRustc(turnInFile); err != nil {
 		return exercise.CompilationError(err.Error())
 	}
