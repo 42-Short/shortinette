@@ -1,6 +1,10 @@
+Here’s the updated documentation with the additional functions included:
+
+---
+
 # Exercise Package Documentation
 
-The `Exercise` package defines the structure and behavior of an exercise. It includes fields for exercise metadata, allowed resources, and a single function for executing the tests associated with the exercise. The `Run()` method handles linting for forbidden keywords and incorrect files, while you only need to implement the test logic.
+The `Exercise` package defines the structure and behavior of an exercise. It includes fields for exercise metadata, allowed resources, and a single function for executing the tests associated with the exercise. The `Run()` method handles checking for forbidden items and incorrect files, while you only need to implement the test logic.
 
 ## Structs and Functions
 
@@ -24,7 +28,7 @@ Represents an exercise with various metadata fields.
   - **`RepoDirectory`**: The target directory for cloning repositories, used to construct file paths.
   - **`TurnInDirectory`**: The directory where the exercise's file(s) can be found, relative to the repository's root (e.g., `ex00/`).
   - **`TurnInFiles`**: A list of all files allowed to be submitted.
-  - **`AllowedSymbols`**: A list of symbols (functions, macros, etc.) allowed in this exercise. (_Note: The enforcement of allowed symbols is the user's responsibility since it is highly language-specific. If you wish to simply have symbols linted out of the submissions, use `AllowedSymbols` - please consider it might not be as robust as you want it to be._)
+  - **`AllowedSymbols`**: A list of symbols (functions, macros, etc.) allowed in this exercise. (Note: The enforcement of allowed symbols is the user's responsibility since it is highly language-specific. If you wish to simply have symbols linted out of the submissions, use `AllowedSymbols` - please consider it might not be as robust as you want it to be.)
   - **`AllowedKeywords`**: A map of keywords allowed in this exercise, with an associated integer indicating the maximum number of times each keyword may appear.
   - **`Score`**: The score assigned to the exercise if passed.
   - **`Executer`**: A function used for testing the exercise, which should be implemented by the user.
@@ -104,7 +108,7 @@ func ex00() Exercise.Exercise {
 ```
 
 ### `Run` Method
-The `Run` method executes the exercise's tests after checking for forbidden keywords and ensuring the correct files are submitted.
+The `Run` method executes the exercise's tests after checking for forbidden items and ensuring the correct files are submitted.
 
 - **Returns**: A `Result` struct with the outcome of the exercise execution.
 
@@ -125,7 +129,95 @@ func (e *Exercise) Run() (result Result) {
 }
 ```
 
-### Private Helper Functions
+### Error Handling and Result Functions
+
+These functions are used to generate specific types of `Result` instances based on different scenarios encountered during the execution of the exercise.
+
+#### `RuntimeError`
+Returns a `Result` indicating a runtime error occurred.
+
+- **Parameters**:
+  - `errorMessage`: The error message to include in the output.
+
+- **Returns**: A `Result` with `Passed` set to `false` and the error message.
+
+```go
+func RuntimeError(errorMessage string) Result {
+    return Result{Passed: false, Output: fmt.Sprintf("runtime error: %s", errorMessage)}
+}
+```
+
+#### `CompilationError`
+Returns a `Result` indicating a compilation error occurred.
+
+- **Parameters**:
+  - `errorMessage`: The error message to include in the output.
+
+- **Returns**: A `Result` with `Passed` set to `false` and the error message.
+
+```go
+func CompilationError(errorMessage string) Result {
+    return Result{Passed: false, Output: fmt.Sprintf("compilation error: %s", errorMessage)}
+}
+```
+
+#### `InvalidFileError`
+Returns a `Result` indicating that invalid files were found in the submission.
+
+- **Returns**: A `Result` with `Passed` set to `false` and a message indicating the presence of invalid files.
+
+```go
+func InvalidFileError() Result {
+    return Result{Passed: false, Output: "invalid file(s) found in turn in directory"}
+}
+```
+
+#### `AssertionError`
+Returns a `Result` indicating that the output of the student's code did not match the expected output.
+
+- **Parameters**:
+  - `expected`: The expected output.
+  - `got`: The actual output produced by the student's code.
+
+- **Returns**: A `Result` with `Passed` set to `false` and a message detailing the discrepancy.
+
+```go
+func AssertionError(expected string, got string) Result {
+    expectedReplaced := strings.ReplaceAll(expected, "\n", "\\n")
+    gotReplaced := strings.ReplaceAll(got, "\n", "\\n")
+    return Result{Passed: false, Output: fmt.Sprintf("invalid output: expected '%s', got '%s'", expectedReplaced, gotReplaced)}
+}
+```
+
+#### `InternalError`
+Returns a `Result` indicating an internal error occurred during the execution of the exercise.
+
+- **Parameters**:
+  - `errorMessage`: The error message to include in the output.
+
+- **Returns**: A `Result` with `Passed` set to `false` and the error message.
+
+```go
+func InternalError(errorMessage string) Result {
+    return Result{Passed: false, Output: fmt.Sprintf("internal error: %v", errorMessage)}
+}
+```
+
+#### `Passed`
+Returns a `Result` indicating that the exercise was successfully completed.
+
+- **Parameters**:
+  - `message`: A success message to include in the output.
+
+- **Returns**: A `Result` with `Passed` set to `true` and the success message.
+
+```go
+func Passed(message string) Result {
+    return Result{Passed: true, Output: message}
+}
+```
+
+### Helper Functions
 
 #### `searchForKeyword`
 Searches for a keyword in the provided map of allowed keywords.
@@ -165,6 +257,8 @@ Scans a student's file and counts the occurrences of each allowed keyword.
 ```go
 func scanStudentFile(scanner *bufio.Scanner, allowedKeywords map[string]int) (err error)
 ```
+
+
 
 #### `lintStudentCode`
 Lints the student's code to ensure no forbidden items or keywords are present.
