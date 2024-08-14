@@ -89,7 +89,7 @@ func runContainerized(module Module, exercise Exercise.Exercise, tracesPath stri
 		"--rm",
 		"-v",
 		fmt.Sprintf("%s:/app", dir),
-		"testenv",
+		"shortinette-testenv",
 		"sh",
 		"-c",
 		fmt.Sprintf("go run . \"%s\" \"%s\" \"%s\"", module.Name, exercise.Name, tracesPath),
