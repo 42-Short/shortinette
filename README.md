@@ -56,7 +56,7 @@ for detailed tracking of all grading activities. By using shortinette, educators
 focus on teaching and mentoring, while the framework handles the repetitive and error-prone
 tasks of compiling, running, and grading student code.
 ## Implementation Example
-
+This is a minimalist example - for something more advanced, refer to our [rust piscine](https://github.com/42-Short/rust) repository.
 ### Example Overview
 - **Module Name**: `example-module`
 - **Exercise Name**: `example-exercise`
