@@ -1,3 +1,5 @@
+// `collaborators.go (package git)` provides functions for interacting with GitHub repositories, including
+// managing collaborators and retrieving files.
 package git
 
 import (
@@ -10,10 +12,24 @@ import (
 	"os"
 )
 
+// buildCollaboratorURL constructs the GitHub API URL for managing a collaborator in a specific repository.
+//
+//   - repo: the name of the repository
+//   - username: the GitHub username of the collaborator
+//
+// Returns the URL as a string.
 func buildCollaboratorURL(repo string, username string) string {
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/collaborators/%s", os.Getenv("GITHUB_ORGANISATION"), repo, username)
 }
 
+// createCollaboratorRequest creates an HTTP request for adding or updating a collaborator
+// in a GitHub repository with a specific permission level.
+//
+//   - url: the GitHub API URL for adding the collaborator
+//   - token: the GitHub authentication token
+//   - permission: the permission level to be granted to the collaborator (e.g., "push", "pull")
+//
+// Returns the created HTTP request or an error if the request could not be created.
 func createCollaboratorRequest(url string, token string, permission string) (*http.Request, error) {
 	collaboratorDetails := map[string]string{
 		"permission": permission,
@@ -36,6 +52,13 @@ func createCollaboratorRequest(url string, token string, permission string) (*ht
 	return request, nil
 }
 
+// addCollaborator adds a collaborator to a GitHub repository with the specified permission level.
+//
+//   - repo: the name of the repository
+//   - username: the GitHub username of the collaborator
+//   - permission: the permission level to be granted to the collaborator (e.g., "push", "pull")
+//
+// Returns an error if the operation fails.
 func addCollaborator(repo, username, permission string) (err error) {
 	url := buildCollaboratorURL(repo, username)
 
@@ -50,10 +73,25 @@ func addCollaborator(repo, username, permission string) (err error) {
 	return nil
 }
 
+// buildFileURL constructs the GitHub API URL for retrieving a file from a specific repository
+// branch and file path.
+//
+//   - repoID: the name of the repository
+//   - branch: the branch from which to retrieve the file
+//   - filePath: the path of the file in the repository
+//
+// Returns the URL as a string.
 func buildFileURL(repoID, branch, filePath string) string {
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s?ref=%s", os.Getenv("GITHUB_ORGANISATION"), repoID, filePath, branch)
 }
 
+// getFile retrieves the content of a file from a specific branch of a GitHub repository.
+//
+//   - repoID: the name of the repository
+//   - branch: the branch from which to retrieve the file
+//   - filePath: the path of the file in the repository
+//
+// Returns the file content as a string and an error if the operation fails.
 func getFile(repoID, branch, filePath string) (string, error) {
 	url := buildFileURL(repoID, branch, filePath)
 

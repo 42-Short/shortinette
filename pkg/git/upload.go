@@ -1,3 +1,5 @@
+// `upload.go (git package)` provides functions for uploading files and data to GitHub repositories,
+// including handling file SHA retrieval and creating push requests.
 package git
 
 import (
@@ -12,10 +14,23 @@ import (
 	"github.com/42-Short/shortinette/pkg/logger"
 )
 
+// buildPushURL constructs the GitHub API URL for pushing a file to a specific repository
+// and target file path.
+//
+//   - repo: the name of the repository
+//   - targetFilePath: the path of the file in the repository
+//
+// Returns the URL as a string.
 func buildPushURL(repo string, targetFilePath string) string {
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s", os.Getenv("GITHUB_ORGANISATION"), repo, targetFilePath)
 }
 
+// getFileSHA retrieves the SHA of a file in a specific repository at the given URL.
+//
+//   - url: the GitHub API URL to retrieve the file SHA
+//   - token: the GitHub authentication token
+//
+// Returns the file's SHA as a string and an error if the operation fails.
 func getFileSHA(url, token string) (string, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -51,6 +66,17 @@ func getFileSHA(url, token string) (string, error) {
 	return "", fmt.Errorf("SHA not found in response")
 }
 
+// createPushRequest creates an HTTP request for pushing a file to a GitHub repository.
+//
+//   - url: the GitHub API URL for pushing the file
+//   - token: the GitHub authentication token
+//   - targetFilePath: the path of the file in the repository
+//   - commitMessage: the commit message to use
+//   - encodedContent: the base64-encoded content of the file
+//   - sha: the SHA of the file being updated (optional, can be empty for new files)
+//   - branch: the branch to push to (optional)
+//
+// Returns the created HTTP request or an error if the request could not be created.
 func createPushRequest(url string, token string, targetFilePath string, commitMessage string, encodedContent string, sha string, branch string) (*http.Request, error) {
 	requestDetails := map[string]interface{}{
 		"message": commitMessage,
@@ -87,6 +113,15 @@ func createPushRequest(url string, token string, targetFilePath string, commitMe
 	return request, nil
 }
 
+// uploadRaw uploads raw data directly to a GitHub repository at the specified file path.
+//
+//   - repoID: the name of the repository
+//   - data: the raw data to be uploaded as a string
+//   - targetFilePath: the path of the file in the repository
+//   - commitMessage: the commit message to use
+//   - branch: the branch to push to (optional)
+//
+// Returns an error if the upload process fails.
 func uploadRaw(repoID string, data string, targetFilePath string, commitMessage string, branch string) (err error) {
 	encodedData := base64.StdEncoding.EncodeToString([]byte(data))
 
@@ -109,6 +144,15 @@ func uploadRaw(repoID string, data string, targetFilePath string, commitMessage 
 	return nil
 }
 
+// uploadFile uploads a local file to a GitHub repository at the specified file path.
+//
+//   - repoID: the name of the repository
+//   - localFilePath: the path of the local file to be uploaded
+//   - targetFilePath: the path of the file in the repository
+//   - commitMessage: the commit message to use
+//   - branch: the branch to push to (optional)
+//
+// Returns an error if the upload process fails.
 func uploadFile(repoID string, localFilePath string, targetFilePath string, commitMessage string, branch string) error {
 	originalFile, err := os.Open(localFilePath)
 	if err != nil {

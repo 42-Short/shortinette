@@ -1,3 +1,5 @@
+// `branche.go (git package)` provides functions for interacting with GitHub repositories,
+// including retrieving branch SHAs and creating new branches.
 package git
 
 import (
@@ -9,6 +11,12 @@ import (
 	"os"
 )
 
+// getDefaultBranchSHA retrieves the SHA of the default branch (main) for a given repository.
+//
+//   - repoID: the name of the repository
+//   - token: the GitHub authentication token
+//
+// Returns the SHA as a string and an error if the operation fails.
 func getDefaultBranchSHA(repoID string, token string) (string, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/git/refs/heads/main", os.Getenv("GITHUB_ORGANISATION"), repoID)
 	req, err := http.NewRequest("GET", url, nil)
@@ -43,6 +51,14 @@ func getDefaultBranchSHA(repoID string, token string) (string, error) {
 	return "", fmt.Errorf("SHA not found in response")
 }
 
+// createBranch creates a new branch in the specified repository using the provided SHA.
+//
+//   - repo: the name of the repository
+//   - token: the GitHub authentication token
+//   - branchName: the name of the new branch to create
+//   - sha: the SHA of the commit from which the branch will be created
+//
+// Returns an error if the branch creation fails.
 func createBranch(repo string, token string, branchName string, sha string) error {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/git/refs", os.Getenv("GITHUB_ORGANISATION"), repo)
 	requestBody := map[string]interface{}{
@@ -77,34 +93,3 @@ func createBranch(repo string, token string, branchName string, sha string) erro
 
 	return nil
 }
-
-// func addBranchProtection(repoID string, branch string) (err error) {
-// 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/branches/%s/protection", os.Getenv("GITHUB_ORGANISATION"), repoID, branch)
-// 	requestBody := map[string]interface{}{
-// 		"restrictons": map[string]interface{}{
-// 			"users": []string{os.Getenv("GITHUB_ADMIN")},
-// 		},
-// 	}
-
-// 	requestBodyJSON, err := json.Marshal(requestBody)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	request, err := createHTTPRequest("PUT", url, os.Getenv("GITHUB_TOKEN"), requestBodyJSON)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	response, err := sendHTTPRequest(request)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer response.Body.Close()
-
-// 	if response.StatusCode != http.StatusOK {
-// 		return fmt.Errorf(response.Status)
-// 	}
-// 	logger.Info.Printf("added protection to branch %s/%s", repoID, branch)
-// 	return nil
-// }

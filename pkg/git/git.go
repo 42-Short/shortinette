@@ -1,3 +1,5 @@
+// Package git provides functions for interacting with GitHub repositories, including
+// cloning repositories, adding collaborators, uploading files, and creating releases.
 package git
 
 import (
@@ -9,6 +11,12 @@ import (
 	"github.com/42-Short/shortinette/pkg/logger"
 )
 
+// sendHTTPRequest sends an HTTP request and checks the response status.
+// It returns the response or an error if the request fails.
+//
+//   - request: the HTTP request to be sent
+//
+// Returns the HTTP response or an error if the request fails.
 func sendHTTPRequest(request *http.Request) (response *http.Response, err error) {
 	client := &http.Client{}
 	response, err = client.Do(request)
@@ -24,6 +32,15 @@ func sendHTTPRequest(request *http.Request) (response *http.Response, err error)
 	return response, nil
 }
 
+// createHTTPRequest creates an HTTP request with the specified method, URL, authorization
+// token, and body.
+//
+//   - method: the HTTP method (e.g., "GET", "POST", "PUT", etc.)
+//   - url: the URL for the request
+//   - token: the authorization token to be included in the request header
+//   - body: the request body as a byte slice
+//
+// Returns the created HTTP request or an error if the request could not be created.
 func createHTTPRequest(method, url, token string, body []byte) (*http.Request, error) {
 	request, err := http.NewRequest(method, url, bytes.NewBuffer(body))
 	if err != nil {
@@ -37,9 +54,14 @@ func createHTTPRequest(method, url, token string, body []byte) (*http.Request, e
 	return request, nil
 }
 
-// Clone a GitHub repo from repoURL into targetDirectory.
+// Clone clones a GitHub repository from the specified repoURL into the targetDirectory.
 //
-// See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
+//   - repoURL: the URL of the repository to clone
+//   - targetDirectory: the directory where the repository should be cloned
+//
+// Returns an error if the cloning process fails.
+//
+// See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
 func Clone(repoURL string, targetDirectory string) error {
 	if err := get(repoURL, targetDirectory); err != nil {
 		logger.Error.Println(err)
@@ -48,10 +70,14 @@ func Clone(repoURL string, targetDirectory string) error {
 	return nil
 }
 
-// Check if repo exists, if not create it under the configured organisation.
-// Also adds a webhook for easy recording of repository activity.
+// Create checks if a repository exists, and if not, creates it under the configured
+// organization. It also adds a webhook for easy recording of repository activity.
 //
-// See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
+//   - name: the name of the repository to create
+//
+// Returns an error if the repository creation process fails.
+//
+// See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
 func Create(name string) error {
 	if err := create(name); err != nil {
 		logger.Error.Println(err)
@@ -60,16 +86,18 @@ func Create(name string) error {
 	return nil
 }
 
-// Add a collaborator with the specified permissions to the repo.
+// AddCollaborator adds a collaborator with the specified permissions to the repository.
 //
-//   - repoID: name of the organisation repository
-//   - username: GitHub username of the collaborator
-//   - permission: access level to be given to the user
+//   - repoID: the name of the organization repository
+//   - username: the GitHub username of the collaborator
+//   - permission: the access level to be given to the user
 //
-// NOTE: Using this function will overwrite the user's previous rights - use test
+// NOTE: Using this function will overwrite the user's previous rights. Use test
 // accounts, or you might lock yourself out of your repos.
 //
-// See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
+// Returns an error if the process of adding the collaborator fails.
+//
+// See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
 func AddCollaborator(repoID string, username string, permission string) error {
 	if err := addCollaborator(repoID, username, permission); err != nil {
 		logger.Error.Println(err)
@@ -78,15 +106,17 @@ func AddCollaborator(repoID string, username string, permission string) error {
 	return nil
 }
 
-// Add/Update a file on a repository
+// UploadFile adds or updates a file on a repository.
 //
-//   - repoID: name of the organisation repository
-//   - localFilePath: source file to be uploaded
-//   - targetFilePath: file to be created/updated on the remote
-//   - commitMessage: the message which will be added to the commit
-//   - branch: the branch the data is to be pushed to
+//   - repoID: the name of the organization repository
+//   - localFilePath: the source file to be uploaded
+//   - targetFilePath: the file to be created/updated on the remote
+//   - commitMessage: the message to be added to the commit
+//   - branch: the branch to push the data to
 //
-// See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
+// Returns an error if the file upload process fails.
+//
+// See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
 func UploadFile(repoID string, localFilePath string, targetFilePath string, commitMessage string, branch string) error {
 	if err := uploadFile(repoID, localFilePath, targetFilePath, commitMessage, branch); err != nil {
 		return fmt.Errorf("could not upload %s to repo %s: %w", localFilePath, repoID, err)
@@ -95,15 +125,17 @@ func UploadFile(repoID string, localFilePath string, targetFilePath string, comm
 	return nil
 }
 
-// Uploads data directly to targetFilePath in repoID
+// UploadRaw uploads raw data directly to the specified targetFilePath in the repository.
 //
-//   - repoID: name of the organisation repository
-//   - data: raw data (string)
-//   - targetFilePath: file to be created/updated on remote
-//   - commitMessage: the message which will be added to the commit
-//   - branch: the branch the data is to be pushed to
+//   - repoID: the name of the organization repository
+//   - data: the raw data to be uploaded as a string
+//   - targetFilePath: the file to be created/updated on the remote
+//   - commitMessage: the message to be added to the commit
+//   - branch: the branch to push the data to
 //
-// See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
+// Returns an error if the data upload process fails.
+//
+// See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
 func UploadRaw(repoID string, data string, targetFilePath string, commitMessage string, branch string) error {
 	if err := uploadRaw(repoID, data, targetFilePath, commitMessage, branch); err != nil {
 		return fmt.Errorf("could not upload raw data to repo %s: %w", repoID, err)
@@ -112,16 +144,19 @@ func UploadRaw(repoID string, data string, targetFilePath string, commitMessage 
 	return nil
 }
 
-// Adds a release to repoID with tagName & releaseName.
-// Adds the path to the traces and the last graded timestamp to the release body.
+// NewRelease adds a release to the specified repository with the provided tagName and
+// releaseName. It also adds the path to the traces and the last graded timestamp to the
+// release body if graded is set to true.
 //
-//   - repoID: name of the organisation repository
-//   - tagName: tag under which the release is to be created
-//   - releaseName: name/title of the release
-//   - tracesPath: path to the traces, used for adding a link to them to the release body
+//   - repoID: the name of the organization repository
+//   - tagName: the tag under which the release is to be created
+//   - releaseName: the name/title of the release
+//   - tracesPath: the path to the traces, used for adding a link to them in the release body
 //   - graded: if set to true, the last graded timestamp in the release will be updated
 //
-// See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
+// Returns an error if the release creation process fails.
+//
+// See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
 func NewRelease(repoID string, tagName string, releaseName string, tracesPath string, graded bool) error {
 	if err := newRelease(repoID, tagName, releaseName, tracesPath, graded); err != nil {
 		return err
@@ -130,13 +165,16 @@ func NewRelease(repoID string, tagName string, releaseName string, tracesPath st
 	return nil
 }
 
-// Gets the decoded file content from the specified repo, branch, and path as a string.
+// GetDecodedFile retrieves the decoded content of a file from the specified repository,
+// branch, and file path as a string.
 //
-//   - repoID: name of the organisation repository
-//   - branch: branch you would like to pull from
-//   - filePath: file on the remote you would like to pull
+//   - repoID: the name of the organization repository
+//   - branch: the branch to pull the file from
+//   - filePath: the path to the file on the remote repository
 //
-// See https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on GitHub configuration.
+// Returns the file content as a string and an error if the retrieval process fails.
+//
+// See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
 func GetDecodedFile(repoID string, branch string, filePath string) (content string, err error) {
 	content, err = getFile(repoID, branch, filePath)
 	if err != nil {
