@@ -1,3 +1,5 @@
+// Package short provides the core functionality for managing and grading coding modules.
+// It handles initialization, grading, result uploading, and module lifecycle management.
 package short
 
 import (
@@ -15,18 +17,15 @@ import (
 	ITestMode "github.com/42-Short/shortinette/pkg/short/testmodes"
 )
 
-type HourlyTestMode struct {
-	Delay              int
-	FrequencyDuration  int
-	MonitoringFunction func()
-}
-
+// Short represents the main structure for managing a coding module, including the module's
+// name, its exercises, and the test mode to use.
 type Short struct {
-	Name     string
-	Modules  map[string]Module.Module
-	TestMode ITestMode.ITestMode
+	Name     string                   // Name is the display name of the Short.
+	Modules  map[string]Module.Module // Modules is a map of module names to their corresponding Module structs.
+	TestMode ITestMode.ITestMode      // TestMode determines how the submission testing will be triggered.
 }
 
+// shortInit initializes the logging and requirement validation for the Short application.
 func shortInit() {
 	if len(os.Args) == 4 {
 		logger.InitializeStandardLoggers(os.Args[2])
@@ -39,12 +38,12 @@ func shortInit() {
 	}
 }
 
-// Returns a Short object, the wrapper for the whole Short configuration.
+// NewShort returns a Short object, which serves as the wrapper for the entire Short
+// configuration.
 //
 //   - name: the display name of your Short
 //   - modules: a map of strings to Module.Module objects, used for quicker lookups during grading
-//   - testMode: a ITestMode object, determining how the submission testing will
-//     be triggered
+//   - testMode: a ITestMode object, determining how the submission testing will be triggered
 func NewShort(name string, modules map[string]Module.Module, testMode ITestMode.ITestMode) Short {
 	shortInit()
 	return Short{
@@ -54,6 +53,14 @@ func NewShort(name string, modules map[string]Module.Module, testMode ITestMode.
 	}
 }
 
+// updateRelease updates the release information on the repository with the current grading
+// results and the next grading attempt time.
+//
+//   - repo: the repository object containing grading details
+//   - newWaitingTime: the duration to wait before the next grading attempt
+//   - tracesPath: the path to the grading traces
+//
+// Returns an error if the release update fails.
 func updateRelease(repo db.Repository, newWaitingTime time.Duration, tracesPath string) error {
 	nextGradingAttemptTime := time.Now().Add(newWaitingTime).Format("15:04")
 	releaseName := fmt.Sprintf("%d/100 - retry at %s", repo.Score, nextGradingAttemptTime)
@@ -64,6 +71,13 @@ func updateRelease(repo db.Repository, newWaitingTime time.Duration, tracesPath 
 	return nil
 }
 
+// getUpdatedReadme generates the updated README content based on the latest grading
+// results and appends it to the existing content.
+//
+//   - repo: the repository object containing grading details
+//   - results: a map of exercise names to their pass/fail results
+//
+// Returns the new README content as a string and an error if the README update fails.
 func getUpdatedReadme(repo db.Repository, results map[string]bool) (newReadme string, err error) {
 	var keys []string
 	for key := range results {
@@ -95,6 +109,15 @@ func getUpdatedReadme(repo db.Repository, results map[string]bool) (newReadme st
 	return newReadme, nil
 }
 
+// uploadResults uploads the grading results and the updated README to the student's
+// repository.
+//
+//   - repo: the repository object containing grading details
+//   - tracesPath: the path to the grading traces
+//   - moduleName: the name of the module being graded
+//   - results: a map of exercise names to their pass/fail results
+//
+// Returns an error if the upload fails.
 func uploadResults(repo db.Repository, tracesPath string, moduleName string, results map[string]bool) (err error) {
 	commitMessage := fmt.Sprintf("Traces for module %s: %s", moduleName, tracesPath)
 	if err := git.UploadFile(repo.ID, tracesPath, tracesPath, commitMessage, "traces"); err != nil {
@@ -113,6 +136,12 @@ func uploadResults(repo db.Repository, tracesPath string, moduleName string, res
 	return nil
 }
 
+// checkPrematureGradingAttempt checks if a grading attempt is made before the waiting
+// time has elapsed.
+//
+//   - repo: the repository object containing grading details
+//
+// Returns an error if the grading attempt is premature.
 func checkPrematureGradingAttempt(repo db.Repository) (err error) {
 	if os.Getenv("DEV_MODE") == "true" {
 		return nil
@@ -126,6 +155,12 @@ func checkPrematureGradingAttempt(repo db.Repository) (err error) {
 	return nil
 }
 
+// updateNewWaitingTime updates the waiting time for the next grading attempt based on
+// the student's performance.
+//
+//   - repo: a pointer to the repository object containing grading details
+//   - module: the module object containing the exercises
+//   - results: a map of exercise names to their pass/fail results
 func updateNewWaitingTime(repo *db.Repository, module Module.Module, results map[string]bool) {
 	score, passed := module.GetScore(results)
 	if passed {
@@ -136,6 +171,12 @@ func updateNewWaitingTime(repo *db.Repository, module Module.Module, results map
 	repo.Score = score
 }
 
+// GradeModule grades the exercises in a module for a specific student repository.
+//
+//   - module: the module object containing the exercises
+//   - repoID: the ID of the student's repository
+//
+// Returns an error if the grading process fails.
 func GradeModule(module Module.Module, repoID string) (err error) {
 	repo, err := db.GetRepositoryData(module.Name, repoID)
 	if err != nil {
@@ -165,7 +206,12 @@ func GradeModule(module Module.Module, repoID string) (err error) {
 	return nil
 }
 
-// Grades all participant's modules and upload traces.
+// GradeAll grades all participants' modules and uploads traces.
+//
+//   - module: the module object containing the exercises
+//   - config: the configuration object containing participants' information
+//
+// Returns an error if the grading process fails for any participant.
 func GradeAll(module Module.Module, config Config) error {
 	for _, participant := range config.Participants {
 		repoID := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
@@ -176,7 +222,10 @@ func GradeAll(module Module.Module, config Config) error {
 	return nil
 }
 
-// Grades all repos from a module and removes write access for all participants.
+// EndModule grades all repositories in a module and removes write access for all participants.
+//
+//   - module: the module object containing the exercises
+//   - config: the configuration object containing participants' information
 func EndModule(module Module.Module, config Config) {
 	for _, participant := range config.Participants {
 		repoID := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
@@ -189,7 +238,11 @@ func EndModule(module Module.Module, config Config) {
 	}
 }
 
-// StartModule creates a new repo for each participant, gives them write access, and uploads the module's subject on the repo.
+// StartModule creates a new repository for each participant, gives them write access,
+// and uploads the module's subject to the repository.
+//
+//   - module: the module object containing the exercises
+//   - config: the configuration object containing participants' information
 func StartModule(module Module.Module, config Config) {
 	var wg sync.WaitGroup
 
@@ -228,6 +281,10 @@ func StartModule(module Module.Module, config Config) {
 	wg.Wait()
 }
 
+// dockerExecMode runs the grading process for a single exercise inside a Docker container.
+//
+//   - args: the command-line arguments passed to the application
+//   - short: the Short object containing the module and test mode information
 func dockerExecMode(args []string, short Short) {
 	exercise, ok := short.Modules[args[1]].Exercises[args[2]]
 	if !ok {
@@ -245,6 +302,9 @@ func dockerExecMode(args []string, short Short) {
 	}
 }
 
+// Start begins the module lifecycle by starting the module and running the test mode.
+//
+//   - module: the name of the module to be started
 func (s *Short) Start(module string) {
 	config, err := GetConfig()
 	if err != nil {

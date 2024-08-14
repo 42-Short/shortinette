@@ -1,3 +1,5 @@
+// Package `webhook` provides functionality to monitor GitHub webhook events and trigger
+// grading of student submissions based on push events to the main branch.
 package webhook
 
 import (
@@ -13,14 +15,20 @@ import (
 	"github.com/42-Short/shortinette/pkg/short"
 )
 
+// WebhookTestMode represents the state and behavior for the webhook test mode, which
+// triggers submission grading as soon as activity is recorded on a user's main branch.
 type WebhookTestMode struct {
-	MonitoringFunction func()
-	Modules            map[string]Module.Module
-	CurrentModule      string
+	MonitoringFunction func()                   // MonitoringFunction is the function that starts the webhook server.
+	Modules            map[string]Module.Module // Modules is a map of module names to their corresponding Module structs.
+	CurrentModule      string                   // CurrentModule is the name of the module currently being graded.
 }
 
-// Initializes the webhook TestMode, which triggers submission grading
-// as soon as activity is recorded on a user's main branch.
+// NewWebhookTestMode initializes and returns a WebhookTestMode instance, which triggers
+// submission grading as soon as activity is recorded on a user's main branch.
+//
+//   - modules: A map of module names to Module structs.
+//
+// Returns a pointer to the initialized WebhookTestMode.
 func NewWebhookTestMode(modules map[string]Module.Module) *WebhookTestMode {
 	wt := WebhookTestMode{MonitoringFunction: nil, Modules: modules}
 	wt.MonitoringFunction = func() {
@@ -32,23 +40,30 @@ func NewWebhookTestMode(modules map[string]Module.Module) *WebhookTestMode {
 	return &wt
 }
 
+// GitHubWebhookPayload represents the structure of the JSON payload sent by GitHub when
+// a push event occurs.
 type GitHubWebhookPayload struct {
-	Ref        string `json:"ref"`
+	Ref        string `json:"ref"` // Ref is the git reference (branch) that was pushed to.
 	Repository struct {
-		Name string `json:"name"`
+		Name string `json:"name"` // Name is the name of the repository where the push occurred.
 	} `json:"repository"`
 	Pusher struct {
-		Name string `json:"name"`
+		Name string `json:"name"` // Name is the name of the user who pushed the commit.
 	} `json:"pusher"`
 	Commit struct {
-		Message string `json:"message"`
+		Message string `json:"message"` // Message is the commit message of the push.
 	} `json:"head_commit"`
 }
 
 var (
-	mu sync.Mutex
+	mu sync.Mutex // mu is a mutex to prevent concurrent grading processes from overlapping.
 )
 
+// handleWebhook processes incoming webhook events and triggers grading if the event
+// corresponds to a push to the main branch with the commit message "grademe".
+//
+//   - w: The http.ResponseWriter used to send the response.
+//   - r: The http.Request representing the incoming webhook event.
 func (wt *WebhookTestMode) handleWebhook(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "invalid request method", http.StatusMethodNotAllowed)
@@ -80,6 +95,9 @@ func (wt *WebhookTestMode) handleWebhook(w http.ResponseWriter, r *http.Request)
 	}
 }
 
+// Run starts the webhook server and sets the current module to be graded.
+//
+//   - currentModule: The name of the module that is currently being graded.
 func (wt *WebhookTestMode) Run(currentModule string) {
 	wt.CurrentModule = currentModule
 	wt.MonitoringFunction()
