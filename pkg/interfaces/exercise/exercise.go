@@ -1,3 +1,4 @@
+// Package Exercise provides structures and functions for defining and running exercises.
 package Exercise
 
 import (
@@ -10,20 +11,23 @@ import (
 	"github.com/42-Short/shortinette/pkg/logger"
 )
 
+// Result represents the result of an exercise execution, including whether it passed and
+// any relevant output or error messages.
 type Result struct {
-	Passed bool
-	Output string
+	Passed bool   // Passed indicates whether the test was successful.
+	Output string // Output contains the output message or error details.
 }
 
+// Exercise represents an exercise with various metadata fields.
 type Exercise struct {
-	Name            string
-	RepoDirectory   string
-	TurnInDirectory string
-	TurnInFiles     []string
-	AllowedSymbols  []string
-	AllowedKeywords map[string]int
-	Score           int
-	Executer        func(test *Exercise) Result
+	Name            string                      // Name is the exercise's display name.
+	RepoDirectory   string                      // RepoDirectory is the target directory for cloning repositories, used to construct file paths.
+	TurnInDirectory string                      // TurnInDirectory is the directory where the exercise's file(s) can be found, relative to the repository's root.
+	TurnInFiles     []string                    // TurnInFiles is a list of all files allowed to be submitted.
+	AllowedSymbols  []string                    // AllowedSymbols is a list of symbols (functions, macros, etc.) allowed in this exercise.
+	AllowedKeywords map[string]int              // AllowedKeywords is a map of keywords allowed in this exercise, with an associated integer indicating the maximum number of times each keyword may appear.
+	Score           int                         // Score is the score assigned to the exercise if passed.
+	Executer        func(test *Exercise) Result // Executer is a function used for testing the exercise, which should be implemented by the user.
 }
 
 // NewExercise initializes and returns an Exercise struct with all the necessary data
@@ -35,13 +39,10 @@ type Exercise struct {
 //   - turnInDirectory: the directory in which the exercise's file can be found, relative
 //     to the repository's root (e.g., ex00/)
 //   - turnInFiles: list of all files allowed to be turned in
-//   - exerciseType (TO BE DEPRECATED): function/program/package, used for exercises which do not use any
-//     package managers
-//   - prototype (TO BE DEPRECATED): function prototype used for compiling single functions
-//   - allowedMacros: list of macros to be allowed in this exercise
-//   - allowedFunctions: list of functions to be allowed in this exercise
+//   - allowedSymbols: list of symbols to be allowed in this exercise
 //   - allowedKeywords: list of keywords to be allowed in this exercise
-//   - executer: testing function with this signature: "func(test *Exercise) bool", will be run by the module for grading
+//   - score: score assigned to the exercise if passed
+//   - executer: testing function with this signature: "func(test *Exercise) Result", will be run by the module for grading
 func NewExercise(
 	name string,
 	repoDirectory string,
@@ -52,7 +53,6 @@ func NewExercise(
 	score int,
 	executer func(test *Exercise) Result,
 ) Exercise {
-
 	return Exercise{
 		Name:            name,
 		RepoDirectory:   repoDirectory,
@@ -65,6 +65,12 @@ func NewExercise(
 	}
 }
 
+// searchForKeyword searches for a keyword in the provided map of allowed keywords.
+//
+//   - keywords: The map of allowed keywords.
+//   - word: The word to search for.
+//
+// Returns the keyword and a boolean indicating whether it was found.
 func searchForKeyword(keywords map[string]int, word string) (keyword string, found bool) {
 	for keyword := range keywords {
 		if word == keyword {
@@ -74,6 +80,12 @@ func searchForKeyword(keywords map[string]int, word string) (keyword string, fou
 	return keyword, false
 }
 
+// checkKeywordAmount checks if any keywords are used more often than allowed.
+//
+//   - keywordCounts: A map of keyword counts found in the student's code.
+//   - keywords: A map of allowed keywords.
+//
+// Returns an error if any keyword is used more than allowed.
 func checkKeywordAmount(keywordCounts map[string]int, keywords map[string]int) (err error) {
 	foundKeywords := make([]string, 0, len(keywords))
 	for keyword, allowedAmount := range keywords {
@@ -89,6 +101,12 @@ func checkKeywordAmount(keywordCounts map[string]int, keywords map[string]int) (
 	return nil
 }
 
+// scanStudentFile scans a student's file and counts the occurrences of each allowed keyword.
+//
+//   - scanner: A bufio.Scanner to read the file.
+//   - allowedKeywords: A map of allowed keywords.
+//
+// Returns an error if any keyword is used more than allowed.
 func scanStudentFile(scanner *bufio.Scanner, allowedKeywords map[string]int) (err error) {
 	keywordCounts := make(map[string]int)
 	for scanner.Scan() {
@@ -105,6 +123,12 @@ func scanStudentFile(scanner *bufio.Scanner, allowedKeywords map[string]int) (er
 	return nil
 }
 
+// lintStudentCode lints the student's code to ensure no forbidden items or keywords are present.
+//
+//   - exercisePath: The path to the exercise file.
+//   - test: The Exercise struct.
+//
+// Returns an error if any forbidden items or keywords are found.
 func lintStudentCode(exercisePath string, test Exercise) (err error) {
 	file, err := os.Open(exercisePath)
 	if err != nil {
@@ -116,6 +140,9 @@ func lintStudentCode(exercisePath string, test Exercise) (err error) {
 	return scanStudentFile(scanner, test.AllowedKeywords)
 }
 
+// fullTurnInFilesPath constructs the full file paths for the files to be turned in.
+//
+// Returns a slice of strings containing the full file paths.
 func (e *Exercise) fullTurnInFilesPath() []string {
 	var fullFilePaths []string
 
@@ -126,6 +153,12 @@ func (e *Exercise) fullTurnInFilesPath() []string {
 	return fullFilePaths
 }
 
+// containsString checks if a string is present in a slice of strings.
+//
+//   - hayStack: The slice of strings.
+//   - needle: The string to search for.
+//
+// Returns a boolean indicating whether the string was found.
 func containsString(hayStack []string, needle string) bool {
 	for _, str := range hayStack {
 		if str == needle {
@@ -135,6 +168,12 @@ func containsString(hayStack []string, needle string) bool {
 	return false
 }
 
+// extractAfterExerciseName extracts a portion of the file path after the exercise name.
+//
+//   - exerciseName: The name of the exercise.
+//   - fullPath: The full file path.
+//
+// Returns a string containing the portion of the file path after the exercise name.
 func extractAfterExerciseName(exerciseName string, fullPath string) string {
 	index := strings.Index(fullPath, exerciseName)
 	if index == -1 {
@@ -143,6 +182,9 @@ func extractAfterExerciseName(exerciseName string, fullPath string) string {
 	return "'" + fullPath[index+len(exerciseName)+1:] + "'"
 }
 
+// turnInFilesCheck checks if the correct files have been turned in.
+//
+// Returns a Result struct indicating whether the check passed or failed.
 func (e *Exercise) turnInFilesCheck() Result {
 	var foundTurnInFiles []string
 	var errors []string
@@ -173,6 +215,9 @@ func (e *Exercise) turnInFilesCheck() Result {
 	return Result{Passed: true, Output: ""}
 }
 
+// forbiddenItemsCheck checks for forbidden items in the student's code.
+//
+// Returns a Result struct indicating whether the check passed or failed.
 func (e *Exercise) forbiddenItemsCheck() (result Result) {
 	exercisePath := fmt.Sprintf("compile-environment/%s/%s", e.TurnInDirectory, e.TurnInFiles[0])
 	err := lintStudentCode(exercisePath, *e)
@@ -184,7 +229,10 @@ func (e *Exercise) forbiddenItemsCheck() (result Result) {
 	return Result{Passed: true, Output: ""}
 }
 
-// Runs the Executer function and returns the result
+// Run executes the exercise's tests after checking for forbidden items and ensuring
+// the correct files are submitted.
+//
+// Returns a Result struct with the outcome of the exercise execution.
 func (e *Exercise) Run() (result Result) {
 	if result = e.forbiddenItemsCheck(); !result.Passed {
 		return result
