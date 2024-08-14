@@ -1,6 +1,6 @@
+// Interface for creation of test modes, such as WebhookTestMode.
 package ITestMode
 
-// Interface for creation of test modes.
 type ITestMode interface {
 	Run(module string)
 }
