@@ -19,10 +19,10 @@ import (
 // name, the minimum grade required to pass, a map of exercises, and the path to the
 // subject file.
 type Module struct {
-	Name         string                        // Name is the module's display name.
-	MinimumGrade int                           // MinimumGrade is the minimum score required to pass the module.
-	Exercises    map[string]Exercise.Exercise  // Exercises is a map of all exercises belonging to the module.
-	SubjectPath  string                        // SubjectPath is the path to the module's subject file.
+	Name         string                       // Name is the module's display name.
+	MinimumGrade int                          // MinimumGrade is the minimum score required to pass the module.
+	Exercises    map[string]Exercise.Exercise // Exercises is a map of all exercises belonging to the module.
+	SubjectPath  string                       // SubjectPath is the path to the module's subject file.
 }
 
 // NewModule initializes and returns a Module struct.
