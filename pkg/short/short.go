@@ -11,6 +11,7 @@ import (
 	"github.com/42-Short/shortinette/pkg/git"
 	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
 	"github.com/42-Short/shortinette/pkg/logger"
+	"github.com/42-Short/shortinette/pkg/requirements"
 	ITestMode "github.com/42-Short/shortinette/pkg/short/testmodes"
 )
 
@@ -26,6 +27,18 @@ type Short struct {
 	TestMode ITestMode.ITestMode
 }
 
+func shortInit() {
+	if len(os.Args) == 4 {
+		logger.InitializeStandardLoggers(os.Args[2])
+	} else {
+		logger.InitializeStandardLoggers("")
+	}
+	if err := requirements.ValidateRequirements(); len(os.Args) != 4 && err != nil {
+		logger.Error.Println(err.Error())
+		return
+	}
+}
+
 // Returns a Short object, the wrapper for the whole Short configuration.
 //
 //   - name: the display name of your Short
@@ -33,6 +46,7 @@ type Short struct {
 //   - testMode: a ITestMode object, determining how the submission testing will
 //     be triggered
 func NewShort(name string, modules map[string]Module.Module, testMode ITestMode.ITestMode) Short {
+	shortInit()
 	return Short{
 		Name:     name,
 		Modules:  modules,
