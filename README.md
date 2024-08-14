@@ -56,7 +56,6 @@ for detailed tracking of all grading activities. By using shortinette, educators
 focus on teaching and mentoring, while the framework handles the repetitive and error-prone
 tasks of compiling, running, and grading student code.
 ## Implementation Example
-Certainly! Below is a simple example of how to implement one module with one exercise using the `shortinette` framework.
 
 ### Example Overview
 - **Module Name**: `example-module`
