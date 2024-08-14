@@ -24,7 +24,9 @@ Represents an exercise with various metadata fields.
   - **`RepoDirectory`**: The target directory for cloning repositories, used to construct file paths.
   - **`TurnInDirectory`**: The directory where the exercise's file(s) can be found, relative to the repository's root (e.g., `ex00/`).
   - **`TurnInFiles`**: A list of all files allowed to be submitted.
-  - **`AllowedSymbols`**: A list of symbols (functions, macros, etc.) allowed in this exercise. (Note: The enforcement of allowed symbols is the user's responsibility since it is highly language-specific. If you wish to simply have symbols linted out of the submissions, use `AllowedSymbols` - please consider it might not be as robust as you want it to be.)
+  - **`AllowedSymbols`**: A list of symbols (functions, macros, etc.) allowed in this exercise.
+
+(_Note: The enforcement of allowed symbols is the user's responsibility since it is highly language-specific. If you wish to simply have symbols linted out of the submissions, use `AllowedSymbols` - please consider it might not be as robust as you want it to be._)
   - **`AllowedKeywords`**: A map of keywords allowed in this exercise, with an associated integer indicating the maximum number of times each keyword may appear.
   - **`Score`**: The score assigned to the exercise if passed.
   - **`Executer`**: A function used for testing the exercise, which should be implemented by the user.
