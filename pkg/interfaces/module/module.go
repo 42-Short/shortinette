@@ -108,7 +108,7 @@ func gradingRoutine(module Module, tracesPath string) (results map[string]bool) 
 func (m *Module) Run(repoID string, testDirectory string) (results map[string]bool, tracesPath string) {
 	defer func() {
 		if err := tearDownEnvironment(); err != nil {
-			logger.Error.Printf(err.Error())
+			logger.Error.Printf("error tearing down grading environment: %s", err.Error())
 		}
 	}()
 	err := setUpEnvironment(repoID, testDirectory)

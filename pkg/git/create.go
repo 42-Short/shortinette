@@ -40,7 +40,7 @@ func addWebhook(repoID string) error {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusCreated {
-		return fmt.Errorf(response.Status)
+		return fmt.Errorf("could not add webhook to %s: %s", repoID, response.Status)
 	}
 
 	logger.Info.Printf("added webhook to %s", repoID)
@@ -53,7 +53,7 @@ func checkResponseStatus(response *http.Response) (bool, error) {
 	} else if response.StatusCode == http.StatusNotFound {
 		return false, nil
 	} else {
-		return false, fmt.Errorf(response.Status)
+		return false, fmt.Errorf("error response: %s", response.Status)
 	}
 }
 
@@ -97,7 +97,7 @@ func createRepository(name string) (err error) {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusCreated {
-		return fmt.Errorf(response.Status)
+		return fmt.Errorf("could not create repository %s: %s", name, response.Status)
 	}
 
 	if err := addWebhook(name); err != nil {
