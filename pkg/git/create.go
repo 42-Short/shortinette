@@ -1,5 +1,5 @@
-// `create.go (git package)` provides functions for interacting with GitHub repositories, including
-// creating repositories, adding webhooks, making initial commits, and checking repository existence.
+// Package git provides functions for interacting with GitHub repositories, including
+// cloning repositories, adding collaborators, uploading files, and creating releases.
 package git
 
 import (

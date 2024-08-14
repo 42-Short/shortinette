@@ -1,5 +1,5 @@
-// `branche.go (git package)` provides functions for interacting with GitHub repositories,
-// including retrieving branch SHAs and creating new branches.
+// Package git provides functions for interacting with GitHub repositories, including
+// cloning repositories, adding collaborators, uploading files, and creating releases.
 package git
 
 import (

@@ -1,4 +1,5 @@
-// `clone.go (git package)` provides functions for cloning GitHub repositories using the go-git library.
+// Package git provides functions for interacting with GitHub repositories, including
+// cloning repositories, adding collaborators, uploading files, and creating releases.
 package git
 
 import (

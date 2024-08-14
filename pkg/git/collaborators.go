@@ -1,5 +1,5 @@
-// `collaborators.go (package git)` provides functions for interacting with GitHub repositories, including
-// managing collaborators and retrieving files.
+// Package git provides functions for interacting with GitHub repositories, including
+// cloning repositories, adding collaborators, uploading files, and creating releases.
 package git
 
 import (

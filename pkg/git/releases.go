@@ -1,5 +1,5 @@
-// `releases.go (git package)` provides functions for interacting with GitHub releases, including creating,
-// retrieving, and deleting releases.
+// Package git provides functions for interacting with GitHub repositories, including
+// cloning repositories, adding collaborators, uploading files, and creating releases.
 package git
 
 import (

@@ -1,5 +1,5 @@
-// `upload.go (git package)` provides functions for uploading files and data to GitHub repositories,
-// including handling file SHA retrieval and creating push requests.
+// Package git provides functions for interacting with GitHub repositories, including
+// cloning repositories, adding collaborators, uploading files, and creating releases.
 package git
 
 import (
