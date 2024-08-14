@@ -62,6 +62,33 @@ This is a minimalist example - for something more advanced, refer to our [rust p
 - **Exercise Name**: `example-exercise`
 - **Programming Language**: Rust
 - **Objective**: The exercise expects the student to write a Rust program that prints "Hello, World!" to the console.
+### Step 0: Docker Image
+Shortinette tests submissions in a containerized environent. For this reasone, you need a Docker Image named `shortinette-testenv` containing all dependencies needed for shortinette _and_ the code you will be grading (ex: rustup for Rust, python3 for python, ...).
+
+Example for testing Rust code:
+```Dockerfile
+FROM debian:latest
+
+RUN apt-get update && apt-get install -y curl build-essential
+
+# Install Go
+RUN curl -OL https://go.dev/dl/go1.22.5.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.22.5.linux-amd64.tar.gz && \
+    rm go1.22.5.linux-amd64.tar.gz
+
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+# Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+WORKDIR /app
+
+COPY . .
+
+RUN go build .
+```
 
 ### Step 1: Define the Exercise
 
