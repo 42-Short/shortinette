@@ -35,8 +35,7 @@ func NewModule(name string, minimumGrade int, exercises map[string]Exercise.Exer
 func setUpEnvironment(repoID string, testDirectory string) error {
 	repoLink := fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoID)
 	if err := git.Clone(repoLink, testDirectory); err != nil {
-		errorMessage := fmt.Sprintf("failed to clone repository: %v", err)
-		return fmt.Errorf(errorMessage)
+		return fmt.Errorf("failed to clone repository: %v", err)
 	}
 	if err := git.Clone(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoID), "compile-environment/"); err != nil {
 		return err
