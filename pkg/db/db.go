@@ -1,3 +1,5 @@
+// Package `db` provides functions for interacting with the SQLite database, which stores
+// information about student repositories, including grading attempts and scores.
 package db
 
 import (
@@ -7,18 +9,26 @@ import (
 	"time"
 
 	"github.com/42-Short/shortinette/pkg/logger"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3" // SQLite3 driver
 )
 
+// Repository represents the data related to a student's repository, including grading
+// history and current score.
 type Repository struct {
-	ID              string
-	FirstAttempt    bool
-	LastGradingTime time.Time
-	WaitingTime     time.Duration
-	Score           int
-	Attempts        int
+	ID              string        // ID is the unique identifier for the repository.
+	FirstAttempt    bool          // FirstAttempt indicates if this is the student's first grading attempt.
+	LastGradingTime time.Time     // LastGradingTime stores the timestamp of the last grading attempt.
+	WaitingTime     time.Duration // WaitingTime is the required duration to wait before the next grading attempt.
+	Score           int           // Score is the student's score in the current module.
+	Attempts        int           // Attempts tracks the number of grading attempts made by the student.
 }
 
+// GetRepositoryData retrieves the repository data for a specific module and repository ID.
+//
+//   - moduleName: the name of the module
+//   - repoID: the unique identifier for the repository
+//
+// Returns the repository data and an error if the operation fails.
 func GetRepositoryData(moduleName string, repoID string) (repo Repository, err error) {
 	db, err := sql.Open("sqlite3", "./sqlite3/repositories.db")
 	if err != nil {
@@ -49,6 +59,12 @@ func GetRepositoryData(moduleName string, repoID string) (repo Repository, err e
 	return repo, nil
 }
 
+// tableExists checks if a specific table exists in the database.
+//
+//   - db: the database connection
+//   - tableName: the name of the table to check for existence
+//
+// Returns a boolean indicating if the table exists and an error if the operation fails.
 func tableExists(db *sql.DB, tableName string) (bool, error) {
 	query := fmt.Sprintf(sqliteTemplates.TableByName, tableName)
 	var name string
@@ -62,6 +78,12 @@ func tableExists(db *sql.DB, tableName string) (bool, error) {
 	return true, nil
 }
 
+// CreateTable creates a new table in the database for storing repository data if it does
+// not already exist.
+//
+//   - tableName: the name of the table to create
+//
+// Returns a boolean indicating if the table was created and an error if the operation fails.
 func CreateTable(tableName string) (bool, error) {
 	created := false
 
@@ -92,6 +114,12 @@ func CreateTable(tableName string) (bool, error) {
 	return created, nil
 }
 
+// InitModuleTable initializes a table for a module with participant data.
+//
+//   - participants: a slice of slices, where each inner slice contains participant details
+//   - moduleName: the name of the module
+//
+// Returns an error if the initialization fails.
 func InitModuleTable(participants [][]string, moduleName string) (err error) {
 	db, err := sql.Open("sqlite3", "./sqlite3/repositories.db")
 	if err != nil {
@@ -112,6 +140,12 @@ func InitModuleTable(participants [][]string, moduleName string) (err error) {
 	return nil
 }
 
+// UpdateRepository updates the repository data in the database after a grading attempt.
+//
+//   - moduleName: the name of the module
+//   - repo: the repository data to be updated
+//
+// Returns an error if the update fails.
 func UpdateRepository(moduleName string, repo Repository) (err error) {
 	db, err := sql.Open("sqlite3", "./sqlite3/repositories.db")
 	if err != nil {
