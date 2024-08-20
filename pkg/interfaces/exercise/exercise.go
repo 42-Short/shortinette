@@ -24,7 +24,7 @@ type Exercise struct {
 	RepoDirectory   string                      // RepoDirectory is the target directory for cloning repositories, used to construct file paths.
 	TurnInDirectory string                      // TurnInDirectory is the directory where the exercise's file(s) can be found, relative to the repository's root.
 	TurnInFiles     []string                    // TurnInFiles is a list of all files allowed to be submitted.
-	AllowedKeywords map[string]int              // AllowedKeywords is a map of keywords allowed in this exercise, with an associated integer indicating the maximum number of times each keyword may appear.
+	AllowedKeywords map[string]int              // AllowedKeywords is a map of keywords allowed in this exercise, with an associated integer indicating the maximum number of times each keyword may appear. This will be linted by shortinette and the exercise will not pass if the submission does not respect those constraints.
 	Score           int                         // Score is the score assigned to the exercise if passed.
 	Executer        func(test *Exercise) Result // Executer is a function used for testing the exercise, which should be implemented by the user.
 }

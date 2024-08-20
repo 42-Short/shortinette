@@ -133,7 +133,6 @@ func createExampleExercise() exercise.Exercise {
 		"studentcode",        // Repo directory
 		"ex00",               // TurnIn directory
 		[]string{"main.rs"},  // Allowed turn-in files
-		nil,                  // Allowed symbols (not used)
 		nil,                  // Allowed keywords (no restrictions)
 		10,                   // Score for the exercise
 		helloWorldTest,       // Executer function to test the exercise
