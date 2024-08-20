@@ -24,7 +24,6 @@ type Exercise struct {
 	RepoDirectory   string                      // RepoDirectory is the target directory for cloning repositories, used to construct file paths.
 	TurnInDirectory string                      // TurnInDirectory is the directory where the exercise's file(s) can be found, relative to the repository's root.
 	TurnInFiles     []string                    // TurnInFiles is a list of all files allowed to be submitted.
-	AllowedSymbols  []string                    // AllowedSymbols is a list of symbols (functions, macros, etc.) allowed in this exercise.
 	AllowedKeywords map[string]int              // AllowedKeywords is a map of keywords allowed in this exercise, with an associated integer indicating the maximum number of times each keyword may appear.
 	Score           int                         // Score is the score assigned to the exercise if passed.
 	Executer        func(test *Exercise) Result // Executer is a function used for testing the exercise, which should be implemented by the user.
@@ -39,7 +38,6 @@ type Exercise struct {
 //   - turnInDirectory: the directory in which the exercise's file can be found, relative
 //     to the repository's root (e.g., ex00/)
 //   - turnInFiles: list of all files allowed to be turned in
-//   - allowedSymbols: list of symbols to be allowed in this exercise
 //   - allowedKeywords: list of keywords to be allowed in this exercise
 //   - score: score assigned to the exercise if passed
 //   - executer: testing function with this signature: "func(test *Exercise) Result", will be run by the module for grading
@@ -48,7 +46,6 @@ func NewExercise(
 	repoDirectory string,
 	turnInDirectory string,
 	turnInFiles []string,
-	allowedSymbols []string,
 	allowedKeywords map[string]int,
 	score int,
 	executer func(test *Exercise) Result,
@@ -58,7 +55,6 @@ func NewExercise(
 		RepoDirectory:   repoDirectory,
 		TurnInDirectory: turnInDirectory,
 		TurnInFiles:     turnInFiles,
-		AllowedSymbols:  allowedSymbols,
 		AllowedKeywords: allowedKeywords,
 		Score:           score,
 		Executer:        executer,
