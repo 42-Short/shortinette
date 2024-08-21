@@ -50,6 +50,9 @@ func ValidateRequirements() error {
 	if err := requireEnv(); err != nil {
 		return err
 	}
+	if err := os.Mkdir("traces/", 0755); !os.IsExist(err) {
+		return err
+	}
 	command := "bash"
 	args := []string{
 		"-c",
