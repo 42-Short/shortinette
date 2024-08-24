@@ -55,6 +55,7 @@ WORKDIR /app
 COPY . .
 RUN go build .
 ```
+The Docker image must be named `shortinette-testenv` (`docker build -t shortinette-testenv .` in the Dockerfile's directory). Configurability of the image's name will be added in a future release.
 
 ### Step 2: Define an Exercise
 
