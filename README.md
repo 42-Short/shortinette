@@ -1,204 +1,144 @@
-# shortinette
-shortinette is the core framework for managing and automating the process of
-grading coding bootcamps (Shorts). It provides a comprehensive set of tools for
-running and testing student submissions across various programming languages.
-Grading is currently triggered by a [webhook](https://pkg.go.dev/github.com/42-Short/shortinette/pkg/testmodes/webhook) - when a participant 
-pushes to the main branch of their repository with `grademe` as a commit message, their submission
-will be graded and the results uploaded to their repo.
+# shortinette: Automated Grading Framework for Coding Bootcamps
 
-The shortinette package is composed of several sub-packages, each responsible for a specific
-aspect of the grading pipeline:
+## Overview
 
-- [logger](https://pkg.go.dev/github.com/42-Short/shortinette/pkg/logger): Handles logging for the framework, including general informational messages,
-  error reporting, and trace logging for feedback on individual submissions. This package ensures
-  that all important events and errors are captured for debugging and auditing purposes.
+Shortinette is a comprehensive framework designed to manage and automate the grading process for coding bootcamps, specifically tailored for "Shorts" (coding courses). This system provides a suite of tools for efficiently running and evaluating student submissions.
 
-- [requirements](https://pkg.go.dev/github.com/42-Short/shortinette/pkg/requirements): Validates the necessary environment variables and dependencies required
-  by the framework. This includes checking for essential configuration values in a `.env` file
-  and ensuring that all necessary tools (e.g., Docker images) are available before grading begins.
+## Key Features
 
-- [testutils](https://pkg.go.dev/github.com/42-Short/shortinette/pkg/testutils): Provides utility functions for compiling and running code submissions.
-  This includes functions for compiling Rust code, running executables with various
-  options (such as timeouts and real-time output), and manipulating files. The utility
-  functions are designed to handle the intricacies of running untrusted student code
-  safely and efficiently.
+- Automated grading triggered by GitHub webhooks
+- Secure execution of untrusted code using Docker
+- Comprehensive logging and error reporting
+- Modular architecture for easy extension and maintenance
 
-- [db](https://pkg.go.dev/github.com/42-Short/shortinette/pkg/db): Provides utility functions
-  and query templates for interacting with the SQLite database.
+## Architecture
 
-- [git](https://pkg.go.dev/github.com/42-Short/shortinette/pkg/git): Manages interactions with GitHub, including cloning repositories, managing
-  collaborators, and uploading files. This package abstracts the GitHub API to simplify
-  common tasks such as adding collaborators to repositories, creating branches, and
-  pushing code or data to specific locations in a repository.
+shortinette is composed of several interconnected packages, each responsible for a specific aspect of the grading pipeline:
 
-- [exercise](https://pkg.go.dev/github.com/42-Short/shortinette/pkg/exercise): Defines the structure and behavior of individual coding exercises.
-  This includes specifying the files that students are allowed to submit, the expected
-  output, and the functions to be tested. The `exercise` package provides the framework
-  for setting up exercises, running tests, and reporting results.
+1. **logger**: Manages logging throughout the framework, capturing important events and errors.
+2. **requirements**: Validates environment variables and dependencies.
+3. **testutils**: Provides utilities for compiling and running code submissions.
+4. **db**: Handles interactions with the SQLite database.
+5. **git**: Manages GitHub interactions, including repository management and file operations.
+6. **exercise**: Defines the structure and behavior of individual coding exercises.
+7. **module**: Organizes exercises into cohesive curriculum modules.
+8. **webhook**: Enables automated grading triggered by GitHub events.
+9. **short**: Orchestrates the entire grading process, integrating all sub-packages.
 
-- [module](https://pkg.go.dev/github.com/42-Short/shortinette/pkg/module): Organizes exercises into modules, allowing for the grouping of related exercises
-  into a coherent curriculum. The `module` package handles the execution of all exercises
-  within a module, aggregates results, and manages the overall grading process.
+## Implementation Guide
 
-- [webhook](https://pkg.go.dev/github.com/42-Short/shortinette/pkg/testmodes/webhook): Enables automatic grading triggered by GitHub webhooks. This allows for a
-  fully automated workflow where student submissions are graded as soon as they are
-  pushed to a specific branch in a GitHub repository.
+### Prerequisites
 
-- [short](https://pkg.go.dev/github.com/42-Short/shortinette/pkg/short): The central orchestrator of the grading process, integrating all sub-packages
-  into a cohesive system. The `short` package handles the setup and teardown of grading
-  environments, manages the execution of modules and exercises, and ensures that all
-  results are properly recorded and reported.
+- Docker
+- Go programming environment
+- GitHub account and personal access token
 
-Overall, shortinette is designed to streamline the grading of programming assignments
-in a secure, automated, and scalable manner. It leverages Docker for sandboxed execution
-of code, GitHub for version control and collaboration, and a flexible logging system
-for detailed tracking of all grading activities. By using shortinette, educators can
-focus on teaching and mentoring, while the framework handles the repetitive and error-prone
-tasks of compiling, running, and grading student code.
-## Implementation Example
-This is a minimalist example - for something more advanced, refer to our [rust piscine](https://github.com/42-Short/rust) repository.
-### Example Overview
-- **Module Name**: `example-module`
-- **Exercise Name**: `example-exercise`
-- **Programming Language**: Rust
-- **Objective**: The exercise expects the student to write a Rust program that prints "Hello, World!" to the console.
-### Step 0: Docker Image
-Shortinette tests submissions in a containerized environent. For this reasone, you need a Docker Image named `shortinette-testenv` containing all dependencies needed for shortinette _and_ the code you will be grading (ex: rustup for Rust, python3 for python, ...).
+### Step 1: Prepare the Docker Environment
 
-Example for testing Rust code:
-```Dockerfile
+Create a Dockerfile that includes all necessary dependencies for both Shortinette and the programming language being tested. Example for Rust:
+
+```dockerfile
 FROM debian:latest
 
-RUN apt-get update && apt-get install -y curl build-essential
+# Install essential tools and Rust
+RUN apt-get update && apt-get install -y curl build-essential && \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 # Install Go
 RUN curl -OL https://go.dev/dl/go1.22.5.linux-amd64.tar.gz && \
     tar -C /usr/local -xzf go1.22.5.linux-amd64.tar.gz && \
     rm go1.22.5.linux-amd64.tar.gz
 
-ENV PATH="/usr/local/go/bin:${PATH}"
-
-# Install Rust
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-
-ENV PATH="/root/.cargo/bin:${PATH}"
-
+# Set up environment
+ENV PATH="/usr/local/go/bin:/root/.cargo/bin:${PATH}"
 WORKDIR /app
-
 COPY . .
-
 RUN go build .
 ```
 
-### Step 1: Define the Exercise
+### Step 2: Define an Exercise
 
-First, you need to define the exercise. The exercise will specify the files to be submitted, the allowed keywords, and how to test the submission.
+Create a Go file to define your exercise:
 
 ```go
 package main
 
 import (
-	"fmt"
-
-	"github.com/42-Short/shortinette/pkg/interfaces/exercise"
-	"github.com/42-Short/shortinette/pkg/testutils"
+    "github.com/42-Short/shortinette/pkg/interfaces/exercise"
+    "github.com/42-Short/shortinette/pkg/testutils"
 )
 
-// Define the test function for the exercise
 func helloWorldTest(ex *exercise.Exercise) exercise.Result {
-	// Compile the Rust file
-	if err := testutils.CompileWithRustc(turnInFile); err != nil {
-		return exercise.CompilationError(err.Error())
-	}
-
-	// Run the compiled executable
-	output, err := testutils.RunExecutable(testutils.ExecutablePath(turnInFile, ".rs"))
-	if err != nil {
-		return exercise.RuntimeError(err.Error())
-	}
-
-	// Check if the output is correct
-	expectedOutput := "Hello, World!\n"
-	if output != expectedOutput {
-		return exercise.AssertionError(expectedOutput, output)
-	}
-
-	return exercise.Passed("OK")
+    // Implement test logic here
 }
 
-// Create the exercise
 func createExampleExercise() exercise.Exercise {
-	return exercise.NewExercise(
-		"example",            // Name of the exercise
-		"studentcode",        // Repo directory
-		"ex00",               // TurnIn directory
-		[]string{"main.rs"},  // Allowed turn-in files
-		nil,                  // Allowed keywords (no restrictions)
-		10,                   // Score for the exercise
-		helloWorldTest,       // Executer function to test the exercise
-	)
+    return exercise.NewExercise(
+        "example",
+        "studentcode",
+        "ex00",
+        []string{"main.rs"},
+        nil,
+        10,
+        helloWorldTest,
+    )
 }
 ```
 
-### Step 2: Define the Module
+### Step 3: Define a Module
 
-Next, create the module and add the exercise to it.
+Create a module that includes your exercise:
 
 ```go
 package main
 
 import (
-	"github.com/42-Short/shortinette/pkg/interfaces/module"
-	"github.com/42-Short/shortinette/pkg/logger"
+    "github.com/42-Short/shortinette/pkg/interfaces/module"
+    "github.com/42-Short/shortinette/pkg/logger"
 )
 
 func createExampleModule() module.Module {
-	exercises := map[string]exercise.Exercise{
-		"hello-world": createHelloWorldExercise(),
-	}
+    exercises := map[string]exercise.Exercise{
+        "hello-world": createExampleExercise(),
+    }
 
-	module, err := module.NewModule(
-		"example-module",  // Module name
-		50,                // Minimum grade to pass the module
-		exercises,         // Exercises map
-		"subjects/ex00",   // Path to the module subject file
-	)
-	if err != nil {
-		logger.Error.Fatalf("Failed to create module: %v", err)
-	}
-	return module
+    module, err := module.NewModule(
+        "example-module",
+        50,
+        exercises,
+        "subjects/ex00",
+    )
+    if err != nil {
+        logger.Error.Fatalf("Failed to create module: %v", err)
+    }
+    return module
 }
 ```
 
-### Step 3: Initialize and Run the Shortinette
+### Step 4: Initialize and Run Shortinette
 
-Finally, integrate the module into the `shortinette` system and run it.
+Set up the main function to run Shortinette:
 
 ```go
 package main
 
 import (
-	"github.com/42-Short/shortinette/pkg/short"
-	"github.com/42-Short/shortinette/pkg/webhook"
-	"github.com/42-Short/shortinette/pkg/logger"
+    "github.com/42-Short/shortinette/pkg/short"
+    "github.com/42-Short/shortinette/pkg/webhook"
 )
 
 func main() {
-	// Create a map of modules for the shortinette
-	modules := map[string]module.Module{
-		"example-module": createExampleModule(),
-	}
+    modules := map[string]module.Module{
+        "example-module": createExampleModule(),
+    }
 
-	// Set up webhook test mode
-	testMode := webhook.NewWebhookTestMode(modules)
-
-	// Initialize and run shortinette
-	s := short.NewShort("Example Shortinette", modules, testMode)
-	s.Start("example-module")
+    testMode := webhook.NewWebhookTestMode(modules)
+    s := short.NewShort("Example Shortinette", modules, testMode)
+    s.Start("example-module")
 }
 ```
 
-### Step 4: Set Up Environment
+### Step 5: Configure the Environment
 #### .env File
 Create a `.env` file at the root of your repository and fill it up like below:
 ```.env
@@ -233,12 +173,14 @@ Now configure the .json file whose path you set in your environment:
 _note: The intra_login variable is used to build the names of the repos which will be created. You can of course set it to something else if you want the repos to be named differently. The repo naming format is: <intra_login>-<module_name>_
 
 _note 2: The start\_ & end_date from the config are not being taken into account by shortinette just yet, watch for future releases!_
-### Step 5: Run shortinette
 
-Run the `shortinette` using the `go run .` command (assuming your Go files are in the current directory).
+### Step 6: Run Shortinette
 
-### Explanation
+Execute the Shortinette system using the command:
 
-- **Exercise Definition**: The `createExampleExercise` function defines a Rust exercise that expects a file named `main.rs` to be turned in. The `helloWorldTest` function handles compiling and running the file and checks if the output matches "Hello, World!\n".
-- **Module Definition**: The `createExampleModule` function creates a module named `example-module` that includes the `hello-world` exercise. The module requires a minimum score of 50 to pass.
-- **Running Shortinette**: The `main` function initializes the logging system, creates the module, and starts the `shortinette` with the webhook test mode enabled.
+```
+go run .
+```
+
+For more advanced implementations and examples, refer to the [rust piscine repository](https://github.com/42-Short/rust).
+
