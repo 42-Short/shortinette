@@ -224,7 +224,7 @@ func (e *Exercise) forbiddenItemsCheck() (result Result) {
 
 	for _, path := range e.TurnInFiles {
 		exercisePath := filepath.Join(e.CloneDirectory, e.TurnInDirectory, path)
-		if strings.HasSuffix(exercisePath, ".rs") {
+		if strings.HasSuffix(exercisePath, ".rs") { // TODO: remove hardcoded .rs before stable release
 			pathsToCheck = append(pathsToCheck, exercisePath)
 		}
 	}
