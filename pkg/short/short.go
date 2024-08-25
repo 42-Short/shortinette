@@ -66,7 +66,7 @@ func updateRelease(repo db.Repository, newWaitingTime time.Duration, tracesPath 
 	releaseName := fmt.Sprintf("%d/100 - retry at %s", repo.Score, nextGradingAttemptTime)
 
 	if err := git.NewRelease(repo.ID, "Grade", releaseName, tracesPath, true); err != nil {
-		return err
+		return fmt.Errorf("adding release to %s: %v", repo.ID, err)
 	}
 	return nil
 }
@@ -78,7 +78,7 @@ func updateRelease(repo db.Repository, newWaitingTime time.Duration, tracesPath 
 //   - results: a map of exercise names to their pass/fail results
 //
 // Returns the new README content as a string and an error if the README update fails.
-func getUpdatedReadme(repo db.Repository, results map[string]bool) (newReadme string, err error) {
+func getUpdatedReadme(repo db.Repository, results map[string]bool) (newReadme string) {
 	var keys []string
 	for key := range results {
 		keys = append(keys, key)
@@ -106,7 +106,7 @@ func getUpdatedReadme(repo db.Repository, results map[string]bool) (newReadme st
 		newReadme = fmt.Sprintf("%s%s", newReadme, fmt.Sprintf(tableRow, key, currentResult))
 	}
 	newReadme = fmt.Sprintf("%s</table></div>", newReadme)
-	return newReadme, nil
+	return newReadme
 }
 
 // uploadResults uploads the grading results and the updated README to the student's
@@ -124,10 +124,7 @@ func uploadResults(repo db.Repository, tracesPath string, moduleName string, res
 		return err
 	}
 
-	updatedReadme, err := getUpdatedReadme(repo, results)
-	if err != nil {
-		return err
-	}
+	updatedReadme := getUpdatedReadme(repo, results)
 
 	commitMessage = fmt.Sprintf("Results for module %s", moduleName)
 	if err := git.UploadRaw(repo.ID, updatedReadme, "README.md", commitMessage, "traces"); err != nil {
@@ -221,7 +218,7 @@ func sortTraceContent(tracesPath string) (err error) {
 func GradeModule(module Module.Module, repoID string) (err error) {
 	repo, err := db.GetRepositoryData(module.Name, repoID)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not get repository data: %v", err)
 	}
 	repo.FirstAttempt = false
 
@@ -229,11 +226,15 @@ func GradeModule(module Module.Module, repoID string) (err error) {
 		return err
 	}
 
-	results, tracesPath := module.Run(repoID)
+	results, tracesPath, err := module.Run(repoID)
+	if err != nil {
+		return err
+	}
+
 	updateNewWaitingTime(&repo, module, results)
 
 	if err := sortTraceContent(tracesPath); err != nil {
-		return err
+		return fmt.Errorf("sorting trace content: %v", err)
 	}
 
 	if err = uploadResults(repo, tracesPath, module.Name, results); err != nil {
@@ -316,7 +317,7 @@ func initializeRepos(config Config, module Module.Module) {
 func StartModule(module Module.Module, config Config) {
 	created, err := db.CreateTable(fmt.Sprintf("repositories_%s", module.Name))
 	if err != nil {
-		logger.Error.Println(err.Error())
+		logger.Error.Printf("table creation: %s", err.Error())
 		return
 	}
 	if created {
@@ -325,7 +326,7 @@ func StartModule(module Module.Module, config Config) {
 			participants = append(participants, []string{participant.GithubUserName, participant.IntraLogin})
 		}
 		if err := db.InitModuleTable(participants, module.Name); err != nil {
-			logger.Error.Println(err.Error())
+			logger.Error.Printf("table initializtion: %s", err.Error())
 			return
 		}
 	}
@@ -341,15 +342,18 @@ func dockerExecMode(short Short) {
 	var config Module.GradingConfig
 	err := json.Unmarshal([]byte(os.Args[1]), &config)
 	if err != nil {
+		logger.Error.Printf("%s is not a valid Module.GradingConfig struct and cannot be unmarshalled by shortinette.", os.Args[1])
 		os.Exit(1)
 	}
 	logger.InitializeStandardLoggers(config.ExerciseName)
 	exercise, ok := short.Modules[config.ModuleName].Exercises[config.ExerciseName]
 	if !ok {
+		logger.Error.Printf("module %s, exercise %s not found - fix your GradingConfig struct or add it to your Short.", config.ModuleName, config.ExerciseName)
 		os.Exit(1)
 	}
 	exercise.CloneDirectory = config.CloneDirectory
 	if err := logger.InitializeTraceLogger(config.TracesPath); err != nil {
+		logger.Error.Printf("logger initialization: %v", err)
 		os.Exit(1)
 	}
 	result := exercise.Run()

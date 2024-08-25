@@ -56,7 +56,7 @@ type GitHubWebhookPayload struct {
 }
 
 var (
-	mu sync.Mutex // mu is a mutex to prevent concurrent grading processes from overlapping.
+	mu sync.Mutex // mutex to prevent concurrent grading processes from overlapping.
 )
 
 // handleWebhook processes incoming webhook events and triggers grading if the event

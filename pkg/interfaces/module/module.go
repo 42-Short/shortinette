@@ -197,22 +197,21 @@ func gradingRoutine(module Module, tracesPath string, repoId string) (results ma
 //   - testDirectory: the directory where the repository will be cloned
 //
 // Returns a map of exercise names to their pass/fail results and the path to the trace logs.
-func (m *Module) Run(repoID string) (results map[string]bool, tracesPath string) {
+func (m *Module) Run(repoID string) (results map[string]bool, tracesPath string, err error) {
 	defer func() {
 		if err := tearDownEnvironment(repoID); err != nil {
 			logger.Error.Printf("error tearing down grading environment: %s", err.Error())
 		}
 	}()
-	err := setUpEnvironment(repoID)
+	err = setUpEnvironment(repoID)
 	if err != nil {
-		logger.Error.Println(err)
-		return nil, ""
+		return nil, "", fmt.Errorf("grading environment setup: %v", err)
 	}
 	tracesPath = logger.GetNewTraceFile(repoID)
 	if m.Exercises != nil {
 		results = gradingRoutine(*m, tracesPath, repoID)
 	}
-	return results, tracesPath
+	return results, tracesPath, nil
 }
 
 // GetScore calculates the total score based on the results of the exercises and determines
