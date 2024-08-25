@@ -34,7 +34,7 @@ func requireEnv() error {
 		}
 	}
 	if os.Getenv("DEV_MODE") == "" {
-		fmt.Printf("DEV_MODE environment variable not set, assuming production")
+		logger.Info.Printf("DEV_MODE environment variable not set, assuming production")
 	}
 	if missingValuesString != "" {
 		return fmt.Errorf("missing environment variables:%s\nSee https://github.com/42-Short/shortinette/tree/main/.github/docs/DOTENV.md for details on .env configuration", missingValuesString)
@@ -56,7 +56,7 @@ func ValidateRequirements() error {
 	command := "bash"
 	args := []string{
 		"-c",
-		"docker image ls | grep testenv",
+		"docker image ls | grep -w shortinette-testenv",
 	}
 	if output, err := testutils.RunCommandLine(".", command, args); err != nil {
 		return fmt.Errorf("in order to reduce vulnerability to malicious code, shortinette requires you to have a pre-built Docker image containing all dependencies needed for testing submissions: %s", output)
