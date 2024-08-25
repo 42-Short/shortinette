@@ -41,8 +41,8 @@ func sendHTTPRequest(request *http.Request) (response *http.Response, err error)
 //   - body: the request body as a byte slice
 //
 // Returns the created HTTP request or an error if the request could not be created.
-func createHTTPRequest(method, url, token string, body []byte) (*http.Request, error) {
-	request, err := http.NewRequest(method, url, bytes.NewBuffer(body))
+func createHTTPRequest(method string, url string, token string, body []byte) (request *http.Request, err error) {
+	request, err = http.NewRequest(method, url, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, fmt.Errorf("could not create HTTP request: %w", err)
 	}
@@ -62,8 +62,8 @@ func createHTTPRequest(method, url, token string, body []byte) (*http.Request, e
 // Returns an error if the cloning process fails.
 //
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
-func Clone(repoURL string, targetDirectory string) error {
-	if err := get(repoURL, targetDirectory); err != nil {
+func Clone(repoURL string, targetDirectory string) (err error) {
+	if err = get(repoURL, targetDirectory); err != nil {
 		logger.Error.Println(err)
 		return err
 	}
@@ -74,13 +74,14 @@ func Clone(repoURL string, targetDirectory string) error {
 // organization. It also adds a webhook for easy recording of repository activity.
 //
 //   - name: the name of the repository to create
+//	 - withWebhook: bool indicating whether to add a webhook to the repo, allowing the server to listen for changes
 //	 - additionalBranches: variadic list of branches you would like to be created
 //
 // Returns an error if the repository creation process fails.
 //
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
-func Create(name string, withWebhook bool, additionalBranches ...string) error {
-	if err := create(name, withWebhook, additionalBranches...); err != nil {
+func Create(name string, withWebhook bool, additionalBranches ...string) (err error) {
+	if err = create(name, withWebhook, additionalBranches...); err != nil {
 		logger.Error.Println(err)
 		return fmt.Errorf("could not create repo: %w", err)
 	}
@@ -99,7 +100,7 @@ func Create(name string, withWebhook bool, additionalBranches ...string) error {
 // Returns an error if the process of adding the collaborator fails.
 //
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
-func AddCollaborator(repoID string, username string, permission string) error {
+func AddCollaborator(repoID string, username string, permission string) (err error) {
 	if err := addCollaborator(repoID, username, permission); err != nil {
 		logger.Error.Println(err)
 		return fmt.Errorf("could not add %s to repo %s: %w", username, repoID, err)
@@ -118,7 +119,7 @@ func AddCollaborator(repoID string, username string, permission string) error {
 // Returns an error if the file upload process fails.
 //
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
-func UploadFile(repoID string, localFilePath string, targetFilePath string, commitMessage string, branch string) error {
+func UploadFile(repoID string, localFilePath string, targetFilePath string, commitMessage string, branch string) (err error) {
 	if err := uploadFile(repoID, localFilePath, targetFilePath, commitMessage, branch); err != nil {
 		return fmt.Errorf("could not upload %s to repo %s: %w", localFilePath, repoID, err)
 	}
@@ -137,7 +138,7 @@ func UploadFile(repoID string, localFilePath string, targetFilePath string, comm
 // Returns an error if the data upload process fails.
 //
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
-func UploadRaw(repoID string, data string, targetFilePath string, commitMessage string, branch string) error {
+func UploadRaw(repoID string, data string, targetFilePath string, commitMessage string, branch string) (err error) {
 	if err := uploadRaw(repoID, data, targetFilePath, commitMessage, branch); err != nil {
 		return fmt.Errorf("could not upload raw data to repo %s: %w", repoID, err)
 	}
@@ -158,7 +159,7 @@ func UploadRaw(repoID string, data string, targetFilePath string, commitMessage 
 // Returns an error if the release creation process fails.
 //
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
-func NewRelease(repoID string, tagName string, releaseName string, tracesPath string, graded bool) error {
+func NewRelease(repoID string, tagName string, releaseName string, tracesPath string, graded bool) (err error) {
 	if err := newRelease(repoID, tagName, releaseName, tracesPath, graded); err != nil {
 		return err
 	}

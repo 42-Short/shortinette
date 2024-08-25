@@ -19,7 +19,7 @@ import (
 //   - repoID: the name of the repository to which the webhook will be added
 //
 // Returns an error if the webhook cannot be added.
-func addWebhook(repoID string) error {
+func addWebhook(repoID string) (err error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/hooks", os.Getenv("GITHUB_ORGANISATION"), repoID)
 	webhookConfig := map[string]interface{}{
 		"name":   "web",
@@ -60,7 +60,7 @@ func addWebhook(repoID string) error {
 //   - response: the HTTP response to check
 //
 // Returns a boolean indicating success or failure, and an error if the status code indicates a problem.
-func checkResponseStatus(response *http.Response) (bool, error) {
+func checkResponseStatus(response *http.Response) (ok bool, err error) {
 	if response.StatusCode == http.StatusOK {
 		return true, nil
 	} else if response.StatusCode == http.StatusNotFound {
@@ -75,7 +75,7 @@ func checkResponseStatus(response *http.Response) (bool, error) {
 //   - repo: the name of the repository to check
 //
 // Returns a boolean indicating whether the repository exists and an error if the check fails.
-func RepoExists(repo string) (bool, error) {
+func RepoExists(repo string) (exists bool, err error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s", os.Getenv("GITHUB_ORGANISATION"), repo)
 
 	request, err := createHTTPRequest("GET", url, os.Getenv("GITHUB_TOKEN"), nil)
@@ -140,7 +140,7 @@ func createRepository(name string, withWebhook bool) (err error) {
 //   - token: the GitHub authentication token
 //
 // Returns an error if the initial commit fails.
-func initialCommit(repo, token string) error {
+func initialCommit(repo, token string) (err error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/README.md", os.Getenv("GITHUB_ORGANISATION"), repo)
 	requestBody := map[string]interface{}{
 		"message": "Initial commit",
@@ -180,9 +180,11 @@ func initialCommit(repo, token string) error {
 // making an initial commit, and creating necessary branches.
 //
 //   - name: the name of the repository to create
+//   - withWebhook: bool indicating whether a webhook should be added to the repo
+// 	 - additionalBranche: variadic list of strings, representing all branches that should be created by default on the repo
 //
 // Returns an error if the repository creation, initial commit, or branch creation fails.
-func create(name string, withWebhook bool, additionalBranches ...string) error {
+func create(name string, withWebhook bool, additionalBranches ...string) (err error) {
 	exists, err := RepoExists(name)
 	if err != nil {
 		return fmt.Errorf("could not verify repository existence: %w", err)
