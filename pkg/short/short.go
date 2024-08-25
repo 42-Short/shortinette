@@ -168,7 +168,7 @@ func updateNewWaitingTime(repo *db.Repository, module Module.Module, results map
 	} else {
 		repo.WaitingTime = min(repo.WaitingTime+15*time.Minute, 60*time.Minute)
 	}
-	repo.Score = score
+	repo.Score = max(score, repo.Score)
 }
 
 func sortTraceContent(tracesPath string) (err error) {
