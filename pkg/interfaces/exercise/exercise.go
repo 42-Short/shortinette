@@ -20,7 +20,8 @@ type Result struct {
 
 // Exercise represents an exercise with various metadata fields.
 type Exercise struct {
-	Name            string                      // Name is the exercise's display name.
+	Name            string // Name is the exercise's display name.
+	CloneDirectory  string
 	TurnInDirectory string                      // TurnInDirectory is the directory where the exercise's file(s) can be found, relative to the repository's root.
 	TurnInFiles     []string                    // TurnInFiles is a list of all files allowed to be submitted.
 	AllowedKeywords map[string]int              // AllowedKeywords is a map of keywords allowed in this exercise, with an associated integer indicating the maximum number of times each keyword may appear. This will be linted by shortinette and the exercise will not pass if the submission does not respect those constraints.
@@ -140,7 +141,7 @@ func (e *Exercise) fullTurnInFilesPath() []string {
 	var fullFilePaths []string
 
 	for _, path := range e.TurnInFiles {
-		fullPath := filepath.Join("studentcode", e.TurnInDirectory, path)
+		fullPath := filepath.Join(e.CloneDirectory, e.TurnInDirectory, path)
 		fullFilePaths = append(fullFilePaths, fullPath)
 	}
 	return fullFilePaths
@@ -182,7 +183,7 @@ func (e *Exercise) turnInFilesCheck() Result {
 	var foundTurnInFiles []string
 	var errors []string
 	fullTurnInFilesPaths := e.fullTurnInFilesPath()
-	parentDirectory := filepath.Join("studentcode", e.TurnInDirectory)
+	parentDirectory := filepath.Join(e.CloneDirectory, e.TurnInDirectory)
 	_, err := os.Stat(parentDirectory)
 	if os.IsNotExist(err) {
 		return Result{Passed: false, Output: err.Error()}
@@ -216,10 +217,23 @@ func (e *Exercise) turnInFilesCheck() Result {
 //
 // Returns a Result struct indicating whether the check passed or failed.
 func (e *Exercise) forbiddenItemsCheck() (result Result) {
-	exercisePath := fmt.Sprintf("studentcode/%s/%s", e.TurnInDirectory, e.TurnInFiles[0])
-	err := lintStudentCode(exercisePath, *e)
-	if err != nil {
-		return Result{Passed: false, Output: err.Error()}
+	pathsToCheck := []string{}
+
+	for _, path := range e.TurnInFiles {
+		exercisePath := filepath.Join(e.CloneDirectory, e.TurnInDirectory, path)
+		if strings.HasSuffix(exercisePath, ".rs") {
+			pathsToCheck = append(pathsToCheck, exercisePath)
+		}
+	}
+
+	output := ""
+	for _, path := range pathsToCheck {
+		if err := lintStudentCode(path, *e); err != nil {
+			output = fmt.Sprintf("%s\n%s", output, err.Error())
+		}
+	}
+	if output != "" {
+		return Result{Passed: false, Output: output}
 	}
 
 	logger.Info.Printf("no forbidden items/keywords found in %s", e.TurnInDirectory+"/"+e.TurnInFiles[0])

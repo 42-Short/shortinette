@@ -49,6 +49,7 @@
 // focus on teaching and mentoring, while the framework handles the repetitive and error-prone
 // tasks of compiling, running, and grading student code.
 package shortinette
+
 // package main
 
 // import (

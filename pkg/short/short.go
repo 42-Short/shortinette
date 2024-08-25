@@ -185,7 +185,7 @@ func GradeModule(module Module.Module, repoID string) (err error) {
 		return err
 	}
 
-	results, tracesPath := module.Run(repoID, "studentcode")
+	results, tracesPath := module.Run(repoID)
 
 	updateNewWaitingTime(&repo, module, results)
 
@@ -293,6 +293,7 @@ func dockerExecMode(short Short) {
 	if !ok {
 		os.Exit(1)
 	}
+	exercise.CloneDirectory = config.TargetDirectory
 	if err := logger.InitializeTraceLogger(config.TracesPath); err != nil {
 		os.Exit(1)
 	}

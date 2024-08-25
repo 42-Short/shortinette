@@ -66,7 +66,7 @@ func FullTurnInFilesPath(exercise Exercise.Exercise) []string {
 	var fullFilePaths []string
 
 	for _, path := range exercise.TurnInFiles {
-		fullPath := filepath.Join("studentcode", exercise.TurnInDirectory, path)
+		fullPath := filepath.Join(exercise.CloneDirectory, exercise.TurnInDirectory, path)
 		fullFilePaths = append(fullFilePaths, fullPath)
 	}
 	return fullFilePaths

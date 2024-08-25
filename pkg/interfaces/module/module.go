@@ -51,9 +51,9 @@ func NewModule(name string, minimumGrade int, exercises map[string]Exercise.Exer
 //   - testDirectory: the directory where the repository will be cloned
 //
 // Returns an error if the environment setup fails.
-func setUpEnvironment(repoID string, testDirectory string) error {
+func setUpEnvironment(repoID string) error {
 	repoLink := fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoID)
-	if err := git.Clone(repoLink, testDirectory); err != nil {
+	if err := git.Clone(repoLink, repoID); err != nil {
 		return fmt.Errorf("failed to clone repository: %v", err)
 	}
 	return nil
@@ -63,9 +63,9 @@ func setUpEnvironment(repoID string, testDirectory string) error {
 // environment and the student's code directory.
 //
 // Returns an error if the environment teardown fails.
-func tearDownEnvironment() error {
-	if err := os.RemoveAll("studentcode"); err != nil {
-		return fmt.Errorf("failed to tear down code directory: %v", err)
+func tearDownEnvironment(repoId string) error {
+	if err := os.RemoveAll(repoId); err != nil {
+		return fmt.Errorf("remove clone directory: %v", err)
 	}
 	return nil
 }
@@ -150,14 +150,14 @@ type exerciseResult struct {
 //   - tracesPath: the path to store the trace logs
 //
 // Returns a map of exercise names to their pass/fail results.
-func gradingRoutine(module Module, tracesPath string) (results map[string]bool) {
+func gradingRoutine(module Module, tracesPath string, repoId string) (results map[string]bool) {
 	resultsChannel := make(chan exerciseResult, len(module.Exercises))
 	var waitGroup sync.WaitGroup
 	results = make(map[string]bool)
 
 	for _, exercise := range module.Exercises {
 		waitGroup.Add(1)
-		conf := GradingConfig{module.Name, exercise.Name, tracesPath, ""}
+		conf := GradingConfig{module.Name, exercise.Name, tracesPath, repoId}
 		go func(ex Exercise.Exercise) {
 			defer waitGroup.Done()
 			result := runContainerized(conf)
@@ -181,20 +181,20 @@ func gradingRoutine(module Module, tracesPath string) (results map[string]bool) 
 //   - testDirectory: the directory where the repository will be cloned
 //
 // Returns a map of exercise names to their pass/fail results and the path to the trace logs.
-func (m *Module) Run(repoID string, testDirectory string) (results map[string]bool, tracesPath string) {
+func (m *Module) Run(repoID string) (results map[string]bool, tracesPath string) {
 	defer func() {
-		if err := tearDownEnvironment(); err != nil {
+		if err := tearDownEnvironment(repoID); err != nil {
 			logger.Error.Printf("error tearing down grading environment: %s", err.Error())
 		}
 	}()
-	err := setUpEnvironment(repoID, testDirectory)
+	err := setUpEnvironment(repoID)
 	if err != nil {
 		logger.Error.Println(err)
 		return nil, ""
 	}
 	tracesPath = logger.GetNewTraceFile(repoID)
 	if m.Exercises != nil {
-		results = gradingRoutine(*m, tracesPath)
+		results = gradingRoutine(*m, tracesPath, repoID)
 	}
 	return results, tracesPath
 }
