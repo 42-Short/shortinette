@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/42-Short/shortinette/pkg/git"
 	"github.com/42-Short/shortinette/pkg/logger"
 	_ "github.com/mattn/go-sqlite3" // SQLite3 driver
 )
@@ -78,6 +79,10 @@ func tableExists(db *sql.DB, tableName string) (bool, error) {
 	return true, nil
 }
 
+func updateRemoteDatabase() {
+	git.UploadFile("sqlite3", "./sqlite3/repositories.db", "repositories.db", "repositories.db updated", "main")
+}
+
 // CreateTable creates a new table in the database for storing repository data if it does
 // not already exist.
 //
@@ -86,11 +91,12 @@ func tableExists(db *sql.DB, tableName string) (bool, error) {
 // Returns a boolean indicating if the table was created and an error if the operation fails.
 func CreateTable(tableName string) (bool, error) {
 	created := false
-
-	if err := os.MkdirAll("./sqlite3", 0755); err != nil {
+	if err := git.Create("sqlite3", false); err != nil {
 		return created, err
 	}
-
+	if err := git.Clone(fmt.Sprintf("https://github.com/%s/sqlite3.git", os.Getenv("GITHUB_ORGANISATION")), "sqlite3"); err != nil {
+		return created, err
+	}
 	db, err := sql.Open("sqlite3", "./sqlite3/repositories.db")
 	if err != nil {
 		return created, err
@@ -111,6 +117,7 @@ func CreateTable(tableName string) (bool, error) {
 		created = true
 	}
 	logger.Info.Printf("table %s created", tableName)
+	git.UploadFile("sqlite3", "./sqlite3/repositories.db", "repositories.db", fmt.Sprintf("table %s created in repositories.db", tableName), "main")
 	return created, nil
 }
 
@@ -121,6 +128,7 @@ func CreateTable(tableName string) (bool, error) {
 //
 // Returns an error if the initialization fails.
 func InitModuleTable(participants [][]string, moduleName string) (err error) {
+	defer updateRemoteDatabase()
 	db, err := sql.Open("sqlite3", "./sqlite3/repositories.db")
 	if err != nil {
 		return err
@@ -147,6 +155,7 @@ func InitModuleTable(participants [][]string, moduleName string) (err error) {
 //
 // Returns an error if the update fails.
 func UpdateRepository(moduleName string, repo Repository) (err error) {
+	defer updateRemoteDatabase()
 	db, err := sql.Open("sqlite3", "./sqlite3/repositories.db")
 	if err != nil {
 		return err

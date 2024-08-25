@@ -74,12 +74,13 @@ func Clone(repoURL string, targetDirectory string) error {
 // organization. It also adds a webhook for easy recording of repository activity.
 //
 //   - name: the name of the repository to create
+//	 - additionalBranches: variadic list of branches you would like to be created
 //
 // Returns an error if the repository creation process fails.
 //
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
-func Create(name string) error {
-	if err := create(name); err != nil {
+func Create(name string, withWebhook bool, additionalBranches ...string) error {
+	if err := create(name, withWebhook, additionalBranches...); err != nil {
 		logger.Error.Println(err)
 		return fmt.Errorf("could not create repo: %w", err)
 	}

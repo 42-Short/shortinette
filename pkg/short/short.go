@@ -264,7 +264,7 @@ func StartModule(module Module.Module, config Config) {
 		go func(participant Participant) {
 			defer wg.Done()
 			repoID := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
-			if err := git.Create(repoID); err != nil {
+			if err := git.Create(repoID, true, "traces"); err != nil {
 				logger.Error.Printf("error creating git repository: %v", err)
 			}
 			if err := git.AddCollaborator(repoID, participant.GithubUserName, "push"); err != nil {
