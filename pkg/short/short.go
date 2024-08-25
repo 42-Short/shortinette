@@ -184,7 +184,9 @@ func sortTraceContent(tracesPath string) (err error) {
 		if match := pattern.FindStringSubmatch(line); len(match) > 1 {
 			exerciseNumber, _ = strconv.Atoi(match[1])
 		}
-		outputByExercise[exerciseNumber] = append(outputByExercise[exerciseNumber], line)
+		if line != "" {
+			outputByExercise[exerciseNumber] = append(outputByExercise[exerciseNumber], line)
+		}
 	}
 
 	var keys []int
@@ -196,7 +198,6 @@ func sortTraceContent(tracesPath string) (err error) {
 	var sortedOutput strings.Builder
 	for _, k := range keys {
 		for _, line := range outputByExercise[k] {
-			fmt.Printf("|%s|", line)
 			sortedOutput.WriteString(line + "\n")
 		}
 	}
