@@ -161,8 +161,6 @@ CONFIG_PATH="Path to your Short config"
 Now configure the .json file whose path you set in your environment:
 ```json
 {
-    "start_date": "08.07.2024",
-    "end_date": "12.07.2024",
     "participants": [
         {
             "github_username": "shortinette-test",
@@ -172,8 +170,6 @@ Now configure the .json file whose path you set in your environment:
 }
 ```
 _note: The intra_login variable is used to build the names of the repos which will be created. You can of course set it to something else if you want the repos to be named differently. The repo naming format is: <intra_login>-<module_name>_
-
-_note 2: The start\_ & end_date from the config are not being taken into account by shortinette just yet, watch for future releases!_
 
 ### Step 6: Run Shortinette
 

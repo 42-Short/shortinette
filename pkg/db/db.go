@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/42-Short/shortinette/pkg/logger"
-	_ "github.com/mattn/go-sqlite3" // SQLite3 driver
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // Repository represents the data related to a student's repository, including grading
