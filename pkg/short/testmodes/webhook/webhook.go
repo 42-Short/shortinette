@@ -82,7 +82,7 @@ func (wt *WebhookTestMode) handleWebhook(w http.ResponseWriter, r *http.Request)
 	}
 	if payload.Ref == "refs/heads/main" && payload.Pusher.Name != os.Getenv("GITHUB_ADMIN") {
 		if strings.ToLower(payload.Commit.Message) == "grademe" {
-			logger.Info.Println("push event identified as submission, proceeding to grade..")
+			logger.Info.Printf("push event on %s identified as submission, grading..", payload.Repository.Name)
 			mu.Lock()
 			defer mu.Unlock()
 

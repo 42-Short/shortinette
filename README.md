@@ -32,6 +32,7 @@ shortinette is composed of several interconnected packages, each responsible for
 - Docker
 - Go programming environment
 - GitHub account and personal access token
+- Public IP for the GitHub webhook
 
 ### Step 1: Prepare the Docker Environment
 
