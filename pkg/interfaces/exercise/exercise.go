@@ -140,7 +140,7 @@ func (e *Exercise) fullTurnInFilesPath() []string {
 	var fullFilePaths []string
 
 	for _, path := range e.TurnInFiles {
-		fullPath := filepath.Join("/tmp/studentcode", e.TurnInDirectory, path)
+		fullPath := filepath.Join("studentcode", e.TurnInDirectory, path)
 		fullFilePaths = append(fullFilePaths, fullPath)
 	}
 	return fullFilePaths
@@ -182,7 +182,7 @@ func (e *Exercise) turnInFilesCheck() Result {
 	var foundTurnInFiles []string
 	var errors []string
 	fullTurnInFilesPaths := e.fullTurnInFilesPath()
-	parentDirectory := filepath.Join("/tmp/studentcode", e.TurnInDirectory)
+	parentDirectory := filepath.Join("studentcode", e.TurnInDirectory)
 	_, err := os.Stat(parentDirectory)
 	if os.IsNotExist(err) {
 		return Result{Passed: false, Output: err.Error()}
@@ -216,7 +216,7 @@ func (e *Exercise) turnInFilesCheck() Result {
 //
 // Returns a Result struct indicating whether the check passed or failed.
 func (e *Exercise) forbiddenItemsCheck() (result Result) {
-	exercisePath := fmt.Sprintf("/tmp/studentcode/%s/%s", e.TurnInDirectory, e.TurnInFiles[0])
+	exercisePath := fmt.Sprintf("studentcode/%s/%s", e.TurnInDirectory, e.TurnInFiles[0])
 	err := lintStudentCode(exercisePath, *e)
 	if err != nil {
 		return Result{Passed: false, Output: err.Error()}

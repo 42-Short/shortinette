@@ -60,7 +60,7 @@ func setUpEnvironment(repoID string, testDirectory string) error {
 //
 // Returns an error if the environment teardown fails.
 func tearDownEnvironment() error {
-	if err := os.RemoveAll("/tmp/studentcode"); err != nil {
+	if err := os.RemoveAll("studentcode"); err != nil {
 		return fmt.Errorf("failed to tear down code directory: %v", err)
 	}
 	return nil
