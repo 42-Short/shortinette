@@ -5,6 +5,7 @@ package Module
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"sort"
@@ -69,6 +70,13 @@ func tearDownEnvironment() error {
 	return nil
 }
 
+type GradingConfig struct {
+	ModuleName      string
+	ExerciseName    string
+	TracesPath      string
+	TargetDirectory string
+}
+
 // runContainerized runs an exercise within a Docker container to prevent running malicious
 // code on the host machine.
 //
@@ -77,7 +85,12 @@ func tearDownEnvironment() error {
 //   - tracesPath: the path to store the trace logs
 //
 // Returns a boolean indicating whether the exercise passed or failed.
-func runContainerized(module Module, exercise Exercise.Exercise, tracesPath string) bool {
+func runContainerized(config GradingConfig) bool {
+	configJSON, err := json.Marshal(config)
+	if err != nil {
+		logger.Error.Printf("marshal config: %v", err)
+	}
+
 	ctx := context.Background()
 	client, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
@@ -86,15 +99,15 @@ func runContainerized(module Module, exercise Exercise.Exercise, tracesPath stri
 	}
 
 	dir, _ := os.Getwd()
-	config := &container.Config{
+	containerConfig := &container.Config{
 		Image: "shortinette-testenv",
-		Cmd:   []string{"sh", "-c", fmt.Sprintf("go run . \"%s\" \"%s\" \"%s\"", module.Name, exercise.Name, tracesPath)},
+		Cmd:   []string{"sh", "-c", fmt.Sprintf("go run . '%s'", string(configJSON))},
 	}
 	hostConfig := &container.HostConfig{
 		Binds: []string{fmt.Sprintf("%s:/app", dir)},
 	}
 
-	response, err := client.ContainerCreate(ctx, config, hostConfig, nil, nil, "")
+	response, err := client.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, "")
 	if err != nil {
 		logger.Error.Printf("container creation: %v", err)
 		return false
@@ -144,9 +157,10 @@ func gradingRoutine(module Module, tracesPath string) (results map[string]bool) 
 
 	for _, exercise := range module.Exercises {
 		waitGroup.Add(1)
+		conf := GradingConfig{module.Name, exercise.Name, tracesPath, ""}
 		go func(ex Exercise.Exercise) {
 			defer waitGroup.Done()
-			result := runContainerized(module, ex, tracesPath)
+			result := runContainerized(conf)
 			resultsChannel <- exerciseResult{name: ex.Name, result: result}
 		}(exercise)
 	}

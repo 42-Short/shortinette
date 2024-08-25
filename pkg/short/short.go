@@ -3,6 +3,7 @@
 package short
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"sort"
@@ -27,12 +28,8 @@ type Short struct {
 
 // shortInit initializes the logging and requirement validation for the Short application.
 func shortInit() {
-	if len(os.Args) == 4 {
-		logger.InitializeStandardLoggers(os.Args[2])
-	} else {
-		logger.InitializeStandardLoggers("")
-	}
-	if err := requirements.ValidateRequirements(); len(os.Args) != 4 && err != nil {
+	logger.InitializeStandardLoggers("")
+	if err := requirements.ValidateRequirements(); len(os.Args) != 2 && err != nil {
 		logger.Error.Println(err.Error())
 		return
 	}
@@ -285,16 +282,22 @@ func StartModule(module Module.Module, config Config) {
 //
 //   - args: the command-line arguments passed to the application
 //   - short: the Short object containing the module and test mode information
-func dockerExecMode(args []string, short Short) {
-	exercise, ok := short.Modules[args[1]].Exercises[args[2]]
+func dockerExecMode(short Short) {
+	var config Module.GradingConfig
+	err := json.Unmarshal([]byte(os.Args[1]), &config)
+	if err != nil {
+		os.Exit(1)
+	}
+	logger.InitializeStandardLoggers(config.ExerciseName)
+	exercise, ok := short.Modules[config.ModuleName].Exercises[config.ExerciseName]
 	if !ok {
 		os.Exit(1)
 	}
-	if err := logger.InitializeTraceLogger(args[3]); err != nil {
+	if err := logger.InitializeTraceLogger(config.TracesPath); err != nil {
 		os.Exit(1)
 	}
 	result := exercise.Run()
-	logger.File.Printf("[MOD%s][EX%s]: %s", args[1], args[2], result.Output)
+	logger.File.Printf("[MOD%s][EX%s]: %s", config.ModuleName, config.ExerciseName, result.Output)
 	if result.Passed {
 		os.Exit(0)
 	} else {
@@ -305,18 +308,18 @@ func dockerExecMode(args []string, short Short) {
 // Start begins the module lifecycle by starting the module and running the test mode.
 //
 //   - module: the name of the module to be started
-func (s *Short) Start(module string) {
+func (short *Short) Start(module string) {
 	config, err := GetConfig()
 	if err != nil {
 		logger.Error.Println(err.Error())
 		return
 	}
-	if len(os.Args) == 4 {
-		dockerExecMode(os.Args, *s)
+	if len(os.Args) == 2 {
+		dockerExecMode(*short)
 	} else if len(os.Args) != 1 {
 		logger.Error.Println("invalid number of arguments")
 		return
 	}
-	StartModule(s.Modules[module], *config)
-	s.TestMode.Run(module)
+	StartModule(short.Modules[module], *config)
+	short.TestMode.Run(module)
 }
