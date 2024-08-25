@@ -79,7 +79,7 @@ type GradingConfig struct {
 	ModuleName      string
 	ExerciseName    string
 	TracesPath      string
-	TargetDirectory string
+	CloneDirectory string
 }
 
 // runContainerized runs an exercise within a Docker container to prevent running malicious
@@ -107,7 +107,7 @@ func runContainerized(config GradingConfig) bool {
 		Cmd:   []string{"sh", "-c", fmt.Sprintf("go run . '%s'", string(configJSON))},
 	}
 	hostConfig := &container.HostConfig{
-		Binds: []string{fmt.Sprintf("%s:/app", dir), fmt.Sprintf("%s:/tmp", config.TargetDirectory)},
+		Binds: []string{fmt.Sprintf("%s:/app", dir), fmt.Sprintf("%s:/tmp", config.CloneDirectory)},
 	}
 
 	response, err := client.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, "")

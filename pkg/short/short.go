@@ -337,7 +337,7 @@ func dockerExecMode(short Short) {
 	if !ok {
 		os.Exit(1)
 	}
-	exercise.CloneDirectory = config.TargetDirectory
+	exercise.CloneDirectory = config.CloneDirectory
 	if err := logger.InitializeTraceLogger(config.TracesPath); err != nil {
 		os.Exit(1)
 	}
