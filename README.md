@@ -15,7 +15,7 @@ Shortinette is a comprehensive framework designed to manage and automate the gra
 
 shortinette is composed of several interconnected packages, each responsible for a specific aspect of the grading pipeline:
 
-1. **logger**: Manages logging throughout the framework, capturing important events and errors.
+1. **logger**: Manages logging throughout the framework, capturing important events, errors and traces for user feedback.
 2. **requirements**: Validates environment variables and dependencies.
 3. **testutils**: Provides utilities for compiling and running code submissions.
 4. **db**: Handles interactions with the SQLite database.
@@ -77,7 +77,6 @@ func helloWorldTest(ex *exercise.Exercise) exercise.Result {
 func createExampleExercise() exercise.Exercise {
     return exercise.NewExercise(
         "example",
-        "studentcode",
         "ex00",
         []string{"main.rs"},
         nil,
@@ -86,6 +85,8 @@ func createExampleExercise() exercise.Exercise {
     )
 }
 ```
+
+shortinette stores the directory the repository got cloned into into the `CloneDirectory` field of the `Exercise` struct it passes to your testing function. This way, you can add more extensive tests like lints, etc by accessing the repo's content directly.
 
 ### Step 3: Define a Module
 
