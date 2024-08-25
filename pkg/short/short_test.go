@@ -20,7 +20,7 @@ func TestPrematureGradingAttempt(t *testing.T) {
 	}
 	os.Unsetenv("DEV_MODE")
 	if err := checkPrematureGradingAttempt(repo); err == nil {
-		t.Fatal("premature rading went through")
+		t.Fatal("premature grading went through")
 	}
 }
 
