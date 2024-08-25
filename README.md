@@ -2,7 +2,7 @@
 
 ## Overview
 
-Shortinette is a comprehensive framework designed to manage and automate the grading process for coding bootcamps, specifically tailored for "Shorts" (coding courses). This system provides a suite of tools for efficiently running and evaluating student submissions.
+shortinette is a framework designed to manage and automate the grading process for coding bootcamps, which we call `Shorts`. This system provides tools for efficiently and safely running and evaluating student submissions.
 
 ## Key Features
 
