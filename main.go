@@ -48,4 +48,25 @@
 // for detailed tracking of all grading activities. By using shortinette, educators can
 // focus on teaching and mentoring, while the framework handles the repetitive and error-prone
 // tasks of compiling, running, and grading student code.
-package shortinette
+// package shortinette
+package main
+
+import (
+	"github.com/42-Short/shortinette/internal/tests/R00"
+	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
+	"github.com/42-Short/shortinette/pkg/short"
+	"github.com/42-Short/shortinette/pkg/short/testmodes/webhook"
+)
+
+func main() {
+	modules := map[string]Module.Module{
+		"00": *R00.R00(),
+		// TODO: "01": *R01.R01(), // TODO
+		// TODO: "02": *R02.R02(), // TODO
+		// TODO: "03": *R03.R03(), // TODO
+		// TODO: "04": *R04.R04(), // TODO
+		// TODO: "05": *R05.R05(), // TODO
+	}
+	short := short.NewShort("Rust Piscine 1.0", modules, webhook.NewWebhookTestMode(modules))
+	short.Start("00")
+}

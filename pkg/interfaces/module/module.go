@@ -52,9 +52,6 @@ func setUpEnvironment(repoID string, testDirectory string) error {
 	if err := git.Clone(repoLink, testDirectory); err != nil {
 		return fmt.Errorf("failed to clone repository: %v", err)
 	}
-	if err := git.Clone(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoID), "compile-environment/"); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -63,10 +60,7 @@ func setUpEnvironment(repoID string, testDirectory string) error {
 //
 // Returns an error if the environment teardown fails.
 func tearDownEnvironment() error {
-	if err := os.RemoveAll("compile-environment"); err != nil {
-		return fmt.Errorf("failed to tear down compiling environment: %v", err)
-	}
-	if err := os.RemoveAll("studentcode"); err != nil {
+	if err := os.RemoveAll("/tmp/studentcode"); err != nil {
 		return fmt.Errorf("failed to tear down code directory: %v", err)
 	}
 	return nil

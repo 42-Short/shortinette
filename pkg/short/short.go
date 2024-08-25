@@ -188,7 +188,7 @@ func GradeModule(module Module.Module, repoID string) (err error) {
 		return err
 	}
 
-	results, tracesPath := module.Run(repoID, "studentcode")
+	results, tracesPath := module.Run(repoID, "/tmp/studentcode")
 
 	updateNewWaitingTime(&repo, module, results)
 

@@ -21,7 +21,6 @@ type Result struct {
 // Exercise represents an exercise with various metadata fields.
 type Exercise struct {
 	Name            string                      // Name is the exercise's display name.
-	RepoDirectory   string                      // RepoDirectory is the target directory for cloning repositories, used to construct file paths.
 	TurnInDirectory string                      // TurnInDirectory is the directory where the exercise's file(s) can be found, relative to the repository's root.
 	TurnInFiles     []string                    // TurnInFiles is a list of all files allowed to be submitted.
 	AllowedKeywords map[string]int              // AllowedKeywords is a map of keywords allowed in this exercise, with an associated integer indicating the maximum number of times each keyword may appear. This will be linted by shortinette and the exercise will not pass if the submission does not respect those constraints.
@@ -43,7 +42,6 @@ type Exercise struct {
 //   - executer: testing function with this signature: "func(test *Exercise) Result", will be run by the module for grading
 func NewExercise(
 	name string,
-	repoDirectory string,
 	turnInDirectory string,
 	turnInFiles []string,
 	allowedKeywords map[string]int,
@@ -52,7 +50,6 @@ func NewExercise(
 ) Exercise {
 	return Exercise{
 		Name:            name,
-		RepoDirectory:   repoDirectory,
 		TurnInDirectory: turnInDirectory,
 		TurnInFiles:     turnInFiles,
 		AllowedKeywords: allowedKeywords,
@@ -143,7 +140,7 @@ func (e *Exercise) fullTurnInFilesPath() []string {
 	var fullFilePaths []string
 
 	for _, path := range e.TurnInFiles {
-		fullPath := filepath.Join(e.RepoDirectory, e.TurnInDirectory, path)
+		fullPath := filepath.Join("/tmp/studentcode", e.TurnInDirectory, path)
 		fullFilePaths = append(fullFilePaths, fullPath)
 	}
 	return fullFilePaths
@@ -185,8 +182,12 @@ func (e *Exercise) turnInFilesCheck() Result {
 	var foundTurnInFiles []string
 	var errors []string
 	fullTurnInFilesPaths := e.fullTurnInFilesPath()
-	parentDirectory := filepath.Join(e.RepoDirectory, e.TurnInDirectory)
-	err := filepath.Walk(parentDirectory, func(path string, info os.FileInfo, err error) error {
+	parentDirectory := filepath.Join("/tmp/studentcode", e.TurnInDirectory)
+	_, err := os.Stat(parentDirectory)
+	if os.IsNotExist(err) {
+		return Result{Passed: false, Output: err.Error()}
+	}
+	err = filepath.Walk(parentDirectory, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			errors = append(errors, err.Error())
 			return nil
@@ -215,7 +216,7 @@ func (e *Exercise) turnInFilesCheck() Result {
 //
 // Returns a Result struct indicating whether the check passed or failed.
 func (e *Exercise) forbiddenItemsCheck() (result Result) {
-	exercisePath := fmt.Sprintf("compile-environment/%s/%s", e.TurnInDirectory, e.TurnInFiles[0])
+	exercisePath := fmt.Sprintf("/tmp/studentcode/%s/%s", e.TurnInDirectory, e.TurnInFiles[0])
 	err := lintStudentCode(exercisePath, *e)
 	if err != nil {
 		return Result{Passed: false, Output: err.Error()}
@@ -230,10 +231,10 @@ func (e *Exercise) forbiddenItemsCheck() (result Result) {
 //
 // Returns a Result struct with the outcome of the exercise execution.
 func (e *Exercise) Run() (result Result) {
-	if result = e.forbiddenItemsCheck(); !result.Passed {
+	if result = e.turnInFilesCheck(); !result.Passed {
 		return result
 	}
-	if result = e.turnInFilesCheck(); !result.Passed {
+	if result = e.forbiddenItemsCheck(); !result.Passed {
 		return result
 	}
 	e.TurnInFiles = e.fullTurnInFilesPath()
