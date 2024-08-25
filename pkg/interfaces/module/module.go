@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"sync"
 
@@ -53,7 +54,9 @@ func NewModule(name string, minimumGrade int, exercises map[string]Exercise.Exer
 // Returns an error if the environment setup fails.
 func setUpEnvironment(repoID string) error {
 	repoLink := fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoID)
-	if err := git.Clone(repoLink, repoID); err != nil {
+	cloneDirectory := filepath.Join("/tmp", repoID)
+
+	if err := git.Clone(repoLink, cloneDirectory); err != nil {
 		return fmt.Errorf("failed to clone repository: %v", err)
 	}
 	return nil
@@ -64,7 +67,9 @@ func setUpEnvironment(repoID string) error {
 //
 // Returns an error if the environment teardown fails.
 func tearDownEnvironment(repoId string) error {
-	if err := os.RemoveAll(repoId); err != nil {
+	cloneDirectory := filepath.Join("/tmp", repoId)
+
+	if err := os.RemoveAll(cloneDirectory); err != nil {
 		return fmt.Errorf("remove clone directory: %v", err)
 	}
 	return nil
@@ -80,9 +85,7 @@ type GradingConfig struct {
 // runContainerized runs an exercise within a Docker container to prevent running malicious
 // code on the host machine.
 //
-//   - module: the Module containing the exercise
-//   - exercise: the Exercise to be run
-//   - tracesPath: the path to store the trace logs
+//	- config: GradingConfig object filled with the metadata needed for grading execution
 //
 // Returns a boolean indicating whether the exercise passed or failed.
 func runContainerized(config GradingConfig) bool {
@@ -104,7 +107,7 @@ func runContainerized(config GradingConfig) bool {
 		Cmd:   []string{"sh", "-c", fmt.Sprintf("go run . '%s'", string(configJSON))},
 	}
 	hostConfig := &container.HostConfig{
-		Binds: []string{fmt.Sprintf("%s:/app", dir)},
+		Binds: []string{fmt.Sprintf("%s:/app", dir), fmt.Sprintf("%s:/tmp", config.TargetDirectory)},
 	}
 
 	response, err := client.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, "")
@@ -159,7 +162,8 @@ func gradingRoutine(module Module, tracesPath string, repoId string) (results ma
 
 	for _, exercise := range module.Exercises {
 		waitGroup.Add(1)
-		conf := GradingConfig{module.Name, exercise.Name, tracesPath, repoId}
+		cloneDirectory := filepath.Join("/tmp", repoId)
+		conf := GradingConfig{module.Name, exercise.Name, tracesPath, cloneDirectory}
 		go func(ex Exercise.Exercise) {
 			defer waitGroup.Done()
 			result := runContainerized(conf)

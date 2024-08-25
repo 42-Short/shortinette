@@ -98,7 +98,7 @@ func RepoExists(repo string) (bool, error) {
 //   - name: the name of the repository to create
 //
 // Returns an error if the repository creation fails.
-func createRepository(name string) (err error) {
+func createRepository(name string, withWebhook bool) (err error) {
 	url := fmt.Sprintf("https://api.github.com/orgs/%s/repos", os.Getenv("GITHUB_ORGANISATION"))
 	repoDetails := map[string]interface{}{
 		"name":    name,
@@ -124,8 +124,10 @@ func createRepository(name string) (err error) {
 		return fmt.Errorf("could not create repository %s: %s", name, response.Status)
 	}
 
-	if err := addWebhook(name); err != nil {
-		return fmt.Errorf("failed to add webhook: %w", err)
+	if withWebhook {
+		if err := addWebhook(name); err != nil {
+			return fmt.Errorf("failed to add webhook: %w", err)
+		}
 	}
 
 	logger.Info.Printf("repository %s created in %s", name, os.Getenv("GITHUB_ORGANISATION"))
@@ -180,7 +182,7 @@ func initialCommit(repo, token string) error {
 //   - name: the name of the repository to create
 //
 // Returns an error if the repository creation, initial commit, or branch creation fails.
-func create(name string) error {
+func create(name string, withWebhook bool, additionalBranches ...string) error {
 	exists, err := RepoExists(name)
 	if err != nil {
 		return fmt.Errorf("could not verify repository existence: %w", err)
@@ -191,7 +193,7 @@ func create(name string) error {
 		return nil
 	}
 
-	if err := createRepository(name); err != nil {
+	if err := createRepository(name, withWebhook); err != nil {
 		return err
 	}
 
@@ -203,8 +205,10 @@ func create(name string) error {
 	if err != nil {
 		return err
 	}
-	if err := createBranch(name, os.Getenv("GITHUB_TOKEN"), "traces", sha); err != nil {
-		return err
+	for _, branch := range additionalBranches {
+		if err := createBranch(name, os.Getenv("GITHUB_TOKEN"), branch, sha); err != nil {
+			return err
+		}
 	}
 	return nil
 }
