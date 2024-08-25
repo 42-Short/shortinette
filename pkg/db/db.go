@@ -92,7 +92,7 @@ func updateRemoteDatabase() (err error) {
 //
 //   - tableName: the name of the table to create
 //
-// Returns a boolean indicating if the table was created and an error if the operation fails.
+// Returns a boolean indicating whether the table was created and an error if the operation fails.
 func CreateTable(tableName string) (bool, error) {
 	created := false
 	if err := git.Create("sqlite3", false); err != nil {

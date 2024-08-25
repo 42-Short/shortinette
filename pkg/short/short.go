@@ -171,6 +171,8 @@ func updateNewWaitingTime(repo *db.Repository, module Module.Module, results map
 	repo.Score = max(score, repo.Score)
 }
 
+// Sorts the trace content before uploading (containers are writing into the file asynchronously,
+// leading to mixups in the output)
 func sortTraceContent(tracesPath string) (err error) {
 	contentAsBytes, err := os.ReadFile(tracesPath)
 	if err != nil {
@@ -280,29 +282,12 @@ func EndModule(module Module.Module, config Config) {
 	}
 }
 
-// StartModule creates a new repository for each participant, gives them write access,
-// and uploads the module's subject to the repository.
+// Asynchronously creates a repo for each user in the config specified by CONFIG_PATH. 
 //
-//   - module: the module object containing the exercises
-//   - config: the configuration object containing participants' information
-func StartModule(module Module.Module, config Config) {
+// 	- config: Config struct filled with the participant's data
+//	- module: Module.Module struct filled with the module's metadata
+func initializeRepos(config Config, module Module.Module) {
 	var wg sync.WaitGroup
-
-	created, err := db.CreateTable(fmt.Sprintf("repositories_%s", module.Name))
-	if err != nil {
-		logger.Error.Println(err.Error())
-		return
-	}
-	if created {
-		var participants = [][]string{}
-		for _, participant := range config.Participants {
-			participants = append(participants, []string{participant.GithubUserName, participant.IntraLogin})
-		}
-		if err := db.InitModuleTable(participants, module.Name); err != nil {
-			logger.Error.Println(err.Error())
-			return
-		}
-	}
 
 	for _, participant := range config.Participants {
 		wg.Add(1)
@@ -321,6 +306,30 @@ func StartModule(module Module.Module, config Config) {
 		}(participant)
 	}
 	wg.Wait()
+}
+
+// StartModule creates a new repository for each participant, gives them write access,
+// and uploads the module's subject to the repository.
+//
+//   - module: the module object containing the exercises
+//   - config: the configuration object containing participants' information
+func StartModule(module Module.Module, config Config) {
+	created, err := db.CreateTable(fmt.Sprintf("repositories_%s", module.Name))
+	if err != nil {
+		logger.Error.Println(err.Error())
+		return
+	}
+	if created {
+		var participants = [][]string{}
+		for _, participant := range config.Participants {
+			participants = append(participants, []string{participant.GithubUserName, participant.IntraLogin})
+		}
+		if err := db.InitModuleTable(participants, module.Name); err != nil {
+			logger.Error.Println(err.Error())
+			return
+		}
+	}
+	initializeRepos(config, module)
 }
 
 // dockerExecMode runs the grading process for a single exercise inside a Docker container.
