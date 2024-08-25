@@ -41,13 +41,6 @@
 //   into a cohesive system. The `short` package handles the setup and teardown of grading
 //   environments, manages the execution of modules and exercises, and ensures that all
 //   results are properly recorded and reported.
-
-// Overall, shortinette is designed to streamline the grading of programming assignments
-// in a secure, automated, and scalable manner. It leverages Docker for sandboxed execution
-// of code, GitHub for version control and collaboration, and a flexible logging system
-// for detailed tracking of all grading activities. By using shortinette, educators can
-// focus on teaching and mentoring, while the framework handles the repetitive and error-prone
-// tasks of compiling, running, and grading student code.
 package shortinette
 
 // package main

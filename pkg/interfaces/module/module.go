@@ -132,7 +132,9 @@ func runContainerized(config GradingConfig) bool {
 		logger.Error.Printf("fetching container logs: %v", err)
 		return false
 	}
-	stdcopy.StdCopy(os.Stdout, os.Stderr, output)
+	if _, err = stdcopy.StdCopy(os.Stdout, os.Stderr, output); err != nil {
+		return false
+	}
 	return true
 }
 
