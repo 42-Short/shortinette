@@ -150,12 +150,12 @@ GITHUB_EMAIL="Your GitHub email"
 GITHUB_TOKEN="Your GitHub personal access token"
 
 # We use Webhooks to record events on repositories.
-WEBHOOK_URL="<HOST>:8080/webhook"
+WEBHOOK_URL="<Host>:8080/webhook"
 
 # This is the organization under which the repositories will be created.
 GITHUB_ORGANISATION="Your GitHub organization's name"
 
-CONFIG_PATH="Path to your Short config"
+CONFIG_PATH="Path to your Short config.json, see below for details"
 
 ```
 #### Configuration File
