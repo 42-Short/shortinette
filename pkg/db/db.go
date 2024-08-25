@@ -79,6 +79,7 @@ func tableExists(db *sql.DB, tableName string) (bool, error) {
 	return true, nil
 }
 
+// Syncs the local database changes with the remote.
 func updateRemoteDatabase() (err error) {
 	if err = git.UploadFile("sqlite3", "./sqlite3/repositories.db", "repositories.db", "repositories.db updated", "main"); err != nil {
 		return err
@@ -87,7 +88,7 @@ func updateRemoteDatabase() (err error) {
 }
 
 // CreateTable creates a new table in the database for storing repository data if it does
-// not already exist.
+// not already exist. The database file is then stored on a repo under the configured organisation.
 //
 //   - tableName: the name of the table to create
 //

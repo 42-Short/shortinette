@@ -324,6 +324,8 @@ func StartModule(module Module.Module, config Config) {
 }
 
 // dockerExecMode runs the grading process for a single exercise inside a Docker container.
+// Here, we unmarshal a JSON passed by the main program through command line arguments, containing
+// all the state information we need for grading the exercise.
 //
 //   - short: the Short object containing the module and test mode information
 func dockerExecMode(short Short) {
