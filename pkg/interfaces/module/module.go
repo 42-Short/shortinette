@@ -4,6 +4,8 @@
 package Module
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"sort"
@@ -12,7 +14,9 @@ import (
 	"github.com/42-Short/shortinette/pkg/git"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 	"github.com/42-Short/shortinette/pkg/logger"
-	"github.com/42-Short/shortinette/pkg/testutils"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 )
 
 // Module represents a module containing multiple exercises. It includes the module's
@@ -47,13 +51,10 @@ func NewModule(name string, minimumGrade int, exercises map[string]Exercise.Exer
 //   - testDirectory: the directory where the repository will be cloned
 //
 // Returns an error if the environment setup fails.
-func setUpEnvironment(repoID string, testDirectory string) error {
+func setUpEnvironment(repoID string) error {
 	repoLink := fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoID)
-	if err := git.Clone(repoLink, testDirectory); err != nil {
+	if err := git.Clone(repoLink, repoID); err != nil {
 		return fmt.Errorf("failed to clone repository: %v", err)
-	}
-	if err := git.Clone(fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoID), "compile-environment/"); err != nil {
-		return err
 	}
 	return nil
 }
@@ -62,14 +63,18 @@ func setUpEnvironment(repoID string, testDirectory string) error {
 // environment and the student's code directory.
 //
 // Returns an error if the environment teardown fails.
-func tearDownEnvironment() error {
-	if err := os.RemoveAll("compile-environment"); err != nil {
-		return fmt.Errorf("failed to tear down compiling environment: %v", err)
-	}
-	if err := os.RemoveAll("studentcode"); err != nil {
-		return fmt.Errorf("failed to tear down code directory: %v", err)
+func tearDownEnvironment(repoId string) error {
+	if err := os.RemoveAll(repoId); err != nil {
+		return fmt.Errorf("remove clone directory: %v", err)
 	}
 	return nil
+}
+
+type GradingConfig struct {
+	ModuleName      string
+	ExerciseName    string
+	TracesPath      string
+	TargetDirectory string
 }
 
 // runContainerized runs an exercise within a Docker container to prevent running malicious
@@ -80,22 +85,54 @@ func tearDownEnvironment() error {
 //   - tracesPath: the path to store the trace logs
 //
 // Returns a boolean indicating whether the exercise passed or failed.
-func runContainerized(module Module, exercise Exercise.Exercise, tracesPath string) bool {
-	command := "docker"
-	dir, _ := os.Getwd()
-	args := []string{
-		"run",
-		"-i",
-		"--rm",
-		"-v",
-		fmt.Sprintf("%s:/app", dir),
-		"shortinette-testenv",
-		"sh",
-		"-c",
-		fmt.Sprintf("go run . \"%s\" \"%s\" \"%s\"", module.Name, exercise.Name, tracesPath),
+func runContainerized(config GradingConfig) bool {
+	configJSON, err := json.Marshal(config)
+	if err != nil {
+		logger.Error.Printf("marshal config: %v", err)
 	}
-	if _, err := testutils.RunCommandLine(".", command, args, testutils.WithRealTimeOutput()); err != nil {
-		logger.Info.Printf("EXERCISE %s:\n%v", exercise.Name, err)
+
+	ctx := context.Background()
+	client, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		logger.Error.Printf("Docker client creation: %v", err)
+		return false
+	}
+
+	dir, _ := os.Getwd()
+	containerConfig := &container.Config{
+		Image: "shortinette-testenv",
+		Cmd:   []string{"sh", "-c", fmt.Sprintf("go run . '%s'", string(configJSON))},
+	}
+	hostConfig := &container.HostConfig{
+		Binds: []string{fmt.Sprintf("%s:/app", dir)},
+	}
+
+	response, err := client.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, "")
+	if err != nil {
+		logger.Error.Printf("container creation: %v", err)
+		return false
+	}
+
+	if err := client.ContainerStart(ctx, response.ID, container.StartOptions{}); err != nil {
+		logger.Error.Printf("container startup: %v", err)
+		return false
+	}
+
+	statusChannel, errorChannel := client.ContainerWait(ctx, response.ID, container.WaitConditionNotRunning)
+	select {
+	case err := <-errorChannel:
+		if err != nil {
+			logger.Error.Printf("waiting for container: %v", err)
+			return false
+		}
+	case <-statusChannel:
+	}
+	output, err := client.ContainerLogs(ctx, response.ID, container.LogsOptions{ShowStdout: true, ShowStderr: true})
+	if err != nil {
+		logger.Error.Printf("fetching container logs: %v", err)
+		return false
+	}
+	if _, err = stdcopy.StdCopy(os.Stdout, os.Stderr, output); err != nil {
 		return false
 	}
 	return true
@@ -115,16 +152,17 @@ type exerciseResult struct {
 //   - tracesPath: the path to store the trace logs
 //
 // Returns a map of exercise names to their pass/fail results.
-func gradingRoutine(module Module, tracesPath string) (results map[string]bool) {
+func gradingRoutine(module Module, tracesPath string, repoId string) (results map[string]bool) {
 	resultsChannel := make(chan exerciseResult, len(module.Exercises))
 	var waitGroup sync.WaitGroup
 	results = make(map[string]bool)
 
 	for _, exercise := range module.Exercises {
 		waitGroup.Add(1)
+		conf := GradingConfig{module.Name, exercise.Name, tracesPath, repoId}
 		go func(ex Exercise.Exercise) {
 			defer waitGroup.Done()
-			result := runContainerized(module, ex, tracesPath)
+			result := runContainerized(conf)
 			resultsChannel <- exerciseResult{name: ex.Name, result: result}
 		}(exercise)
 	}
@@ -145,20 +183,20 @@ func gradingRoutine(module Module, tracesPath string) (results map[string]bool) 
 //   - testDirectory: the directory where the repository will be cloned
 //
 // Returns a map of exercise names to their pass/fail results and the path to the trace logs.
-func (m *Module) Run(repoID string, testDirectory string) (results map[string]bool, tracesPath string) {
+func (m *Module) Run(repoID string) (results map[string]bool, tracesPath string) {
 	defer func() {
-		if err := tearDownEnvironment(); err != nil {
+		if err := tearDownEnvironment(repoID); err != nil {
 			logger.Error.Printf("error tearing down grading environment: %s", err.Error())
 		}
 	}()
-	err := setUpEnvironment(repoID, testDirectory)
+	err := setUpEnvironment(repoID)
 	if err != nil {
 		logger.Error.Println(err)
 		return nil, ""
 	}
 	tracesPath = logger.GetNewTraceFile(repoID)
 	if m.Exercises != nil {
-		results = gradingRoutine(*m, tracesPath)
+		results = gradingRoutine(*m, tracesPath, repoID)
 	}
 	return results, tracesPath
 }
