@@ -36,13 +36,13 @@ type Module struct {
 //   - minimumGrade: the minimum score required to pass the module
 //   - exercises: map of all Exercise.Exercise objects belonging to the module
 //   - subjectPath: path to the module's subject file
-func NewModule(name string, minimumGrade int, exercises map[string]Exercise.Exercise, subjectPath string) (Module, error) {
+func NewModule(name string, minimumGrade int, exercises map[string]Exercise.Exercise, subjectPath string) (module Module) {
 	return Module{
 		Name:         name,
 		MinimumGrade: minimumGrade,
 		Exercises:    exercises,
 		SubjectPath:  subjectPath,
-	}, nil
+	}
 }
 
 // setUpEnvironment sets up the environment by cloning the student's repository and
