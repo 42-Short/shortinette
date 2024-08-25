@@ -138,6 +138,16 @@ func runContainerized(config GradingConfig) bool {
 	if _, err = stdcopy.StdCopy(os.Stdout, os.Stderr, output); err != nil {
 		return false
 	}
+
+	inspect, err := client.ContainerInspect(ctx, response.ID)
+    if err != nil {
+        logger.Error.Printf("inspecting container: %v", err)
+        return false
+    }
+
+	if inspect.State.ExitCode != 0 {
+		return false 
+	}
 	return true
 }
 
@@ -217,9 +227,7 @@ func (m *Module) GetScore(results map[string]bool) (score int, passed bool) {
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)
-
 	score = 0
-
 	for _, key := range keys {
 		if !results[key] {
 			break
