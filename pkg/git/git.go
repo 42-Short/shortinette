@@ -74,8 +74,8 @@ func Clone(repoURL string, targetDirectory string) (err error) {
 // organization. It also adds a webhook for easy recording of repository activity.
 //
 //   - name: the name of the repository to create
-//	 - withWebhook: bool indicating whether to add a webhook to the repo, allowing the server to listen for changes
-//	 - additionalBranches: variadic list of branches you would like to be created
+//   - withWebhook: bool indicating whether to add a webhook to the repo, allowing the server to listen for changes
+//   - additionalBranches: variadic list of branches you would like to be created
 //
 // Returns an error if the repository creation process fails.
 //

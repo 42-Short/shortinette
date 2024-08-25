@@ -17,7 +17,7 @@ import (
 //   - token: the GitHub authentication token
 //
 // Returns the SHA as a string and an error if the operation fails.
-func getDefaultBranchSHA(repoID string, token string) (string, error) {
+func getDefaultBranchSHA(repoID string, token string) (sha string, err error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/git/refs/heads/main", os.Getenv("GITHUB_ORGANISATION"), repoID)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -59,7 +59,7 @@ func getDefaultBranchSHA(repoID string, token string) (string, error) {
 //   - sha: the SHA of the commit from which the branch will be created
 //
 // Returns an error if the branch creation fails.
-func createBranch(repo string, token string, branchName string, sha string) error {
+func createBranch(repo string, token string, branchName string, sha string) (err error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/git/refs", os.Getenv("GITHUB_ORGANISATION"), repo)
 	requestBody := map[string]interface{}{
 		"ref": fmt.Sprintf("refs/heads/%s", branchName),

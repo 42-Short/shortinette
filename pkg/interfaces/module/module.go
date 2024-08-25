@@ -66,8 +66,8 @@ func setUpEnvironment(repoID string) error {
 // environment and the student's code directory.
 //
 // Returns an error if the environment teardown fails.
-func tearDownEnvironment(repoId string) error {
-	cloneDirectory := filepath.Join("/tmp", repoId)
+func tearDownEnvironment(repoID string) error {
+	cloneDirectory := filepath.Join("/tmp", repoID)
 
 	if err := os.RemoveAll(cloneDirectory); err != nil {
 		return fmt.Errorf("remove clone directory: %v", err)
@@ -76,16 +76,16 @@ func tearDownEnvironment(repoId string) error {
 }
 
 type GradingConfig struct {
-	ModuleName      string
-	ExerciseName    string
-	TracesPath      string
+	ModuleName     string
+	ExerciseName   string
+	TracesPath     string
 	CloneDirectory string
 }
 
 // runContainerized runs an exercise within a Docker container to prevent running malicious
 // code on the host machine.
 //
-//	- config: GradingConfig object filled with the metadata needed for grading execution
+//   - config: GradingConfig object filled with the metadata needed for grading execution
 //
 // Returns a boolean indicating whether the exercise passed or failed.
 func runContainerized(config GradingConfig) bool {
@@ -140,13 +140,13 @@ func runContainerized(config GradingConfig) bool {
 	}
 
 	inspect, err := client.ContainerInspect(ctx, response.ID)
-    if err != nil {
-        logger.Error.Printf("inspecting container: %v", err)
-        return false
-    }
+	if err != nil {
+		logger.Error.Printf("inspecting container: %v", err)
+		return false
+	}
 
 	if inspect.State.ExitCode != 0 {
-		return false 
+		return false
 	}
 	return true
 }
@@ -165,14 +165,14 @@ type exerciseResult struct {
 //   - tracesPath: the path to store the trace logs
 //
 // Returns a map of exercise names to their pass/fail results.
-func gradingRoutine(module Module, tracesPath string, repoId string) (results map[string]bool) {
+func gradingRoutine(module Module, tracesPath string, repoID string) (results map[string]bool) {
 	resultsChannel := make(chan exerciseResult, len(module.Exercises))
 	var waitGroup sync.WaitGroup
 	results = make(map[string]bool)
 
 	for _, exercise := range module.Exercises {
 		waitGroup.Add(1)
-		cloneDirectory := filepath.Join("/tmp", repoId)
+		cloneDirectory := filepath.Join("/tmp", repoID)
 		conf := GradingConfig{module.Name, exercise.Name, tracesPath, cloneDirectory}
 		go func(ex Exercise.Exercise) {
 			defer waitGroup.Done()

@@ -17,7 +17,7 @@ import (
 //   - repoID: the name of the repository
 //
 // Returns the URL as a string.
-func buildReleaseURL(repoID string) string {
+func buildReleaseURL(repoID string) (url string) {
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/releases", os.Getenv("GITHUB_ORGANISATION"), repoID)
 }
 
@@ -26,7 +26,7 @@ func buildReleaseURL(repoID string) string {
 //   - repoID: the name of the repository
 //
 // Returns the URL as a string.
-func buildLatestReleaseURL(repoID string) string {
+func buildLatestReleaseURL(repoID string) (url string) {
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", os.Getenv("GITHUB_ORGANISATION"), repoID)
 }
 
@@ -39,7 +39,7 @@ func buildLatestReleaseURL(repoID string) string {
 //   - body: the body text of the release
 //
 // Returns the created HTTP request or an error if the request could not be created.
-func createReleaseRequest(url string, token string, tagName string, releaseName string, body string) (*http.Request, error) {
+func createReleaseRequest(url string, token string, tagName string, releaseName string, body string) (request *http.Request, err error) {
 	releaseDetails := map[string]interface{}{
 		"tag_name": tagName,
 		"name":     releaseName,
@@ -51,7 +51,7 @@ func createReleaseRequest(url string, token string, tagName string, releaseName 
 		return nil, err
 	}
 
-	request, err := http.NewRequest("POST", url, bytes.NewBuffer(releaseDetailsJSON))
+	request, err = http.NewRequest("POST", url, bytes.NewBuffer(releaseDetailsJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func createReleaseRequest(url string, token string, tagName string, releaseName 
 //   - body: the body text of the release
 //
 // Returns an error if the release creation fails.
-func createRelease(repo string, tagName string, releaseName string, body string) error {
+func createRelease(repo string, tagName string, releaseName string, body string) (err error) {
 	url := buildReleaseURL(repo)
 
 	request, err := createReleaseRequest(url, os.Getenv("GITHUB_TOKEN"), tagName, releaseName, body)
@@ -95,7 +95,7 @@ func createRelease(repo string, tagName string, releaseName string, body string)
 //   - graded: if set to true, the last graded timestamp in the release will be updated
 //
 // Returns an error if the release creation or update fails.
-func newRelease(repoID string, tagName string, releaseName string, tracesPath string, graded bool) error {
+func newRelease(repoID string, tagName string, releaseName string, tracesPath string, graded bool) (err error) {
 	existingReleaseID, _, existingReleaseBody, err := getLatestRelease(repoID)
 	if err != nil {
 		return fmt.Errorf("could not check for existing release: %w", err)
@@ -164,7 +164,7 @@ func getLatestRelease(repoID string) (id string, name string, body string, err e
 //   - releaseID: the ID of the release to be deleted
 //
 // Returns an error if the deletion fails.
-func deleteRelease(repoID string, releaseID string) error {
+func deleteRelease(repoID string, releaseID string) (err error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/%s", os.Getenv("GITHUB_ORGANISATION"), repoID, releaseID)
 	token := os.Getenv("GITHUB_TOKEN")
 

@@ -12,7 +12,7 @@ import (
 //   - errorMessage: The error message describing the runtime error.
 //
 // Returns a Result with Passed set to false and the error message included in the Output.
-func RuntimeError(errorMessage string) Result {
+func RuntimeError(errorMessage string) (res Result) {
 	return Result{Passed: false, Output: fmt.Sprintf("runtime error: %s", errorMessage)}
 }
 
@@ -22,7 +22,7 @@ func RuntimeError(errorMessage string) Result {
 //   - errorMessage: The error message describing the compilation error.
 //
 // Returns a Result with Passed set to false and the error message included in the Output.
-func CompilationError(errorMessage string) Result {
+func CompilationError(errorMessage string) (res Result) {
 	return Result{Passed: false, Output: fmt.Sprintf("compilation error: %s", errorMessage)}
 }
 
@@ -30,7 +30,7 @@ func CompilationError(errorMessage string) Result {
 // submission.
 //
 // Returns a Result with Passed set to false and a message indicating the presence of invalid files in the Output.
-func InvalidFileError() Result {
+func InvalidFileError() (res Result) {
 	return Result{Passed: false, Output: "invalid file(s) found in turn in directory"}
 }
 
@@ -41,7 +41,7 @@ func InvalidFileError() Result {
 //   - got: The actual output produced by the student's code.
 //
 // Returns a Result with Passed set to false and a message detailing the discrepancy between expected and actual output in the Output.
-func AssertionError(expected string, got string) Result {
+func AssertionError(expected string, got string) (res Result) {
 	expectedReplaced := strings.ReplaceAll(expected, "\n", "\\n")
 	gotReplaced := strings.ReplaceAll(got, "\n", "\\n")
 	return Result{Passed: false, Output: fmt.Sprintf("invalid output: expected '%s', got '%s'", expectedReplaced, gotReplaced)}
@@ -53,7 +53,7 @@ func AssertionError(expected string, got string) Result {
 //   - errorMessage: The error message describing the internal error.
 //
 // Returns a Result with Passed set to false and the error message included in the Output.
-func InternalError(errorMessage string) Result {
+func InternalError(errorMessage string) (res Result) {
 	return Result{Passed: false, Output: fmt.Sprintf("internal error: %v", errorMessage)}
 }
 
@@ -62,6 +62,6 @@ func InternalError(errorMessage string) Result {
 //   - message: A success message to include in the Output.
 //
 // Returns a Result with Passed set to true and the success message included in the Output.
-func Passed(message string) Result {
+func Passed(message string) (res Result) {
 	return Result{Passed: true, Output: message}
 }

@@ -48,7 +48,7 @@ func NewExercise(
 	allowedKeywords map[string]int,
 	score int,
 	executer func(test *Exercise) Result,
-) Exercise {
+) (exercise Exercise) {
 	return Exercise{
 		Name:            name,
 		TurnInDirectory: turnInDirectory,
@@ -134,12 +134,11 @@ func lintStudentCode(exercisePath string, test Exercise) (err error) {
 	return scanStudentFile(scanner, test.AllowedKeywords)
 }
 
-// fullTurnInFilesPath constructs the full file paths for the files to be turned in.
+// fullTurnInFilesPath constructs the full file paths for the files to be turned in, relative to
+// shortinette's current working directory.
 //
 // Returns a slice of strings containing the full file paths.
-func (e *Exercise) fullTurnInFilesPath() []string {
-	var fullFilePaths []string
-
+func (e *Exercise) fullTurnInFilesPath() (fullFilePaths []string) {
 	for _, path := range e.TurnInFiles {
 		fullPath := filepath.Join(e.CloneDirectory, e.TurnInDirectory, path)
 		fullFilePaths = append(fullFilePaths, fullPath)
@@ -153,7 +152,7 @@ func (e *Exercise) fullTurnInFilesPath() []string {
 //   - needle: The string to search for.
 //
 // Returns a boolean indicating whether the string was found.
-func containsString(hayStack []string, needle string) bool {
+func containsString(hayStack []string, needle string) (found bool) {
 	for _, str := range hayStack {
 		if str == needle {
 			return true
@@ -162,33 +161,22 @@ func containsString(hayStack []string, needle string) bool {
 	return false
 }
 
-// extractAfterExerciseName extracts a portion of the file path after the exercise name.
+// Returns a file path relative to exercise.TurnInDirectory
 //
 //   - exerciseName: The name of the exercise.
 //   - fullPath: The full file path.
 //
 // Returns a string containing the portion of the file path after the exercise name.
-func extractAfterExerciseName(exerciseName string, fullPath string) string {
+func extractAfterExerciseName(exerciseName string, fullPath string) (trimmed string) {
 	index := strings.Index(fullPath, exerciseName)
 	if index == -1 {
-		return "" // or handle the error as needed
+		return ""
 	}
 	return "'" + fullPath[index+len(exerciseName)+1:] + "'"
 }
 
-// turnInFilesCheck checks if the correct files have been turned in.
-//
-// Returns a Result struct indicating whether the check passed or failed.
-func (e *Exercise) turnInFilesCheck() Result {
-	var foundTurnInFiles []string
-	var errors []string
-	fullTurnInFilesPaths := e.fullTurnInFilesPath()
-	parentDirectory := filepath.Join(e.CloneDirectory, e.TurnInDirectory)
-	_, err := os.Stat(parentDirectory)
-	if os.IsNotExist(err) {
-		return Result{Passed: false, Output: err.Error()}
-	}
-	err = filepath.Walk(parentDirectory, func(path string, info os.FileInfo, err error) error {
+func walkTurnInDirectory(parentDirectory string, fullTurnInFilesPaths []string, exercise Exercise) (errors []string, foundTurnInFiles []string) {
+	err := filepath.Walk(parentDirectory, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			errors = append(errors, err.Error())
 			return nil
@@ -196,15 +184,30 @@ func (e *Exercise) turnInFilesCheck() Result {
 		if filepath.Base(path)[0] == '.' || path == parentDirectory || info.IsDir() {
 			return nil
 		} else if !containsString(fullTurnInFilesPaths, path) {
-			errors = append(errors, extractAfterExerciseName(e.Name, path))
+			errors = append(errors, extractAfterExerciseName(exercise.Name, path))
 		} else {
-			foundTurnInFiles = append(foundTurnInFiles, extractAfterExerciseName(e.Name, path))
+			foundTurnInFiles = append(foundTurnInFiles, extractAfterExerciseName(exercise.Name, path))
 		}
 		return nil
 	})
 	if err != nil {
 		errors = append(errors, err.Error())
 	}
+	return errors, foundTurnInFiles
+}
+
+// turnInFilesCheck checks if the correct files have been turned in.
+//
+// Returns a Result struct indicating whether the check passed or failed.
+func (e *Exercise) turnInFilesCheck() (res Result) {
+	fullTurnInFilesPaths := e.fullTurnInFilesPath()
+	parentDirectory := filepath.Join(e.CloneDirectory, e.TurnInDirectory)
+	_, err := os.Stat(parentDirectory)
+	if os.IsNotExist(err) {
+		return Result{Passed: false, Output: err.Error()}
+	}
+
+	errors, foundTurnInFiles := walkTurnInDirectory(parentDirectory, fullTurnInFilesPaths, *e)
 	if len(errors) > 0 {
 		return Result{Passed: false, Output: fmt.Sprintf("invalid files found in %s/:\n%s\nnot in allowed turn in files", e.TurnInDirectory, strings.Join(errors, "\n"))}
 	} else if len(foundTurnInFiles) != len(fullTurnInFilesPaths) {

@@ -181,7 +181,7 @@ func initialCommit(repo, token string) (err error) {
 //
 //   - name: the name of the repository to create
 //   - withWebhook: bool indicating whether a webhook should be added to the repo
-// 	 - additionalBranche: variadic list of strings, representing all branches that should be created by default on the repo
+//   - additionalBranche: variadic list of strings, representing all branches that should be created by default on the repo
 //
 // Returns an error if the repository creation, initial commit, or branch creation fails.
 func create(name string, withWebhook bool, additionalBranches ...string) (err error) {

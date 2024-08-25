@@ -18,7 +18,7 @@ import (
 //   - username: the GitHub username of the collaborator
 //
 // Returns the URL as a string.
-func buildCollaboratorURL(repo string, username string) string {
+func buildCollaboratorURL(repo string, username string) (url string) {
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/collaborators/%s", os.Getenv("GITHUB_ORGANISATION"), repo, username)
 }
 
@@ -30,7 +30,7 @@ func buildCollaboratorURL(repo string, username string) string {
 //   - permission: the permission level to be granted to the collaborator (e.g., "push", "pull")
 //
 // Returns the created HTTP request or an error if the request could not be created.
-func createCollaboratorRequest(url string, token string, permission string) (*http.Request, error) {
+func createCollaboratorRequest(url string, token string, permission string) (request *http.Request, err error) {
 	collaboratorDetails := map[string]string{
 		"permission": permission,
 	}
@@ -40,7 +40,7 @@ func createCollaboratorRequest(url string, token string, permission string) (*ht
 		return nil, err
 	}
 
-	request, err := http.NewRequest("PUT", url, bytes.NewBuffer(collaboratorDetailsJSON))
+	request, err = http.NewRequest("PUT", url, bytes.NewBuffer(collaboratorDetailsJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -59,8 +59,8 @@ func createCollaboratorRequest(url string, token string, permission string) (*ht
 //   - permission: the permission level to be granted to the collaborator (e.g., "push", "pull")
 //
 // Returns an error if the operation fails.
-func addCollaborator(repo, username, permission string) (err error) {
-	url := buildCollaboratorURL(repo, username)
+func addCollaborator(repoID string, username string, permission string) (err error) {
+	url := buildCollaboratorURL(repoID, username)
 
 	request, err := createCollaboratorRequest(url, os.Getenv("GITHUB_TOKEN"), permission)
 	if err != nil {
@@ -81,7 +81,7 @@ func addCollaborator(repo, username, permission string) (err error) {
 //   - filePath: the path of the file in the repository
 //
 // Returns the URL as a string.
-func buildFileURL(repoID, branch, filePath string) string {
+func buildFileURL(repoID string, branch string, filePath string) (url string) {
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s?ref=%s", os.Getenv("GITHUB_ORGANISATION"), repoID, filePath, branch)
 }
 
@@ -92,7 +92,7 @@ func buildFileURL(repoID, branch, filePath string) string {
 //   - filePath: the path of the file in the repository
 //
 // Returns the file content as a string and an error if the operation fails.
-func getFile(repoID, branch, filePath string) (string, error) {
+func getFile(repoID string, branch string, filePath string) (content string, err error) {
 	url := buildFileURL(repoID, branch, filePath)
 
 	request, err := http.NewRequest("GET", url, nil)
@@ -115,7 +115,7 @@ func getFile(repoID, branch, filePath string) (string, error) {
 		return "", fmt.Errorf("failed to get %s from %s: %d - %s", filePath, repoID, response.StatusCode, string(body))
 	}
 
-	var content struct {
+	var contentJSON struct {
 		Content string `json:"content"`
 	}
 
@@ -123,7 +123,7 @@ func getFile(repoID, branch, filePath string) (string, error) {
 		return "", err
 	}
 
-	decodedContent, err := base64.StdEncoding.DecodeString(content.Content)
+	decodedContent, err := base64.StdEncoding.DecodeString(contentJSON.Content)
 	if err != nil {
 		return "", err
 	}

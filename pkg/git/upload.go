@@ -21,7 +21,7 @@ import (
 //   - targetFilePath: the path of the file in the repository
 //
 // Returns the URL as a string.
-func buildPushURL(repo string, targetFilePath string) string {
+func buildPushURL(repo string, targetFilePath string) (url string) {
 	return fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s", os.Getenv("GITHUB_ORGANISATION"), repo, targetFilePath)
 }
 
@@ -31,7 +31,7 @@ func buildPushURL(repo string, targetFilePath string) string {
 //   - token: the GitHub authentication token
 //
 // Returns the file's SHA as a string and an error if the operation fails.
-func getFileSHA(url, token string) (string, error) {
+func getFileSHA(url, token string) (sha string, err error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return "", err
@@ -77,7 +77,7 @@ func getFileSHA(url, token string) (string, error) {
 //   - branch: the branch to push to (optional)
 //
 // Returns the created HTTP request or an error if the request could not be created.
-func createPushRequest(url string, token string, targetFilePath string, commitMessage string, encodedContent string, sha string, branch string) (*http.Request, error) {
+func createPushRequest(url string, token string, targetFilePath string, commitMessage string, encodedContent string, sha string, branch string) (request *http.Request, err error) {
 	requestDetails := map[string]interface{}{
 		"message": commitMessage,
 		"committer": map[string]string{
@@ -101,7 +101,7 @@ func createPushRequest(url string, token string, targetFilePath string, commitMe
 		return nil, err
 	}
 
-	request, err := http.NewRequest("PUT", url, bytes.NewBuffer(requestDetailsJSON))
+	request, err = http.NewRequest("PUT", url, bytes.NewBuffer(requestDetailsJSON))
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func uploadRaw(repoID string, data string, targetFilePath string, commitMessage 
 //   - branch: the branch to push to (optional)
 //
 // Returns an error if the upload process fails.
-func uploadFile(repoID string, localFilePath string, targetFilePath string, commitMessage string, branch string) error {
+func uploadFile(repoID string, localFilePath string, targetFilePath string, commitMessage string, branch string) (err error) {
 	originalFile, err := os.Open(localFilePath)
 	if err != nil {
 		return fmt.Errorf("could not open original file: %w", err)

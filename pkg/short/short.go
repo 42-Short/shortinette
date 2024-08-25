@@ -283,10 +283,10 @@ func EndModule(module Module.Module, config Config) {
 	}
 }
 
-// Asynchronously creates a repo for each user in the config specified by CONFIG_PATH. 
+// Asynchronously creates a repo for each user in the config specified by CONFIG_PATH.
 //
-// 	- config: Config struct filled with the participant's data
-//	- module: Module.Module struct filled with the module's metadata
+//   - config: Config struct filled with the participant's data
+//   - module: Module.Module struct filled with the module's metadata
 func initializeRepos(config Config, module Module.Module) {
 	var wg sync.WaitGroup
 
