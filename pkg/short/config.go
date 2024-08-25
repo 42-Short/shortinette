@@ -32,8 +32,6 @@ func GetConfig() (*Config, error) {
 	}
 
 	var rawConfig struct {
-		StartDate    string `json:"start_date"`
-		EndDate      string `json:"end_date"`
 		Participants []struct {
 			GithubUserName string `json:"github_username"`
 			IntraLogin     string `json:"intra_login"`
@@ -42,16 +40,6 @@ func GetConfig() (*Config, error) {
 
 	if err := json.Unmarshal(data, &rawConfig); err != nil {
 		return nil, fmt.Errorf("unable to parse config file: %v", err)
-	}
-
-	startDate, err := time.Parse("02.01.2006", rawConfig.StartDate)
-	if err != nil {
-		return nil, fmt.Errorf("invalid start date format: %v", err)
-	}
-
-	endDate, err := time.Parse("02.01.2006", rawConfig.EndDate)
-	if err != nil {
-		return nil, fmt.Errorf("invalid end date format: %v", err)
 	}
 
 	var participants []Participant
@@ -63,8 +51,6 @@ func GetConfig() (*Config, error) {
 	}
 
 	config := &Config{
-		StartDate:    startDate,
-		EndDate:      endDate,
 		Participants: participants,
 	}
 

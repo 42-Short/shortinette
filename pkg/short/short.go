@@ -6,7 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"sort"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -168,6 +171,44 @@ func updateNewWaitingTime(repo *db.Repository, module Module.Module, results map
 	repo.Score = score
 }
 
+func sortTraceContent(tracesPath string) (err error) {
+	contentAsBytes, err := os.ReadFile(tracesPath)
+	if err != nil {
+		return err
+	}
+	outputByExercise := make(map[int][]string)
+	contentAsSlice := strings.Split(string(contentAsBytes), "\n")
+	pattern := regexp.MustCompile(`\[MOD\d+\]\[EX(\d+)\]`)
+	var exerciseNumber int
+	for _, line := range contentAsSlice {
+		if match := pattern.FindStringSubmatch(line); len(match) > 1 {
+			exerciseNumber, _ = strconv.Atoi(match[1])
+		}
+		outputByExercise[exerciseNumber] = append(outputByExercise[exerciseNumber], line)
+	}
+
+	var keys []int
+	for k := range outputByExercise {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+
+	var sortedOutput strings.Builder
+	for _, k := range keys {
+		for _, line := range outputByExercise[k] {
+			fmt.Printf("|%s|", line)
+			sortedOutput.WriteString(line + "\n")
+		}
+	}
+
+	err = os.WriteFile(tracesPath, []byte(sortedOutput.String()), 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // GradeModule grades the exercises in a module for a specific student repository.
 //
 //   - module: the module object containing the exercises
@@ -186,8 +227,11 @@ func GradeModule(module Module.Module, repoID string) (err error) {
 	}
 
 	results, tracesPath := module.Run(repoID)
-
 	updateNewWaitingTime(&repo, module, results)
+
+	if err := sortTraceContent(tracesPath); err != nil {
+		return err
+	}
 
 	if err = uploadResults(repo, tracesPath, module.Name, results); err != nil {
 		return err
@@ -280,7 +324,6 @@ func StartModule(module Module.Module, config Config) {
 
 // dockerExecMode runs the grading process for a single exercise inside a Docker container.
 //
-//   - args: the command-line arguments passed to the application
 //   - short: the Short object containing the module and test mode information
 func dockerExecMode(short Short) {
 	var config Module.GradingConfig
