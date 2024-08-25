@@ -4,6 +4,7 @@
 package Module
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"sort"
@@ -12,7 +13,9 @@ import (
 	"github.com/42-Short/shortinette/pkg/git"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 	"github.com/42-Short/shortinette/pkg/logger"
-	"github.com/42-Short/shortinette/pkg/testutils"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 )
 
 // Module represents a module containing multiple exercises. It includes the module's
@@ -75,23 +78,48 @@ func tearDownEnvironment() error {
 //
 // Returns a boolean indicating whether the exercise passed or failed.
 func runContainerized(module Module, exercise Exercise.Exercise, tracesPath string) bool {
-	command := "docker"
-	dir, _ := os.Getwd()
-	args := []string{
-		"run",
-		"-i",
-		"--rm",
-		"-v",
-		fmt.Sprintf("%s:/app", dir),
-		"shortinette-testenv",
-		"sh",
-		"-c",
-		fmt.Sprintf("go run . \"%s\" \"%s\" \"%s\"", module.Name, exercise.Name, tracesPath),
-	}
-	if _, err := testutils.RunCommandLine(".", command, args, testutils.WithRealTimeOutput()); err != nil {
-		logger.Info.Printf("EXERCISE %s:\n%v", exercise.Name, err)
+	ctx := context.Background()
+	client, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		logger.Error.Printf("Docker client creation: %v", err)
 		return false
 	}
+
+	dir, _ := os.Getwd()
+	config := &container.Config{
+		Image: "shortinette-testenv",
+		Cmd:   []string{"sh", "-c", fmt.Sprintf("go run . \"%s\" \"%s\" \"%s\"", module.Name, exercise.Name, tracesPath)},
+	}
+	hostConfig := &container.HostConfig{
+		Binds: []string{fmt.Sprintf("%s:/app", dir)},
+	}
+
+	response, err := client.ContainerCreate(ctx, config, hostConfig, nil, nil, "")
+	if err != nil {
+		logger.Error.Printf("container creation: %v", err)
+		return false
+	}
+
+	if err := client.ContainerStart(ctx, response.ID, container.StartOptions{}); err != nil {
+		logger.Error.Printf("container startup: %v", err)
+		return false
+	}
+
+	statusChannel, errorChannel := client.ContainerWait(ctx, response.ID, container.WaitConditionNotRunning)
+	select {
+	case err := <-errorChannel:
+		if err != nil {
+			logger.Error.Printf("waiting for container: %v", err)
+			return false
+		}
+	case <-statusChannel:
+	}
+	output, err := client.ContainerLogs(ctx, response.ID, container.LogsOptions{ShowStdout: true, ShowStderr: true})
+	if err != nil {
+		logger.Error.Printf("fetching container logs: %v", err)
+		return false
+	}
+	stdcopy.StdCopy(os.Stdout, os.Stderr, output)
 	return true
 }
 
