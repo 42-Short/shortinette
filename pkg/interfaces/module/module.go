@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"sort"
 	"sync"
 
@@ -54,9 +53,8 @@ func NewModule(name string, minimumGrade int, exercises map[string]Exercise.Exer
 // Returns an error if the environment setup fails.
 func setUpEnvironment(repoID string) error {
 	repoLink := fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoID)
-	cloneDirectory := filepath.Join("/tmp", repoID)
 
-	if err := git.Clone(repoLink, cloneDirectory); err != nil {
+	if err := git.Clone(repoLink, repoID); err != nil {
 		return fmt.Errorf("failed to clone repository: %v", err)
 	}
 	return nil
@@ -67,9 +65,7 @@ func setUpEnvironment(repoID string) error {
 //
 // Returns an error if the environment teardown fails.
 func tearDownEnvironment(repoID string) error {
-	cloneDirectory := filepath.Join("/tmp", repoID)
-
-	if err := os.RemoveAll(cloneDirectory); err != nil {
+	if err := os.RemoveAll(repoID); err != nil {
 		return fmt.Errorf("remove clone directory: %v", err)
 	}
 	return nil
@@ -107,7 +103,7 @@ func runContainerized(config GradingConfig) bool {
 		Cmd:   []string{"sh", "-c", fmt.Sprintf("go run . '%s'", string(configJSON))},
 	}
 	hostConfig := &container.HostConfig{
-		Binds: []string{fmt.Sprintf("%s:/app", dir), fmt.Sprintf("%s:/tmp", config.CloneDirectory)},
+		Binds: []string{fmt.Sprintf("%s:/app", dir)},
 	}
 
 	response, err := client.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, "")
@@ -172,8 +168,7 @@ func gradingRoutine(module Module, tracesPath string, repoID string) (results ma
 
 	for _, exercise := range module.Exercises {
 		waitGroup.Add(1)
-		cloneDirectory := filepath.Join("/tmp", repoID)
-		conf := GradingConfig{module.Name, exercise.Name, tracesPath, cloneDirectory}
+		conf := GradingConfig{module.Name, exercise.Name, tracesPath, repoID}
 		go func(ex Exercise.Exercise) {
 			defer waitGroup.Done()
 			result := runContainerized(conf)
