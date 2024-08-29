@@ -79,7 +79,6 @@ func createExampleExercise() exercise.Exercise {
         "example",
         "ex00",
         []string{"main.rs"},
-        nil,
         10,
         helloWorldTest,
     )
