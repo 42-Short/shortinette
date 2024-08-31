@@ -12,8 +12,13 @@ import (
 //   - errorMessage: The error message describing the runtime error.
 //
 // Returns a Result with Passed set to false and the error message included in the Output.
-func RuntimeError(errorMessage string) (res Result) {
-	return Result{Passed: false, Output: fmt.Sprintf("runtime error: %s", errorMessage)}
+func RuntimeError(errorMessage string, runTests ...string) (res Result) {
+	testExplanation := ""
+	if len(runTests) != 0 {
+		testExplanation = "failed test:\n$ " + strings.Join(runTests, "\n$ ")
+
+	}
+	return Result{Passed: false, Output: fmt.Sprintf("%s\nruntime error: %s", testExplanation, errorMessage)}
 }
 
 // CompilationError returns a Result indicating a compilation error occurred with the provided
@@ -44,7 +49,7 @@ func InvalidFileError() (res Result) {
 func AssertionError(expected string, got string, runTests ...string) (res Result) {
 	testExplanation := ""
 	if len(runTests) != 0 {
-		testExplanation = "failed test:\n" + strings.Join(runTests, "\n")
+		testExplanation = "failed test:\n$ " + strings.Join(runTests, "\n$ ")
 
 	}
 	expectedReplaced := strings.ReplaceAll(expected, "\n", "\\n")
