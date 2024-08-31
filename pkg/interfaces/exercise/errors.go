@@ -41,10 +41,15 @@ func InvalidFileError() (res Result) {
 //   - got: The actual output produced by the student's code.
 //
 // Returns a Result with Passed set to false and a message detailing the discrepancy between expected and actual output in the Output.
-func AssertionError(expected string, got string) (res Result) {
+func AssertionError(expected string, got string, runTests ...string) (res Result) {
+	testExplanation := ""
+	if len(runTests) != 0 {
+		testExplanation = "failed test:\n" + strings.Join(runTests, "\n")
+
+	}
 	expectedReplaced := strings.ReplaceAll(expected, "\n", "\\n")
 	gotReplaced := strings.ReplaceAll(got, "\n", "\\n")
-	return Result{Passed: false, Output: fmt.Sprintf("invalid output: expected '%s', got '%s'", expectedReplaced, gotReplaced)}
+	return Result{Passed: false, Output: fmt.Sprintf("%s\ninvalid output: expected '%s', got '%s'", testExplanation, expectedReplaced, gotReplaced)}
 }
 
 // InternalError returns a Result indicating an internal error occurred during the execution
