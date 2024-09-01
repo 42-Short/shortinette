@@ -109,7 +109,7 @@ func newRelease(repoID string, tagName string, releaseName string, tracesPath st
 
 	newBody := existingReleaseBody
 	if graded {
-		newBody = fmt.Sprintf("**Last Graded:**\n- %s\n\n**Last Traces:**\n- https://github.com/42-Short/%s/tree/traces/%s", time.Now().Format("Monday, January 2, 2006 at 3:04 PM"), repoID, tracesPath)
+		newBody = fmt.Sprintf("**Last Graded:**\n- %s\n\n**Last Traces:**\n- https://github.com/%s/%s/tree/traces/%s", time.Now().Format("Monday, January 2, 2006 at 3:04 PM"), os.Getenv("GITHUB_ORGANISATION"), repoID, tracesPath)
 	}
 
 	if err := createRelease(repoID, tagName, releaseName, newBody); err != nil {

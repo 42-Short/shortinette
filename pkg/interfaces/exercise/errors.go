@@ -52,9 +52,7 @@ func AssertionError(expected string, got string, runTests ...string) (res Result
 		testExplanation = "failed test:\n$ " + strings.Join(runTests, "\n$ ")
 
 	}
-	expectedReplaced := strings.ReplaceAll(expected, "\n", "\\n")
-	gotReplaced := strings.ReplaceAll(got, "\n", "\\n")
-	return Result{Passed: false, Output: fmt.Sprintf("%s\ninvalid output: expected '%s', got '%s'", testExplanation, expectedReplaced, gotReplaced)}
+	return Result{Passed: false, Output: fmt.Sprintf("%s\ninvalid output: expected '%s', got '%s'", testExplanation, expected, got)}
 }
 
 // InternalError returns a Result indicating an internal error occurred during the execution
