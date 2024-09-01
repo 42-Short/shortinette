@@ -99,9 +99,9 @@ func getUpdatedReadme(repo db.Repository, results map[string]bool) (newReadme st
 	newReadme = fmt.Sprintf("%s<h1 align=\"center\">ATTEMPT %d - SCORE %d/100</h1><div align=\"center\"><table>", oldContent, repo.Attempts, repo.Score)
 	for _, key := range keys {
 		if results[key] {
-			currentResult = "OK"
+			currentResult = "✅"
 		} else {
-			currentResult = "KO"
+			currentResult = "❌"
 		}
 		newReadme = fmt.Sprintf("%s%s", newReadme, fmt.Sprintf(tableRow, key, currentResult))
 	}
