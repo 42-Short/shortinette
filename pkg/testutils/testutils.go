@@ -1,4 +1,4 @@
-// Package testutils provides utility functions for compiling, running, and managing
+// testutils provides utility functions for compiling, running, and managing
 // code submissions, particularly for Rust, and interacting with the command line.
 package testutils
 

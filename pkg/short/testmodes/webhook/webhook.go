@@ -1,4 +1,4 @@
-// Package `webhook` provides functionality to monitor GitHub webhook events and trigger
+// webhook provides functionality to monitor GitHub webhook events and trigger
 // grading of student submissions based on push events to the main branch.
 package webhook
 

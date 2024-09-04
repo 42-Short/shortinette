@@ -1,4 +1,4 @@
-// Package shortinette is the core framework for managing and automating the process of
+// shortinette is the core framework for managing and automating the process of
 // grading coding bootcamps (Shorts). It provides a comprehensive set of tools for
 // running and testing student submissions across various programming languages.
 // The shortinette package is composed of several sub-packages, each responsible for a specific
