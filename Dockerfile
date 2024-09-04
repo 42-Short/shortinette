@@ -28,8 +28,10 @@ RUN /root/.cargo/bin/cargo install cargo-valgrind
 
 WORKDIR /app
 
-COPY . .
-
-RUN rm .env
+COPY ./internal /app/internal
+COPY ./pkg /app/pkg
+COPY ./go.mod /app/go.mod
+COPY ./go.sum /app/go.sum
+COPY ./main.go /app/main.go
 
 RUN go build .
