@@ -30,4 +30,6 @@ WORKDIR /app
 
 COPY . .
 
+RUN rm .env
+
 RUN go build .
