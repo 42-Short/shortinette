@@ -45,10 +45,10 @@ package shortinette
 // package main
 
 // import (
-// 	"github.com/42-Short/shortinette/internal/tests/R00"
-// 	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
-// 	"github.com/42-Short/shortinette/pkg/short"
-// 	"github.com/42-Short/shortinette/pkg/short/testmodes/webhook"
+//  	"github.com/42-Short/shortinette/internal/tests/R00"
+//  	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
+//  	"github.com/42-Short/shortinette/pkg/short"
+//  	"github.com/42-Short/shortinette/pkg/short/testmodes/webhook"
 // )
 
 // func main() {

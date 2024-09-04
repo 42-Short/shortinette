@@ -4,10 +4,13 @@
 package Module
 
 import (
+	"archive/tar"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"sync"
 
@@ -88,6 +91,7 @@ func runContainerized(config GradingConfig) bool {
 	configJSON, err := json.Marshal(config)
 	if err != nil {
 		logger.Error.Printf("marshal config: %v", err)
+		return false
 	}
 
 	ctx := context.Background()
@@ -99,16 +103,22 @@ func runContainerized(config GradingConfig) bool {
 
 	dir, _ := os.Getwd()
 	containerConfig := &container.Config{
-		Image: "shortinette-testenv",
-		Cmd:   []string{"sh", "-c", fmt.Sprintf("go run . '%s'", string(configJSON))},
+		Image:      "shortinette-testenv",
+		Cmd:        []string{"sh", "-c", fmt.Sprintf("go run . '%s'", string(configJSON))},
+		WorkingDir: "/app",
 	}
 	hostConfig := &container.HostConfig{
-		Binds: []string{fmt.Sprintf("%s:/app", dir)},
+		Binds: []string{fmt.Sprintf("%s/traces:/app/traces", dir)},
 	}
 
 	response, err := client.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, "")
 	if err != nil {
 		logger.Error.Printf("container creation: %v", err)
+		return false
+	}
+
+	if err := copyToContainer(ctx, client, response.ID, config.CloneDirectory, "/app"); err != nil {
+		logger.Error.Printf("copying files to container: %v", err)
 		return false
 	}
 
@@ -126,12 +136,14 @@ func runContainerized(config GradingConfig) bool {
 		}
 	case <-statusChannel:
 	}
+
 	output, err := client.ContainerLogs(ctx, response.ID, container.LogsOptions{ShowStdout: true, ShowStderr: true})
 	if err != nil {
 		logger.Error.Printf("fetching container logs: %v", err)
 		return false
 	}
 	if _, err = stdcopy.StdCopy(os.Stdout, os.Stderr, output); err != nil {
+		logger.Error.Printf("copying logs: %v", err)
 		return false
 	}
 
@@ -142,9 +154,51 @@ func runContainerized(config GradingConfig) bool {
 	}
 
 	if inspect.State.ExitCode != 0 {
+		logger.Error.Printf("container exited with non-zero status: %d", inspect.State.ExitCode)
 		return false
 	}
+
 	return true
+}
+
+func copyToContainer(ctx context.Context, cli *client.Client, containerID, srcPath, destPath string) error {
+	buf := new(bytes.Buffer)
+	tw := tar.NewWriter(buf)
+
+	err := filepath.Walk(srcPath, func(file string, fi os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if fi.Mode().IsRegular() {
+			data, err := os.ReadFile(file)
+			if err != nil {
+				return err
+			}
+
+			header := &tar.Header{
+				Name:    filepath.ToSlash(file),
+				Mode:    int64(fi.Mode().Perm()),
+				Size:    fi.Size(),
+				ModTime: fi.ModTime(),
+			}
+			if err := tw.WriteHeader(header); err != nil {
+				return err
+			}
+			if _, err := tw.Write(data); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := tw.Close(); err != nil {
+		return err
+	}
+
+	return cli.CopyToContainer(ctx, containerID, destPath, buf, container.CopyToContainerOptions{})
 }
 
 // exerciseResult represents the result of an individual exercise run, including the
