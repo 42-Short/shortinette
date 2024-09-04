@@ -99,7 +99,7 @@ func runContainerized(config GradingConfig) bool {
 	}
 
 	ctx := context.Background()
-	client, err := client.NewClientWithOpts(client.FromEnv)
+	client, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		logger.Error.Printf("Docker client creation: %v", err)
 		return false
