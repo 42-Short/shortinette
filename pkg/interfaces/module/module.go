@@ -17,6 +17,7 @@ import (
 	"github.com/42-Short/shortinette/pkg/git"
 	Exercise "github.com/42-Short/shortinette/pkg/interfaces/exercise"
 	"github.com/42-Short/shortinette/pkg/logger"
+	"github.com/42-Short/shortinette/pkg/testutils"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
@@ -54,11 +55,14 @@ func NewModule(name string, minimumGrade int, exercises map[string]Exercise.Exer
 //   - testDirectory: the directory where the repository will be cloned
 //
 // Returns an error if the environment setup fails.
-func setUpEnvironment(repoID string) error {
+func setUpEnvironment(repoID string) (err error) {
 	repoLink := fmt.Sprintf("https://github.com/%s/%s.git", os.Getenv("GITHUB_ORGANISATION"), repoID)
 
-	if err := git.Clone(repoLink, repoID); err != nil {
+	if err = git.Clone(repoLink, repoID); err != nil {
 		return fmt.Errorf("failed to clone repository: %v", err)
+	}
+	if _, err = testutils.RunCommandLine(".", "sh", []string{"-c", fmt.Sprintf("chmod -R 777 %s", repoID)}); err != nil {
+		return err
 	}
 	return nil
 }
