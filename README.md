@@ -41,22 +41,44 @@ Create a Dockerfile that includes all necessary dependencies for both Shortinett
 ```dockerfile
 FROM debian:latest
 
-# Install essential tools and Rust
-RUN apt-get update && apt-get install -y curl build-essential && \
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+# All dependencies required to build the Rust modules
+RUN apt-get update && apt-get install -y curl build-essential sudo m4
 
 # Install Go
 RUN curl -OL https://go.dev/dl/go1.22.5.linux-amd64.tar.gz && \
     tar -C /usr/local -xzf go1.22.5.linux-amd64.tar.gz && \
     rm go1.22.5.linux-amd64.tar.gz
+ENV PATH="/usr/local/go/bin:${PATH}"
 
-# Set up environment
-ENV PATH="/usr/local/go/bin:/root/.cargo/bin:${PATH}"
+# Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Add 'student' user for running tests without permissions (default user in containers is root)
+RUN useradd -m student
+RUN chmod 777 /root
+USER student 
+RUN rustup default stable
+USER root
+
+RUN echo 'export PATH=$PATH:/root/.cargo/bin' >> /etc/profile.d/rust_path.sh
+
+# Install 'cargo-valgrind' for testing leaks
+RUN apt-get install -y valgrind
+RUN /root/.cargo/bin/cargo install cargo-valgrind
+
 WORKDIR /app
-COPY . .
+
+COPY ./internal /app/internal
+COPY ./go.mod /app/go.mod
+COPY ./go.sum /app/go.sum
+COPY ./main.go /app/main.go
+
 RUN go build .
 ```
 The Docker image must be named `shortinette-testenv` (`docker build -t shortinette-testenv .` in the Dockerfile's directory). Configurability of the image's name will be added in a future release.
+
+Note: The only mounted directory will be `./traces`, since all containers need to write into the same trace file. Everything else is just copied into the container by `shortinette` to prevent code execution on the host.
 
 ### Step 2: Define an Exercise
 
