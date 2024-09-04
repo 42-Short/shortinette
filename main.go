@@ -54,11 +54,6 @@ package shortinette
 // func main() {
 // 	modules := map[string]Module.Module{
 // 		"00": *R00.R00(),
-// 		// TODO: "01": *R01.R01(), // TODO
-// 		// TODO: "02": *R02.R02(), // TODO
-// 		// TODO: "03": *R03.R03(), // TODO
-// 		// TODO: "04": *R04.R04(), // TODO
-// 		// TODO: "05": *R05.R05(), // TODO
 // 	}
 // 	short := short.NewShort("Rust Piscine 1.0", modules, webhook.NewWebhookTestMode(modules))
 // 	short.Start("00")
