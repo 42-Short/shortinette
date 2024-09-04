@@ -1,4 +1,4 @@
-// Package logger provides logging functionality for various aspects of the application,
+// logger provides logging functionality for various aspects of the application,
 // including standard logging for info and error messages, as well as logging for trace files.
 package logger
 

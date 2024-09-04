@@ -1,4 +1,4 @@
-// Package Exercise provides structures and functions for defining and running exercises.
+// Exercise provides structures and functions for defining and running exercises.
 package Exercise
 
 import (
