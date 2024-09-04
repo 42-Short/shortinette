@@ -15,8 +15,8 @@ import (
 // It attempts to load these variables from a .env file and validates that they are set.
 //
 // Returns an error if any required environment variables are missing.
-func requireEnv() error {
-	if err := godotenv.Load(); err != nil {
+func requireEnv() (err error) {
+	if err = godotenv.Load(); err != nil {
 		return fmt.Errorf("could not load .env file: %v", err)
 	}
 	vars := map[string]string{
@@ -46,11 +46,11 @@ func requireEnv() error {
 // of a pre-built Docker image that contains all dependencies needed for testing submissions.
 //
 // Returns an error if any environment variables are missing or if the Docker image is not found.
-func ValidateRequirements() error {
-	if err := requireEnv(); err != nil {
+func ValidateRequirements() (err error) {
+	if err = requireEnv(); err != nil {
 		return err
 	}
-	if err := os.Mkdir("traces/", 0755); err != nil && !os.IsExist(err) {
+	if err = os.Mkdir("traces/", 0755); err != nil && !os.IsExist(err) {
 		return err
 	}
 	command := "bash"

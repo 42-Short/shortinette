@@ -203,6 +203,9 @@ func (m *Module) Run(repoID string) (results map[string]bool, tracesPath string,
 		return nil, "", fmt.Errorf("grading environment setup: %v", err)
 	}
 	tracesPath = logger.GetNewTraceFile(repoID)
+	if err := logger.InitializeTraceLogger(tracesPath); err != nil {
+		return nil, "", err
+	}
 	if m.Exercises != nil {
 		results = gradingRoutine(*m, tracesPath, repoID)
 	}
