@@ -125,6 +125,22 @@ func runContainerized(config GradingConfig) bool {
 		logger.Error.Printf("copying files to container: %v", err)
 		return false
 	}
+	if err := copyToContainer(ctx, client, response.ID, "./go.mod", "/app/go.mod"); err != nil {
+		logger.Error.Printf("copying files to container: %v", err)
+		return false
+	}
+	if err := copyToContainer(ctx, client, response.ID, "./internal", "/app/internal"); err != nil {
+		logger.Error.Printf("copying files to container: %v", err)
+		return false
+	}
+	if err := copyToContainer(ctx, client, response.ID, "./go.sum", "/app/go.sum"); err != nil {
+		logger.Error.Printf("copying files to container: %v", err)
+		return false
+	}
+	if err := copyToContainer(ctx, client, response.ID, "./main.go", "/app/main.go"); err != nil {
+		logger.Error.Printf("copying files to container: %v", err)
+		return false
+	}
 
 	if err := client.ContainerStart(ctx, response.ID, container.StartOptions{}); err != nil {
 		logger.Error.Printf("container startup: %v", err)
