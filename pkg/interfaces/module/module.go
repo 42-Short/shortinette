@@ -85,6 +85,7 @@ type GradingConfig struct {
 	CloneDirectory string
 }
 
+
 // runContainerized runs an exercise within a Docker container to prevent running malicious
 // code on the host machine.
 //
@@ -97,14 +98,14 @@ func runContainerized(config GradingConfig) bool {
 		logger.Error.Printf("marshal config: %v", err)
 		return false
 	}
-
+	
 	ctx := context.Background()
 	client, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		logger.Error.Printf("Docker client creation: %v", err)
 		return false
 	}
-
+	
 	dir, _ := os.Getwd()
 	containerConfig := &container.Config{
 		Image:      "shortinette-testenv",
@@ -112,41 +113,26 @@ func runContainerized(config GradingConfig) bool {
 		WorkingDir: "/app",
 	}
 	hostConfig := &container.HostConfig{
-		Binds: []string{fmt.Sprintf("%s/traces:/app/traces", dir)},
+		Binds:      []string{fmt.Sprintf("%s/traces:/app/traces", dir)},
+		AutoRemove: true,
 	}
-
+	
 	response, err := client.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, "")
 	if err != nil {
 		logger.Error.Printf("container creation: %v", err)
 		return false
 	}
-
-	if err := copyToContainer(ctx, client, response.ID, config.CloneDirectory, "/app"); err != nil {
-		logger.Error.Printf("copying files to container: %v", err)
+	
+	if err := copyFilesToContainer(ctx, client, response, config); err != nil {
+		logger.Error.Println(err.Error())
 		return false
 	}
-	if err := copyToContainer(ctx, client, response.ID, "./go.mod", "/app/go.mod"); err != nil {
-		logger.Error.Printf("copying files to container: %v", err)
-		return false
-	}
-	if err := copyToContainer(ctx, client, response.ID, "./internal", "/app/internal"); err != nil {
-		logger.Error.Printf("copying files to container: %v", err)
-		return false
-	}
-	if err := copyToContainer(ctx, client, response.ID, "./go.sum", "/app/go.sum"); err != nil {
-		logger.Error.Printf("copying files to container: %v", err)
-		return false
-	}
-	if err := copyToContainer(ctx, client, response.ID, "./main.go", "/app/main.go"); err != nil {
-		logger.Error.Printf("copying files to container: %v", err)
-		return false
-	}
-
+	
 	if err := client.ContainerStart(ctx, response.ID, container.StartOptions{}); err != nil {
 		logger.Error.Printf("container startup: %v", err)
 		return false
 	}
-
+	
 	statusChannel, errorChannel := client.ContainerWait(ctx, response.ID, container.WaitConditionNotRunning)
 	select {
 	case err := <-errorChannel:
@@ -156,7 +142,7 @@ func runContainerized(config GradingConfig) bool {
 		}
 	case <-statusChannel:
 	}
-
+	
 	output, err := client.ContainerLogs(ctx, response.ID, container.LogsOptions{ShowStdout: true, ShowStderr: true})
 	if err != nil {
 		logger.Error.Printf("fetching container logs: %v", err)
@@ -166,25 +152,44 @@ func runContainerized(config GradingConfig) bool {
 		logger.Error.Printf("copying logs: %v", err)
 		return false
 	}
-
+	
 	inspect, err := client.ContainerInspect(ctx, response.ID)
 	if err != nil {
 		logger.Error.Printf("inspecting container: %v", err)
 		return false
 	}
-
+	
 	if inspect.State.ExitCode != 0 {
 		logger.Error.Printf("container exited with non-zero status: %d", inspect.State.ExitCode)
 		return false
 	}
-
+	
 	return true
+}
+
+func copyFilesToContainer(ctx context.Context, client *client.Client, response container.CreateResponse, config GradingConfig) (err error) {
+	if err := copyToContainer(ctx, client, response.ID, config.CloneDirectory, "/app"); err != nil {
+		return fmt.Errorf("copying files to container: %v", err)
+	}
+	if err := copyToContainer(ctx, client, response.ID, "./go.mod", "/app"); err != nil {
+		return fmt.Errorf("copying files to container: %v", err)
+	}
+	if err := copyToContainer(ctx, client, response.ID, "./internal", "/app"); err != nil {
+		return fmt.Errorf("copying files to container: %v", err)
+	}
+	if err := copyToContainer(ctx, client, response.ID, "./go.sum", "/app"); err != nil {
+		return fmt.Errorf("copying files to container: %v", err)
+	}
+	if err := copyToContainer(ctx, client, response.ID, "./main.go", "/app"); err != nil {
+		return fmt.Errorf("copying files to container: %v", err)
+	}
+	return nil
 }
 
 func copyToContainer(ctx context.Context, cli *client.Client, containerID, srcPath, destPath string) error {
 	buf := new(bytes.Buffer)
 	tw := tar.NewWriter(buf)
-
+	
 	err := filepath.Walk(srcPath, func(file string, fi os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -194,7 +199,7 @@ func copyToContainer(ctx context.Context, cli *client.Client, containerID, srcPa
 			if err != nil {
 				return err
 			}
-
+			
 			header := &tar.Header{
 				Name:    filepath.ToSlash(file),
 				Mode:    int64(fi.Mode().Perm()),

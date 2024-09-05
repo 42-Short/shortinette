@@ -40,21 +40,21 @@
 //     into a cohesive system. The `short` package handles the setup and teardown of grading
 //     environments, manages the execution of modules and exercises, and ensures that all
 //     results are properly recorded and reported.
-package shortinette
+// package shortinette
 
-// package main
+package main
 
-// import (
-//  	"github.com/42-Short/shortinette/internal/tests/R00"
-//  	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
-//  	"github.com/42-Short/shortinette/pkg/short"
-//  	"github.com/42-Short/shortinette/pkg/short/testmodes/webhook"
-// )
+import (
+	"github.com/42-Short/shortinette/internal/tests/R00"
+	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
+	"github.com/42-Short/shortinette/pkg/short"
+	"github.com/42-Short/shortinette/pkg/short/testmodes/webhook"
+)
 
-// func main() {
-// 	modules := map[string]Module.Module{
-// 		"00": *R00.R00(),
-// 	}
-// 	short := short.NewShort("Rust Piscine 1.0", modules, webhook.NewWebhookTestMode(modules))
-// 	short.Start("00")
-// }
+func main() {
+	modules := map[string]Module.Module{
+		"00": *R00.R00(),
+	}
+	short := short.NewShort("Rust Piscine 1.0", modules, webhook.NewWebhookTestMode(modules))
+	short.Start("00")
+}
