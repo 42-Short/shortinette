@@ -180,7 +180,7 @@ func RunCommandLine(workingDirectory string, command string, args []string, opti
 		if ctxErr := cmd.ProcessState.ExitCode(); ctxErr == -1 {
 			return stdout.String(), ErrTimeout
 		}
-		output := fmt.Sprintf("stderr: %s\nstdout: %s", stdout.String(), stderr.String())
+		output := fmt.Sprintf("stderr: %s\nstdout: %s", stderr.String(), stdout.String())
 		return "", errors.New(output)
 	}
 	return stdout.String(), nil
