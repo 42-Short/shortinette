@@ -24,8 +24,8 @@ import (
 )
 
 // Module represents a module containing multiple exercises. It includes the module's
-// name, the minimum grade required to pass, a map of exercises, and the path to the
-// subject file.
+// name, the minimum grade required to pass, a map of exercises, the path to the
+// subject file and the name of the Docker image which is to be used to run the code in.
 type Module struct {
 	Name            string                       // Name is the module's display name.
 	MinimumGrade    int                          // MinimumGrade is the minimum score required to pass the module.
