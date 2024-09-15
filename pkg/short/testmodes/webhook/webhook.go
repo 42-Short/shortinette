@@ -4,6 +4,7 @@ package webhook
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -27,13 +28,15 @@ type WebhookTestMode struct {
 // submission grading as soon as activity is recorded on a user's main branch.
 //
 //   - modules: A map of module names to Module structs.
+//   - endpoint: The endpoint the webhook is to be sending payloads to, with no trailing slash (e.g., '/webhook')
+//   - port: The port the webhook is to be sending payloads to, without ':' (e.g., '8080')
 //
 // Returns a pointer to the initialized WebhookTestMode.
-func NewWebhookTestMode(modules map[string]Module.Module) *WebhookTestMode {
+func NewWebhookTestMode(modules map[string]Module.Module, endpoint string, port string) *WebhookTestMode {
 	wt := WebhookTestMode{MonitoringFunction: nil, Modules: modules}
 	wt.MonitoringFunction = func() {
-		http.HandleFunc("/webhook", wt.handleWebhook)
-		if err := http.ListenAndServe(":8080", nil); err != nil {
+		http.HandleFunc(endpoint, wt.handleWebhook)
+		if err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil); err != nil {
 			return
 		}
 	}
@@ -55,9 +58,7 @@ type GitHubWebhookPayload struct {
 	} `json:"head_commit"`
 }
 
-var (
-	mu sync.Mutex // mutex to prevent concurrent grading processes from overlapping.
-)
+var mu sync.Mutex // mutex to prevent concurrent grading processes from overlapping.
 
 // handleWebhook processes incoming webhook events and triggers grading if the event
 // corresponds to a push to the main branch with the commit message "grademe".

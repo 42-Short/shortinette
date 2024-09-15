@@ -27,10 +27,11 @@ import (
 // name, the minimum grade required to pass, a map of exercises, and the path to the
 // subject file.
 type Module struct {
-	Name         string                       // Name is the module's display name.
-	MinimumGrade int                          // MinimumGrade is the minimum score required to pass the module.
-	Exercises    map[string]Exercise.Exercise // Exercises is a map of all exercises belonging to the module.
-	SubjectPath  string                       // SubjectPath is the path to the module's subject file.
+	Name            string                       // Name is the module's display name.
+	MinimumGrade    int                          // MinimumGrade is the minimum score required to pass the module.
+	Exercises       map[string]Exercise.Exercise // Exercises is a map of all exercises belonging to the module.
+	SubjectPath     string                       // SubjectPath is the path to the module's subject file (markdown or html).
+	DockerImageName string                       // Name of the docker image containing the environment for grading this module.
 }
 
 // NewModule initializes and returns a Module struct.
@@ -39,12 +40,13 @@ type Module struct {
 //   - minimumGrade: the minimum score required to pass the module
 //   - exercises: map of all Exercise.Exercise objects belonging to the module
 //   - subjectPath: path to the module's subject file
-func NewModule(name string, minimumGrade int, exercises map[string]Exercise.Exercise, subjectPath string) (module Module) {
+func NewModule(name string, minimumGrade int, exercises map[string]Exercise.Exercise, subjectPath string, dockerImageName string) (module Module) {
 	return Module{
-		Name:         name,
-		MinimumGrade: minimumGrade,
-		Exercises:    exercises,
-		SubjectPath:  subjectPath,
+		Name:            name,
+		MinimumGrade:    minimumGrade,
+		Exercises:       exercises,
+		SubjectPath:     subjectPath,
+		DockerImageName: dockerImageName,
 	}
 }
 
@@ -85,30 +87,29 @@ type GradingConfig struct {
 	CloneDirectory string
 }
 
-
 // runContainerized runs an exercise within a Docker container to prevent running malicious
 // code on the host machine.
 //
 //   - config: GradingConfig object filled with the metadata needed for grading execution
 //
 // Returns a boolean indicating whether the exercise passed or failed.
-func runContainerized(config GradingConfig) bool {
+func runContainerized(config GradingConfig, dockerImageName string) bool {
 	configJSON, err := json.Marshal(config)
 	if err != nil {
 		logger.Error.Printf("marshal config: %v", err)
 		return false
 	}
-	
+
 	ctx := context.Background()
 	client, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		logger.Error.Printf("Docker client creation: %v", err)
 		return false
 	}
-	
+
 	dir, _ := os.Getwd()
 	containerConfig := &container.Config{
-		Image:      "shortinette-testenv",
+		Image:      dockerImageName,
 		Cmd:        []string{"sh", "-c", fmt.Sprintf("go run . '%s'", string(configJSON))},
 		WorkingDir: "/app",
 	}
@@ -116,23 +117,23 @@ func runContainerized(config GradingConfig) bool {
 		Binds:      []string{fmt.Sprintf("%s/traces:/app/traces", dir)},
 		AutoRemove: true,
 	}
-	
+
 	response, err := client.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, "")
 	if err != nil {
 		logger.Error.Printf("container creation: %v", err)
 		return false
 	}
-	
+
 	if err := copyFilesToContainer(ctx, client, response, config); err != nil {
 		logger.Error.Println(err.Error())
 		return false
 	}
-	
+
 	if err := client.ContainerStart(ctx, response.ID, container.StartOptions{}); err != nil {
 		logger.Error.Printf("container startup: %v", err)
 		return false
 	}
-	
+
 	statusChannel, errorChannel := client.ContainerWait(ctx, response.ID, container.WaitConditionNotRunning)
 	select {
 	case err := <-errorChannel:
@@ -142,7 +143,7 @@ func runContainerized(config GradingConfig) bool {
 		}
 	case <-statusChannel:
 	}
-	
+
 	output, err := client.ContainerLogs(ctx, response.ID, container.LogsOptions{ShowStdout: true, ShowStderr: true})
 	if err != nil {
 		logger.Error.Printf("fetching container logs: %v", err)
@@ -152,18 +153,18 @@ func runContainerized(config GradingConfig) bool {
 		logger.Error.Printf("copying logs: %v", err)
 		return false
 	}
-	
+
 	inspect, err := client.ContainerInspect(ctx, response.ID)
 	if err != nil {
 		logger.Error.Printf("inspecting container: %v", err)
 		return false
 	}
-	
+
 	if inspect.State.ExitCode != 0 {
 		logger.Error.Printf("container exited with non-zero status: %d", inspect.State.ExitCode)
 		return false
 	}
-	
+
 	return true
 }
 
@@ -189,7 +190,7 @@ func copyFilesToContainer(ctx context.Context, client *client.Client, response c
 func copyToContainer(ctx context.Context, cli *client.Client, containerID, srcPath, destPath string) error {
 	buf := new(bytes.Buffer)
 	tw := tar.NewWriter(buf)
-	
+
 	err := filepath.Walk(srcPath, func(file string, fi os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -199,7 +200,7 @@ func copyToContainer(ctx context.Context, cli *client.Client, containerID, srcPa
 			if err != nil {
 				return err
 			}
-			
+
 			header := &tar.Header{
 				Name:    filepath.ToSlash(file),
 				Mode:    int64(fi.Mode().Perm()),
@@ -250,7 +251,7 @@ func gradingRoutine(module Module, tracesPath string, repoID string) (results ma
 		conf := GradingConfig{module.Name, exercise.Name, tracesPath, repoID}
 		go func(ex Exercise.Exercise) {
 			defer waitGroup.Done()
-			result := runContainerized(conf)
+			result := runContainerized(conf, module.DockerImageName)
 			resultsChannel <- exerciseResult{name: ex.Name, result: result}
 		}(exercise)
 	}

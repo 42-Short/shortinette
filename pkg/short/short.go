@@ -90,7 +90,7 @@ func getUpdatedReadme(repo db.Repository, results map[string]bool) (newReadme st
 		logger.Info.Printf("README.md not found in %s", repo.ID)
 		oldContent = ""
 	}
-	var tableRow = `
+	tableRow := `
 <tr>
 	<th>%s</th>
 	<th>%s</th>
@@ -201,7 +201,7 @@ func sortTraceContent(tracesPath string) (err error) {
 		}
 	}
 
-	err = os.WriteFile(tracesPath, []byte(sortedOutput.String()), 0644)
+	err = os.WriteFile(tracesPath, []byte(sortedOutput.String()), 0o644)
 	if err != nil {
 		return err
 	}
@@ -321,7 +321,7 @@ func StartModule(module Module.Module, config Config) {
 		return
 	}
 	if created {
-		var participants = [][]string{}
+		participants := [][]string{}
 		for _, participant := range config.Participants {
 			participants = append(participants, []string{participant.GithubUserName, participant.IntraLogin})
 		}
