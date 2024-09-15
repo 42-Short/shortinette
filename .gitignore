@@ -11,6 +11,7 @@ website/
 *.rlib
 *.csv
 internal/
+config/
 
 # PACKAGES
 
