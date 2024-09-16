@@ -19,25 +19,6 @@ import (
 	"github.com/42-Short/shortinette/pkg/logger"
 )
 
-// CompileWithRustc compiles a Rust file using the rustc compiler.
-//
-//   - turnInFile: the path to the Rust file to be compiled
-//
-// Returns an error if the compilation fails.
-func CompileWithRustc(turnInFile string) error {
-	cmd := exec.Command("rustc", filepath.Base(turnInFile))
-	cmd.Dir = filepath.Dir(turnInFile)
-
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		logger.Error.Println(err)
-		logger.Error.Println(string(output))
-		return err
-	}
-	logger.Info.Printf("%s/%s compiled with rustc\n", cmd.Dir, turnInFile)
-	return nil
-}
-
 // AppendStringToFile appends a source string to a destination file.
 //
 //   - source: the string to append to the file
