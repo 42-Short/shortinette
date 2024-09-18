@@ -376,7 +376,6 @@ func (short *Short) Start(module string) {
 		config, err := GetConfig()
 		if err != nil {
 			logger.Error.Println(err.Error())
-			return
 		}
 		StartModule(short.Modules[module], *config)
 		short.TestMode.Run(module)
