@@ -44,13 +44,6 @@ func NewWebhookTestMode(modules map[string]Module.Module, endpoint string, port 
 		endpoint: endpoint,
 		port:     port,
 	}
-	// wt := WebhookTestMode{MonitoringFunction: nil, Modules: modules}
-	// wt.MonitoringFunction = func() {
-	// 	http.HandleFunc(endpoint, wt.handleWebhook)
-	// 	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil); err != nil {
-	// 		return
-	// 	}
-	// }
 }
 
 // GitHubWebhookPayload represents the structure of the JSON payload sent by GitHub when

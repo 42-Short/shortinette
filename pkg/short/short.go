@@ -369,15 +369,15 @@ func dockerExecMode(short Short) {
 //
 //   - module: the name of the module to be started
 func (short *Short) Start(module string) {
-	logger.Info.Printf("os.Args: %v, len(os.Args): %d", os.Args, len(os.Args))
 	if len(os.Args) != 1 {
 		dockerExecMode(*short)
+	} else {
+		config, err := GetConfig()
+		if err != nil {
+			logger.Error.Println(err.Error())
+			return
+		}
+		StartModule(short.Modules[module], *config)
+		short.TestMode.Run(module)
 	}
-	config, err := GetConfig()
-	if err != nil {
-		logger.Error.Println(err.Error())
-		return
-	}
-	StartModule(short.Modules[module], *config)
-	short.TestMode.Run(module)
 }
