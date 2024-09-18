@@ -3,6 +3,7 @@
 package webhook
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
 	"github.com/42-Short/shortinette/pkg/logger"
@@ -22,6 +24,10 @@ type WebhookTestMode struct {
 	MonitoringFunction func()                   // MonitoringFunction is the function that starts the webhook server.
 	Modules            map[string]Module.Module // Modules is a map of module names to their corresponding Module structs.
 	CurrentModule      string                   // CurrentModule is the name of the module currently being graded.
+	server             *http.Server
+	mu                 sync.Mutex
+	endpoint           string
+	port               string
 }
 
 // NewWebhookTestMode initializes and returns a WebhookTestMode instance, which triggers
@@ -33,14 +39,18 @@ type WebhookTestMode struct {
 //
 // Returns a pointer to the initialized WebhookTestMode.
 func NewWebhookTestMode(modules map[string]Module.Module, endpoint string, port string) *WebhookTestMode {
-	wt := WebhookTestMode{MonitoringFunction: nil, Modules: modules}
-	wt.MonitoringFunction = func() {
-		http.HandleFunc(endpoint, wt.handleWebhook)
-		if err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil); err != nil {
-			return
-		}
+	return &WebhookTestMode{
+		Modules:  modules,
+		endpoint: endpoint,
+		port:     port,
 	}
-	return &wt
+	// wt := WebhookTestMode{MonitoringFunction: nil, Modules: modules}
+	// wt.MonitoringFunction = func() {
+	// 	http.HandleFunc(endpoint, wt.handleWebhook)
+	// 	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil); err != nil {
+	// 		return
+	// 	}
+	// }
 }
 
 // GitHubWebhookPayload represents the structure of the JSON payload sent by GitHub when
@@ -56,6 +66,41 @@ type GitHubWebhookPayload struct {
 	Commit struct {
 		Message string `json:"message"` // Message is the commit message of the push.
 	} `json:"head_commit"`
+}
+
+func (wt *WebhookTestMode) startServer() {
+	wt.mu.Lock()
+	defer wt.mu.Unlock()
+
+	wt.stopServer()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc(wt.endpoint, wt.handleWebhook)
+
+	wt.server = &http.Server{
+		Addr:    fmt.Sprintf(":%s", wt.port),
+		Handler: mux,
+	}
+
+	go func() {
+		if err := wt.server.ListenAndServe(); err != http.ErrServerClosed {
+			logger.Error.Printf("HTTP server ListenAndServe: %v\n", err)
+		}
+	}()
+
+	logger.Info.Printf("Webhook server started for module %s\n", wt.CurrentModule)
+}
+
+func (wt *WebhookTestMode) stopServer() {
+	if wt.server != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := wt.server.Shutdown(ctx); err != nil {
+			logger.Error.Printf("Server forced to shut down: %v\n", err)
+		}
+		wt.server = nil
+		logger.Info.Println("Webhook server stopped")
+	}
 }
 
 var mu sync.Mutex // mutex to prevent concurrent grading processes from overlapping.
@@ -100,6 +145,8 @@ func (wt *WebhookTestMode) handleWebhook(w http.ResponseWriter, r *http.Request)
 //
 //   - currentModule: The name of the module that is currently being graded.
 func (wt *WebhookTestMode) Run(currentModule string) {
+	wt.mu.Lock()
 	wt.CurrentModule = currentModule
-	wt.MonitoringFunction()
+	wt.mu.Unlock()
+	wt.startServer()
 }
