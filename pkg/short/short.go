@@ -369,6 +369,7 @@ func dockerExecMode(short Short) {
 //
 //   - module: the name of the module to be started
 func (short *Short) Start(module string) {
+	fmt.Printf("os.Args: %v, len(os.Args): %d", os.Args, len(os.Args))
 	if len(os.Args) == 2 {
 		dockerExecMode(*short)
 	} else if len(os.Args) != 1 {
