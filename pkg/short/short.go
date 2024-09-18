@@ -370,11 +370,8 @@ func dockerExecMode(short Short) {
 //   - module: the name of the module to be started
 func (short *Short) Start(module string) {
 	logger.Info.Printf("os.Args: %v, len(os.Args): %d", os.Args, len(os.Args))
-	if len(os.Args) == 2 {
+	if len(os.Args) != 1 {
 		dockerExecMode(*short)
-	} else if len(os.Args) != 1 {
-		logger.Error.Println("invalid number of arguments")
-		return
 	}
 	config, err := GetConfig()
 	if err != nil {
