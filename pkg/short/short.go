@@ -368,15 +368,17 @@ func dockerExecMode(short Short) {
 // Start begins the module lifecycle by starting the module and running the test mode.
 //
 //   - module: the name of the module to be started
-func (short *Short) Start(module ...string) {
+func (short *Short) StartModule(module string) {
+	config, err := GetConfig()
+	if err != nil {
+		logger.Error.Println(err.Error())
+	}
+	StartModule(short.Modules[module], *config)
+	short.TestMode.Run(module)
+}
+
+func (short *Short) Start() {
 	if len(os.Args) == 2 {
 		dockerExecMode(*short)
-	} else {
-		config, err := GetConfig()
-		if err != nil {
-			logger.Error.Println(err.Error())
-		}
-		StartModule(short.Modules[module[0]], *config)
-		short.TestMode.Run(module[0])
 	}
 }
