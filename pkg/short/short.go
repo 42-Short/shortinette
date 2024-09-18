@@ -369,6 +369,7 @@ func dockerExecMode(short Short) {
 //
 //   - module: the name of the module to be started
 func (short *Short) Start(module string) {
+	logger.Error.Println("HELLO")
 	if len(os.Args) > 1 {
 		dockerExecMode(*short)
 		return
