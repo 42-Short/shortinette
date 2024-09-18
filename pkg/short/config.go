@@ -19,7 +19,7 @@ type Config struct {
 }
 
 // Reads the configuration from CONFIG_PATH.
-// 
+//
 // Returns a Config object containing the information set in your json.
 //
 // See https://github.com/42-Short/shortinette/README.md for details on .env configuration.
@@ -28,7 +28,7 @@ func GetConfig() (*Config, error) {
 
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read config file: %v", err)
+		return nil, fmt.Errorf("unable to read config file: %v, %d, %v", err, len(os.Args), os.Args)
 	}
 
 	var rawConfig struct {
