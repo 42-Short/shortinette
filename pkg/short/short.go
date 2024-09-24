@@ -356,6 +356,7 @@ func dockerExecMode(short Short) {
 		logger.Error.Printf("logger initialization: %v", err)
 		os.Exit(1)
 	}
+	logger.Info.Printf("writing traces to %s", config.TracesPath)
 	result := exercise.Run()
 	logger.File.Printf("[MOD%s][EX%s]: %s", config.ModuleName, config.ExerciseName, result.Output)
 	if result.Passed {
