@@ -115,7 +115,7 @@ func runContainerized(config GradingConfig, dockerImageName string) bool {
 		WorkingDir: "/app",
 	}
 	hostConfig := &container.HostConfig{
-		Binds:      []string{fmt.Sprintf("%s/traces:/app/traces", dir)},
+		Binds:      []string{fmt.Sprintf("%s/traces:/app/traces:rshared", dir)},
 		AutoRemove: true,
 	}
 

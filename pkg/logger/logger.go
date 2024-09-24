@@ -4,6 +4,7 @@ package logger
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"time"
@@ -39,7 +40,24 @@ func InitializeTraceLogger(filePath string) (err error) {
 		return err
 	}
 	File = log.New(file, "", log.Ldate|log.Ltime)
+	originalWriter := File.Writer()
+	File.SetOutput(&syncWriter{file: file, writer: originalWriter})
 	return nil
+}
+
+type syncWriter struct {
+	file   *os.File  // The log file
+	writer io.Writer // The original writer for the logger
+}
+
+// Write writes to the underlying writer and ensures the file is flushed after each write.
+func (w *syncWriter) Write(p []byte) (n int, err error) {
+	n, err = w.writer.Write(p)
+	if err != nil {
+		return n, err
+	}
+	err = w.file.Sync() // Flush to disk after every write
+	return n, err
 }
 
 // InitializeStandardLoggers initializes the Info, Error, and Exercise loggers
