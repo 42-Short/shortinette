@@ -19,6 +19,7 @@ import (
 	"github.com/42-Short/shortinette/pkg/logger"
 	"github.com/42-Short/shortinette/pkg/requirements"
 	ITestMode "github.com/42-Short/shortinette/pkg/short/testmodes"
+	"github.com/42-Short/shortinette/pkg/testutils"
 )
 
 // Short represents the main structure for managing a coding module, including the module's
@@ -356,6 +357,8 @@ func dockerExecMode(short Short) {
 		logger.Error.Printf("logger initialization: %v", err)
 		os.Exit(1)
 	}
+	out, _ := testutils.RunCommandLine("/app/traces", "sh", []string{"-c", "ls", "-l"})
+	logger.Info.Printf("ls -l /app/traces\n%s", out)
 	logger.Info.Printf("writing traces to %s", config.TracesPath)
 	result := exercise.Run()
 	logger.File.Printf("[MOD%s][EX%s]: %s", config.ModuleName, config.ExerciseName, result.Output)
