@@ -93,38 +93,36 @@ func updateRemoteDatabase() (err error) {
 //   - tableName: the name of the table to create
 //
 // Returns a boolean indicating whether the table was created and an error if the operation fails.
-func CreateTable(tableName string) (bool, error) {
-	created := false
+func CreateTable(tableName string) error {
 	if err := git.Create("sqlite3", false); err != nil {
-		return created, err
+		return err
 	}
 	if err := git.Clone(fmt.Sprintf("https://github.com/%s/sqlite3.git", os.Getenv("GITHUB_ORGANISATION")), "sqlite3"); err != nil {
-		return created, err
+		return err
 	}
 	db, err := sql.Open("sqlite3", "./sqlite3/repositories.db")
 	if err != nil {
-		return created, err
+		return err
 	}
 	defer db.Close()
 
 	exists, err := tableExists(db, tableName)
 	if err != nil {
-		return created, err
+		return err
 	}
 
 	if !exists {
 		query := fmt.Sprintf(sqliteTemplates.CreateRepoTable, tableName)
 		_, err = db.Exec(query)
 		if err != nil {
-			return created, err
+			return err
 		}
-		created = true
 	}
 	logger.Info.Printf("table %s created", tableName)
 	if err := git.UploadFile("sqlite3", "./sqlite3/repositories.db", "repositories.db", fmt.Sprintf("table %s created in repositories.db", tableName), "main"); err != nil {
-		return created, fmt.Errorf("upload database to remote: %v", err)
+		return fmt.Errorf("upload database to remote: %v", err)
 	}
-	return created, nil
+	return nil
 }
 
 // InitModuleTable initializes a table for a module with participant data.

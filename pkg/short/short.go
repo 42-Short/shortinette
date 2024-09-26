@@ -316,20 +316,18 @@ func initializeRepos(config Config, module Module.Module) {
 //   - module: the module object containing the exercises
 //   - config: the configuration object containing participants' information
 func StartModule(module Module.Module, config Config) {
-	created, err := db.CreateTable(fmt.Sprintf("repositories_%s", module.Name))
+	err := db.CreateTable(fmt.Sprintf("repositories_%s", module.Name))
 	if err != nil {
 		logger.Error.Printf("table creation: %s", err.Error())
 		return
 	}
-	if created {
-		participants := [][]string{}
-		for _, participant := range config.Participants {
-			participants = append(participants, []string{participant.GithubUserName, participant.IntraLogin})
-		}
-		if err := db.InitModuleTable(participants, module.Name); err != nil {
-			logger.Error.Printf("table initializtion: %s", err.Error())
-			return
-		}
+	participants := [][]string{}
+	for _, participant := range config.Participants {
+		participants = append(participants, []string{participant.GithubUserName, participant.IntraLogin})
+	}
+	if err := db.InitModuleTable(participants, module.Name); err != nil {
+		logger.Error.Printf("table initializtion: %s", err.Error())
+		return
 	}
 	initializeRepos(config, module)
 }
