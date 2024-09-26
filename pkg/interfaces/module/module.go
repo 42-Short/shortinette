@@ -108,7 +108,6 @@ func runContainerized(config GradingConfig, dockerImageName string) bool {
 	}
 
 	dir, _ := os.Getwd()
-	logger.Info.Printf("mounting %s to /app/traces in child container\n", filepath.Join(dir, "traces"))
 	containerConfig := &container.Config{
 		Image:      dockerImageName,
 		Cmd:        []string{"sh", "-c", fmt.Sprintf("go run . '%s'", string(configJSON))},
@@ -150,7 +149,6 @@ func runContainerized(config GradingConfig, dockerImageName string) bool {
 		logger.Error.Printf("fetching container logs: %v", err)
 		return false
 	}
-	logger.Info.Printf("container output: %s\n", output)
 	if _, err = stdcopy.StdCopy(os.Stdout, os.Stderr, output); err != nil {
 		logger.Error.Printf("copying logs: %v", err)
 		return false
@@ -161,7 +159,6 @@ func runContainerized(config GradingConfig, dockerImageName string) bool {
 		logger.Error.Printf("inspecting container: %v", err)
 		return false
 	}
-	logger.Info.Printf("container inspect: %v", inspect)
 	if inspect.State.ExitCode != 0 {
 		logger.Error.Printf("container exited with non-zero status: %d", inspect.State.ExitCode)
 		return false
