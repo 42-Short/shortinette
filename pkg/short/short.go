@@ -19,7 +19,6 @@ import (
 	"github.com/42-Short/shortinette/pkg/logger"
 	"github.com/42-Short/shortinette/pkg/requirements"
 	ITestMode "github.com/42-Short/shortinette/pkg/short/testmodes"
-	"github.com/42-Short/shortinette/pkg/testutils"
 )
 
 // Short represents the main structure for managing a coding module, including the module's
