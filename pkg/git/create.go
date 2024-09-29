@@ -10,6 +10,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/42-Short/shortinette/pkg/logger"
 )
@@ -98,7 +100,7 @@ func RepoExists(repo string) (exists bool, err error) {
 //   - name: the name of the repository to create
 //
 // Returns an error if the repository creation fails.
-func createRepository(name string, withWebhook bool) (err error) {
+func createRepository(name string, withWebhook bool) (callsRemaining int, reset time.Time, err error) {
 	url := fmt.Sprintf("https://api.github.com/orgs/%s/repos", os.Getenv("GITHUB_ORGANISATION"))
 	repoDetails := map[string]interface{}{
 		"name":    name,
@@ -106,32 +108,46 @@ func createRepository(name string, withWebhook bool) (err error) {
 	}
 	repoDetailsJSON, err := json.Marshal(repoDetails)
 	if err != nil {
-		return err
+		return 0, time.Time{}, err
 	}
 
 	request, err := createHTTPRequest("POST", url, os.Getenv("GITHUB_TOKEN"), repoDetailsJSON)
 	if err != nil {
-		return err
+		return 0, time.Time{}, err
 	}
 
 	response, err := sendHTTPRequest(request)
 	if err != nil {
-		return err
+		return 0, time.Time{}, err
 	}
 	defer response.Body.Close()
 
+	callsRemaining, err = strconv.Atoi(string(response.Header.Get("x-ratelimit-remaining")[0]))
+	if err != nil {
+		return 0, time.Time{}, fmt.Errorf("x-ratelimit-remaining header could not be parsed: %v", err)
+	}
+
+	resetStr := response.Header.Get("x-ratelimit-reset")
+	resetUnix, err := strconv.ParseInt(resetStr, 10, 64)
+	if err != nil {
+		logger.Error.Printf("x-ratelimit-reset header could not be parsed: %v", err)
+		reset = time.Now().Add(time.Hour)
+	} else {
+		reset = time.Unix(resetUnix, 0)
+	}
+
 	if response.StatusCode != http.StatusCreated {
-		return fmt.Errorf("could not create repository %s: %s", name, response.Status)
+		return 0, time.Time{}, fmt.Errorf("could not create repository %s: %s", name, response.Status)
 	}
 
 	if withWebhook {
 		if err := addWebhook(name); err != nil {
-			return fmt.Errorf("failed to add webhook: %w", err)
+			return 0, time.Time{}, fmt.Errorf("failed to add webhook: %w", err)
 		}
 	}
 
 	logger.Info.Printf("repository %s created in %s", name, os.Getenv("GITHUB_ORGANISATION"))
-	return nil
+	return callsRemaining, reset, err
 }
 
 // initialCommit creates an initial commit in the newly created repository with a README.md file.
@@ -184,33 +200,33 @@ func initialCommit(repo, token string) (err error) {
 //   - additionalBranche: variadic list of strings, representing all branches that should be created by default on the repo
 //
 // Returns an error if the repository creation, initial commit, or branch creation fails.
-func create(name string, withWebhook bool, additionalBranches ...string) (err error) {
+func create(name string, withWebhook bool, additionalBranches ...string) (callsRemaining int, reset time.Time, err error) {
 	exists, err := RepoExists(name)
 	if err != nil {
-		return fmt.Errorf("could not verify repository existence: %w", err)
+		return 0, time.Time{}, fmt.Errorf("could not verify repository existence: %w", err)
 	}
 
 	if exists {
 		logger.Info.Printf("repository %s already exists. Skipping creation\n", name)
-		return nil
+		return 0, time.Time{}, nil
 	}
 
-	if err := createRepository(name, withWebhook); err != nil {
-		return err
+	if callsRemaining, reset, err = createRepository(name, withWebhook); err != nil {
+		return 0, time.Time{}, nil
 	}
 
 	if err := initialCommit(name, os.Getenv("GITHUB_TOKEN")); err != nil {
-		return err
+		return 0, time.Time{}, nil
 	}
 
 	sha, err := getDefaultBranchSHA(name, os.Getenv("GITHUB_TOKEN"))
 	if err != nil {
-		return err
+		return 0, time.Time{}, nil
 	}
 	for _, branch := range additionalBranches {
 		if err := createBranch(name, os.Getenv("GITHUB_TOKEN"), branch, sha); err != nil {
-			return err
+			return 0, time.Time{}, nil
 		}
 	}
-	return nil
+	return callsRemaining, reset, nil
 }

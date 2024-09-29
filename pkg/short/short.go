@@ -267,6 +267,35 @@ func GradeAll(module Module.Module, config Config) error {
 	return nil
 }
 
+type RateLimiter struct {
+	remainingCalls int
+	resetTime      time.Time
+	mutex          sync.Mutex
+}
+
+func (rl *RateLimiter) WaitIfNeeded() {
+	rl.mutex.Lock()
+	defer rl.mutex.Unlock()
+	if rl.remainingCalls <= 10 && time.Now().Before(rl.resetTime) {
+		time.Sleep(time.Until(rl.resetTime))
+	}
+}
+
+func (rl *RateLimiter) DecrementCalls() {
+	rl.mutex.Lock()
+	defer rl.mutex.Unlock()
+	rl.remainingCalls--
+}
+
+func (rl *RateLimiter) UpdateLimits(remaining int, reset time.Time) {
+	rl.mutex.Lock()
+	defer rl.mutex.Unlock()
+	rl.remainingCalls = remaining
+	rl.resetTime = reset
+}
+
+var rl = &RateLimiter{remainingCalls: 5000, resetTime: time.Now().Add(time.Hour)}
+
 // EndModule grades all repositories in a module and removes write access for all participants.
 //
 //   - module: the module object containing the exercises
@@ -274,9 +303,15 @@ func GradeAll(module Module.Module, config Config) error {
 func EndModule(module Module.Module, config Config) {
 	for _, participant := range config.Participants {
 		repoID := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
-		if err := git.AddCollaborator(repoID, participant.GithubUserName, "read"); err != nil {
+
+		rl.WaitIfNeeded()
+		callsRemaining, reset, err := git.AddCollaborator(repoID, participant.GithubUserName, "read")
+		if err != nil {
 			logger.Error.Printf("error adding collaborator: %v", err)
 		}
+		rl.DecrementCalls()
+		rl.UpdateLimits(callsRemaining, reset)
+
 		if err := GradeAll(module, config); err != nil {
 			logger.Error.Printf("error grading module: %v", err)
 		}
@@ -295,12 +330,23 @@ func initializeRepos(config Config, module Module.Module) {
 		go func(participant Participant) {
 			defer wg.Done()
 			repoID := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
-			if err := git.Create(repoID, true, "traces"); err != nil {
+
+			rl.WaitIfNeeded()
+			callsRemaining, reset, err := git.Create(repoID, true, "traces")
+			if err != nil {
 				logger.Error.Printf("error creating git repository: %v", err)
 			}
-			if err := git.AddCollaborator(repoID, participant.GithubUserName, "push"); err != nil {
+			rl.DecrementCalls()
+			rl.UpdateLimits(callsRemaining, reset)
+
+			rl.WaitIfNeeded()
+			callsRemaining, reset, err = git.AddCollaborator(repoID, participant.GithubUserName, "push")
+			if err != nil {
 				logger.Error.Printf("error adding collaborator: %v", err)
 			}
+			rl.DecrementCalls()
+			rl.UpdateLimits(callsRemaining, reset)
+
 			if err := git.UploadFile(repoID, module.SubjectPath, "README.md", fmt.Sprintf("Subject for module %s. Good Luck!", module.Name), ""); err != nil {
 				logger.Error.Printf("error uploading file: %v", err)
 			}

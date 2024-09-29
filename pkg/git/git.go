@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/42-Short/shortinette/pkg/logger"
 )
@@ -80,12 +81,12 @@ func Clone(repoURL string, targetDirectory string) (err error) {
 // Returns an error if the repository creation process fails.
 //
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
-func Create(name string, withWebhook bool, additionalBranches ...string) (err error) {
-	if err = create(name, withWebhook, additionalBranches...); err != nil {
+func Create(name string, withWebhook bool, additionalBranches ...string) (callsRemaining int, reset time.Time, err error) {
+	if callsRemaining, reset, err = create(name, withWebhook, additionalBranches...); err != nil {
 		logger.Error.Println(err)
-		return fmt.Errorf("could not create repo: %w", err)
+		return 0, time.Time{}, fmt.Errorf("could not create repo: %w", err)
 	}
-	return nil
+	return callsRemaining, reset, nil
 }
 
 // AddCollaborator adds a collaborator with the specified permissions to the repository.
@@ -100,12 +101,13 @@ func Create(name string, withWebhook bool, additionalBranches ...string) (err er
 // Returns an error if the process of adding the collaborator fails.
 //
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
-func AddCollaborator(repoID string, username string, permission string) (err error) {
-	if err := addCollaborator(repoID, username, permission); err != nil {
+func AddCollaborator(repoID string, username string, permission string) (callsRemaining int, reset time.Time, err error) {
+	callsRemaining, reset, err = addCollaborator(repoID, username, permission)
+	if err != nil {
 		logger.Error.Println(err)
-		return fmt.Errorf("could not add %s to repo %s: %w", username, repoID, err)
+		return 0, time.Time{}, fmt.Errorf("could not add %s to repo %s: %w", username, repoID, err)
 	}
-	return nil
+	return callsRemaining, reset, nil
 }
 
 // UploadFile adds or updates a file on a repository.
@@ -119,7 +121,7 @@ func AddCollaborator(repoID string, username string, permission string) (err err
 // Returns an error if the file upload process fails.
 //
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
-func UploadFile(repoID string, localFilePath string, targetFilePath string, commitMessage string, branch string) (err error) {
+func UploadFile(repoID string, localFilePath string, targetFilePath string, commitMessage string, branch string) (callsRemaining int, reset time.Time, err error) {
 	if err := uploadFile(repoID, localFilePath, targetFilePath, commitMessage, branch); err != nil {
 		return fmt.Errorf("could not upload %s to repo %s: %w", localFilePath, repoID, err)
 	}

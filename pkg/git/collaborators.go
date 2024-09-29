@@ -10,6 +10,10 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
+
+	"github.com/42-Short/shortinette/pkg/logger"
 )
 
 // buildCollaboratorURL constructs the GitHub API URL for managing a collaborator in a specific repository.
@@ -59,18 +63,33 @@ func createCollaboratorRequest(url string, token string, permission string) (req
 //   - permission: the permission level to be granted to the collaborator (e.g., "push", "pull")
 //
 // Returns an error if the operation fails.
-func addCollaborator(repoID string, username string, permission string) (err error) {
+func addCollaborator(repoID string, username string, permission string) (callsRemaining int, reset time.Time, err error) {
 	url := buildCollaboratorURL(repoID, username)
 
 	request, err := createCollaboratorRequest(url, os.Getenv("GITHUB_TOKEN"), permission)
 	if err != nil {
-		return err
+		return 0, time.Time{}, err
+	}
+	response, err := sendHTTPRequest(request)
+	if err != nil {
+		return 0, time.Time{}, err
 	}
 
-	if _, err := sendHTTPRequest(request); err != nil {
-		return err
+	callsRemaining, err = strconv.Atoi(response.Header.Get("x-ratelimit-remaining"))
+	if err != nil {
+		return 0, time.Time{}, fmt.Errorf("x-ratelimit-remaining header could not be parsed: %v", err)
 	}
-	return nil
+
+	resetStr := response.Header.Get("x-ratelimit-reset")
+	resetUnix, err := strconv.ParseInt(resetStr, 10, 64)
+	if err != nil {
+		logger.Error.Printf("x-ratelimit-reset header could not be parsed: %v", err)
+		reset = time.Now().Add(time.Hour)
+	} else {
+		reset = time.Unix(resetUnix, 0)
+	}
+
+	return callsRemaining, reset, nil
 }
 
 // buildFileURL constructs the GitHub API URL for retrieving a file from a specific repository

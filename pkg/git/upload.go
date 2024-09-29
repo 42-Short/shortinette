@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/42-Short/shortinette/pkg/logger"
 )
@@ -153,7 +154,7 @@ func uploadRaw(repoID string, data string, targetFilePath string, commitMessage 
 //   - branch: the branch to push to (optional)
 //
 // Returns an error if the upload process fails.
-func uploadFile(repoID string, localFilePath string, targetFilePath string, commitMessage string, branch string) (err error) {
+func uploadFile(repoID string, localFilePath string, targetFilePath string, commitMessage string, branch string) (callsRemaining int, reset time.Time, err error) {
 	originalFile, err := os.Open(localFilePath)
 	if err != nil {
 		return fmt.Errorf("could not open original file: %w", err)
