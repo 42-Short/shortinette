@@ -118,19 +118,20 @@ func getUpdatedReadme(repo db.Repository, results map[string]bool) (newReadme st
 //   - results: a map of exercise names to their pass/fail results
 //
 // Returns an error if the upload fails.
-func uploadResults(repo db.Repository, tracesPath string, moduleName string, results map[string]bool) (err error) {
+func uploadResults(repo db.Repository, tracesPath string, moduleName string, results map[string]bool) (callsRemaining int, reset time.Time, err error) {
 	commitMessage := fmt.Sprintf("Traces for module %s: %s", moduleName, tracesPath)
-	if err := git.UploadFile(repo.ID, tracesPath, tracesPath, commitMessage, "traces"); err != nil {
-		return err
+	callsRemaining, reset, err = git.UploadFile(repo.ID, tracesPath, tracesPath, commitMessage, "traces")
+	if err != nil {
+		return 0, time.Time{}, err
 	}
 
 	updatedReadme := getUpdatedReadme(repo, results)
 
 	commitMessage = fmt.Sprintf("Results for module %s", moduleName)
 	if err := git.UploadRaw(repo.ID, updatedReadme, "README.md", commitMessage, "traces"); err != nil {
-		return err
+		return 0, time.Time{}, err
 	}
-	return nil
+	return callsRemaining, reset, nil
 }
 
 // checkPrematureGradingAttempt checks if a grading attempt is made before the waiting
@@ -237,7 +238,7 @@ func GradeModule(module Module.Module, repoID string) (err error) {
 		return fmt.Errorf("sorting trace content: %v", err)
 	}
 
-	if err = uploadResults(repo, tracesPath, module.Name, results); err != nil {
+	if _, _, err = uploadResults(repo, tracesPath, module.Name, results); err != nil {
 		return err
 	}
 
@@ -347,9 +348,13 @@ func initializeRepos(config Config, module Module.Module) {
 			rl.DecrementCalls()
 			rl.UpdateLimits(callsRemaining, reset)
 
-			if err := git.UploadFile(repoID, module.SubjectPath, "README.md", fmt.Sprintf("Subject for module %s. Good Luck!", module.Name), ""); err != nil {
+			rl.WaitIfNeeded()
+			callsRemaining, reset, err = git.UploadFile(repoID, module.SubjectPath, "README.md", fmt.Sprintf("Subject for module %s. Good Luck!", module.Name), "")
+			if err != nil {
 				logger.Error.Printf("error uploading file: %v", err)
 			}
+			rl.DecrementCalls()
+			rl.UpdateLimits(callsRemaining, reset)
 		}(participant)
 	}
 	wg.Wait()

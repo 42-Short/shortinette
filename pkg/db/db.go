@@ -81,7 +81,7 @@ func tableExists(db *sql.DB, tableName string) (bool, error) {
 
 // Syncs the local database changes with the remote.
 func updateRemoteDatabase() (err error) {
-	if err = git.UploadFile("sqlite3", "./sqlite3/repositories.db", "repositories.db", "repositories.db updated", "main"); err != nil {
+	if _, _, err = git.UploadFile("sqlite3", "./sqlite3/repositories.db", "repositories.db", "repositories.db updated", "main"); err != nil {
 		return err
 	}
 	return nil
@@ -94,7 +94,7 @@ func updateRemoteDatabase() (err error) {
 //
 // Returns a boolean indicating whether the table was created and an error if the operation fails.
 func CreateTable(tableName string) error {
-	if err := git.Create("sqlite3", false); err != nil {
+	if _, _, err := git.Create("sqlite3", false); err != nil {
 		return err
 	}
 	if err := git.Clone(fmt.Sprintf("https://github.com/%s/sqlite3.git", os.Getenv("GITHUB_ORGANISATION")), "sqlite3"); err != nil {
@@ -119,7 +119,7 @@ func CreateTable(tableName string) error {
 		}
 	}
 	logger.Info.Printf("table %s created", tableName)
-	if err := git.UploadFile("sqlite3", "./sqlite3/repositories.db", "repositories.db", fmt.Sprintf("table %s created in repositories.db", tableName), "main"); err != nil {
+	if _, _, err := git.UploadFile("sqlite3", "./sqlite3/repositories.db", "repositories.db", fmt.Sprintf("table %s created in repositories.db", tableName), "main"); err != nil {
 		return fmt.Errorf("upload database to remote: %v", err)
 	}
 	return nil

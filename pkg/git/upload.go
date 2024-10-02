@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/42-Short/shortinette/pkg/logger"
@@ -157,12 +158,12 @@ func uploadRaw(repoID string, data string, targetFilePath string, commitMessage 
 func uploadFile(repoID string, localFilePath string, targetFilePath string, commitMessage string, branch string) (callsRemaining int, reset time.Time, err error) {
 	originalFile, err := os.Open(localFilePath)
 	if err != nil {
-		return fmt.Errorf("could not open original file: %w", err)
+		return 0, time.Time{}, fmt.Errorf("could not open original file: %w", err)
 	}
 	defer originalFile.Close()
 	fileContent, err := io.ReadAll(originalFile)
 	if err != nil {
-		return err
+		return 0, time.Time{}, err
 	}
 	encodedContent := base64.StdEncoding.EncodeToString(fileContent)
 
@@ -170,16 +171,32 @@ func uploadFile(repoID string, localFilePath string, targetFilePath string, comm
 
 	sha, err := getFileSHA(url, os.Getenv("GITHUB_TOKEN"))
 	if err != nil {
-		return err
+		return 0, time.Time{}, err
 	}
 
 	request, err := createPushRequest(url, os.Getenv("GITHUB_TOKEN"), targetFilePath, commitMessage, encodedContent, sha, branch)
 	if err != nil {
-		return err
+		return 0, time.Time{}, err
 	}
 
-	if _, err := sendHTTPRequest(request); err != nil {
-		return err
+	response, err := sendHTTPRequest(request)
+	if err != nil {
+		return 0, time.Time{}, err
 	}
-	return nil
+
+	callsRemaining, err = strconv.Atoi(string(response.Header.Get("x-ratelimit-remaining")[0]))
+	if err != nil {
+		return 0, time.Time{}, fmt.Errorf("x-ratelimit-remaining header could not be parsed: %v", err)
+	}
+
+	resetStr := response.Header.Get("x-ratelimit-reset")
+	resetUnix, err := strconv.ParseInt(resetStr, 10, 64)
+	if err != nil {
+		logger.Error.Printf("x-ratelimit-reset header could not be parsed: %v", err)
+		reset = time.Now().Add(time.Hour)
+	} else {
+		reset = time.Unix(resetUnix, 0)
+	}
+
+	return callsRemaining, reset, nil
 }

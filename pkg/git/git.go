@@ -122,11 +122,12 @@ func AddCollaborator(repoID string, username string, permission string) (callsRe
 //
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
 func UploadFile(repoID string, localFilePath string, targetFilePath string, commitMessage string, branch string) (callsRemaining int, reset time.Time, err error) {
-	if err := uploadFile(repoID, localFilePath, targetFilePath, commitMessage, branch); err != nil {
-		return fmt.Errorf("could not upload %s to repo %s: %w", localFilePath, repoID, err)
+	callsRemaining, reset, err = uploadFile(repoID, localFilePath, targetFilePath, commitMessage, branch)
+	if err != nil {
+		return 0, time.Time{}, fmt.Errorf("could not upload %s to repo %s: %w", localFilePath, repoID, err)
 	}
 	logger.Info.Printf("uploaded %s to repo %s", localFilePath, repoID)
-	return nil
+	return callsRemaining, reset, nil
 }
 
 // UploadRaw uploads raw data directly to the specified targetFilePath in the repository.
