@@ -283,17 +283,24 @@ func EndModule(module Module.Module, config Config) {
 	}
 }
 
+const maxConcurrentRequests = 10
+
 // Asynchronously creates a repo for each user in the config specified by CONFIG_PATH.
 //
 //   - config: Config struct filled with the participant's data
 //   - module: Module.Module struct filled with the module's metadata
 func initializeRepos(config Config, module Module.Module) {
 	var wg sync.WaitGroup
+	sem := make(chan struct{}, maxConcurrentRequests)
 
 	for _, participant := range config.Participants {
 		wg.Add(1)
+		sem <- struct{}{}
+
 		go func(participant Participant) {
 			defer wg.Done()
+			defer func() { <-sem }()
+
 			repoID := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
 			if err := git.Create(repoID, true, "traces"); err != nil {
 				logger.Error.Printf("error creating git repository: %v", err)
