@@ -291,6 +291,9 @@ func (rl *RateLimiter) DecrementCalls() {
 func (rl *RateLimiter) UpdateLimits(remaining int, reset time.Time) {
 	rl.mutex.Lock()
 	defer rl.mutex.Unlock()
+	if remaining%500 == 0 {
+		logger.Info.Printf("rate limit update: remaining points: %d, reset at %v\n", remaining, reset)
+	}
 	rl.remainingCalls = remaining
 	rl.resetTime = reset
 }
