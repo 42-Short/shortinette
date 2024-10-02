@@ -64,7 +64,6 @@ func createHTTPRequest(method string, url string, token string, body []byte) (re
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
 func Clone(repoURL string, targetDirectory string) (err error) {
 	if err = get(repoURL, targetDirectory); err != nil {
-		logger.Error.Println(err)
 		return err
 	}
 	return nil
@@ -82,7 +81,6 @@ func Clone(repoURL string, targetDirectory string) (err error) {
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
 func Create(name string, withWebhook bool, additionalBranches ...string) (err error) {
 	if err = create(name, withWebhook, additionalBranches...); err != nil {
-		logger.Error.Println(err)
 		return fmt.Errorf("could not create repo: %w", err)
 	}
 	return nil
@@ -102,7 +100,6 @@ func Create(name string, withWebhook bool, additionalBranches ...string) (err er
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
 func AddCollaborator(repoID string, username string, permission string) (err error) {
 	if err := addCollaborator(repoID, username, permission); err != nil {
-		logger.Error.Println(err)
 		return fmt.Errorf("could not add %s to repo %s: %w", username, repoID, err)
 	}
 	return nil

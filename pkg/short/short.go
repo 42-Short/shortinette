@@ -277,7 +277,7 @@ func EndModule(module Module.Module, config Config) {
 		if err := git.AddCollaborator(repoID, participant.GithubUserName, "read"); err != nil {
 			logger.Error.Printf("error adding collaborator: %v", err)
 		}
-		if err := GradeAll(module, config); err != nil {
+		if err := GradeModule(module, repoID); err != nil {
 			logger.Error.Printf("error grading module: %v", err)
 		}
 	}
@@ -289,9 +289,10 @@ const maxConcurrentRequests = 10
 //
 //   - config: Config struct filled with the participant's data
 //   - module: Module.Module struct filled with the module's metadata
-func initializeRepos(config Config, module Module.Module) {
+func initializeRepos(config Config, module Module.Module) (err error) {
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, maxConcurrentRequests)
+	errChan := make(chan error, len(config.Participants))
 
 	for _, participant := range config.Participants {
 		wg.Add(1)
@@ -303,17 +304,31 @@ func initializeRepos(config Config, module Module.Module) {
 
 			repoID := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
 			if err := git.Create(repoID, true, "traces"); err != nil {
-				logger.Error.Printf("error creating git repository: %v", err)
+				errChan <- fmt.Errorf("error creating git repository: %v", err)
+				return
 			}
 			if err := git.AddCollaborator(repoID, participant.GithubUserName, "push"); err != nil {
-				logger.Error.Printf("error adding collaborator: %v", err)
+				errChan <- fmt.Errorf("error adding collaborator: %v", err)
+				return
 			}
 			if err := git.UploadFile(repoID, module.SubjectPath, "README.md", fmt.Sprintf("Subject for module %s. Good Luck!", module.Name), ""); err != nil {
-				logger.Error.Printf("error uploading file: %v", err)
+				errChan <- fmt.Errorf("error uploading file: %v", err)
+				return
 			}
 		}(participant)
 	}
 	wg.Wait()
+	close(errChan)
+
+	var errors []error
+	for err := range errChan {
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return fmt.Errorf("failed to initialize %d repositories: %v", len(errors), errors)
+	}
+	return nil
 }
 
 // StartModule creates a new repository for each participant, gives them write access,
