@@ -267,23 +267,47 @@ func GradeAll(module Module.Module, config Config) error {
 	return nil
 }
 
+const maxConcurrentRequests = 10
+
 // EndModule grades all repositories in a module and removes write access for all participants.
 //
 //   - module: the module object containing the exercises
 //   - config: the configuration object containing participants' information
-func EndModule(module Module.Module, config Config) {
-	for _, participant := range config.Participants {
-		repoID := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
-		if err := git.AddCollaborator(repoID, participant.GithubUserName, "read"); err != nil {
-			logger.Error.Printf("error adding collaborator: %v", err)
-		}
-		if err := GradeModule(module, repoID); err != nil {
-			logger.Error.Printf("error grading module: %v", err)
-		}
-	}
-}
+func EndModule(module Module.Module, config Config) (err error) {
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, maxConcurrentRequests)
+	errChan := make(chan error, len(config.Participants))
 
-const maxConcurrentRequests = 10
+	for _, participant := range config.Participants {
+		wg.Add(1)
+		sem <- struct{}{}
+		repoID := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
+
+		go func(repoId string, module Module.Module, githubUser string) {
+			defer wg.Done()
+			defer func() { <-sem }()
+
+			if err := git.AddCollaborator(repoID, participant.GithubUserName, "read"); err != nil {
+				logger.Error.Printf("error adding collaborator: %v", err)
+			}
+			if err := GradeModule(module, repoID); err != nil {
+				logger.Error.Printf("error grading module: %v", err)
+			}
+		}(repoID, module, participant.GithubUserName)
+	}
+	wg.Wait()
+	close(errChan)
+
+	var errors []error
+	for err := range errChan {
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return fmt.Errorf("failed to grade %d repositories: %v", len(errors), errors)
+	}
+	return nil
+}
 
 // Asynchronously creates a repo for each user in the config specified by CONFIG_PATH.
 //
@@ -336,21 +360,25 @@ func initializeRepos(config Config, module Module.Module) (err error) {
 //
 //   - module: the module object containing the exercises
 //   - config: the configuration object containing participants' information
-func StartModule(module Module.Module, config Config) {
-	err := db.CreateTable(fmt.Sprintf("repositories_%s", module.Name))
-	if err != nil {
-		logger.Error.Printf("table creation: %s", err.Error())
-		return
+func StartModule(module Module.Module, config Config) (err error) {
+	if err = db.CreateTable(fmt.Sprintf("repositories_%s", module.Name)); err != nil {
+		return fmt.Errorf("table creation: %v", err)
 	}
+
 	participants := [][]string{}
 	for _, participant := range config.Participants {
 		participants = append(participants, []string{participant.GithubUserName, participant.IntraLogin})
 	}
-	if err := db.InitModuleTable(participants, module.Name); err != nil {
-		logger.Error.Printf("table initializtion: %s", err.Error())
-		return
+
+	if err = db.InitModuleTable(participants, module.Name); err != nil {
+		return fmt.Errorf("table initializtion: %v", err)
 	}
-	initializeRepos(config, module)
+
+	if err := initializeRepos(config, module); err != nil {
+		return fmt.Errorf("repo initialization: %v", err)
+	}
+
+	return nil
 }
 
 // dockerExecMode runs the grading process for a single exercise inside a Docker container.
@@ -388,13 +416,18 @@ func dockerExecMode(short Short) {
 // Start begins the module lifecycle by starting the module and running the test mode.
 //
 //   - module: the name of the module to be started
-func (short *Short) StartModule(module string) {
+func (short *Short) StartModule(module string) (err error) {
 	config, err := GetConfig()
 	if err != nil {
-		logger.Error.Println(err.Error())
+		return fmt.Errorf("failed to get config: %v", err)
 	}
-	StartModule(short.Modules[module], *config)
+
+	if err = StartModule(short.Modules[module], *config); err != nil {
+		return fmt.Errorf("error starting module: %v", err)
+	}
+
 	short.TestMode.Run(module)
+	return nil
 }
 
 func (short *Short) Start() {
