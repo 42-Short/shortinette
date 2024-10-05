@@ -71,44 +71,6 @@ func updateRelease(repo db.Repository, newWaitingTime time.Duration, tracesPath 
 	return nil
 }
 
-// getUpdatedReadme generates the updated README content based on the latest grading
-// results and appends it to the existing content.
-//
-//   - repo: the repository object containing grading details
-//   - results: a map of exercise names to their pass/fail results
-//
-// Returns the new README content as a string and an error if the README update fails.
-func getUpdatedReadme(repo db.Repository, results map[string]bool) (newReadme string) {
-	var keys []string
-	for key := range results {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-
-	oldContent, err := git.GetDecodedFile(repo.ID, "traces", "README.md")
-	if err != nil {
-		logger.Info.Printf("README.md not found in %s", repo.ID)
-		oldContent = ""
-	}
-	tableRow := `
-<tr>
-	<th>%s</th>
-	<th>%s</th>
-</tr>`
-	var currentResult string
-	newReadme = fmt.Sprintf("%s<h1 align=\"center\">ATTEMPT %d - SCORE %d/100</h1><div align=\"center\"><table>", oldContent, repo.Attempts, repo.Score)
-	for _, key := range keys {
-		if results[key] {
-			currentResult = "✅"
-		} else {
-			currentResult = "❌"
-		}
-		newReadme = fmt.Sprintf("%s%s", newReadme, fmt.Sprintf(tableRow, key, currentResult))
-	}
-	newReadme = fmt.Sprintf("%s</table></div>", newReadme)
-	return newReadme
-}
-
 // uploadResults uploads the grading results and the updated README to the student's
 // repository.
 //
@@ -118,16 +80,9 @@ func getUpdatedReadme(repo db.Repository, results map[string]bool) (newReadme st
 //   - results: a map of exercise names to their pass/fail results
 //
 // Returns an error if the upload fails.
-func uploadResults(repo db.Repository, tracesPath string, moduleName string, results map[string]bool) (err error) {
+func uploadResults(repo db.Repository, tracesPath string, moduleName string) (err error) {
 	commitMessage := fmt.Sprintf("Traces for module %s: %s", moduleName, tracesPath)
 	if err := git.UploadFile(repo.ID, tracesPath, tracesPath, commitMessage, "traces"); err != nil {
-		return err
-	}
-
-	updatedReadme := getUpdatedReadme(repo, results)
-
-	commitMessage = fmt.Sprintf("Results for module %s", moduleName)
-	if err := git.UploadRaw(repo.ID, updatedReadme, "README.md", commitMessage, "traces"); err != nil {
 		return err
 	}
 	return nil
@@ -245,7 +200,7 @@ func GradeModule(module Module.Module, repoID string, updateDatabase bool) (err 
 		return fmt.Errorf("sorting trace content: %v", err)
 	}
 
-	if err = uploadResults(repo, tracesPath, module.Name, results); err != nil {
+	if err = uploadResults(repo, tracesPath, module.Name); err != nil {
 		return err
 	}
 
