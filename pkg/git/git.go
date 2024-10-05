@@ -32,9 +32,6 @@ func sendHTTPRequest(request *http.Request) (response *http.Response, err error)
 		logger.Info.Printf("retry-after: %s\n", response.Header.Get("retry-after"))
 		return response, fmt.Errorf("request failed: %s, %s", response.Status, body)
 	}
-	logger.Info.Printf("x-ratelimit-remaining: %s\n", response.Header.Get("x-ratelimit-remaining"))
-	logger.Info.Printf("x-ratelimit-reset: %s\n", response.Header.Get("x-ratelimit-reset"))
-	logger.Info.Printf("retry-after: %s\n", response.Header.Get("retry-after"))
 	return response, nil
 }
 
