@@ -158,7 +158,6 @@ func InitModuleTable(participants [][]string, moduleName string) (err error) {
 //
 // Returns an error if the update fails.
 func UpdateRepository(moduleName string, repo Repository) (err error) {
-
 	db, err := sql.Open("sqlite3", "./sqlite3/repositories.db")
 	if err != nil {
 		return err
