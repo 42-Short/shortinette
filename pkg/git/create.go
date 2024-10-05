@@ -124,10 +124,6 @@ func createRepository(name string, withWebhook bool) (err error) {
 		return fmt.Errorf("could not create repository %s: %s", name, response.Status)
 	}
 
-	logger.Info.Printf("x-ratelimit-remaining: %s\n", response.Header.Get("x-ratelimit-remaining"))
-	logger.Info.Printf("x-ratelimit-reset: %s\n", response.Header.Get("x-ratelimit-reset"))
-	logger.Info.Printf("retry-after: %s\n", response.Header.Get("retry-after"))
-
 	if withWebhook {
 		if err := addWebhook(name); err != nil {
 			return fmt.Errorf("failed to add webhook: %w", err)
