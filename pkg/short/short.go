@@ -251,29 +251,18 @@ func GradeModule(module Module.Module, repoID string) (err error) {
 	return nil
 }
 
-// GradeAll grades all participants' modules and uploads traces.
-//
-//   - module: the module object containing the exercises
-//   - config: the configuration object containing participants' information
-//
-// Returns an error if the grading process fails for any participant.
-func GradeAll(module Module.Module, config Config) error {
-	for _, participant := range config.Participants {
-		repoID := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
-		if err := GradeModule(module, repoID); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-const maxConcurrentRequests = 10
+const maxConcurrentRequests = 5
 
 // EndModule grades all repositories in a module and removes write access for all participants.
 //
 //   - module: the module object containing the exercises
 //   - config: the configuration object containing participants' information
 func EndModule(module Module.Module, config Config) (err error) {
+	defer func() {
+		if err = db.UpdateRemoteDatabase(); err != nil {
+			logger.Error.Printf("updating remote database: %v", err)
+		}
+	}()
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, maxConcurrentRequests)
 	errChan := make(chan error, len(config.Participants))
@@ -288,10 +277,12 @@ func EndModule(module Module.Module, config Config) (err error) {
 			defer func() { <-sem }()
 
 			if err := git.AddCollaborator(repoID, participant.GithubUserName, "read"); err != nil {
-				logger.Error.Printf("error adding collaborator: %v", err)
+				errChan <- fmt.Errorf("error adding collaborator: %v", err)
+				return
 			}
 			if err := GradeModule(module, repoID); err != nil {
-				logger.Error.Printf("error grading module: %v", err)
+				errChan <- fmt.Errorf("error grading module: %v", err)
+				return
 			}
 		}(repoID, module, participant.GithubUserName)
 	}
@@ -361,6 +352,12 @@ func initializeRepos(config Config, module Module.Module) (err error) {
 //   - module: the module object containing the exercises
 //   - config: the configuration object containing participants' information
 func StartModule(module Module.Module, config Config) (err error) {
+	defer func() {
+		if err = db.UpdateRemoteDatabase(); err != nil {
+			logger.Error.Printf("updating remote database: %v", err)
+		}
+	}()
+
 	if err = db.CreateTable(fmt.Sprintf("repositories_%s", module.Name)); err != nil {
 		return fmt.Errorf("table creation: %v", err)
 	}

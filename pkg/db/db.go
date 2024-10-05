@@ -80,7 +80,7 @@ func tableExists(db *sql.DB, tableName string) (bool, error) {
 }
 
 // Syncs the local database changes with the remote.
-func updateRemoteDatabase() (err error) {
+func UpdateRemoteDatabase() (err error) {
 	if err = git.UploadFile("sqlite3", "./sqlite3/repositories.db", "repositories.db", "repositories.db updated", "main"); err != nil {
 		return err
 	}
@@ -132,11 +132,6 @@ func CreateTable(tableName string) error {
 //
 // Returns an error if the initialization fails.
 func InitModuleTable(participants [][]string, moduleName string) (err error) {
-	defer func() {
-		if err = updateRemoteDatabase(); err != nil {
-			logger.Error.Printf("updating remote database: %v", err)
-		}
-	}()
 	db, err := sql.Open("sqlite3", "./sqlite3/repositories.db")
 	if err != nil {
 		return err
@@ -163,11 +158,7 @@ func InitModuleTable(participants [][]string, moduleName string) (err error) {
 //
 // Returns an error if the update fails.
 func UpdateRepository(moduleName string, repo Repository) (err error) {
-	defer func() {
-		if err = updateRemoteDatabase(); err != nil {
-			logger.Error.Printf("updating remote database: %v", err)
-		}
-	}()
+
 	db, err := sql.Open("sqlite3", "./sqlite3/repositories.db")
 	if err != nil {
 		return err
