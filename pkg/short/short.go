@@ -215,12 +215,20 @@ func sortTraceContent(tracesPath string) (err error) {
 //   - repoID: the ID of the student's repository
 //
 // Returns an error if the grading process fails.
-func GradeModule(module Module.Module, repoID string) (err error) {
+func GradeModule(module Module.Module, repoID string, updateDatabase bool) (err error) {
 	repo, err := db.GetRepositoryData(module.Name, repoID)
 	if err != nil {
 		return fmt.Errorf("could not get repository data: %v", err)
 	}
 	repo.FirstAttempt = false
+
+	if updateDatabase {
+		defer func() {
+			if err = db.UpdateRemoteDatabase(); err != nil {
+				logger.Error.Printf("failure to update remote database: %v", err)
+			}
+		}()
+	}
 
 	if err = checkPrematureGradingAttempt(repo); err != nil {
 		return err
@@ -280,7 +288,7 @@ func EndModule(module Module.Module, config Config) (err error) {
 				errChan <- fmt.Errorf("error adding collaborator: %v", err)
 				return
 			}
-			if err := GradeModule(module, repoID); err != nil {
+			if err := GradeModule(module, repoID, false); err != nil {
 				errChan <- fmt.Errorf("error grading module: %v", err)
 				return
 			}

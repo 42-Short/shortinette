@@ -126,7 +126,7 @@ func (wt *WebhookTestMode) handleWebhook(w http.ResponseWriter, r *http.Request)
 			defer mu.Unlock()
 
 			go func() {
-				if err := short.GradeModule(wt.Modules[wt.CurrentModule], payload.Repository.Name); err != nil {
+				if err := short.GradeModule(wt.Modules[wt.CurrentModule], payload.Repository.Name, true); err != nil {
 					logger.Error.Printf("error grading module: %v", err)
 				}
 			}()
