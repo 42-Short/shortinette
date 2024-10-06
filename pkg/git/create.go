@@ -196,7 +196,7 @@ func create(name string, withWebhook bool, additionalBranches ...string) (err er
 	}
 
 	if err := createRepository(name, withWebhook); err != nil {
-		return err
+		return fmt.Errorf("failed creating repository %s: %v", name, err)
 	}
 
 	if err := initialCommit(name, os.Getenv("GITHUB_TOKEN")); err != nil {

@@ -214,7 +214,8 @@ func GradeModule(module Module.Module, repoID string, updateDatabase bool) (err 
 	return nil
 }
 
-const maxConcurrentRequests = 5
+const maxConcurrentGET = 5
+const maxConcurrentPOST = 2
 
 // EndModule grades all repositories in a module and removes write access for all participants.
 //
@@ -227,7 +228,7 @@ func EndModule(module Module.Module, config Config) (err error) {
 		}
 	}()
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, maxConcurrentRequests)
+	sem := make(chan struct{}, maxConcurrentGET)
 	errChan := make(chan error, len(config.Participants))
 
 	for _, participant := range config.Participants {
@@ -269,7 +270,7 @@ func EndModule(module Module.Module, config Config) (err error) {
 //   - module: Module.Module struct filled with the module's metadata
 func initializeRepos(config Config, module Module.Module) (err error) {
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, maxConcurrentRequests)
+	sem := make(chan struct{}, maxConcurrentPOST)
 	errChan := make(chan error, len(config.Participants))
 
 	for _, participant := range config.Participants {
