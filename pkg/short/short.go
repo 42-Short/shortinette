@@ -215,7 +215,7 @@ func GradeModule(module Module.Module, repoID string, updateDatabase bool) (err 
 }
 
 const maxConcurrentGET = 5
-const maxConcurrentPOST = 2
+const maxConcurrentPOST = 1
 
 // EndModule grades all repositories in a module and removes write access for all participants.
 //
