@@ -110,7 +110,7 @@ func runContainerized(config GradingConfig, dockerImageName string) bool {
 	dir, _ := os.Getwd()
 	containerConfig := &container.Config{
 		Image:      dockerImageName,
-		Cmd:        []string{"sh", "-c", fmt.Sprintf("go run . '%s'", string(configJSON))},
+		Cmd:        []string{"sh", "-c", fmt.Sprintf("./tester '%s'", string(configJSON))},
 		WorkingDir: "/app",
 	}
 	hostConfig := &container.HostConfig{
