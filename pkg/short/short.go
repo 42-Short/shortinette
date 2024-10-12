@@ -71,44 +71,6 @@ func updateRelease(repo db.Repository, newWaitingTime time.Duration, tracesPath 
 	return nil
 }
 
-// getUpdatedReadme generates the updated README content based on the latest grading
-// results and appends it to the existing content.
-//
-//   - repo: the repository object containing grading details
-//   - results: a map of exercise names to their pass/fail results
-//
-// Returns the new README content as a string and an error if the README update fails.
-func getUpdatedReadme(repo db.Repository, results map[string]bool) (newReadme string) {
-	var keys []string
-	for key := range results {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-
-	oldContent, err := git.GetDecodedFile(repo.ID, "traces", "README.md")
-	if err != nil {
-		logger.Info.Printf("README.md not found in %s", repo.ID)
-		oldContent = ""
-	}
-	tableRow := `
-<tr>
-	<th>%s</th>
-	<th>%s</th>
-</tr>`
-	var currentResult string
-	newReadme = fmt.Sprintf("%s<h1 align=\"center\">ATTEMPT %d - SCORE %d/100</h1><div align=\"center\"><table>", oldContent, repo.Attempts, repo.Score)
-	for _, key := range keys {
-		if results[key] {
-			currentResult = "✅"
-		} else {
-			currentResult = "❌"
-		}
-		newReadme = fmt.Sprintf("%s%s", newReadme, fmt.Sprintf(tableRow, key, currentResult))
-	}
-	newReadme = fmt.Sprintf("%s</table></div>", newReadme)
-	return newReadme
-}
-
 // uploadResults uploads the grading results and the updated README to the student's
 // repository.
 //
@@ -118,16 +80,9 @@ func getUpdatedReadme(repo db.Repository, results map[string]bool) (newReadme st
 //   - results: a map of exercise names to their pass/fail results
 //
 // Returns an error if the upload fails.
-func uploadResults(repo db.Repository, tracesPath string, moduleName string, results map[string]bool) (err error) {
+func uploadResults(repo db.Repository, tracesPath string, moduleName string) (err error) {
 	commitMessage := fmt.Sprintf("Traces for module %s: %s", moduleName, tracesPath)
 	if err := git.UploadFile(repo.ID, tracesPath, tracesPath, commitMessage, "traces"); err != nil {
-		return err
-	}
-
-	updatedReadme := getUpdatedReadme(repo, results)
-
-	commitMessage = fmt.Sprintf("Results for module %s", moduleName)
-	if err := git.UploadRaw(repo.ID, updatedReadme, "README.md", commitMessage, "traces"); err != nil {
 		return err
 	}
 	return nil
@@ -215,12 +170,20 @@ func sortTraceContent(tracesPath string) (err error) {
 //   - repoID: the ID of the student's repository
 //
 // Returns an error if the grading process fails.
-func GradeModule(module Module.Module, repoID string) (err error) {
+func GradeModule(module Module.Module, repoID string, updateDatabase bool) (err error) {
 	repo, err := db.GetRepositoryData(module.Name, repoID)
 	if err != nil {
 		return fmt.Errorf("could not get repository data: %v", err)
 	}
 	repo.FirstAttempt = false
+
+	if updateDatabase {
+		defer func() {
+			if err = db.UpdateRemoteDatabase(); err != nil {
+				logger.Error.Printf("failure to update remote database: %v", err)
+			}
+		}()
+	}
 
 	if err = checkPrematureGradingAttempt(repo); err != nil {
 		return err
@@ -237,7 +200,7 @@ func GradeModule(module Module.Module, repoID string) (err error) {
 		return fmt.Errorf("sorting trace content: %v", err)
 	}
 
-	if err = uploadResults(repo, tracesPath, module.Name, results); err != nil {
+	if err = uploadResults(repo, tracesPath, module.Name); err != nil {
 		return err
 	}
 
@@ -251,62 +214,100 @@ func GradeModule(module Module.Module, repoID string) (err error) {
 	return nil
 }
 
-// GradeAll grades all participants' modules and uploads traces.
-//
-//   - module: the module object containing the exercises
-//   - config: the configuration object containing participants' information
-//
-// Returns an error if the grading process fails for any participant.
-func GradeAll(module Module.Module, config Config) error {
-	for _, participant := range config.Participants {
-		repoID := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
-		if err := GradeModule(module, repoID); err != nil {
-			return err
-		}
-	}
-	return nil
-}
+const maxConcurrentGET = 5
+const maxConcurrentPOST = 1
 
 // EndModule grades all repositories in a module and removes write access for all participants.
 //
 //   - module: the module object containing the exercises
 //   - config: the configuration object containing participants' information
-func EndModule(module Module.Module, config Config) {
+func EndModule(module Module.Module, config Config) (err error) {
+	defer func() {
+		if err = db.UpdateRemoteDatabase(); err != nil {
+			logger.Error.Printf("updating remote database: %v", err)
+		}
+	}()
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, maxConcurrentGET)
+	errChan := make(chan error, len(config.Participants))
+
 	for _, participant := range config.Participants {
+		wg.Add(1)
+		sem <- struct{}{}
 		repoID := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
-		if err := git.AddCollaborator(repoID, participant.GithubUserName, "read"); err != nil {
-			logger.Error.Printf("error adding collaborator: %v", err)
-		}
-		if err := GradeAll(module, config); err != nil {
-			logger.Error.Printf("error grading module: %v", err)
-		}
+
+		go func(repoId string, module Module.Module, githubUser string) {
+			defer wg.Done()
+			defer func() { <-sem }()
+
+			if err := git.AddCollaborator(repoID, participant.GithubUserName, "read"); err != nil {
+				errChan <- fmt.Errorf("error adding collaborator: %v", err)
+				return
+			}
+			if err := GradeModule(module, repoID, false); err != nil {
+				errChan <- fmt.Errorf("error grading module: %v", err)
+				return
+			}
+		}(repoID, module, participant.GithubUserName)
 	}
+	wg.Wait()
+	close(errChan)
+
+	var errors []error
+	for err := range errChan {
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return fmt.Errorf("failed to grade %d repositories: %v", len(errors), errors)
+	}
+	return nil
 }
 
 // Asynchronously creates a repo for each user in the config specified by CONFIG_PATH.
 //
 //   - config: Config struct filled with the participant's data
 //   - module: Module.Module struct filled with the module's metadata
-func initializeRepos(config Config, module Module.Module) {
+func initializeRepos(config Config, module Module.Module) (err error) {
 	var wg sync.WaitGroup
+	sem := make(chan struct{}, maxConcurrentPOST)
+	errChan := make(chan error, len(config.Participants))
 
 	for _, participant := range config.Participants {
 		wg.Add(1)
+		sem <- struct{}{}
+
 		go func(participant Participant) {
 			defer wg.Done()
+			defer func() { <-sem }()
+
 			repoID := fmt.Sprintf("%s-%s", participant.IntraLogin, module.Name)
 			if err := git.Create(repoID, true, "traces"); err != nil {
-				logger.Error.Printf("error creating git repository: %v", err)
+				errChan <- fmt.Errorf("error creating git repository: %v", err)
+				return
 			}
 			if err := git.AddCollaborator(repoID, participant.GithubUserName, "push"); err != nil {
-				logger.Error.Printf("error adding collaborator: %v", err)
+				errChan <- fmt.Errorf("error adding collaborator: %v", err)
+				return
 			}
 			if err := git.UploadFile(repoID, module.SubjectPath, "README.md", fmt.Sprintf("Subject for module %s. Good Luck!", module.Name), ""); err != nil {
-				logger.Error.Printf("error uploading file: %v", err)
+				errChan <- fmt.Errorf("error uploading file: %v", err)
+				return
 			}
 		}(participant)
 	}
 	wg.Wait()
+	close(errChan)
+
+	var errors []error
+	for err := range errChan {
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return fmt.Errorf("failed to initialize %d repositories: %v", len(errors), errors)
+	}
+	return nil
 }
 
 // StartModule creates a new repository for each participant, gives them write access,
@@ -314,21 +315,31 @@ func initializeRepos(config Config, module Module.Module) {
 //
 //   - module: the module object containing the exercises
 //   - config: the configuration object containing participants' information
-func StartModule(module Module.Module, config Config) {
-	err := db.CreateTable(fmt.Sprintf("repositories_%s", module.Name))
-	if err != nil {
-		logger.Error.Printf("table creation: %s", err.Error())
-		return
+func StartModule(module Module.Module, config Config) (err error) {
+	defer func() {
+		if err = db.UpdateRemoteDatabase(); err != nil {
+			logger.Error.Printf("updating remote database: %v", err)
+		}
+	}()
+
+	if err = db.CreateTable(fmt.Sprintf("repositories_%s", module.Name)); err != nil {
+		return fmt.Errorf("table creation: %v", err)
 	}
+
 	participants := [][]string{}
 	for _, participant := range config.Participants {
 		participants = append(participants, []string{participant.GithubUserName, participant.IntraLogin})
 	}
-	if err := db.InitModuleTable(participants, module.Name); err != nil {
-		logger.Error.Printf("table initializtion: %s", err.Error())
-		return
+
+	if err = db.InitModuleTable(participants, module.Name); err != nil {
+		return fmt.Errorf("table initializtion: %v", err)
 	}
-	initializeRepos(config, module)
+
+	if err := initializeRepos(config, module); err != nil {
+		return fmt.Errorf("repo initialization: %v", err)
+	}
+
+	return nil
 }
 
 // dockerExecMode runs the grading process for a single exercise inside a Docker container.
@@ -366,13 +377,18 @@ func dockerExecMode(short Short) {
 // Start begins the module lifecycle by starting the module and running the test mode.
 //
 //   - module: the name of the module to be started
-func (short *Short) StartModule(module string) {
+func (short *Short) StartModule(module string) (err error) {
 	config, err := GetConfig()
 	if err != nil {
-		logger.Error.Println(err.Error())
+		return fmt.Errorf("failed to get config: %v", err)
 	}
-	StartModule(short.Modules[module], *config)
+
+	if err = StartModule(short.Modules[module], *config); err != nil {
+		return fmt.Errorf("error starting module: %v", err)
+	}
+
 	short.TestMode.Run(module)
+	return nil
 }
 
 func (short *Short) Start() {

@@ -27,6 +27,10 @@ func sendHTTPRequest(request *http.Request) (response *http.Response, err error)
 
 	if response.StatusCode != http.StatusOK && response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusNoContent {
 		body, _ := io.ReadAll(response.Body)
+		logger.Info.Printf("x-ratelimit-remaining: %s\n", response.Header.Get("x-ratelimit-remaining"))
+		logger.Info.Printf("x-ratelimit-reset: %s\n", response.Header.Get("x-ratelimit-reset"))
+		logger.Info.Printf("retry-after: %s\n", response.Header.Get("retry-after"))
+		logger.Info.Printf("response body: %s", body)
 		return response, fmt.Errorf("request failed: %s, %s", response.Status, body)
 	}
 	return response, nil
@@ -64,7 +68,6 @@ func createHTTPRequest(method string, url string, token string, body []byte) (re
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
 func Clone(repoURL string, targetDirectory string) (err error) {
 	if err = get(repoURL, targetDirectory); err != nil {
-		logger.Error.Println(err)
 		return err
 	}
 	return nil
@@ -82,7 +85,6 @@ func Clone(repoURL string, targetDirectory string) (err error) {
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
 func Create(name string, withWebhook bool, additionalBranches ...string) (err error) {
 	if err = create(name, withWebhook, additionalBranches...); err != nil {
-		logger.Error.Println(err)
 		return fmt.Errorf("could not create repo: %w", err)
 	}
 	return nil
@@ -102,7 +104,6 @@ func Create(name string, withWebhook bool, additionalBranches ...string) (err er
 // See https://github.com/42-Short/shortinette/README.md for details on GitHub configuration.
 func AddCollaborator(repoID string, username string, permission string) (err error) {
 	if err := addCollaborator(repoID, username, permission); err != nil {
-		logger.Error.Println(err)
 		return fmt.Errorf("could not add %s to repo %s: %w", username, repoID, err)
 	}
 	return nil

@@ -96,7 +96,11 @@ func (wt *WebhookTestMode) stopServer() {
 	}
 }
 
-var mu sync.Mutex // mutex to prevent concurrent grading processes from overlapping.
+var (
+	mu    sync.Mutex // mutex to prevent concurrent grading processes from overlapping.
+	queue []string
+	sem   = make(chan struct{}, 3)
+)
 
 // handleWebhook processes incoming webhook events and triggers grading if the event
 // corresponds to a push to the main branch with the commit message "grademe".
@@ -119,18 +123,39 @@ func (wt *WebhookTestMode) handleWebhook(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "failed to parse request body", http.StatusInternalServerError)
 		return
 	}
+
 	if payload.Ref == "refs/heads/main" && payload.Pusher.Name != os.Getenv("GITHUB_ADMIN") {
 		if strings.ToLower(payload.Commit.Message) == "grademe" {
 			logger.Info.Printf("push event on %s identified as submission, grading..", payload.Repository.Name)
-			mu.Lock()
-			defer mu.Unlock()
 
-			go func() {
-				if err := short.GradeModule(wt.Modules[wt.CurrentModule], payload.Repository.Name); err != nil {
-					logger.Error.Printf("error grading module: %v", err)
-				}
-			}()
+			mu.Lock()
+			queue = append(queue, payload.Repository.Name)
+			mu.Unlock()
+
+			go wt.processQueue()
 		}
+	}
+}
+
+func (wt *WebhookTestMode) processQueue() {
+	for {
+		mu.Lock()
+		if len(queue) == 0 {
+			mu.Unlock()
+			return
+		}
+		repoName := queue[0]
+		mu.Unlock()
+
+		sem <- struct{}{}
+		go func(repo string) {
+			defer func() { <-sem }()
+			if err := short.GradeModule(wt.Modules[wt.CurrentModule], repo, true); err != nil {
+				logger.Error.Printf("error grading module for %s: %v", repo, err)
+				return
+			}
+		}(repoName)
+		queue = queue[1:]
 	}
 }
 
