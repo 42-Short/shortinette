@@ -24,7 +24,9 @@ func Schedule(short Short.Short, startTime time.Time, moduleDuration time.Durati
 	for _, moduleName := range moduleList {
 		module := short.Modules[moduleName]
 
-		short.StartModule(moduleName)
+		if err = short.StartModule(moduleName); err != nil {
+			logger.Error.Printf("could not start module: %v", err)
+		}
 
 		now := time.Now()
 		if now.Before(desiredSwitchTime) {
@@ -36,7 +38,9 @@ func Schedule(short Short.Short, startTime time.Time, moduleDuration time.Durati
 
 		logger.Info.Printf("Grading module %s", moduleName)
 
-		Short.EndModule(module, *config)
+		if err = Short.EndModule(module, *config); err != nil {
+			logger.Error.Printf("could not end module: %v", err)
+		}
 
 		desiredSwitchTime = desiredSwitchTime.Add(24 * time.Hour)
 	}

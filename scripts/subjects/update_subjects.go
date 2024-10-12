@@ -133,41 +133,6 @@ func createPushRequest(url string, token string, targetFilePath string, commitMe
 	return request, nil
 }
 
-func buildFileURL(repoID string, branch string, filePath string) (url string) {
-	return fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s?ref=%s", "Short-Test-Orga", repoID, filePath, branch)
-}
-
-// uploadRaw uploads raw data directly to a GitHub repository at the specified file path.
-//
-//   - repoID: the name of the repository
-//   - data: the raw data to be uploaded as a string
-//   - targetFilePath: the path of the file in the repository
-//   - commitMessage: the commit message to use
-//   - branch: the branch to push to (optional)
-//
-// Returns an error if the upload process fails.
-func uploadRaw(repoID string, data string, targetFilePath string, commitMessage string, branch string) (err error) {
-	encodedData := base64.StdEncoding.EncodeToString([]byte(data))
-
-	url := buildPushURL(repoID, targetFilePath)
-	shaURL := buildFileURL(repoID, branch, targetFilePath)
-
-	sha, err := getFileSHA(shaURL, (os.Getenv("GITHUB_TOKEN")))
-	if err != nil {
-		return err
-	}
-
-	request, err := createPushRequest(url, (os.Getenv("GITHUB_TOKEN")), targetFilePath, commitMessage, encodedData, sha, branch)
-	if err != nil {
-		return err
-	}
-
-	if _, err := sendHTTPRequest(request); err != nil {
-		return err
-	}
-	return nil
-}
-
 // uploadFile uploads a local file to a GitHub repository at the specified file path.
 //
 //   - repoID: the name of the repository
@@ -215,39 +180,12 @@ type ShortConfig struct {
 	Participants []Participant `json:"participants"`
 }
 
-func deleteRepo(repoID string) bool {
-	org := os.Getenv("GITHUB_ORGANISATION")
-	token := (os.Getenv("GITHUB_TOKEN"))
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s", org, repoID)
-
-	req, err := http.NewRequest("DELETE", url, nil)
-	if err != nil {
-		log.Fatalf("Error creating request: %v", err)
-	}
-
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-	req.Header.Set("Accept", "application/vnd.github.v3+json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatalf("Error sending request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode == 204 {
-		log.Printf("Successfully deleted repo %s", repoID)
-		return true
-	} else {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		log.Printf("Failed to delete repo %s: %d %s", repoID, resp.StatusCode, string(bodyBytes))
-		return false
-	}
-}
-
 func main() {
 	logger.InitializeStandardLoggers("TEST")
-	godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	if len(os.Args) != 4 {
 		fmt.Println("usage: go run . <module> <path-to-new-subject> <commit-message>")

@@ -49,7 +49,7 @@ func Check(filePath string, requiredAttributes map[string]bool, forbiddenAttribu
 	}
 
 	if len(feedbackMessage) != 0 {
-		return fmt.Errorf(feedbackMessage)
+		return fmt.Errorf("%s", feedbackMessage)
 	}
 	return nil
 }
