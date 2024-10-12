@@ -7,7 +7,6 @@ shortconfig/
 
 compile-environment/
 studentcode/
-website/
 *.rlib
 *.csv
 internal/
