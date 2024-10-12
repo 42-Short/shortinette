@@ -55,20 +55,19 @@ func main() {
 		log.Fatalf("Error loading .env file")
 	}
 
-	file, err := os.Open("shortconfig/shortconfig.json")
-	if err != nil {
-		log.Fatalf("Error opening shortconfig.json: %v", err)
-	}
-	defer file.Close()
-
-	byteValue, _ := io.ReadAll(file)
+	config, _ := os.ReadFile(os.Getenv("CONFIG_PATH"))
 
 	var shortConfig ShortConfig
-	if err := json.Unmarshal(byteValue, &shortConfig); err != nil {
+	if err := json.Unmarshal(config, &shortConfig); err != nil {
 		log.Fatalf("Error parsing shortconfig.json: %v", err)
 	}
 
-	for _, participant := range shortConfig.Participants {
-		deleteRepo(fmt.Sprintf("%s-00", participant.IntraLogin))
+	moduleNames := []string{"00", "01", "02", "03", "04", "05", "06"}
+	for _, moduleName := range moduleNames {
+		for _, participant := range shortConfig.Participants {
+			deleteRepo(fmt.Sprintf("%s-%s", participant.IntraLogin, moduleName))
+		}
+
 	}
+	deleteRepo("sqlite3")
 }
