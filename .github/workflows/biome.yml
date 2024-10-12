@@ -21,4 +21,5 @@ jobs:
         with:
           version: latest
       - name: Run Biome
+        working-directory: './website'
         run: biome ci .
