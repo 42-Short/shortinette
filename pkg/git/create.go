@@ -26,7 +26,7 @@ func addWebhook(repoID string) (err error) {
 		"active": true,
 		"events": []string{"push"},
 		"config": map[string]string{
-			"url":          os.Getenv("WEBHOOK_URL"),
+			"url":          fmt.Sprintf("%s:%s", os.Getenv("HOST_IP"), os.Getenv("WEBHOOK_PORT")),
 			"content_type": "json",
 		},
 	}

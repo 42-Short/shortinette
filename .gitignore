@@ -10,7 +10,6 @@ studentcode/
 *.rlib
 *.csv
 internal/
-config/
 
 # PACKAGES
 

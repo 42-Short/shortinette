@@ -1,9 +1,8 @@
 // webhook provides functionality to monitor GitHub webhook events and trigger
 // grading of student submissions based on push events to the main branch.
-package webhook
+package webserver
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,38 +10,32 @@ import (
 	"os"
 	"strings"
 	"sync"
-	"time"
 
 	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
 	"github.com/42-Short/shortinette/pkg/logger"
 	"github.com/42-Short/shortinette/pkg/short"
+	"github.com/gin-gonic/gin"
 )
 
-// WebhookTestMode represents the state and behavior for the webhook test mode, which
+// Webhook represents the state and behavior for the webhook test mode, which
 // triggers submission grading as soon as activity is recorded on a user's main branch.
-type WebhookTestMode struct {
+type Webhook struct {
 	MonitoringFunction func()                   // MonitoringFunction is the function that starts the webhook server.
 	Modules            map[string]Module.Module // Modules is a map of module names to their corresponding Module structs.
 	CurrentModule      string                   // CurrentModule is the name of the module currently being graded.
-	server             *http.Server
-	mu                 sync.Mutex
-	endpoint           string
-	port               string
 }
 
-// NewWebhookTestMode initializes and returns a WebhookTestMode instance, which triggers
+// NewWebhook initializes and returns a Webhook instance, which triggers
 // submission grading as soon as activity is recorded on a user's main branch.
 //
 //   - modules: A map of module names to Module structs.
 //   - endpoint: The endpoint the webhook is to be sending payloads to, with no trailing slash (e.g., '/webhook')
 //   - port: The port the webhook is to be sending payloads to, without ':' (e.g., '8080')
 //
-// Returns a pointer to the initialized WebhookTestMode.
-func NewWebhookTestMode(modules map[string]Module.Module, endpoint string, port string) *WebhookTestMode {
-	return &WebhookTestMode{
-		Modules:  modules,
-		endpoint: endpoint,
-		port:     port,
+// Returns a pointer to the initialized Webhook.
+func NewWebhook(modules map[string]Module.Module) (webhook *Webhook) {
+	return &Webhook{
+		Modules: modules,
 	}
 }
 
@@ -61,66 +54,27 @@ type GitHubWebhookPayload struct {
 	} `json:"head_commit"`
 }
 
-func (wt *WebhookTestMode) startServer() {
-	wt.mu.Lock()
-	defer wt.mu.Unlock()
-
-	wt.stopServer()
-
-	mux := http.NewServeMux()
-	mux.HandleFunc(wt.endpoint, wt.handleWebhook)
-
-	wt.server = &http.Server{
-		Addr:    fmt.Sprintf(":%s", wt.port),
-		Handler: mux,
-	}
-
-	go func() {
-		if err := wt.server.ListenAndServe(); err != http.ErrServerClosed {
-			logger.Error.Printf("HTTP server ListenAndServe: %v\n", err)
-		}
-	}()
-
-	logger.Info.Printf("Webhook server started for module %s\n", wt.CurrentModule)
-}
-
-func (wt *WebhookTestMode) stopServer() {
-	if wt.server != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		if err := wt.server.Shutdown(ctx); err != nil {
-			logger.Error.Printf("Server forced to shut down: %v\n", err)
-		}
-		wt.server = nil
-		logger.Info.Println("Webhook server stopped")
-	}
-}
-
 var (
 	mu    sync.Mutex // mutex to prevent concurrent grading processes from overlapping.
 	queue []string
 	sem   = make(chan struct{}, 3)
 )
 
-// handleWebhook processes incoming webhook events and triggers grading if the event
-// corresponds to a push to the main branch with the commit message "grademe".
-//
-//   - w: The http.ResponseWriter used to send the response.
-//   - r: The http.Request representing the incoming webhook event.
-func (wt *WebhookTestMode) handleWebhook(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "invalid request method", http.StatusMethodNotAllowed)
+func (wh *Webhook) HandleWebhook(c *gin.Context) {
+	if c.Request.Method != http.MethodPost {
+		c.JSON(http.StatusMethodNotAllowed, gin.H{"error": "invalid request method"})
 		return
 	}
-	body, err := io.ReadAll(r.Body)
+
+	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		http.Error(w, "failed to read request body", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to read request body: %v", err)})
 		return
 	}
 
 	var payload GitHubWebhookPayload
 	if err := json.Unmarshal(body, &payload); err != nil {
-		http.Error(w, "failed to parse request body", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to parse request body: %v", err)})
 		return
 	}
 
@@ -132,12 +86,16 @@ func (wt *WebhookTestMode) handleWebhook(w http.ResponseWriter, r *http.Request)
 			queue = append(queue, payload.Repository.Name)
 			mu.Unlock()
 
-			go wt.processQueue()
+			go wh.processQueue()
+		} else {
+			c.JSON(http.StatusOK, gin.H{"message": "not a grading request, ignoring"})
+			return
 		}
 	}
+	c.JSON(http.StatusOK, gin.H{"message": "grading request added to queue"})
 }
 
-func (wt *WebhookTestMode) processQueue() {
+func (wh *Webhook) processQueue() {
 	for {
 		mu.Lock()
 		if len(queue) == 0 {
@@ -150,21 +108,11 @@ func (wt *WebhookTestMode) processQueue() {
 		sem <- struct{}{}
 		go func(repo string) {
 			defer func() { <-sem }()
-			if err := short.GradeModule(wt.Modules[wt.CurrentModule], repo, true); err != nil {
+			if err := short.GradeModule(wh.Modules[wh.CurrentModule], repo, true); err != nil {
 				logger.Error.Printf("error grading module for %s: %v", repo, err)
 				return
 			}
 		}(repoName)
 		queue = queue[1:]
 	}
-}
-
-// Run starts the webhook server and sets the current module to be graded.
-//
-//   - currentModule: The name of the module that is currently being graded.
-func (wt *WebhookTestMode) Run(currentModule string) {
-	wt.mu.Lock()
-	wt.CurrentModule = currentModule
-	wt.mu.Unlock()
-	wt.startServer()
 }
