@@ -49,13 +49,17 @@ func NewParticipants(participantsListPath string) (participants []Participant, e
 	}
 
 	if err := json.Unmarshal(data, &rawConfig); err != nil {
-		return nil, fmt.Errorf("unable to parse config file: %v", err)
+		return nil, fmt.Errorf("unable to parse participants list: %v", err)
 	}
 
 	for _, p := range rawConfig.Participants {
 		participants = append(participants, Participant{
 			GithubUserName: p.GithubUserName,
 		})
+	}
+
+	if len(participants) < 1 {
+		return nil, fmt.Errorf("you need at least one participant")
 	}
 
 	return participants, nil

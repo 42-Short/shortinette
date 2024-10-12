@@ -5,6 +5,24 @@ import (
 	"time"
 )
 
+func TestNewParticipantsNonExistingJsonPath(t *testing.T) {
+	if _, err := NewParticipants("foo"); err == nil {
+		t.Fatalf("a non-existing participants list should throw an error")
+	}
+}
+
+func TestNewParticipantsMalformedJson(t *testing.T) {
+	if _, err := NewParticipants("config/malformed.json"); err == nil {
+		t.Fatalf("a malformed participants list should throw an error")
+	}
+}
+
+func TestNewParticipantsEmptyList(t *testing.T) {
+	if _, err := NewParticipants("config/empty.json"); err == nil {
+		t.Fatalf("an empty participants list should throw an error")
+	}
+}
+
 func TestNewExerciseEmptyExecutablePath(t *testing.T) {
 	if _, err := NewExercise("", 10, []string{"foo"}, "bar"); err == nil {
 		t.Fatalf("it should not be possible to initialize an exercise with an empty executable path")
