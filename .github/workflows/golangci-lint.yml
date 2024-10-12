@@ -1,7 +1,11 @@
 name: golangci-lint
 on:
   push:
+    paths-ignore:
+      - 'website/**'
   pull_request:
+    paths-ignore:
+      - 'website/**'
 
 permissions:
   contents: read
