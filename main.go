@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
+	"github.com/42-Short/shortinette/pkg/logger"
 	"github.com/42-Short/shortinette/pkg/webserver"
 	"github.com/42-Short/shortinette/rust/tests/R00"
 	"github.com/42-Short/shortinette/rust/tests/R01"
@@ -35,7 +37,10 @@ func router() *gin.Engine {
 }
 
 func main() {
+	logger.InitializeStandardLoggers("")
 
 	router := router()
-	router.Run(os.Getenv("WEBHOOK_PORT"))
+	if err := router.Run(os.Getenv("WEBHOOK_PORT")); err != nil {
+		logger.Error.Printf("could not start gin router: %v", err)	
+	}
 }
