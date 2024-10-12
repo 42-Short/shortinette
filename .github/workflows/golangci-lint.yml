@@ -5,15 +5,11 @@ on:
       - '**.go'
       - 'go.mod'
       - 'go.sum'
-    paths-ignore:
-      - 'website/**'
   pull_request:
     paths:
       - '**.go'
       - 'go.mod'
       - 'go.sum'
-    paths-ignore:
-      - 'website/**'
 
 permissions:
   contents: read
