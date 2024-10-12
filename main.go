@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
@@ -41,6 +40,6 @@ func main() {
 
 	router := router()
 	if err := router.Run(os.Getenv("WEBHOOK_PORT")); err != nil {
-		logger.Error.Printf("could not start gin router: %v", err)	
+		logger.Error.Printf("could not start gin router: %v", err)
 	}
 }
