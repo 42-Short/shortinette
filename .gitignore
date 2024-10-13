@@ -26,3 +26,5 @@ traces/
 # DATABASE
 
 sqlite3/
+
+.vscode
