@@ -240,7 +240,7 @@ let mut dst = [0u8; 14];
 // SAFETY:
 //  /* ... */
 unsafe { ft_strcpy(dst.as_mut_ptr(), s.as_ptr()) };
-assert_eq!(s, b"Hello, World\0");
+assert_eq!(&dst, b"Hello, World!\0");
 ```
 
 ## Exercise 01: Philospher's Stone
