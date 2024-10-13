@@ -7,16 +7,12 @@ on:
       - '**.go'
       - 'go.mod'
       - 'go.sum'
-    paths-ignore:
-      - 'website/**'
   pull_request:
     branches: [ "main" ]
     paths:
       - '**.go'
       - 'go.mod'
       - 'go.sum'
-    paths-ignore:
-      - 'website/**'
 
 jobs:
   analyze:

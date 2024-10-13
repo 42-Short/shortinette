@@ -18,15 +18,13 @@ import (
 	Module "github.com/42-Short/shortinette/pkg/interfaces/module"
 	"github.com/42-Short/shortinette/pkg/logger"
 	"github.com/42-Short/shortinette/pkg/requirements"
-	ITestMode "github.com/42-Short/shortinette/pkg/short/testmodes"
 )
 
 // Short represents the main structure for managing a coding module, including the module's
 // name, its exercises, and the test mode to use.
 type Short struct {
-	Name     string                   // Name is the display name of the Short.
-	Modules  map[string]Module.Module // Modules is a map of module names to their corresponding Module structs.
-	TestMode ITestMode.ITestMode      // TestMode determines how the submission testing will be triggered.
+	Name    string                   // Name is the display name of the Short.
+	Modules map[string]Module.Module // Modules is a map of module names to their corresponding Module structs.
 }
 
 // shortInit initializes the logging and requirement validation for the Short application.
@@ -44,12 +42,11 @@ func shortInit() {
 //   - name: the display name of your Short
 //   - modules: a map of strings to Module.Module objects, used for quicker lookups during grading
 //   - testMode: a ITestMode object, determining how the submission testing will be triggered
-func NewShort(name string, modules map[string]Module.Module, testMode ITestMode.ITestMode) Short {
+func NewShort(name string, modules map[string]Module.Module) Short {
 	shortInit()
 	return Short{
-		Name:     name,
-		Modules:  modules,
-		TestMode: testMode,
+		Name:    name,
+		Modules: modules,
 	}
 }
 
@@ -387,7 +384,6 @@ func (short *Short) StartModule(module string) (err error) {
 		return fmt.Errorf("error starting module: %v", err)
 	}
 
-	short.TestMode.Run(module)
 	return nil
 }
 

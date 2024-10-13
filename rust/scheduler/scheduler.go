@@ -18,7 +18,6 @@ func Schedule(short Short.Short, startTime time.Time, moduleDuration time.Durati
 	if err != nil {
 		return err
 	}
-
 	desiredSwitchTime := time.Date(startTime.Year(), startTime.Month(), startTime.Day(), 9, 42, 0, 0, startTime.Location())
 
 	for _, moduleName := range moduleList {
