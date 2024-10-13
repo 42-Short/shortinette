@@ -1,142 +1,889 @@
-import type { MetaFunction } from "@remix-run/node";
+"use client"
 
-export const meta: MetaFunction = () => {
-	return [
-		{ title: "New Remix App" },
-		{ name: "description", content: "Welcome to Remix!" },
-	];
-};
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Label,
+  LabelList,
+  Line,
+  LineChart,
+  PolarAngleAxis,
+  RadialBar,
+  RadialBarChart,
+  Rectangle,
+  ReferenceLine,
+  XAxis,
+  YAxis,
+} from "recharts"
 
-export default function Index() {
-	return (
-		<div className="flex h-screen items-center justify-center">
-			<div className="flex flex-col items-center gap-16">
-				<header className="flex flex-col items-center gap-9">
-					<h1 className="leading text-2xl font-bold text-gray-800 dark:text-gray-100">
-						Welcome to <span className="sr-only">Remix</span>
-					</h1>
-					<div className="h-[144px] w-[434px]">
-						<img
-							src="/logo-light.png"
-							alt="Remix"
-							className="block w-full dark:hidden"
-						/>
-						<img
-							src="/logo-dark.png"
-							alt="Remix"
-							className="hidden w-full dark:block"
-						/>
-					</div>
-				</header>
-				<nav className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-gray-200 p-6 dark:border-gray-700">
-					<p className="leading-6 text-gray-700 dark:text-gray-200">
-						What&apos;s next?
-					</p>
-					<ul>
-						{resources.map(({ href, text, icon }) => (
-							<li key={href}>
-								<a
-									className="group flex items-center gap-3 self-stretch p-3 leading-normal text-blue-700 hover:underline dark:text-blue-500"
-									href={href}
-									target="_blank"
-									rel="noreferrer"
-								>
-									{icon}
-									{text}
-								</a>
-							</li>
-						))}
-					</ul>
-				</nav>
-			</div>
-		</div>
-	);
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "~/components/ui/chart"
+import { Separator } from "~/components/ui/separator"
+import { useLoaderData } from "@remix-run/react"
+
+export const description = "A collection of health charts."
+
+export async function loader() {
+    return null;
 }
 
-const resources = [
-	{
-		href: "https://remix.run/start/quickstart",
-		text: "Quick Start (5 min)",
-		icon: (
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="24"
-				height="20"
-				viewBox="0 0 20 20"
-				fill="none"
-				className="stroke-gray-600 group-hover:stroke-current dark:stroke-gray-300"
-			>
-				<title>.</title>
-				<path
-					d="M8.51851 12.0741L7.92592 18L15.6296 9.7037L11.4815 7.33333L12.0741 2L4.37036 10.2963L8.51851 12.0741Z"
-					strokeWidth="1.5"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-				/>
-			</svg>
-		),
-	},
-	{
-		href: "https://remix.run/start/tutorial",
-		text: "Tutorial (30 min)",
-		icon: (
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="24"
-				height="20"
-				viewBox="0 0 20 20"
-				fill="none"
-				className="stroke-gray-600 group-hover:stroke-current dark:stroke-gray-300"
-			>
-				<title>.</title>
-				<path
-					d="M4.561 12.749L3.15503 14.1549M3.00811 8.99944H1.01978M3.15503 3.84489L4.561 5.2508M8.3107 1.70923L8.3107 3.69749M13.4655 3.84489L12.0595 5.2508M18.1868 17.0974L16.635 18.6491C16.4636 18.8205 16.1858 18.8205 16.0144 18.6491L13.568 16.2028C13.383 16.0178 13.0784 16.0347 12.915 16.239L11.2697 18.2956C11.047 18.5739 10.6029 18.4847 10.505 18.142L7.85215 8.85711C7.75756 8.52603 8.06365 8.21994 8.39472 8.31453L17.6796 10.9673C18.0223 11.0653 18.1115 11.5094 17.8332 11.7321L15.7766 13.3773C15.5723 13.5408 15.5554 13.8454 15.7404 14.0304L18.1868 16.4767C18.3582 16.6481 18.3582 16.926 18.1868 17.0974Z"
-					strokeWidth="1.5"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-				/>
-			</svg>
-		),
-	},
-	{
-		href: "https://remix.run/docs",
-		text: "Remix Docs",
-		icon: (
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="24"
-				height="20"
-				viewBox="0 0 20 20"
-				fill="none"
-				className="stroke-gray-600 group-hover:stroke-current dark:stroke-gray-300"
-			>
-				<title>.</title>
-				<path
-					d="M9.99981 10.0751V9.99992M17.4688 17.4688C15.889 19.0485 11.2645 16.9853 7.13958 12.8604C3.01467 8.73546 0.951405 4.11091 2.53116 2.53116C4.11091 0.951405 8.73546 3.01467 12.8604 7.13958C16.9853 11.2645 19.0485 15.889 17.4688 17.4688ZM2.53132 17.4688C0.951566 15.8891 3.01483 11.2645 7.13974 7.13963C11.2647 3.01471 15.8892 0.951453 17.469 2.53121C19.0487 4.11096 16.9854 8.73551 12.8605 12.8604C8.73562 16.9853 4.11107 19.0486 2.53132 17.4688Z"
-					strokeWidth="1.5"
-					strokeLinecap="round"
-				/>
-			</svg>
-		),
-	},
-	{
-		href: "https://rmx.as/discord",
-		text: "Join Discord",
-		icon: (
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="24"
-				height="20"
-				viewBox="0 0 24 20"
-				fill="none"
-				className="stroke-gray-600 group-hover:stroke-current dark:stroke-gray-300"
-			>
-				<title>.</title>
-				<path
-					d="M15.0686 1.25995L14.5477 1.17423L14.2913 1.63578C14.1754 1.84439 14.0545 2.08275 13.9422 2.31963C12.6461 2.16488 11.3406 2.16505 10.0445 2.32014C9.92822 2.08178 9.80478 1.84975 9.67412 1.62413L9.41449 1.17584L8.90333 1.25995C7.33547 1.51794 5.80717 1.99419 4.37748 2.66939L4.19 2.75793L4.07461 2.93019C1.23864 7.16437 0.46302 11.3053 0.838165 15.3924L0.868838 15.7266L1.13844 15.9264C2.81818 17.1714 4.68053 18.1233 6.68582 18.719L7.18892 18.8684L7.50166 18.4469C7.96179 17.8268 8.36504 17.1824 8.709 16.4944L8.71099 16.4904C10.8645 17.0471 13.128 17.0485 15.2821 16.4947C15.6261 17.1826 16.0293 17.8269 16.4892 18.4469L16.805 18.8725L17.3116 18.717C19.3056 18.105 21.1876 17.1751 22.8559 15.9238L23.1224 15.724L23.1528 15.3923C23.5873 10.6524 22.3579 6.53306 19.8947 2.90714L19.7759 2.73227L19.5833 2.64518C18.1437 1.99439 16.6386 1.51826 15.0686 1.25995ZM16.6074 10.7755L16.6074 10.7756C16.5934 11.6409 16.0212 12.1444 15.4783 12.1444C14.9297 12.1444 14.3493 11.6173 14.3493 10.7877C14.3493 9.94885 14.9378 9.41192 15.4783 9.41192C16.0471 9.41192 16.6209 9.93851 16.6074 10.7755ZM8.49373 12.1444C7.94513 12.1444 7.36471 11.6173 7.36471 10.7877C7.36471 9.94885 7.95323 9.41192 8.49373 9.41192C9.06038 9.41192 9.63892 9.93712 9.6417 10.7815C9.62517 11.6239 9.05462 12.1444 8.49373 12.1444Z"
-					strokeWidth="1.5"
-				/>
-			</svg>
-		),
-	},
-];
+export default function Index() {
+    const data = useLoaderData<typeof loader>();
+  return (
+    <div className="chart-wrapper mx-auto flex max-w-6xl flex-col flex-wrap items-start justify-center gap-6 p-6 sm:flex-row sm:p-8">
+      <div className="grid w-full gap-6 sm:grid-cols-2 lg:max-w-[22rem] lg:grid-cols-1 xl:max-w-[25rem]">
+        <Card
+          className="lg:max-w-md" x-chunk="charts-01-chunk-0"
+        >
+          <CardHeader className="space-y-0 pb-2">
+            <CardDescription>Today</CardDescription>
+            <CardTitle className="text-4xl tabular-nums">
+              12,584{" "}
+              <span className="font-sans text-sm font-normal tracking-normal text-muted-foreground">
+                steps
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer
+              config={{
+                steps: {
+                  label: "Steps",
+                  color: "hsl(var(--chart-1))",
+                },
+              }}
+            >
+              <BarChart
+                accessibilityLayer
+                margin={{
+                  left: -4,
+                  right: -4,
+                }}
+                data={[
+                  {
+                    date: "2024-01-01",
+                    steps: 2000,
+                  },
+                  {
+                    date: "2024-01-02",
+                    steps: 2100,
+                  },
+                  {
+                    date: "2024-01-03",
+                    steps: 2200,
+                  },
+                  {
+                    date: "2024-01-04",
+                    steps: 1300,
+                  },
+                  {
+                    date: "2024-01-05",
+                    steps: 1400,
+                  },
+                  {
+                    date: "2024-01-06",
+                    steps: 2500,
+                  },
+                  {
+                    date: "2024-01-07",
+                    steps: 1600,
+                  },
+                ]}
+              >
+                <Bar
+                  dataKey="steps"
+                  fill="var(--color-steps)"
+                  radius={5}
+                  fillOpacity={0.6}
+                  activeBar={<Rectangle fillOpacity={0.8} />}
+                />
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={4}
+                  tickFormatter={(value) => {
+                    return new Date(value).toLocaleDateString("en-US", {
+                      weekday: "short",
+                    })
+                  }}
+                />
+                <ChartTooltip
+                  defaultIndex={2}
+                  content={
+                    <ChartTooltipContent
+                      hideIndicator
+                      labelFormatter={(value) => {
+                        return new Date(value).toLocaleDateString("en-US", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })
+                      }}
+                    />
+                  }
+                  cursor={false}
+                />
+                <ReferenceLine
+                  y={1200}
+                  stroke="hsl(var(--muted-foreground))"
+                  strokeDasharray="3 3"
+                  strokeWidth={1}
+                >
+                  <Label
+                    position="insideBottomLeft"
+                    value="Average Steps"
+                    offset={10}
+                    fill="hsl(var(--foreground))"
+                  />
+                  <Label
+                    position="insideTopLeft"
+                    value="12,343"
+                    className="text-lg"
+                    fill="hsl(var(--foreground))"
+                    offset={10}
+                    startOffset={100}
+                  />
+                </ReferenceLine>
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+          <CardFooter className="flex-col items-start gap-1">
+            <CardDescription>
+              Over the past 7 days, you have walked{" "}
+              <span className="font-medium text-foreground">53,305</span> steps.
+            </CardDescription>
+            <CardDescription>
+              You need{" "}
+              <span className="font-medium text-foreground">12,584</span> more
+              steps to reach your goal.
+            </CardDescription>
+          </CardFooter>
+        </Card>
+        <Card
+          className="flex flex-col lg:max-w-md" x-chunk="charts-01-chunk-1"
+        >
+          <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2 [&>div]:flex-1">
+            <div>
+              <CardDescription>Resting HR</CardDescription>
+              <CardTitle className="flex items-baseline gap-1 text-4xl tabular-nums">
+                62
+                <span className="text-sm font-normal tracking-normal text-muted-foreground">
+                  bpm
+                </span>
+              </CardTitle>
+            </div>
+            <div>
+              <CardDescription>Variability</CardDescription>
+              <CardTitle className="flex items-baseline gap-1 text-4xl tabular-nums">
+                35
+                <span className="text-sm font-normal tracking-normal text-muted-foreground">
+                  ms
+                </span>
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-1 items-center">
+            <ChartContainer
+              config={{
+                resting: {
+                  label: "Resting",
+                  color: "hsl(var(--chart-1))",
+                },
+              }}
+              className="w-full"
+            >
+              <LineChart
+                accessibilityLayer
+                margin={{
+                  left: 14,
+                  right: 14,
+                  top: 10,
+                }}
+                data={[
+                  {
+                    date: "2024-01-01",
+                    resting: 62,
+                  },
+                  {
+                    date: "2024-01-02",
+                    resting: 72,
+                  },
+                  {
+                    date: "2024-01-03",
+                    resting: 35,
+                  },
+                  {
+                    date: "2024-01-04",
+                    resting: 62,
+                  },
+                  {
+                    date: "2024-01-05",
+                    resting: 52,
+                  },
+                  {
+                    date: "2024-01-06",
+                    resting: 62,
+                  },
+                  {
+                    date: "2024-01-07",
+                    resting: 70,
+                  },
+                ]}
+              >
+                <CartesianGrid
+                  strokeDasharray="4 4"
+                  vertical={false}
+                  stroke="hsl(var(--muted-foreground))"
+                  strokeOpacity={0.5}
+                />
+                <YAxis hide domain={["dataMin - 10", "dataMax + 10"]} />
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={(value) => {
+                    return new Date(value).toLocaleDateString("en-US", {
+                      weekday: "short",
+                    })
+                  }}
+                />
+                <Line
+                  dataKey="resting"
+                  type="natural"
+                  fill="var(--color-resting)"
+                  stroke="var(--color-resting)"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{
+                    fill: "var(--color-resting)",
+                    stroke: "var(--color-resting)",
+                    r: 4,
+                  }}
+                />
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent
+                      indicator="line"
+                      labelFormatter={(value) => {
+                        return new Date(value).toLocaleDateString("en-US", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })
+                      }}
+                    />
+                  }
+                  cursor={false}
+                />
+              </LineChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
+      <div className="grid w-full flex-1 gap-6 lg:max-w-[20rem]">
+        <Card
+          className="max-w-xs" x-chunk="charts-01-chunk-2"
+        >
+          <CardHeader>
+            <CardTitle>Progress</CardTitle>
+            <CardDescription>
+              You're average more steps a day this year than last year.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4">
+            <div className="grid auto-rows-min gap-2">
+              <div className="flex items-baseline gap-1 text-2xl font-bold tabular-nums leading-none">
+                12,453
+                <span className="text-sm font-normal text-muted-foreground">
+                  steps/day
+                </span>
+              </div>
+              <ChartContainer
+                config={{
+                  steps: {
+                    label: "Steps",
+                    color: "hsl(var(--chart-1))",
+                  },
+                }}
+                className="aspect-auto h-[32px] w-full"
+              >
+                <BarChart
+                  accessibilityLayer
+                  layout="vertical"
+                  margin={{
+                    left: 0,
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                  }}
+                  data={[
+                    {
+                      date: "2024",
+                      steps: 12435,
+                    },
+                  ]}
+                >
+                  <Bar
+                    dataKey="steps"
+                    fill="var(--color-steps)"
+                    radius={4}
+                    barSize={32}
+                  >
+                    <LabelList
+                      position="insideLeft"
+                      dataKey="date"
+                      offset={8}
+                      fontSize={12}
+                      fill="white"
+                    />
+                  </Bar>
+                  <YAxis dataKey="date" type="category" tickCount={1} hide />
+                  <XAxis dataKey="steps" type="number" hide />
+                </BarChart>
+              </ChartContainer>
+            </div>
+            <div className="grid auto-rows-min gap-2">
+              <div className="flex items-baseline gap-1 text-2xl font-bold tabular-nums leading-none">
+                10,103
+                <span className="text-sm font-normal text-muted-foreground">
+                  steps/day
+                </span>
+              </div>
+              <ChartContainer
+                config={{
+                  steps: {
+                    label: "Steps",
+                    color: "hsl(var(--muted))",
+                  },
+                }}
+                className="aspect-auto h-[32px] w-full"
+              >
+                <BarChart
+                  accessibilityLayer
+                  layout="vertical"
+                  margin={{
+                    left: 0,
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                  }}
+                  data={[
+                    {
+                      date: "2023",
+                      steps: 10103,
+                    },
+                  ]}
+                >
+                  <Bar
+                    dataKey="steps"
+                    fill="var(--color-steps)"
+                    radius={4}
+                    barSize={32}
+                  >
+                    <LabelList
+                      position="insideLeft"
+                      dataKey="date"
+                      offset={8}
+                      fontSize={12}
+                      fill="hsl(var(--muted-foreground))"
+                    />
+                  </Bar>
+                  <YAxis dataKey="date" type="category" tickCount={1} hide />
+                  <XAxis dataKey="steps" type="number" hide />
+                </BarChart>
+              </ChartContainer>
+            </div>
+          </CardContent>
+        </Card>
+        <Card
+          className="max-w-xs" x-chunk="charts-01-chunk-3"
+        >
+          <CardHeader className="p-4 pb-0">
+            <CardTitle>Walking Distance</CardTitle>
+            <CardDescription>
+              Over the last 7 days, your distance walked and run was 12.5 miles
+              per day.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-row items-baseline gap-4 p-4 pt-0">
+            <div className="flex items-baseline gap-1 text-3xl font-bold tabular-nums leading-none">
+              12.5
+              <span className="text-sm font-normal text-muted-foreground">
+                miles/day
+              </span>
+            </div>
+            <ChartContainer
+              config={{
+                steps: {
+                  label: "Steps",
+                  color: "hsl(var(--chart-1))",
+                },
+              }}
+              className="ml-auto w-[72px]"
+            >
+              <BarChart
+                accessibilityLayer
+                margin={{
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                }}
+                data={[
+                  {
+                    date: "2024-01-01",
+                    steps: 2000,
+                  },
+                  {
+                    date: "2024-01-02",
+                    steps: 2100,
+                  },
+                  {
+                    date: "2024-01-03",
+                    steps: 2200,
+                  },
+                  {
+                    date: "2024-01-04",
+                    steps: 1300,
+                  },
+                  {
+                    date: "2024-01-05",
+                    steps: 1400,
+                  },
+                  {
+                    date: "2024-01-06",
+                    steps: 2500,
+                  },
+                  {
+                    date: "2024-01-07",
+                    steps: 1600,
+                  },
+                ]}
+              >
+                <Bar
+                  dataKey="steps"
+                  fill="var(--color-steps)"
+                  radius={2}
+                  fillOpacity={0.2}
+                  activeIndex={6}
+                  activeBar={<Rectangle fillOpacity={0.8} />}
+                />
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={4}
+                  hide
+                />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+        <Card
+          className="max-w-xs" x-chunk="charts-01-chunk-4"
+        >
+          <CardContent className="flex gap-4 p-4 pb-2">
+            <ChartContainer
+              config={{
+                move: {
+                  label: "Move",
+                  color: "hsl(var(--chart-1))",
+                },
+                stand: {
+                  label: "Stand",
+                  color: "hsl(var(--chart-2))",
+                },
+                exercise: {
+                  label: "Exercise",
+                  color: "hsl(var(--chart-3))",
+                },
+              }}
+              className="h-[140px] w-full"
+            >
+              <BarChart
+                margin={{
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 10,
+                }}
+                data={[
+                  {
+                    activity: "stand",
+                    value: (8 / 12) * 100,
+                    label: "8/12 hr",
+                    fill: "var(--color-stand)",
+                  },
+                  {
+                    activity: "exercise",
+                    value: (46 / 60) * 100,
+                    label: "46/60 min",
+                    fill: "var(--color-exercise)",
+                  },
+                  {
+                    activity: "move",
+                    value: (245 / 360) * 100,
+                    label: "245/360 kcal",
+                    fill: "var(--color-move)",
+                  },
+                ]}
+                layout="vertical"
+                barSize={32}
+                barGap={2}
+              >
+                <XAxis type="number" dataKey="value" hide />
+                <YAxis
+                  dataKey="activity"
+                  type="category"
+                  tickLine={false}
+                  tickMargin={4}
+                  axisLine={false}
+                  className="capitalize"
+                />
+                <Bar dataKey="value" radius={5}>
+                  <LabelList
+                    position="insideLeft"
+                    dataKey="label"
+                    fill="white"
+                    offset={8}
+                    fontSize={12}
+                  />
+                </Bar>
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+          <CardFooter className="flex flex-row border-t p-4">
+            <div className="flex w-full items-center gap-2">
+              <div className="grid flex-1 auto-rows-min gap-0.5">
+                <div className="text-xs text-muted-foreground">Move</div>
+                <div className="flex items-baseline gap-1 text-2xl font-bold tabular-nums leading-none">
+                  562
+                  <span className="text-sm font-normal text-muted-foreground">
+                    kcal
+                  </span>
+                </div>
+              </div>
+              <Separator orientation="vertical" className="mx-2 h-10 w-px" />
+              <div className="grid flex-1 auto-rows-min gap-0.5">
+                <div className="text-xs text-muted-foreground">Exercise</div>
+                <div className="flex items-baseline gap-1 text-2xl font-bold tabular-nums leading-none">
+                  73
+                  <span className="text-sm font-normal text-muted-foreground">
+                    min
+                  </span>
+                </div>
+              </div>
+              <Separator orientation="vertical" className="mx-2 h-10 w-px" />
+              <div className="grid flex-1 auto-rows-min gap-0.5">
+                <div className="text-xs text-muted-foreground">Stand</div>
+                <div className="flex items-baseline gap-1 text-2xl font-bold tabular-nums leading-none">
+                  14
+                  <span className="text-sm font-normal text-muted-foreground">
+                    hr
+                  </span>
+                </div>
+              </div>
+            </div>
+          </CardFooter>
+        </Card>
+      </div>
+      <div className="grid w-full flex-1 gap-6">
+        <Card
+          className="max-w-xs" x-chunk="charts-01-chunk-5"
+        >
+          <CardContent className="flex gap-4 p-4">
+            <div className="grid items-center gap-2">
+              <div className="grid flex-1 auto-rows-min gap-0.5">
+                <div className="text-sm text-muted-foreground">Move</div>
+                <div className="flex items-baseline gap-1 text-xl font-bold tabular-nums leading-none">
+                  562/600
+                  <span className="text-sm font-normal text-muted-foreground">
+                    kcal
+                  </span>
+                </div>
+              </div>
+              <div className="grid flex-1 auto-rows-min gap-0.5">
+                <div className="text-sm text-muted-foreground">Exercise</div>
+                <div className="flex items-baseline gap-1 text-xl font-bold tabular-nums leading-none">
+                  73/120
+                  <span className="text-sm font-normal text-muted-foreground">
+                    min
+                  </span>
+                </div>
+              </div>
+              <div className="grid flex-1 auto-rows-min gap-0.5">
+                <div className="text-sm text-muted-foreground">Stand</div>
+                <div className="flex items-baseline gap-1 text-xl font-bold tabular-nums leading-none">
+                  8/12
+                  <span className="text-sm font-normal text-muted-foreground">
+                    hr
+                  </span>
+                </div>
+              </div>
+            </div>
+            <ChartContainer
+              config={{
+                move: {
+                  label: "Move",
+                  color: "hsl(var(--chart-1))",
+                },
+                exercise: {
+                  label: "Exercise",
+                  color: "hsl(var(--chart-2))",
+                },
+                stand: {
+                  label: "Stand",
+                  color: "hsl(var(--chart-3))",
+                },
+              }}
+              className="mx-auto aspect-square w-full max-w-[80%]"
+            >
+              <RadialBarChart
+                margin={{
+                  left: -10,
+                  right: -10,
+                  top: -10,
+                  bottom: -10,
+                }}
+                data={[
+                  {
+                    activity: "stand",
+                    value: (8 / 12) * 100,
+                    fill: "var(--color-stand)",
+                  },
+                  {
+                    activity: "exercise",
+                    value: (46 / 60) * 100,
+                    fill: "var(--color-exercise)",
+                  },
+                  {
+                    activity: "move",
+                    value: (245 / 360) * 100,
+                    fill: "var(--color-move)",
+                  },
+                ]}
+                innerRadius="20%"
+                barSize={24}
+                startAngle={90}
+                endAngle={450}
+              >
+                <PolarAngleAxis
+                  type="number"
+                  domain={[0, 100]}
+                  dataKey="value"
+                  tick={false}
+                />
+                <RadialBar dataKey="value" background cornerRadius={5} />
+              </RadialBarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+        <Card
+          className="max-w-xs" x-chunk="charts-01-chunk-6"
+        >
+          <CardHeader className="p-4 pb-0">
+            <CardTitle>Active Energy</CardTitle>
+            <CardDescription>
+              You're burning an average of 754 calories per day. Good job!
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-row items-baseline gap-4 p-4 pt-2">
+            <div className="flex items-baseline gap-2 text-3xl font-bold tabular-nums leading-none">
+              1,254
+              <span className="text-sm font-normal text-muted-foreground">
+                kcal/day
+              </span>
+            </div>
+            <ChartContainer
+              config={{
+                calories: {
+                  label: "Calories",
+                  color: "hsl(var(--chart-1))",
+                },
+              }}
+              className="ml-auto w-[64px]"
+            >
+              <BarChart
+                accessibilityLayer
+                margin={{
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                }}
+                data={[
+                  {
+                    date: "2024-01-01",
+                    calories: 354,
+                  },
+                  {
+                    date: "2024-01-02",
+                    calories: 514,
+                  },
+                  {
+                    date: "2024-01-03",
+                    calories: 345,
+                  },
+                  {
+                    date: "2024-01-04",
+                    calories: 734,
+                  },
+                  {
+                    date: "2024-01-05",
+                    calories: 645,
+                  },
+                  {
+                    date: "2024-01-06",
+                    calories: 456,
+                  },
+                  {
+                    date: "2024-01-07",
+                    calories: 345,
+                  },
+                ]}
+              >
+                <Bar
+                  dataKey="calories"
+                  fill="var(--color-calories)"
+                  radius={2}
+                  fillOpacity={0.2}
+                  activeIndex={6}
+                  activeBar={<Rectangle fillOpacity={0.8} />}
+                />
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={4}
+                  hide
+                />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+        <Card
+          className="max-w-xs" x-chunk="charts-01-chunk-7"
+        >
+          <CardHeader className="space-y-0 pb-0">
+            <CardDescription>Time in Bed</CardDescription>
+            <CardTitle className="flex items-baseline gap-1 text-4xl tabular-nums">
+              8
+              <span className="font-sans text-sm font-normal tracking-normal text-muted-foreground">
+                hr
+              </span>
+              35
+              <span className="font-sans text-sm font-normal tracking-normal text-muted-foreground">
+                min
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <ChartContainer
+              config={{
+                time: {
+                  label: "Time",
+                  color: "hsl(var(--chart-2))",
+                },
+              }}
+            >
+              <AreaChart
+                accessibilityLayer
+                data={[
+                  {
+                    date: "2024-01-01",
+                    time: 8.5,
+                  },
+                  {
+                    date: "2024-01-02",
+                    time: 7.2,
+                  },
+                  {
+                    date: "2024-01-03",
+                    time: 8.1,
+                  },
+                  {
+                    date: "2024-01-04",
+                    time: 6.2,
+                  },
+                  {
+                    date: "2024-01-05",
+                    time: 5.2,
+                  },
+                  {
+                    date: "2024-01-06",
+                    time: 8.1,
+                  },
+                  {
+                    date: "2024-01-07",
+                    time: 7.0,
+                  },
+                ]}
+                margin={{
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                }}
+              >
+                <XAxis dataKey="date" hide />
+                <YAxis domain={["dataMin - 5", "dataMax + 2"]} hide />
+                <defs>
+                  <linearGradient id="fillTime" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-time)"
+                      stopOpacity={0.8}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-time)"
+                      stopOpacity={0.1}
+                    />
+                  </linearGradient>
+                </defs>
+                <Area
+                  dataKey="time"
+                  type="natural"
+                  fill="url(#fillTime)"
+                  fillOpacity={0.4}
+                  stroke="var(--color-time)"
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                  formatter={(value) => (
+                    <div className="flex min-w-[120px] items-center text-xs text-muted-foreground">
+                      Time in bed
+                      <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                        {value}
+                        <span className="font-normal text-muted-foreground">
+                          hr
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                />
+              </AreaChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
