@@ -1,3 +1,4 @@
+//go:build ignore
 // Package db provides functions and structures for interacting with the SQLite database
 // used to store information about student repositories, including grading attempts and scores.
 package db

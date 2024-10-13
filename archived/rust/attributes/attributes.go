@@ -1,3 +1,5 @@
+//go:build ignore
+
 package attributes
 
 import (
@@ -16,6 +18,7 @@ import (
 //     will trigger an error.
 //
 // Errors caught are documented in err.Error() in the following format:
+//
 //	missing attributes: #![no_std], ..., ...
 //	forbidden attributes used: #![allow(...)], ..., ...
 func Check(filePath string, requiredAttributes map[string]bool, forbiddenAttributes map[string]bool) (err error) {

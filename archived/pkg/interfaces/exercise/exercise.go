@@ -1,3 +1,4 @@
+//go:build ignore
 // Exercise provides structures and functions for defining and running exercises.
 package Exercise
 

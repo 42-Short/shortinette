@@ -1,3 +1,5 @@
+//go:build ignore
+
 // requirements provides functions for validating the necessary environment variables
 // and dependencies required by the application.
 package requirements

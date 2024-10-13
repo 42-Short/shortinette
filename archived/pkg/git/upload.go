@@ -1,3 +1,5 @@
+//go:build ignore
+
 // git provides functions for interacting with GitHub repositories, including
 // cloning repositories, adding collaborators, uploading files, and creating releases.
 package git

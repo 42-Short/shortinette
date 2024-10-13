@@ -1,3 +1,5 @@
+//go:build ignore
+
 // logger provides logging functionality for various aspects of the application,
 // including standard logging for info and error messages, as well as logging for trace files.
 package logger

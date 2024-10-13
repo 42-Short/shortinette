@@ -1,3 +1,5 @@
+//go:build ignore
+
 // Module provides structures and functions for managing and executing modules,
 // which consist of multiple exercises. The package includes features for setting up
 // environments, running exercises in isolated containers, and grading the results.

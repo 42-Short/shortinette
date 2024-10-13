@@ -1,3 +1,5 @@
+//go:build ignore
+
 // short provides the core functionality for managing and grading coding modules.
 // It handles initialization, grading, result uploading, and module lifecycle management.
 package short
