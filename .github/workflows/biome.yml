@@ -4,11 +4,11 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - 'website/**'
+      - 'dashboard/**'
   pull_request:
     branches: [ "main" ]
     paths:
-      - 'website/**'
+      - 'dashboard/**'
 
 jobs:
   biome:
@@ -21,5 +21,5 @@ jobs:
         with:
           version: latest
       - name: Run Biome
-        working-directory: './website'
+        working-directory: './dashboard'
         run: biome ci .

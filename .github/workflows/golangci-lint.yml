@@ -2,14 +2,14 @@ name: golangci-lint
 on:
   push:
     paths:
-      - '**.go'
-      - 'go.mod'
-      - 'go.sum'
+      - 'shortinette/**.go'
+      - 'shortinette/go.mod'
+      - 'shortinette/go.sum'
   pull_request:
     paths:
-      - '**.go'
-      - 'go.mod'
-      - 'go.sum'
+      - 'shortinette/**.go'
+      - 'shortinette/go.mod'
+      - 'shortinette/go.sum'
 
 permissions:
   contents: read
@@ -32,3 +32,5 @@ jobs:
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
       - name: Run golangci-lint
         run: golangci-lint run
+        working-directory: './shortinette'
+        
