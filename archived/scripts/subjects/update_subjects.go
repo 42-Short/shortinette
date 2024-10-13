@@ -11,7 +11,6 @@ import (
 	"bytes"
 	"encoding/base64"
 
-	"github.com/42-Short/shortinette/pkg/logger"
 	"github.com/joho/godotenv"
 )
 
@@ -36,10 +35,10 @@ func sendHTTPRequest(request *http.Request) (response *http.Response, err error)
 
 	if response.StatusCode != http.StatusOK && response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusNoContent {
 		body, _ := io.ReadAll(response.Body)
-		logger.Info.Printf("x-ratelimit-remaining: %s\n", response.Header.Get("x-ratelimit-remaining"))
-		logger.Info.Printf("x-ratelimit-reset: %s\n", response.Header.Get("x-ratelimit-reset"))
-		logger.Info.Printf("retry-after: %s\n", response.Header.Get("retry-after"))
-		logger.Info.Printf("response body: %s", body)
+		fmt.Printf("x-ratelimit-remaining: %s\n", response.Header.Get("x-ratelimit-remaining"))
+		fmt.Printf("x-ratelimit-reset: %s\n", response.Header.Get("x-ratelimit-reset"))
+		fmt.Printf("retry-after: %s\n", response.Header.Get("retry-after"))
+		fmt.Printf("response body: %s", body)
 		return response, fmt.Errorf("request failed: %s, %s", response.Status, body)
 	}
 	return response, nil
@@ -113,7 +112,7 @@ func createPushRequest(url string, token string, targetFilePath string, commitMe
 
 	if branch != "" {
 		requestDetails["branch"] = branch
-		logger.Info.Printf("pushing to branch: %s", branch)
+		fmt.Printf("pushing to branch: %s", branch)
 	}
 
 	requestDetailsJSON, err := json.Marshal(requestDetails)
@@ -181,7 +180,6 @@ type ShortConfig struct {
 }
 
 func main() {
-	logger.InitializeStandardLoggers("TEST")
 	if err := godotenv.Load(); err != nil {
 		fmt.Println(err)
 		return
