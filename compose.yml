@@ -6,7 +6,8 @@ services:
             dockerfile: Dockerfile
         ports:
             - "5000:5000"
-            
+        volumes:
+            - "./data:/app/data"
 
     dashboard:
         container_name: dashboard
@@ -15,3 +16,7 @@ services:
             dockerfile: Dockerfile
         ports:
             - "5173:5173"
+
+    nginx:
+        container_name: nginx
+        
