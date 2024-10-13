@@ -28,13 +28,13 @@ import {
 	CardTitle,
 } from "~/components/ui/card";
 
+import { useLoaderData } from "@remix-run/react";
 import {
 	ChartContainer,
 	ChartTooltip,
 	ChartTooltipContent,
 } from "~/components/ui/chart";
 import { Separator } from "~/components/ui/separator";
-import { useLoaderData } from "@remix-run/react";
 
 export const description = "A collection of health charts.";
 
