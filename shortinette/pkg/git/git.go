@@ -3,6 +3,7 @@ package git
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
@@ -31,8 +32,20 @@ func requireEnv() (githubToken string, githubOrga string, err error) {
 	return githubToken, githubOrga, err
 }
 
-// Creates a new repository under the GitHub organisation specified by the
-// GITHUB_ORGANISATION environment variable.
+func isRepoAlreadyExists(err error) (exists bool) {
+	if githubErr, ok := err.(*github.ErrorResponse); ok {
+		for _, e := range githubErr.Errors {
+			if e.Message == "name already exists on this account" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// Creates a new repository `name` under the GitHub organisation specified by the
+// GITHUB_ORGANISATION environment variable. If `private` is true, the repository's
+// visibility will be private.
 func NewRepo(name string, private bool, description string) (err error) {
 	token, orga, err := requireEnv()
 	if err != nil {
@@ -44,15 +57,23 @@ func NewRepo(name string, private bool, description string) (err error) {
 
 	repo := &github.Repository{Name: &name, Private: &private, Description: &description}
 
-	createdRepo, _, err := client.Repositories.Create(ctx, orga, repo)
+	createdRepo, response, err := client.Repositories.Create(ctx, orga, repo)
 	if err != nil {
+		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
+			if isRepoAlreadyExists(err) {
+				fmt.Printf("repo %s already exists under orga %s, skipping\n", name, os.Getenv("GITHUB_ORGANISATION"))
+				return nil
+			}
+		}
 		return fmt.Errorf("could not create repo %s: %v", name, err)
 	}
 
-	fmt.Printf("repository created: %s at URL: %s\n", *createdRepo.Name, *createdRepo.HTMLURL)
+	fmt.Printf("repo created: %s at URL: %s\n", *createdRepo.Name, *createdRepo.HTMLURL)
 	return nil
 }
 
+// Adds collaborator `collaboratorName` to repo `repoName` (under the GitHub organisation specified by
+// the GITHUB_ORGANISATION environment variable) with access level `permission“.
 func AddCollaborator(repoName string, collaboratorName string, permission string) (err error) {
 	token, orga, err := requireEnv()
 	if err != nil {
