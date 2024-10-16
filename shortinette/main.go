@@ -16,6 +16,11 @@ func main() {
 		fmt.Printf("error: %v\n", err)
 		return
 	}
+
+	if err := git.AddCollaborator("repo", "winstonallo", "write"); err != nil {
+		fmt.Printf("error: %v\n", err)
+		return
+	}
 }
 
 // func helloWorld(c *gin.Context) {

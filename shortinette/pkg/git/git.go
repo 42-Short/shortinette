@@ -52,3 +52,24 @@ func NewRepo(name string, private bool, description string) (err error) {
 	fmt.Printf("repository created: %s at URL: %s\n", *createdRepo.Name, *createdRepo.HTMLURL)
 	return nil
 }
+
+func AddCollaborator(repoName string, collaboratorName string, permission string) (err error) {
+	token, orga, err := requireEnv()
+	if err != nil {
+		return fmt.Errorf("could not add collaborator %s to repo %s: %v", collaboratorName, repoName, err)
+	}
+
+	ctx := context.Background()
+	client := github.NewClient(nil).WithAuthToken(token)
+
+	options := &github.RepositoryAddCollaboratorOptions{
+		Permission: permission,
+	}
+
+	if _, _, err = client.Repositories.AddCollaborator(ctx, orga, repoName, collaboratorName, options); err != nil {
+		return fmt.Errorf("could not add collaborator %s to repo %s: %v", collaboratorName, repoName, err)
+	}
+
+	fmt.Printf("user %s added to repo %s with %s access\n", collaboratorName, repoName, permission)
+	return nil
+}
