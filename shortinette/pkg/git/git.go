@@ -9,6 +9,8 @@ import (
 	"github.com/google/go-github/v66/github"
 )
 
+// Checks for environment variables required to interact with the GitHub API. Returns their values
+// if they exist, sets the error's value if not.
 func requireEnv() (githubToken string, githubOrga string, err error) {
 	missingVars := []string{}
 

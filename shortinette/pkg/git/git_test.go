@@ -3,8 +3,6 @@ package git
 import (
 	"os"
 	"testing"
-
-	"github.com/joho/godotenv"
 )
 
 func TestMissingRequiredVariables(t *testing.T) {
@@ -19,7 +17,6 @@ func TestMissingRequiredVariables(t *testing.T) {
 }
 
 func TestNonExistingOrga(t *testing.T) {
-	godotenv.Load("../.env")
 	os.Setenv("GITHUB_ORGANISATION", "thisorgadoesnotexist")
 
 	if err := NewRepo("test", true, "this should not be created"); err == nil {

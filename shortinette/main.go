@@ -8,7 +8,10 @@ import (
 )
 
 func main() {
-	godotenv.Load("../.env")
+	if err := godotenv.Load("../.env"); err != nil {
+		fmt.Printf("error: %v\n", err)
+	}
+
 	if err := git.NewRepo("repo", true, "this is a new repo"); err != nil {
 		fmt.Printf("error: %v\n", err)
 		return
