@@ -1,0 +1,28 @@
+name: Go
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [ '*' ]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Install dependencies
+        run: go get .
+        working-directory: './shortinette'
+      - name: Build
+        run: go build -v ./...
+        working-directory: './shortinette'
+      - name: Run tests
+        run: go test ./...
+        working-directory: './shortinette'
+
