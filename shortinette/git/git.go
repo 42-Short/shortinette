@@ -32,6 +32,7 @@ func requireEnv() (githubToken string, githubOrga string, err error) {
 	return githubToken, githubOrga, err
 }
 
+// Checks whether `err` is related to the repo already existing.
 func isRepoAlreadyExists(err error) (exists bool) {
 	if githubErr, ok := err.(*github.ErrorResponse); ok {
 		for _, e := range githubErr.Errors {

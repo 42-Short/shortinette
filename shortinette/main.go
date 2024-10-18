@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/42-Short/shortinette/pkg/git"
+	"github.com/42-Short/shortinette/git"
 	"github.com/joho/godotenv"
 )
 
