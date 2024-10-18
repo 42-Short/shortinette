@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/42-Short/shortinette/git"
 	"github.com/joho/godotenv"
@@ -17,7 +18,18 @@ func main() {
 		return
 	}
 
+	defer func() {
+		if err := os.RemoveAll("repo"); err != nil {
+			fmt.Printf("error: %s\n", err)
+		}
+	}()
+
 	if err := git.AddCollaborator("repo", "winstonallo", "write"); err != nil {
+		fmt.Printf("error: %v\n", err)
+		return
+	}
+
+	if err := git.UploadFiles("repo", "add stuff", "Dockerfile", "go.mod", "go.sum"); err != nil {
 		fmt.Printf("error: %v\n", err)
 		return
 	}

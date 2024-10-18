@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/google/go-github/v66/github"
@@ -53,12 +55,11 @@ func NewRepo(name string, private bool, description string) (err error) {
 		return fmt.Errorf("could not create repo %s: %v", name, err)
 	}
 
-	ctx := context.Background()
 	client := github.NewClient(nil).WithAuthToken(token)
 
 	repo := &github.Repository{Name: &name, Private: &private, Description: &description}
 
-	createdRepo, response, err := client.Repositories.Create(ctx, orga, repo)
+	createdRepo, response, err := client.Repositories.Create(context.Background(), orga, repo)
 	if err != nil {
 		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
 			if isRepoAlreadyExists(err) {
@@ -81,17 +82,122 @@ func AddCollaborator(repoName string, collaboratorName string, permission string
 		return fmt.Errorf("could not add collaborator %s to repo %s: %v", collaboratorName, repoName, err)
 	}
 
-	ctx := context.Background()
 	client := github.NewClient(nil).WithAuthToken(token)
 
 	options := &github.RepositoryAddCollaboratorOptions{
 		Permission: permission,
 	}
 
-	if _, _, err = client.Repositories.AddCollaborator(ctx, orga, repoName, collaboratorName, options); err != nil {
+	if _, _, err = client.Repositories.AddCollaborator(context.Background(), orga, repoName, collaboratorName, options); err != nil {
 		return fmt.Errorf("could not add collaborator %s to repo %s: %v", collaboratorName, repoName, err)
 	}
 
 	fmt.Printf("user %s added to repo %s with %s access\n", collaboratorName, repoName, permission)
+	return nil
+}
+
+// Clones repo `name` (from the GitHub organisation specified by the GITHUB_ORGANISATION
+// environment variable). Does nothing if the directory is cloned already.
+func Clone(name string) (err error) {
+	if _, err := os.Stat(name); !os.IsNotExist(err) {
+		fmt.Printf("'%s' seems to cloned already, returning", name)
+		return nil
+	}
+
+	token, orga, err := requireEnv()
+	if err != nil {
+		return fmt.Errorf("could not clone '%s': %v", name, err)
+	}
+
+	client := github.NewClient(nil).WithAuthToken(token)
+
+	repo, _, err := client.Repositories.Get(context.Background(), orga, name)
+	if err != nil {
+		return fmt.Errorf("could not clone '%s': %v", name, err)
+	}
+
+	cmd := exec.Command("git", "clone", repo.GetCloneURL())
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("could not clone '%s': %v", name, err)
+	}
+
+	fmt.Printf("'%s' cloned successfully\n", name)
+	return nil
+}
+
+func add(dir string) (err error) {
+	cmd := exec.Command("git", "add", ".")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Dir = dir
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("git add: %v", err)
+	}
+	return nil
+}
+
+func commit(dir string, commitMessage string) (err error) {
+	cmd := exec.Command("git", "commit", "-m", commitMessage)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Dir = dir
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("git commit: %v", err)
+	}
+	return nil
+}
+
+func push(dir string) (err error) {
+	cmd := exec.Command("git", "push")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Dir = dir
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("git push: %v", err)
+	}
+	return nil
+}
+
+func copyFiles(target string, files ...string) (err error) {
+	for _, file := range files {
+		data, err := os.ReadFile(file)
+		if err != nil {
+			return fmt.Errorf("could not copy file '%s' to '%s': %v", file, target, err)
+		}
+
+		if err = os.WriteFile(filepath.Join(target, file), data, 0644); err != nil {
+			return fmt.Errorf("could not copy file '%s' to '%s': %v", file, target, err)
+		}
+	}
+	return nil
+}
+
+func UploadFiles(repoName string, commitMessage string, files ...string) (err error) {
+	if err := Clone(repoName); err != nil {
+		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
+	}
+
+	if err = copyFiles(repoName, files...); err != nil {
+		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
+	}
+
+	if err = add(repoName); err != nil {
+		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
+	}
+
+	if err = commit(repoName, commitMessage); err != nil {
+		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
+	}
+
+	if err = push(repoName); err != nil {
+		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
+	}
+
 	return nil
 }
