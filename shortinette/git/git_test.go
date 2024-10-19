@@ -105,8 +105,28 @@ func TestUploadFilesNormalFunctionality(t *testing.T) {
 		}
 	}()
 
-	if err := UploadFiles("test", "don't mind me just breaking code", "git.go"); err != nil {
+	if err := UploadFiles("test", "don't mind me just breaking code", "git.go", "git_test.go"); err != nil {
 		t.Fatalf("uploading an existing file should work, something went wrong: %v", err)
+	}
+
+	if err := Clone("test"); err != nil {
+		t.Fatalf("could not verify file upload: %v", err)
+	}
+
+	content, err := os.ReadDir("test")
+	if err != nil {
+		t.Fatalf("could not verify file upload: %v", err)
+	}
+
+	found := 0
+	for _, path := range content {
+		if path.Name() == "git.go" || path.Name() == "git_test.go" {
+			found += 1
+		}
+	}
+
+	if found != 2 {
+		t.Fatalf("expected 'git.go' and 'git_test.go' to be uploaded, did not find all of them")
 	}
 }
 
@@ -182,5 +202,15 @@ func TestNewReleaseAlreadyExisting(t *testing.T) {
 
 	if err := NewRelease("test", "tag", "release", "body"); err != nil {
 		t.Fatalf("NewRelease returned an error on a standard use case: %v", err)
+	}
+
+	if err := NewRelease("test", "tag", "release", "body"); err == nil {
+		t.Fatalf("duplicate tag names should return an error")
+	}
+}
+
+func TestNewReleaseNonExistingrepo(t *testing.T) {
+	if err := NewRelease("thisrepodoesnotexist", "tag", "release", "body"); err == nil {
+		t.Fatalf("NewRelease did not return any error when trying to add a release to a non-existing repo")
 	}
 }
