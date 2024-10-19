@@ -26,6 +26,7 @@ jobs:
         env:
           TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
           ADMIN_GITHUB: ${{ secrets.ADMIN_GITHUB }}
+          ORGA_GITHUB: ${{ secrets.ORGA_GITHUB }}
         run: go test ./...
         working-directory: './shortinette'
 
