@@ -1,3 +1,5 @@
+// `git` is the package responsible for interactions with GitHub. The repos are _always_ assumed to be in the 
+// organisation specified by the `GITHUB_ORGANISATION` environment variable. 
 package git
 
 import (
@@ -178,6 +180,7 @@ func copyFiles(target string, files ...string) (err error) {
 	return nil
 }
 
+// Copies `files` into `repoName` and pushes them to the remote. Clones the repo if necessary.
 func UploadFiles(repoName string, commitMessage string, files ...string) (err error) {
 	if err := Clone(repoName); err != nil {
 		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
