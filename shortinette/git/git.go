@@ -134,12 +134,13 @@ func Clone(name string) (err error) {
 
 	client := github.NewClient(nil).WithAuthToken(token)
 
-	repo, _, err := client.Repositories.Get(context.Background(), orga, name)
+	_, _, err = client.Repositories.Get(context.Background(), orga, name)
 	if err != nil {
 		return fmt.Errorf("could not clone '%s': %v", name, err)
 	}
 
-	cmd := exec.Command("git", "clone", repo.GetCloneURL())
+	cloneURL := fmt.Sprintf("https://github.com/%s/%s.git", orga, name)
+	cmd := exec.Command("git", "clone", cloneURL)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
