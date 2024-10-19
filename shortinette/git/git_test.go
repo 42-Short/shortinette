@@ -60,7 +60,7 @@ func TestAddCollaboratorNonExistingPermission(t *testing.T) {
 	}
 }
 
-func TestAddNonExistingFilesToRepo(t *testing.T) {
+func TestUploadFilesNonExistingFiles(t *testing.T) {
 	if err := godotenv.Load("../.env"); err != nil {
 		t.Fatalf("could not load .env: %v", err)
 	}
@@ -77,5 +77,25 @@ func TestAddNonExistingFilesToRepo(t *testing.T) {
 
 	if err := UploadFiles("test", "don't mind me just breaking code", "foo", "bar"); err == nil {
 		t.Fatalf("trying to upload non-existing files to a repo should throw an error")
+	}
+}
+
+func TestUploadFilesNormalFunctionality(t *testing.T) {
+	if err := godotenv.Load("../.env"); err != nil {
+		t.Fatalf("could not load .env: %v", err)
+	}
+
+	if err := NewRepo("test", true, "this will be deleted soon"); err != nil {
+		t.Fatalf("could not create test repo: %v", err)
+	}
+
+	// defer func() {
+	// 	if err := deleteRepo("test"); err != nil {
+	// 		t.Fatalf("could not delete test repo: %v", err)
+	// 	}
+	// }()
+
+	if err := UploadFiles("test", "don't mind me just breaking code", "git.go"); err != nil {
+		t.Fatalf("uploading an existing file should work, something went wrong: %v", err)
 	}
 }
