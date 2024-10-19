@@ -3,8 +3,6 @@ package git
 import (
 	"os"
 	"testing"
-
-	"github.com/joho/godotenv"
 )
 
 func TestNewRepoMissingRequiredVariables(t *testing.T) {
