@@ -33,7 +33,20 @@ func TestNewRepoMissingRequiredVariables(t *testing.T) {
 }
 
 func TestNewRepoNonExistingOrga(t *testing.T) {
-	os.Setenv("ORGA_GITHUB", "thisorgadoesnoteist")
+	_, orga, err := requireEnv()
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	if err := os.Setenv("ORGA_GITHUB", "thisorgadoesnoteist"); err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	defer func() {
+		if err := os.Setenv("ORGA_GITHUB", orga); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
 
 	if err := NewRepo("test", true, "this should not be created"); err == nil {
 		t.Fatalf("missing environment variables should throw an error")
@@ -81,15 +94,15 @@ func TestAddCollaboratorNonExistingPermission(t *testing.T) {
 
 func TestUploadFilesNonExistingFiles(t *testing.T) {
 	if err := NewRepo("test", true, "this will be deleted soon_GITHUB"); err != nil {
-		t.Fatalf("could not create test repo: %v", err)
+		t.Fatalf("error: %v", err)
 	}
 
 	defer func() {
 		if err := os.RemoveAll("test"); err != nil {
-			t.Fatalf("could not delete test repo (local): %v", err)
+			t.Fatalf("error: %v", err)
 		}
 		if err := deleteRepo("test"); err != nil {
-			t.Fatalf("could not delete test repo: %v", err)
+			t.Fatalf("error: %v", err)
 		}
 	}()
 
