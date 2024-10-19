@@ -1,5 +1,5 @@
-// `git` is the package responsible for interactions with GitHub. The repos are _always_ assumed to be in the 
-// organisation specified by the `GITHUB_ORGANISATION` environment variable. 
+// `git` is the package responsible for interactions with GitHub. The repos are _always_ assumed to be in the
+// organisation specified by the `GITHUB_ORGANISATION` environment variable.
 package git
 
 import (
@@ -13,6 +13,27 @@ import (
 
 	"github.com/google/go-github/v66/github"
 )
+
+func deleteRepo(name string) (err error) {
+	token, orga, err := requireEnv()
+	if err != nil {
+		return fmt.Errorf("could not delete repo '%s': %v", name, err)
+	}
+
+	client := github.NewClient(nil).WithAuthToken(token)
+
+	if resp, err := client.Repositories.Delete(context.Background(), orga, name); err != nil {
+		if resp.StatusCode != http.StatusNotFound {
+			return fmt.Errorf("could not delete repo '%s': %v", name, err)
+		} else {
+			fmt.Printf("repo '%s' not found in orga '%s'", name, orga)
+			return nil
+		}
+	}
+
+	fmt.Printf("repo '%s' successfully deleted", name)
+	return nil
+}
 
 // Checks for environment variables required to interact with the GitHub API. Returns their values
 // if they exist, sets the error's value if not.
