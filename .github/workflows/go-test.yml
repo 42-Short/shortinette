@@ -9,7 +9,9 @@ jobs:
     strategy:
       matrix:
         go-version: [ '*' ]
-
+    env:
+      TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+      ORGA_GITHUB: ${{ secrets.ORGA_GITHUB }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Go ${{ matrix.go-version }}
@@ -23,15 +25,9 @@ jobs:
         run: go build -v ./...
         working-directory: './shortinette'
       - name: Debug
-        env:
-          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
-          ORGA_GITHUB: ${{ secrets.ORGA_GITHUB }}
         run: env
         working-directory: './shortinette'
       - name: Run tests
-        env:
-          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
-          ORGA_GITHUB: ${{ secrets.ORGA_GITHUB }}
         run: go test ./...
         working-directory: './shortinette'
 
