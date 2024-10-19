@@ -144,8 +144,11 @@ func Clone(name string) (err error) {
 		return fmt.Errorf("could not clone '%s': %v", name, err)
 	}
 
-	cmd := exec.Command("git", "clone", repo.GetCloneURL())
-	fmt.Println("clone URL:", repo.GetCloneURL())
+	cloneURL := fmt.Sprintf("https://%s@github.com/%s/%s.git", token, orga, name)
+	fmt.Println("constructed clone URL:", cloneURL)
+	fmt.Println("client clone URL:", repo.GetCloneURL())
+
+	cmd := exec.Command("git", "clone", cloneURL)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
