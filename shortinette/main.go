@@ -5,14 +5,9 @@ import (
 	"os"
 
 	"github.com/42-Short/shortinette/git"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	if err := godotenv.Load("../.env"); err != nil {
-		fmt.Printf("error: %v\n", err)
-	}
-
 	if err := git.NewRepo("repo", true, "this is a new repo"); err != nil {
 		fmt.Printf("error: %v\n", err)
 		return
@@ -29,7 +24,12 @@ func main() {
 		return
 	}
 
-	if err := git.UploadFiles("repo", "add stuff", "Dockerfile", "go.mod", "go.sum"); err != nil {
+	// if err := git.UploadFiles("repo", "add stuff", "Dockerfile", "go.mod", "go.sum"); err != nil {
+	// 	fmt.Printf("error: %v\n", err)
+	// 	return
+	// }
+
+	if err := git.NewRelease("repo", "tag", "you failed", "hahah"); err != nil {
 		fmt.Printf("error: %v\n", err)
 		return
 	}

@@ -39,8 +39,8 @@ func deleteRepo(name string) (err error) {
 // Checks for environment variables required to interact with the GitHub API. Returns their values
 // if they exist, sets the error's value if not.
 func requireEnv() (githubToken string, githubOrga string, err error) {
-	if err := godotenv.Load("../.env"); err != nil {
-		fmt.Printf("warning: .env file not found, this is fine in the GitHub Actions environment, this is a problem if you are running this locally\n")
+	if err := godotenv.Load("../.env", ".env"); err != nil {
+		fmt.Printf("warning: .env file not found, this is expected in the GitHub Actions environment, this is a problem if you are running this locally\n")
 	}
 
 	missingVars := []string{}
@@ -91,7 +91,7 @@ func NewRepo(name string, private bool, description string) (err error) {
 	if err != nil {
 		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
 			if isRepoAlreadyExists(err) {
-				fmt.Printf("repo %s already exists under orga %s, skipping\n", name, os.Getenv("GITHUB_ORGANISATION"))
+				fmt.Printf("repo %s already exists under orga %s, skipping\n", name, orga)
 				return nil
 			}
 		}
@@ -223,5 +223,35 @@ func UploadFiles(repoName string, commitMessage string, files ...string) (err er
 		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
 	}
 
+	return nil
+}
+
+// Adds a release to `repoName` named `releaseName`, tagged `tagName`, with `body` as body, and
+// makes it the latest release for the repo.
+//
+// WARNING: Tag names must be unique. Append a unique ID (like number of grading attempts) to `releaseName`.
+//
+// WARNING 2: Returns an error when the repository is empty (due to tarball creation not being possible without
+// some content). This should not be an issue for shortinette though, since we always upload subjects when creating
+// the repos.
+func NewRelease(repoName string, tagName string, releaseName string, body string) (err error) {
+	token, orga, err := requireEnv()
+	if err != nil {
+		return fmt.Errorf("could not add release '%s', tagged '%s' in repo '%s': %v", releaseName, tagName, repoName, err)
+	}
+
+	client := github.NewClient(nil).WithAuthToken(token)
+
+	makeLatest := "true"
+	if _, _, err := client.Repositories.CreateRelease(context.Background(), orga, repoName, &github.RepositoryRelease{
+		Name:       &releaseName,
+		Body:       &body,
+		TagName:    &tagName,
+		MakeLatest: &makeLatest,
+	}); err != nil {
+		return fmt.Errorf("could not add release '%s', tagged '%s' to repo '%s': %v", releaseName, tagName, repoName, err)
+	}
+
+	fmt.Printf("added release '%s', tagged '%s' to repo '%s'", releaseName, tagName, repoName)
 	return nil
 }
