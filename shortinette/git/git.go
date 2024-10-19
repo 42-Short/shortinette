@@ -40,14 +40,14 @@ func deleteRepo(name string) (err error) {
 func requireEnv() (githubToken string, githubOrga string, err error) {
 	missingVars := []string{}
 
-	githubToken = os.Getenv("GITHUB_TOKEN")
+	githubToken = os.Getenv("TOKEN_GITHUB")
 	if githubToken == "" {
-		missingVars = append(missingVars, "GITHUB_TOKEN")
+		missingVars = append(missingVars, "TOKEN_GITHUB")
 	}
 
-	githubOrga = os.Getenv("GITHUB_ORGANISATION")
+	githubOrga = os.Getenv("ORGA_GITHUB")
 	if githubOrga == "" {
-		missingVars = append(missingVars, "GITHUB_ORGANISATION")
+		missingVars = append(missingVars, "ORGA_GITHUB")
 	}
 
 	if len(missingVars) != 0 {

@@ -8,10 +8,10 @@ import (
 )
 
 func TestNewRepoMissingRequiredVariables(t *testing.T) {
-	os.Unsetenv("GITHUB_ADMIN")
-	os.Unsetenv("GITHUB_TOKEN")
-	os.Unsetenv("GITHUB_ORGANISATION")
-	os.Unsetenv("GITHUB_EMAIL")
+	os.Unsetenv("ADMIN_GITHUB")
+	os.Unsetenv("TOKEN_GITHUB")
+	os.Unsetenv("ORGA_GITHUB")
+	os.Unsetenv("EMAIL_GITHUB")
 
 	if err := NewRepo("test", true, "this should not be created"); err == nil {
 		t.Fatalf("missing environment variables should throw an error")
@@ -19,10 +19,7 @@ func TestNewRepoMissingRequiredVariables(t *testing.T) {
 }
 
 func TestNewRepoNonExistingOrga(t *testing.T) {
-	if err := godotenv.Load("../.env"); err != nil {
-		t.Fatalf("could not load .env")
-	}
-	os.Setenv("GITHUB_ORGANISATION", "thisorgadoesnotexist")
+	os.Setenv("ORGA_GITHUB", "thisorgadoesnoteist")
 
 	if err := NewRepo("test", true, "this should not be created"); err == nil {
 		t.Fatalf("missing environment variables should throw an error")
@@ -30,10 +27,10 @@ func TestNewRepoNonExistingOrga(t *testing.T) {
 }
 
 func TestAddCollaboratorMissingToken(t *testing.T) {
-	os.Unsetenv("GITHUB_ADMIN")
-	os.Unsetenv("GITHUB_TOKEN")
-	os.Unsetenv("GITHUB_ORGANISATION")
-	os.Unsetenv("GITHUB_EMAIL")
+	os.Unsetenv("ADMIN_GITHUB")
+	os.Unsetenv("TOKEN_GITHUB")
+	os.Unsetenv("ORGA_GITHUB")
+	os.Unsetenv("EMAIL_GITHUB")
 
 	if err := AddCollaborator("repo", "winstonallo", "read"); err == nil {
 		t.Fatalf("missing environment variables should throw an error")
@@ -41,20 +38,12 @@ func TestAddCollaboratorMissingToken(t *testing.T) {
 }
 
 func TestAddCollaboratorNonExistingUser(t *testing.T) {
-	if err := godotenv.Load("../.env"); err != nil {
-		t.Fatalf("could not load .env")
-	}
-
 	if err := AddCollaborator("repo", "ireallydonotthinkthatthisgithubuserexists", "read"); err == nil {
 		t.Fatalf("non-existing user should throw an error")
 	}
 }
 
 func TestAddCollaboratorNonExistingPermission(t *testing.T) {
-	if err := godotenv.Load("../.env"); err != nil {
-		t.Fatalf("could not load .env")
-	}
-
 	if err := AddCollaborator("repo", "winstonallo", "fornicate"); err == nil {
 		t.Fatalf("non-existing permission level should throw an error")
 	}
@@ -65,11 +54,14 @@ func TestUploadFilesNonExistingFiles(t *testing.T) {
 		t.Fatalf("could not load .env: %v", err)
 	}
 
-	if err := NewRepo("test", true, "this will be deleted soon"); err != nil {
+	if err := NewRepo("test", true, "this will be deleted soon_GITHUB"); err != nil {
 		t.Fatalf("could not create test repo: %v", err)
 	}
 
 	defer func() {
+		if err := os.RemoveAll("test"); err != nil {
+			t.Fatalf("could not delete test repo (local): %v", err)
+		}
 		if err := deleteRepo("test"); err != nil {
 			t.Fatalf("could not delete test repo: %v", err)
 		}
@@ -85,15 +77,18 @@ func TestUploadFilesNormalFunctionality(t *testing.T) {
 		t.Fatalf("could not load .env: %v", err)
 	}
 
-	if err := NewRepo("test", true, "this will be deleted soon"); err != nil {
+	if err := NewRepo("test", true, "this will be deleted soon_GITHUB"); err != nil {
 		t.Fatalf("could not create test repo: %v", err)
 	}
 
-	// defer func() {
-	// 	if err := deleteRepo("test"); err != nil {
-	// 		t.Fatalf("could not delete test repo: %v", err)
-	// 	}
-	// }()
+	defer func() {
+		if err := os.RemoveAll("test"); err != nil {
+			t.Fatalf("could not delete test repo (local): %v", err)
+		}
+		if err := deleteRepo("test"); err != nil {
+			t.Fatalf("could not delete test repo (remote): %v", err)
+		}
+	}()
 
 	if err := UploadFiles("test", "don't mind me just breaking code", "git.go"); err != nil {
 		t.Fatalf("uploading an existing file should work, something went wrong: %v", err)
