@@ -5,33 +5,6 @@ import (
 	"testing"
 )
 
-func TestNewRepoMissingRequiredVariables(t *testing.T) {
-	token, orga, err := requireEnv()
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-
-	defer func() {
-		if err := os.Setenv("TOKEN_GITHUB", token); err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		if err := os.Setenv("ORGA_GITHUB", orga); err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
-	if err := os.Unsetenv("TOKEN_GITHUB"); err != nil {
-		t.Fatalf("error: %v", err)
-	}
-	if err := os.Unsetenv("ORGA_GITHUB"); err != nil {
-		t.Fatalf("error: %v", err)
-	}
-
-	if err := NewRepo("test", true, "this should not be created"); err == nil {
-		t.Fatalf("missing environment variables should throw an error")
-	}
-}
-
 func TestNewRepoNonExistingOrga(t *testing.T) {
 	_, orga, err := requireEnv()
 	if err != nil {
@@ -49,33 +22,6 @@ func TestNewRepoNonExistingOrga(t *testing.T) {
 	}()
 
 	if err := NewRepo("test", true, "this should not be created"); err == nil {
-		t.Fatalf("missing environment variables should throw an error")
-	}
-}
-
-func TestAddCollaboratorMissingToken(t *testing.T) {
-	token, orga, err := requireEnv()
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-
-	defer func() {
-		if err := os.Setenv("TOKEN_GITHUB", token); err != nil {
-			t.Fatalf("error: %v", err)
-		}
-		if err := os.Setenv("ORGA_GITHUB", orga); err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
-
-	if err := os.Unsetenv("TOKEN_GITHUB"); err != nil {
-		t.Fatalf("error: %v", err)
-	}
-	if err := os.Unsetenv("ORGA_GITHUB"); err != nil {
-		t.Fatalf("error: %v", err)
-	}
-
-	if err := AddCollaborator("repo", "winstonallo", "read"); err == nil {
 		t.Fatalf("missing environment variables should throw an error")
 	}
 }

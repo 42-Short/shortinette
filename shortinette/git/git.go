@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/google/go-github/v66/github"
+	"github.com/joho/godotenv"
 )
 
 func deleteRepo(name string) (err error) {
@@ -38,6 +39,10 @@ func deleteRepo(name string) (err error) {
 // Checks for environment variables required to interact with the GitHub API. Returns their values
 // if they exist, sets the error's value if not.
 func requireEnv() (githubToken string, githubOrga string, err error) {
+	if err := godotenv.Load("../.env"); err != nil {
+		fmt.Printf("warning: .env file not found, this is fine in the GitHub Actions environment, this is a problem if you are running this locally")
+	}
+
 	missingVars := []string{}
 
 	githubToken = os.Getenv("TOKEN_GITHUB")
