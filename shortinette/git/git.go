@@ -145,6 +145,7 @@ func Clone(name string) (err error) {
 	}
 
 	cmd := exec.Command("git", "clone", repo.GetCloneURL())
+	fmt.Println("clone URL:", repo.GetCloneURL())
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
