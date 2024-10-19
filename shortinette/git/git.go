@@ -27,12 +27,12 @@ func deleteRepo(name string) (err error) {
 		if resp.StatusCode != http.StatusNotFound {
 			return fmt.Errorf("could not delete repo '%s': %v", name, err)
 		} else {
-			fmt.Printf("repo '%s' not found in orga '%s'", name, orga)
+			fmt.Printf("repo '%s' not found in orga '%s'\n", name, orga)
 			return nil
 		}
 	}
 
-	fmt.Printf("repo '%s' successfully deleted", name)
+	fmt.Printf("repo '%s' successfully deleted\n", name)
 	return nil
 }
 
@@ -40,7 +40,7 @@ func deleteRepo(name string) (err error) {
 // if they exist, sets the error's value if not.
 func requireEnv() (githubToken string, githubOrga string, err error) {
 	if err := godotenv.Load("../.env"); err != nil {
-		fmt.Printf("warning: .env file not found, this is fine in the GitHub Actions environment, this is a problem if you are running this locally")
+		fmt.Printf("warning: .env file not found, this is fine in the GitHub Actions environment, this is a problem if you are running this locally\n")
 	}
 
 	missingVars := []string{}
@@ -128,7 +128,7 @@ func AddCollaborator(repoName string, collaboratorName string, permission string
 // environment variable). Does nothing if the directory is cloned already.
 func Clone(name string) (err error) {
 	if _, err := os.Stat(name); !os.IsNotExist(err) {
-		fmt.Printf("'%s' seems to cloned already, returning", name)
+		fmt.Printf("'%s' seems to cloned already, returning\n", name)
 		return nil
 	}
 
