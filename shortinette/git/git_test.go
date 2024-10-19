@@ -50,10 +50,6 @@ func TestAddCollaboratorNonExistingPermission(t *testing.T) {
 }
 
 func TestUploadFilesNonExistingFiles(t *testing.T) {
-	if err := godotenv.Load("../.env"); err != nil {
-		t.Fatalf("could not load .env: %v", err)
-	}
-
 	if err := NewRepo("test", true, "this will be deleted soon_GITHUB"); err != nil {
 		t.Fatalf("could not create test repo: %v", err)
 	}
@@ -73,10 +69,6 @@ func TestUploadFilesNonExistingFiles(t *testing.T) {
 }
 
 func TestUploadFilesNormalFunctionality(t *testing.T) {
-	if err := godotenv.Load("../.env"); err != nil {
-		t.Fatalf("could not load .env: %v", err)
-	}
-
 	if err := NewRepo("test", true, "this will be deleted soon_GITHUB"); err != nil {
 		t.Fatalf("could not create test repo: %v", err)
 	}
