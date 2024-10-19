@@ -9,7 +9,10 @@ jobs:
     strategy:
       matrix:
         go-version: [ '*' ]
-
+    env:
+      TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+      ORGA_GITHUB: ${{ secrets.ORGA_GITHUB }}
+        
     steps:
       - uses: actions/checkout@v4
       - name: Setup Go ${{ matrix.go-version }}
@@ -22,10 +25,12 @@ jobs:
       - name: Build
         run: go build -v ./...
         working-directory: './shortinette'
+      - name: Set up Git credentials
+        run: |
+          git config --global user.name "Github Actions"
+          git config --global user.email "actions@github.com"
+          git config --global url."https://${{ secrets.TOKEN_GITHUB }}@github.com".insteadOf "https://github.com/"
       - name: Run tests
-        env:
-          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
-          ADMIN_GITHUB: ${{ secrets.ADMIN_GITHUB }}
         run: go test ./...
         working-directory: './shortinette'
 
