@@ -1,5 +1,5 @@
 # shortinette: Automated Grading Framework for Coding Bootcamps
-
+🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧🚧
 ## Overview
 
 shortinette is a framework designed to manage and automate the grading process for coding bootcamps, which we call `Shorts`. This system provides tools for efficiently and safely running and evaluating student submissions.
@@ -8,22 +8,7 @@ shortinette is a framework designed to manage and automate the grading process f
 
 - Automated grading triggered by GitHub webhooks
 - Secure execution of untrusted code using Docker
-- Comprehensive logging and error reporting
-- Modular architecture for easy extension and maintenance
-
-## Architecture
-
-shortinette is composed of several interconnected packages, each responsible for a specific aspect of the grading pipeline:
-
-1. **logger**: Manages logging throughout the framework, capturing important events, errors and traces for user feedback.
-2. **requirements**: Validates environment variables and dependencies.
-3. **testutils**: Provides utilities for compiling and running code submissions.
-4. **db**: Handles interactions with the SQLite database.
-5. **git**: Manages GitHub interactions, including repository management and file operations.
-6. **exercise**: Defines the structure and behavior of individual coding exercises.
-7. **module**: Organizes exercises into cohesive curriculum modules.
-8. **webhook**: Enables automated grading triggered by GitHub events.
-9. **short**: Orchestrates the entire grading process, integrating all sub-packages.
+- Easily extensible
 
 ## Implementation Guide
 
