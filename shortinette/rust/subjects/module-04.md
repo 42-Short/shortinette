@@ -195,9 +195,7 @@ allowed symbols:
     std::{print, println, eprintln}
 ```
 
-Create a **program** that computes the total size of a directory or file. The program must write the
-aggregated size of directories *in real-time*. As more files are taken in account in the count,
-the total size must be updated in the terminal.
+Create a **program** that computes the total size of a directory or file.
 
 ```txt
 >_ cargo run -- ~
@@ -316,26 +314,22 @@ allowed symbols:
 
 Create a **program** that sends an `HTTP/1.1` request and prints the response.
 
-Example:
-
-_Note: You are free to format this exercise as you like, as long as the HTTP/1.1 status code and the Content-Length header are displayed._
+The response must be printed like in this example:
 
 ```txt
 >_ cargo run -- https://github.com/42-Short
-HTTP/1.1 200 OK
-Server: tiny-http (Rust)
+Protocol: HTTP/1.1 
+Status: 200
 Date: Sat, 04 Feb 2023 12:40:33 GMT
-Content-Length: ...
-...
 <html>
 ...
+</html>
 ```
-
+_Obviously, if the server's response is not `200`, you must print the actual response._
  * The program must send *valid* HTTP/1.1 requests.
  * Only the `GET` method is required.
 
-**Note:** you should probably ask the server to `close` the `Connection` instantly to avoid
-having to detect the end of the payload.
+**Note:** you should probably ask the server to `close` the `Connection` instantly to avoid having to detect the end of the payload.
 
 ## Exercise 06: ft_strings
 
