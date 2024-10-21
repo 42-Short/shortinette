@@ -95,23 +95,19 @@ files to turn in:
 
 Create a **function** that maps three color components to a name.
 
-The name of a color is determined using the following rules, applied in order. The first rule that
-`match`es the input color must be selected.
+The name of a color is determined using the following rules, applied in order. The first rule that `match`es the input color must be selected.
 
-* The color `[0, 0, 0]` is "pure black".
-* The color `[255, 255, 255]` is "pure white".
-* The color `[255, 0, 0]` is "pure red".
-* The color `[0, 255, 0]` is "pure green".
-* The color `[0, 0, 255]` is "pure blue".
-* The color `[128, 128, 128]` is "perfect grey".
-* Any color whose components are all bellow 31 is "almost black".
-* Any color whose red component is above 128, whose green and blue components are between 0 and 127 (inclusive),
-is "redish".
-* Any color whose green component is above 128, whose red and blue components are between 0 and 127 (inclusive),
-is "greenish".
-* Any color whose blue component is above 128, whose red and green components are between 0 and 127 (inclusive),
-is "blueish".
-* Any other color is named "unknown".
+* $[0, 0, 0]$ is `pure black`.
+* $[255, 255, 255]$ is `pure white`.
+* $[255, 0, 0]$ is `pure red`.
+* $[0, 255, 0]$ is `pure green`.
+* $[0, 0, 255]$ is `pure blue`.
+* $[128, 128, 128]$ is `perfect grey`.
+* Any color whose components are all bellow $31$ is `almost black`.
+* Any color with a red component $>= 128$, and green/blue components $<= 127$ is `redish`.
+* Any color with a green component $>= 128$, and red/blue components $<= 127$ is `greenish`.
+* Any color with a blue component $>= 128$, and red/green $<= 127$, is `blueish`.
+* Any other color is `unknown`.
 
 The `if` keyword is **_not_** allowed!
 
@@ -119,8 +115,7 @@ The `if` keyword is **_not_** allowed!
 const fn color_name(color: &[u8; 3]) -> &str;
 ```
 
-You might need to add *lifetime* annotations to the function to make it compile. Specifically, the
-following test must compile and run:
+You might need to add *lifetime* annotations to the function to make it compile. Specifically, the following test must compile and run:
 
 ```rust
 #[cfg(test)]
@@ -164,6 +159,7 @@ fn largest_group(haystack: &[u32], needle: &[u32]) -> &[u32];
 Example:
 
 ```rust
+assert_eq!(largest_group(&[0, 1, 1, 1, 1, 1, 1, 1, 1, 4], &[1]), &[1, 1, 1, 1, 1, 1, 1, 1])
 assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[5, 3]), &[3, 5, 5]);
 assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[5]), &[5, 5]);
 assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[]), &[]);
