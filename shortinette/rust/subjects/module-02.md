@@ -263,8 +263,7 @@ fn main() {
 }
 ```
 
-Copy the above `main` function and make it compile and run. You are not allowed to use the `impl`
-keyword!
+Copy the above `main` function and make it compile and run. You are not allowed to use the `impl` keyword!
 
 ## Exercise 04: Todo List
 
@@ -334,29 +333,20 @@ impl TodoList {
 Write a `main` function, responsible for using both `TodoList` and `Command`. The content of the
 todolist must be displayed to the user before each prompt.
 
-You may design the interface you want to this exercise. Here is an example.
+Your todo-list interface must be formatted as follows:
 
 ```txt
 >_ cargo run
-
 TODO star shortinette (https://github.com/42-Short/shortinette)
-
     0 [ ] star shortinette (https://github.com/42-Short/shortinette)
-
 TODO finish this module
-
     0 [ ] star shortinette (https://github.com/42-Short/shortinette)
     1 [ ] finish this module
-
 DONE 0
-
     0 [ ] finish this module
       [x] star shortinette (https://github.com/42-Short/shortinette)
-
 PURGE
-
     0 [ ] finish this module
-
 QUIT
 ```
 
