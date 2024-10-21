@@ -159,15 +159,14 @@ fn largest_group(haystack: &[u32], needle: &[u32]) -> &[u32];
 Example:
 
 ```rust
-assert_eq!(largest_group(&[0, 1, 1, 1, 1, 1, 1, 1, 1, 4], &[1]), &[1, 1, 1, 1, 1, 1, 1, 1])
 assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[5, 3]), &[3, 5, 5]);
 assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[5]), &[5, 5]);
 assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[]), &[]);
 assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[4, 1]), &[]);
+assert_eq!(largest_group(&[0, 1, 1, 1, 1, 1, 1, 1, 1, 4], &[1]), &[1, 1, 1, 1, 1, 1, 1, 1])
 ```
 
-Once again, you may need to specify some *lifetime annotations* for the function. To check whether
-your annotations are correct for that case, you can use this pre-defined `test_lifetimes` test.
+Once again, you may need to specify some *lifetime annotations* for the function. To check whether your annotations are correct for that case, you can use this pre-defined `test_lifetimes` test.
 It must compile and run.
 
 ```rust
@@ -200,10 +199,9 @@ allowed symbols:
     std::iter*
 ```
 
-You are given a list of boxes (`[width, height]`). Sort that list of boxes in a way for every box
-to be *contained* in the previous one. If the operation is not possible, the function must panic.
+You are given a list of boxes (`[width, height]`). Sort that list of boxes in a way for every box to be *contained* in the previous one. If the operation is not possible, the function must panic.
 
-You are **not** allowed to flip the boxes to make them fit.
+The boxes must fit in their original positions. If you have to flip a box, it does **not** fit.
 
 ```rust
 fn sort_boxes(boxes: &mut [[u32; 2]]);
@@ -262,15 +260,13 @@ allowed symbols:
     std::iter*
 ```
 
-Write a **function** that adds two numbers together. The numbers are given as a list of decimal
-digits and may be arbitrarily large.
+Write a **function** that adds two numbers together. The numbers are given as a list of decimal digits and may be arbitrarily large.
 
 ```rust
 fn big_add(a: &[u8], b: &[u8]) -> Vec<u8>;
 ```
 
-* `a` and `b` must only contain digits (`b'0'` to `b'9'` included). If anything else is found, the
-function must panic.
+* `a` and `b` must only contain digits (`b'0'` to `b'9'` included). If anything else is found, the function must panic.
 * If either `a` or `b` is empty, the function panics.
 * Input numbers may contain leading zeros, but the result must not have any.
 
