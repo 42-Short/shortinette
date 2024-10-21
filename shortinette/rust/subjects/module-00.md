@@ -127,13 +127,13 @@ y
 
 The `collatz` function must execute the following algorithm...
 
-* Let *n* be any natural number.
-* If *n* is even, then *n* becomes *n*/2
-* If *n* is odd, then *n* becomes 3*n* + 1
+* Let $n$ be any natural number.
+* If $n$ is even, then $n$ becomes $n/2$
+* If $n$ is odd, then $n$ becomes $3n+1$
 
-...until *n* equals 1. On each iteration, *n* must be displayed on the standard output, followed
-by a line feed.
-Make sure to prevent timeouts!
+...until $n$ equals $1$. On each iteration, $n$ must be displayed on the standard output, followed by a line feed.
+
+If $n$ cannot reach the target value ($1$), you are free to handle it as you please, as long as you do **not** enter an infinite loop.
 
 ```txt
 Input:
@@ -181,15 +181,15 @@ allowed symbols:
     std::println
 ```
 
-Create a **program** that plays the popular (and loved!) game "fizz buzz" from 1 to 100.
+Create a **program** that plays the popular (and loved!) game "fizz buzz" starting at 1 and finishing at 100 (inclusive).
 
 The rules have changed a bit, however. They must be followed in order.
 
-* When the number is both a multiple of 3 and 5, "fizzbuzz" must be displayed.
-* When the number is a multiple of 3, "fizz" must be displayed.
-* When the number is a multiple of 5, "buzz" must be displayed.
-* When the number modulo 11 is congruent to 3 "FIZZ" is displayed.
-* When the number modulo 11 is congruent to 5 "BUZZ" is displayed.
+* If the number is both a multiple of 3 and 5, "fizzbuzz" must be displayed.
+* If the number is a multiple of 3, "fizz" must be displayed.
+* If the number is a multiple of 5, "buzz" must be displayed.
+* If the number modulo 11 is congruent to 3 "FIZZ" is displayed.
+* If the number modulo 11 is congruent to 5 "BUZZ" is displayed.
 * Otherwise, the number itself is written.
 
 Example:
@@ -218,7 +218,7 @@ fizz
 buzz
 ...
 ```
-The only allowed keywords for this exercise are **_one_** `for` loop and **_one_** `match` statement!
+The only allowed keywords for this exercise are **_one_** `for` loop and **_one_** `match` statement! No **_if_** statements will be tolerated.
 
 ## Exercise 04: Shipping With Cargo
 
@@ -252,7 +252,7 @@ Hey! I'm the other bin target!
 I'm in release mode!
 ```
 
-* In `release` mode, the final binary must not have any visible symbols in its binary.
+* In `release` mode, the final binary must have no visible symbols.
 
 ```txt
 >_ cargo build
@@ -272,8 +272,7 @@ I'm in release mode!
 nm: <target-dir>/release/module00-ex04: no symbols
 ```
 
-* It must have a custom profile inheriting the "dev" profile. That profile must simply disable
-integer overflow checks. For this reason, you will name it `no-overflows`.
+* It must have a custom profile inheriting the "dev" profile. That profile must simply disable integer overflow checks. For this reason, you will name it `no-overflows`.
 
 ```txt
 >_ cargo run --bin test-overflows
@@ -282,7 +281,7 @@ thread 'main' panicked at 'attempt to add with overflow', src/overflow.rs:3:5
 255u8 + 1u8 == 0
 ```
 
-* **You are allowed to modify lint levels for completing this exercise! Up to you to figure out which :)**
+* **You are allowed to use attributes (#[...]) for completing this exercise! Up to you to figure out which :)**
 
 ## Exercise 05: Friday The 13th
 
@@ -297,8 +296,7 @@ allowed symbols:
     std::{assert, assert_eq, assert_ne}  std::panic  std::{print, println}
 ```
 
-Write a **program** which prints every Friday that falls on the 13th of the month, since the first
-day of year 1 (it was a monday) until today.
+Write a **program** which prints every Friday that falls on the 13th of the month, since the first day of year 1 (it was a monday) until today.
 
 To complete this task, you must write the following function:
 
@@ -308,7 +306,7 @@ fn num_days_in_month(year: u32, month: u32) -> u32;
 ```
 
 * `is_leap_year` must determine whether a given year is a leap year or not.
-* `num_days_in_month` must compute how many days a given month of a given year has.
+* `num_days_in_month` must calculate how many days month `month` or year `year` has.
 
 Example:
 
@@ -416,16 +414,6 @@ assert!(strpcmp(b"ab000cd", b"ab*cd"));
 assert!(strpcmp(b"abcd", b"ab*cd"));
 
 assert!(strpcmp(b"", b"****"));
-```
-
-Your crate must also include a bin-target which may be used to test the library easily. Note that
-the `strpcmp` function must still be in the *library*!
-
-```txt
->_ cargo run -- 'abcde' 'ab*'
-yes
->_ cargo run -- 'abcde' 'ab*ef'
-no
 ```
 
 ```
