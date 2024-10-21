@@ -132,7 +132,7 @@ allowed symbols:
     std::result::Result
 ```
 
-Create a type named `John` and implement the right such that executing the following code...
+Create a type named `John` and implement it such that executing the following code...
 
 ```rust
 fn main() {
@@ -228,8 +228,9 @@ enum TimeParseError {
 }
 ```
 
-Implement the right traits such that the provided `main` function compiles and produces the given
-output.
+Implement the right traits such that the provided `main` function compiles and produces the given output.
+
+Despite what Wikipedia says, `24:00` a cursed way to display midnight and shall **not** be a valid time.
 
 ```rust
 fn main() {
