@@ -29,3 +29,7 @@ traces/
 sqlite3/
 
 .vscode
+
+# Generated
+
+target/
