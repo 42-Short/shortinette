@@ -34,5 +34,6 @@ sudo useradd -m "$USER"
 echo "$USER:$PWD" | sudo chpasswd
 sudo usermod -aG sudo "$USER"
 sudo usermod -aG docker "$USER"
+sudo chsh -s /bin/bash Short
 
 echo "User $USER created, password: $PWD"
