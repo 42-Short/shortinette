@@ -38,7 +38,7 @@ You will need three packages:
 * **tmux**, to share terminal sessions with co-organizers (believe me, you do not want to be the only one with access to the `shortinette` process).
 * **sqlite**, in case you ever need to manually access the database.
 
-
+I made you an [installation script](~/docs/scripts/server-setup.sh). Feel free to paste it into your Droplet's command line, it will install all required packages.
 
 ## Announcement
 We recommend posting the announcement _at least_ one month before you plan to start the Short. Participation requires a big time investment, and you want people to plan ahead.
