@@ -46,6 +46,17 @@ su Short
 ```
 From now on, you can just log in as `Short` instead of `root` (believe me, it's for your own good).
 
+### GitHub Organisation
+`shortinette` uses GitHub as an infrastructure. In order to group all of your participant's repositories, you will need to set up an organisation. You can create your organisation [here](https://github.com/organizations/plan). Choose the free plan, give it a name, and email, and you're good to go. This will make creating and managing repositories easier.
+
+### Secrets
+`shortinette` needs a peek into your secrets in order to authenticate with GitHub and manage repositories on your behalf.
+
+* `ORGA_GITHUB`: The name of the GitHub organisation you created, so `shortinette` knows where to create the repositories.
+* `TOKEN_GITHUB`: A personal access token with admin access to the `ORGA_GITHUB`. You can create it [here](https://github.com/organizations/Short-Test-Orga/settings/personal-access-tokens).
+* `HOST_IP`: The IP address of your droplet. This is where GitHub will send web hook payloads. Write `http://<your-public-ip>`.
+* `WEBHOOK_PORT`: The port you want GitHub to send the web hook payloads to. Choose a port that is not already allocated! If you just created your Droplet following this documentation, just use `8080`.
+
 ## Announcement
 We recommend posting the announcement _at least_ one month before you plan to start the Short. Participation requires a big time investment, and you want people to plan ahead.
 
