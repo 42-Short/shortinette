@@ -35,10 +35,16 @@ That was easy, right?
 #### Installing Packages
 You will need three packages:
 * **Docker**, to deploy `shortinette`.
-* **tmux**, to share terminal sessions with co-organizers (believe me, you do not want to be the only one with access to the `shortinette` process).
-* **sqlite**, in case you ever need to manually access the database.
+* **Tmux**, to share terminal sessions with co-organizers (believe me, you do not want to be the only one with access to the `shortinette` process).
+* **SQLite3**, in case you ever need to manually access the database.
 
-I made you an [installation script](scripts/server-setup.sh). Feel free to paste it into your Droplet's command line, it will install all required packages.
+I made you an [installation script](scripts/server-setup.sh). Feel free to paste it into your Droplet's command line, it will install all required packages. It will also create a user named `Short`, and print its password to your console. Save this password! If you lose it, you will need your Born2beroot knowledge, _and you probably just followed a tutorial, so we definitely do not want that_.
+
+You can now switch to the `Short` user:
+```sh
+su Short
+```
+From now on, you can just log in as `Short` instead of `root` (believe me, it's for your own good).
 
 ## Announcement
 We recommend posting the announcement _at least_ one month before you plan to start the Short. Participation requires a big time investment, and you want people to plan ahead.
