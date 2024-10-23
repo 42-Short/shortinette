@@ -45,5 +45,22 @@ Create a GitHub organisation [here](https://github.com/organizations/plan) to gr
 * `TOKEN_GITHUB`: A personal access token with admin rights to `ORGA_GITHUB`. Create it [here](https://github.com/organizations/Short-Test-Orga/settings/personal-access-tokens).
 * `HOST_IP`: `http://<your-public-ip>` (use your Droplet's IPv4 address).
 * `WEBHOOK_PORT`: The port for GitHub web hook payloads. If you're using a fresh Droplet, `8080` should work fine.
-
 Note: If you have a server with SSL certificates, feel free to use `https` instead of `http` for `HOST_IP`.
+
+## Configuring Participants
+```
+TODO: Finish when actual configuration logic is ready.
+```
+The Short takes a configuration in `json` format:
+```json
+{
+  "participants": [
+    {
+      "github_username": "",
+      "intra_login": ""
+    }
+  ]
+}
+```
+The `intra_login` variable will be used as a UID to build the names of the participant's repos.
+
