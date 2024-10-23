@@ -8,7 +8,7 @@ There are some things you will need to set up in order for the GitHub interactio
 ### Server
 `shortinette` is listening for activity on the participants' repositories using web hooks. For GitHub to be able to send `shortinette` payloads, you will need a **public IP address**.
 
-For a common mortal, this would require paying for a server - however, as a 42 student, you have access to the [GitHub student pack]([https://education.github.com/pack#offers](https://education.github.com/pack#offers)). If you did not unlock it yet, [here]([https://github-portal.42.fr](https://github-portal.42.fr/)) is the link - just log in with your 42 account and you're good to go!
+For a common mortal, this would require paying for a server - however, as a 42 student, you have access to the [GitHub student pack](https://education.github.com/pack#offers). If you did not unlock it yet, [here](https://github-portal.42.fr) is the link - just log in with your 42 account and you're good to go!
 
 The reason I'm telling you this is that the student pack offers 200$ of DigitalOcean credit for one year. DigitalOcean is a hosting service, which you will be able to use for hosting `shortinette`!
 
