@@ -5,5 +5,5 @@ _And you would be right!_ There is a lot to organize, a lot to think about. Luck
 
 # Table of Contents
 1. [Setup](SETUP.md)
-2. [Announcement](ANNOUCEMENT.md)
+2. [Announcement](ANNOUNCEMENT.md)
 
