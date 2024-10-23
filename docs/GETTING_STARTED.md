@@ -54,7 +54,7 @@ From now on, you can just log in as `Short` instead of `root` (believe me, it's 
 
 * `ORGA_GITHUB`: The name of the GitHub organisation you created, so `shortinette` knows where to create the repositories.
 * `TOKEN_GITHUB`: A personal access token with admin access to the `ORGA_GITHUB`. You can create it [here](https://github.com/organizations/Short-Test-Orga/settings/personal-access-tokens).
-* `HOST_IP`: The IP address of your droplet. This is where GitHub will send web hook payloads. Write `http://<your-public-ip>`.
+* `HOST_IP`: `http://<your-public-ip>`, where `<your-public-ip>` is the public ipv4 address of your droplet. Obviously, if you already have a fancy server with secure connection, use `https` - I guess you can figure that out yourself if you managed to set up SSL certificates.
 * `WEBHOOK_PORT`: The port you want GitHub to send the web hook payloads to. Choose a port that is not already allocated! If you just created your Droplet following this documentation, just use `8080`.
 
 ## Announcement
