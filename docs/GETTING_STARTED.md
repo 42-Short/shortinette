@@ -3,7 +3,8 @@ You might be thinking: "This is nice and all, but I don't want to spend a week p
 
 _And you would be right!_ There is a lot to organize, a lot to think about. Lucky for you, we've been through this so you don't have to! There are multiple things that go into the organization, so hang tight while I take you through it.
 
-
+# Table of Contents
+1. [Setup](SETUP.md)
 
 ## Announcement
 We recommend posting the announcement _at least_ one month before you plan to start the Short. Participation requires a big time investment, and you want people to plan ahead.
