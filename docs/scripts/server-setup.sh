@@ -32,4 +32,7 @@ PWD=$(openssl rand -base64 12)
 
 sudo useradd -m "$USER"
 echo "$USER:$PWD" | sudo chpasswd
+sudo usermod -aG sudo "$USER"
+sudo usermod -aG docker "$USER"
+
 echo "User $USER created, password: $PWD"
