@@ -21,10 +21,10 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Install dependencies
         run: go get .
-        working-directory: './shortinette'
+        working-directory: './app'
       - name: Build
         run: go build -v ./...
-        working-directory: './shortinette'
+        working-directory: './app'
       - name: Set up Git credentials
         run: |
           git config --global user.name "Github Actions"
@@ -32,5 +32,5 @@ jobs:
           git config --global url."https://${{ secrets.TOKEN_GITHUB }}@github.com".insteadOf "https://github.com/"
       - name: Run tests
         run: go test ./...
-        working-directory: './shortinette'
+        working-directory: './app'
 
