@@ -26,7 +26,7 @@ On DigitalOcean, cloud servers are called **Droplets**. Here's how to set one up
    ```
 
 ### Installing Packages
-You'll need Docker, Tmux, and SQLite3. Use this [installation script](scripts/server-setup.sh) to set everything up. It will also create a user named `Short` - make sure to save the password it generates!
+You'll need Docker, Tmux, and SQLite3. Use this [installation script](scripts/server-setup.sh) to set everything up. It will also create a user named `Short` - make sure to save the password it generates! If you don't, you will need to pull up the Born2beroot tutorial you blindly followed to change the password ^^
 
 Switch to the `Short` user:
 ```sh
