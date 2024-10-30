@@ -14,7 +14,7 @@ To streamline communication and avoid overwhelming the main student server, we'v
         * One channel for technical issues
         * Separate channels for each module
 ## Server Template
-We've created a template based on our server setup. However, please note:
+We've created a [template](https://discord.new/YuCWVzpYbZns) based on our server setup. However, please note:
 * The template does not automatically include the community feature, you will need to manually activate it
 * Forum channels must be created individually
 ## Setup Instructions
