@@ -4,15 +4,15 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - '**.go'
-      - 'go.mod'
-      - 'go.sum'
+      - 'app/**.go'
+      - 'app/go.mod'
+      - 'app/go.sum'
   pull_request:
     branches: [ "main" ]
     paths:
-      - '**.go'
-      - 'go.mod'
-      - 'go.sum'
+      - 'app/**.go'
+      - 'app/go.mod'
+      - 'app/go.sum'
 
 jobs:
   analyze:
