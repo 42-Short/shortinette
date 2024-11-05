@@ -58,7 +58,9 @@ func BuildImage(dockerClient *client.Client, logger *io.Writer) error {
 
 	defer imageBuildResponse.Body.Close()
 	if logger != nil {
-		io.Copy(*logger, imageBuildResponse.Body)
+		if _, err := io.Copy(*logger, imageBuildResponse.Body); err != nil {
+			return err
+		}
 	}
 
 	return nil
