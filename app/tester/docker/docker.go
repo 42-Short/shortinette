@@ -88,37 +88,6 @@ func ContainerCreate(dockerClient *client.Client, command []string) (*Container,
 	return &container, nil
 }
 
-func copyTestExecutableToFolder(exercise config.Exercise, exerciseDirectory string) error {
-	src, err := os.Open(exercise.ExecutablePath)
-
-	if err != nil {
-		return err
-	}
-	defer src.Close()
-
-	dstName := filepath.Join(exerciseDirectory, filepath.Base(exercise.ExecutablePath))
-	dst, err := os.Create(dstName)
-	if err != nil {
-		return err
-	}
-	defer dst.Close()
-
-	if _, err := io.Copy(dst, src); err != nil {
-		return err
-	}
-
-	srcInfo, err := src.Stat()
-	if err != nil {
-		return err
-	}
-
-	if err := os.Chmod(dstName, srcInfo.Mode()); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func addExecutableToArchive(path string, tarWriter *tar.Writer) error {
 	executableInfo, err := os.Stat(path)
 	if err != nil {
