@@ -213,6 +213,7 @@ func decodeDockerLogs(buffer *bytes.Buffer, logs io.ReadCloser) error {
 	return nil
 }
 
+//nolint:errcheck
 func (c *Container) Kill() error {
 	ctx := context.Background()
 
