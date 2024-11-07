@@ -201,9 +201,35 @@ func copyFiles(target string, files ...string) (err error) {
 	return nil
 }
 
+func checkout(dir string, to string) (err error) {
+	cmd := exec.Command("git", "checkout", to)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Dir = dir
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("git checkout %s: %v", to, err)
+	}
+
+	cmd = exec.Command("git", "push", "--set-upstream", "origin", "$(git_current_branch)")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Dir = dir
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("git --set-upstream origin $(git_current_branch): %v", err)
+	}
+
+	return nil
+}
+
 // Copies `files` into `repoName` and pushes them to the remote. Clones the repo if necessary.
-func UploadFiles(repoName string, commitMessage string, files ...string) (err error) {
+func UploadFiles(repoName string, commitMessage string, branch string, files ...string) (err error) {
 	if err := Clone(repoName); err != nil {
+		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
+	}
+
+	if err = checkout(repoName, branch); err != nil {
 		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
 	}
 

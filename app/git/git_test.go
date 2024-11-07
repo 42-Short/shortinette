@@ -86,7 +86,7 @@ func TestUploadFilesNonExistingFiles(t *testing.T) {
 		}
 	}()
 
-	if err := UploadFiles("test", "don't mind me just breaking code", "foo", "bar"); err == nil {
+	if err := UploadFiles("test", "don't mind me just breaking code", "main", "foo", "bar"); err == nil {
 		t.Fatalf("trying to upload non-existing files to a repo should throw an error")
 	}
 }
@@ -105,7 +105,7 @@ func TestUploadFilesNormalFunctionality(t *testing.T) {
 		}
 	}()
 
-	if err := UploadFiles("test", "don't mind me just breaking code", "git.go", "git_test.go"); err != nil {
+	if err := UploadFiles("test", "don't mind me just breaking code", "main", "git.go", "git_test.go"); err != nil {
 		t.Fatalf("uploading an existing file should work, something went wrong: %v", err)
 	}
 
@@ -154,7 +154,7 @@ func TestNewReleaseNormalFunctionality(t *testing.T) {
 		}
 	}()
 
-	if err := UploadFiles(expectedRepoName, "initial commit", "git_test.go"); err != nil {
+	if err := UploadFiles(expectedRepoName, "initial commit", "main", "git_test.go"); err != nil {
 		t.Fatalf("UploadFiles returned an error on initial commit: %v", err)
 	}
 
@@ -196,7 +196,7 @@ func TestNewReleaseAlreadyExisting(t *testing.T) {
 		}
 	}()
 
-	if err := UploadFiles(expectedRepoName, "initial commit", "git_test.go"); err != nil {
+	if err := UploadFiles(expectedRepoName, "initial commit", "main", "git_test.go"); err != nil {
 		t.Fatalf("UploadFiles returned an error on initial commit: %v", err)
 	}
 
@@ -214,3 +214,13 @@ func TestNewReleaseNonExistingrepo(t *testing.T) {
 		t.Fatalf("NewRelease did not return any error when trying to add a release to a non-existing repo")
 	}
 }
+
+// func TestCheckout(t *testing.T) {
+// 	if err := NewRepo("test", true, "this will be deleted soon_GITHUB"); err != nil {
+// 		t.Fatalf("could not create test repo: %v", err)
+// 	}
+
+// 	if err := UploadFiles("test", "this should work", "main", "git.go"); err != nil {
+// 		t.Fatalf("UploadFiles returned an error on normal usage: %v", err)
+// 	}
+// }
