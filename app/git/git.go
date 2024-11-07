@@ -202,6 +202,10 @@ func copyFiles(target string, files ...string) (err error) {
 }
 
 func checkout(dir string, to string) (err error) {
+	if to == "main" {
+		return nil
+	}
+
 	cmd := exec.Command("git", "checkout", to)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
