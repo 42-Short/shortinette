@@ -43,9 +43,53 @@ func TestNewRepoNonExistingOrga(t *testing.T) {
 	}
 }
 
-func TestNewRepoStandardFunctionality(t *testing.T) {
-	t.Parallel()
+func TestNewRepoMissinTemplateRepoEnvironmentVariable(t *testing.T) {
+	repoName := uuid.New().String()
 
+	_, orga, _, err := requireEnv()
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	if err := os.Unsetenv("ORGA_GITHUB"); err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	defer func() {
+		cleanup(t, repoName)
+		if err := os.Setenv("ORGA_GITHUB", orga); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	if err := NewRepo(repoName, true, "this should not be created"); err != nil {
+		t.Fatalf("missing environment variables should throw an error")
+	}
+}
+
+func TestNewRepoStandardFunctionality(t *testing.T) {
+	_, _, templateRepo, err := requireEnv()
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+
+	if err := os.Setenv("TEMPLATE_REPO", "thistemplatedoesnotexist"); err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	defer func() {
+		if err := os.Setenv("TEMPLATE_REPO", templateRepo); err != nil {
+			t.Fatalf("error: %v", err)
+		}
+	}()
+
+	expectedRepoName := uuid.New().String()
+
+	if err := NewRepo(expectedRepoName, true, "expectedDescription"); err == nil {
+		t.Fatalf("NewRepo returned an error on a standard use case: %v", err)
+	}
+}
+
+func TestNewRepoNonExistingTemplate(t *testing.T) {
 	token, orga, _, err := requireEnv()
 	if err != nil {
 		t.Fatalf("error: %v", err)
