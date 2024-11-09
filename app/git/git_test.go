@@ -9,7 +9,7 @@ import (
 )
 
 func TestNewRepoNonExistingOrga(t *testing.T) {
-	_, orga, err := requireEnv()
+	_, orga, _, err := requireEnv()
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -30,12 +30,12 @@ func TestNewRepoNonExistingOrga(t *testing.T) {
 }
 
 func TestNewRepoStandardFunctionality(t *testing.T) {
-	token, orga, err := requireEnv()
+	token, orga, _, err := requireEnv()
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
 
-	expectedRepoName := "repository"
+	expectedRepoName := "fromtemplate"
 	expectedPrivate := true
 	expectedDescription := "description"
 
@@ -57,6 +57,26 @@ func TestNewRepoStandardFunctionality(t *testing.T) {
 	}
 	if repo.GetDescription() != expectedDescription {
 		t.Fatalf("repo description was not set correctly: expected: '%s', got: '%s'", expectedDescription, repo.GetDescription())
+	}
+}
+
+func TestNewRepoAlreadyExisting(t *testing.T) {
+	expectedRepoName := "fromtemplate"
+	expectedPrivate := true
+	expectedDescription := "description"
+
+	if err := NewRepo(expectedRepoName, expectedPrivate, expectedDescription); err != nil {
+		t.Fatalf("NewRepo returned an error on a standard use case: %v", err)
+	}
+
+	defer func() {
+		if err := deleteRepo(expectedRepoName); err != nil {
+			t.Fatalf("cleanup failed: %v", err)
+		}
+	}()
+
+	if err := NewRepo(expectedRepoName, expectedPrivate, expectedDescription); err != nil {
+		t.Fatalf("NewRepo should not error on already exsiting repos: %v", err)
 	}
 }
 
@@ -189,7 +209,7 @@ func TestUploadFilesNonDefaultBranch(t *testing.T) {
 }
 
 func TestNewReleaseNormalFunctionality(t *testing.T) {
-	token, orga, err := requireEnv()
+	token, orga, _, err := requireEnv()
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
