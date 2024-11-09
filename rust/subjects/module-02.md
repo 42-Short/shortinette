@@ -360,93 +360,7 @@ PURGE
 QUIT
 ```
 
-## Exercise 05: All Over Me
-
-```txt
-turn-in directory:
-    ex05/
-
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::clone::Clone  std::maker::Copy  std::fmt::Debug  std::cmp::PartialEq
-    <[T]>::len
-```
-
-Define a `Color` type, responsible for describing a color by its red, green and blue channels.
-
-```rust
-struct Color {
-    red: u8,
-    green: u8,
-    blue: u8,
-}
-
-impl Color {
-    const WHITE: Self = /* ... */;
-    const RED: Self = /* ... */;
-    const GREEN: Self = /* ... */;
-    const BLUE: Self = /* ... */;
-
-    const fn new(red: u8, green: u8, blue: u8) -> Self;
-}
-```
-
-* Fill the comments left in the above code, defining associated constants inherent to `Color`.
-* `WHITE` must return the color `#FFFFFF`.
-* `RED` must return the color `#FF0000`.
-* `GREEN` must return the color `#00FF00`.
-* `BLUE` must return the color `#0000FF`.
-
-```rust
-impl Color {
-    fn closest_mix(self, palette: &[(Self, u8)], max: u32) -> Self;
-}
-```
-
-* The `closest_mix` function must try mixing up to `max` colors taken from `palette`, as if painting
-on a white canvas. 
-* Each color in the `palette` array is a tuple where the first element is the color, and the second is its opacity (`alpha`), a value between $0$ and $255$. An opacity of $255$ means fully opaque, and $0$ means fully transparent.
-* The function should create a new color by blending up to `max` colors from the palette, and return the one that is **closest** to the original color (`self`).
-
-### Color Blending Formula 
-To blend two colors $A$ and $B$, use the following formula, where $B$ is fully opaque, and $A$ has an opacity $alpha$ between $0$ and $255$:
-
-$$
-A * (alpha / 255) + B * ((255 - alpha) / 255)
-$$
-
-* $A$ is the color being blended on top, with opacity $alpha$.
-* $B$ is the background color, which is fully opaque.
-* The result $C$ is the blended color.
-
-### Distance Between Two Colors
-The distance between two colors $A$ and $B$ is calculated by finding the difference between their red, green and blue values separately. For each color channel, (r, g and b), the distance is computed as the absolute difference between the values of $A$ and $B$. This can be expressed as:
-* $d_r$ is the distance between the red value of $A$ and the red value of $B$.
-* $d_g$ is the distance between the green value of $A$ and the green value of $B$.
-* $d_b$ is the distance between the blue value of $A$ and the blue value of $B$.
-
-In general, for each color channel (red, green, or blue), the distance is $d_x = |A_x - B_x|$, where $x$ represents one of the color channels.
-
-$$
-distance = d_r^2 + d_g^2 + d_b^2
-$$
-
-Example:
-
-```rust
-assert_eq!(Color::RED.closest_mix(&[], 100), Color::WHITE);
-assert_eq!(Color::RED.closest_mix(&[(Color::RED, 255)], 0), Color::WHITE);
-
-let palette = [(Color::RED, 100), (Color::GREEN, 100), (Color::BLUE, 100)];
-assert_eq!(
-    Color::new(254, 23, 102).closest_mix(&palette, 5),
-    Color::new(218, 20, 57),
-);
-```
-
-## Exercise 06: Lexical Analysis
+## Exercise 05: Lexical Analysis
 
 ```txt
 turn-in directory:
@@ -535,6 +449,95 @@ Word("cat")
 Word("-e")
 RedirectStdout
 Word("file.txt")
+```
+
+## Exercise 06: Inventory Management
+
+```txt
+turn-in directory:
+    ex05/
+
+files to turn in:
+    src/lib.rs  Cargo.toml
+
+allowed symbols:
+    std::vec::Vec
+    std::string::String
+    std::collections::HashMap::*
+    std::fmt::Debug
+```
+Create an inventory management system for a shop. Define the following types:
+```rust
+#[derive(Debug, Clone)]
+struct Item {
+    name: String,
+    price: f32,
+    quantity: u32,
+}
+
+struct Inventory {
+    items: HashMap<String, Item>,
+}
+```
+Implement the following methods for `Inventory`:
+```rust
+impl Inventory {
+    fn new() -> Self;
+    fn add_item(&mut self, item: Item) -> Result<(), String>;
+    fn remove_item(&mut self, name: &str) -> Result<(), String>;
+    fn update_quantity(&mut self, name: &str, new_quantity: u32) -> Result<(), String>;
+    fn get_item(&self, name: &str) -> Option<&Item>;
+    fn list_items(&self) -> Vec<&Item>;
+    fn total_value(&self) -> f32;
+}
+```
+* `new`: Creates a new empty inventory.
+* `add_item`: Adds a new item to the inventory. If an item with the same name already exists, return an error.
+* `remove_item`: Removes an item from the inventory by name. If the item doesn't exist, return an error.
+* `update_quantity`: Updates the quantity of an existing item. If the item doesn't exist, return an error.
+* `get_item`: Returns a reference to an item by name, or None if it doesn't exist.
+* `list_items`: Returns a vector of references to all items in the inventory.
+* `total_value`: Calculates and returns the total value of all items in the inventory (price * quantity for each item).
+
+Implement a `Discountable` trait for `Item`:
+```rust
+trait Discountable {
+    fn apply_discount(&mut self, percentage: f32);
+}
+```
+Implement this trait for `Item` so that it reduces the price of the item by the given percentage. Invalid percentage values (`< 0 || > 100`) are considered **undefined behavior**. You are free to handle them as you please.
+
+Your implementation should work with the following test function:
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_inventory() {
+        let mut inventory = Inventory::new();
+        
+        let item1 = Item { name: "Apple".to_string(), price: 0.5, quantity: 100 };
+        let item2 = Item { name: "Banana".to_string(), price: 0.3, quantity: 150 };
+        
+        assert!(inventory.add_item(item1).is_ok());
+        assert!(inventory.add_item(item2).is_ok());
+        
+        assert_eq!(inventory.list_items().len(), 2);
+        
+        assert!(inventory.update_quantity("Apple", 90).is_ok());
+        assert_eq!(inventory.get_item("Apple").unwrap().quantity, 90);
+        
+        assert!((inventory.total_value() - 90.0).abs() < 0.001);
+        
+        let mut discounted_item = inventory.get_item("Banana").unwrap().clone();
+        discounted_item.apply_discount(10.0);
+        assert!((discounted_item.price - 0.27).abs() < 0.001);
+        
+        assert!(inventory.remove_item("Apple").is_ok());
+        assert_eq!(inventory.list_items().len(), 1);
+    }
+}
 ```
 
 ## Exercise 07: The Game Of Life
