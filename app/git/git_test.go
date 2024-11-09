@@ -38,7 +38,7 @@ func TestNewRepoMissinTemplateRepoEnvironmentVariable(t *testing.T) {
 
 	defer cleanup(t, repoName)
 
-	if err := NewRepo(repoName, true, "this should not be created"); err != nil {
+	if err := NewRepo(repoName, true, "this should not be created"); err == nil {
 		t.Fatalf("missing environment variables should throw an error")
 	}
 }
