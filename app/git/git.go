@@ -39,7 +39,7 @@ func deleteRepo(name string) (err error) {
 // Checks for environment variables required to interact with the GitHub API. Returns their values
 // if they exist, sets the error's value if not.
 func requireEnv() (githubToken string, githubOrga string, templateRepo string, err error) {
-	if err := godotenv.Load("../.env", ".env"); err != nil {
+	if err := godotenv.Load("../.env"); err != nil {
 		fmt.Printf("warning: .env file not found, this is expected in the GitHub Actions environment, this is a problem if you are running this locally\n")
 	}
 
@@ -79,24 +79,6 @@ func isRepoAlreadyExists(err error) (exists bool) {
 	return false
 }
 
-func initialCommit(name string, commitMessage string) (err error) {
-	if err = os.WriteFile("README.md", []byte(""), os.FileMode(0644)); err != nil {
-		return fmt.Errorf("could not make initial commit '%s': %v", name, err)
-	}
-
-	defer func() {
-		if err = os.RemoveAll("README.md"); err != nil {
-			fmt.Printf("error cleaning up README.md from initial commit: %v", err)
-		}
-	}()
-
-	if err = UploadFiles(name, commitMessage, "main", false, "README.md"); err != nil {
-		return fmt.Errorf("could not make initial commit '%s': %v", name, err)
-	}
-
-	return nil
-}
-
 // Creates a new repository `name` under the GitHub organisation specified by the
 // GITHUB_ORGANISATION environment variable. If `private` is true, the repository's
 // visibility will be private.
@@ -117,10 +99,6 @@ func NewRepo(name string, private bool, description string) (err error) {
 			}
 		}
 		return fmt.Errorf("could not create repo %s: %v", name, err)
-	}
-
-	if err = initialCommit(name, "Initial Commit"); err != nil {
-		return fmt.Errorf("repo was successfully created, but initial commit failed - this could lead to undefined behavior: %v", err)
 	}
 
 	fmt.Printf("repo created: %s at URL: %s\n", *createdRepo.Name, *createdRepo.HTMLURL)
