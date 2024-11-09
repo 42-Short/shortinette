@@ -268,36 +268,34 @@ allowed symbols:
     std::eprintln
 ```
 
-Create a **program** that starts multiple commands, gathers their output and then prints it to the
-standard output. **The different commands' outputs must _not_ be mixed up.**
+Create a **program** that starts multiple commands, and prints each command followed by its output to `stdout`, separated by empty lines. 
+**The different commands' outputs must _not_ be mixed up.**
 
-Example:
-
-_Note: You are free to format this exercise's output as you like, as long as **each command's output is separated from the others by at least one newline**._
-```txt
->_ cargo run -- echo a b , sleep 1 , echo b , cat Cargo.toml , cat i-dont-exit.txt
-===== cat i-dont-exit.txt ====
-
-===== echo a b =====
-a b
-
-===== echo b =====
-b
-
-==== cat Cargo.toml =====
-[package]
-name = "ex03"
-version = "0.1.0"
-...
-
-==== sleep 1 =====
-
-```
-
- * Commands must be executed in parallel.
+ * Commands must be executed in parallel. You must spawn a process for each command.
  * The standard error must be ignored.
  * Any error occuring when interacting with the system must be handled properly. Your program must never panic.
  * The output of a child must be displayed entirely as soon as it finishes execution, even when other commands are still in progress.
+
+Example:
+
+```txt
+>_ cargo run -- echo a b , sleep 1 , echo b , cat Cargo.toml , cat i-dont-exit.txt
+cat i-dont-exit.txt
+
+echo a b
+a b
+
+echo b
+b
+
+cat Cargo.toml
+[package]
+name = "ex03"
+version = "0.1.0"
+
+sleep 1
+
+```
 
 ## Exercise 05: GET
 
