@@ -74,6 +74,24 @@ func isRepoAlreadyExists(err error) (exists bool) {
 	return false
 }
 
+func initialCommit(name string, commitMessage string) (err error) {
+	if err = os.WriteFile("README.md", []byte(""), os.FileMode(0644)); err != nil {
+		return fmt.Errorf("could not make initial commit '%s': %v", name, err)
+	}
+
+	defer func() {
+		if err = os.RemoveAll("README.md"); err != nil {
+			fmt.Printf("error cleaning up README.md from initial commit: %v", err)
+		}
+	}()
+
+	if err = UploadFiles(name, commitMessage, "main", false, "README.md"); err != nil {
+		return fmt.Errorf("could not make initial commit '%s': %v", name, err)
+	}
+
+	return nil
+}
+
 // Creates a new repository `name` under the GitHub organisation specified by the
 // GITHUB_ORGANISATION environment variable. If `private` is true, the repository's
 // visibility will be private.
@@ -96,6 +114,10 @@ func NewRepo(name string, private bool, description string) (err error) {
 			}
 		}
 		return fmt.Errorf("could not create repo %s: %v", name, err)
+	}
+
+	if err = initialCommit(name, "Initial Commit"); err != nil {
+		return fmt.Errorf("repo was successfully created, but initial commit failed - this could lead to undefined behavior: %v", err)
 	}
 
 	fmt.Printf("repo created: %s at URL: %s\n", *createdRepo.Name, *createdRepo.HTMLURL)
@@ -201,9 +223,48 @@ func copyFiles(target string, files ...string) (err error) {
 	return nil
 }
 
-// Copies `files` into `repoName` and pushes them to the remote. Clones the repo if necessary.
-func UploadFiles(repoName string, commitMessage string, files ...string) (err error) {
+func checkout(dir string, to string, createBranch bool) (err error) {
+	if to == "main" {
+		return nil
+	}
+
+	var cmd *exec.Cmd
+	if createBranch {
+		cmd = exec.Command("git", "checkout", "-b", to)
+	} else {
+		cmd = exec.Command("git", "checkout", to)
+	}
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Dir = dir
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("git checkout %s: %v", to, err)
+	}
+
+	cmd = exec.Command("git", "push", "--set-upstream", "origin", to)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Dir = dir
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("git --set-upstream origin %s: %v", to, err)
+	}
+
+	return nil
+}
+
+// Copies `files` into `repoName` and pushes them to the branch `branchName` on the remote.
+//
+// If `createBranch` is set to true, a new branch will be created.
+//
+// Clones the repo if necessary.
+func UploadFiles(repoName string, commitMessage string, branch string, createBranch bool, files ...string) (err error) {
 	if err := Clone(repoName); err != nil {
+		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
+	}
+
+	if err = checkout(repoName, branch, createBranch); err != nil {
 		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
 	}
 

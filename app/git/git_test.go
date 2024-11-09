@@ -86,7 +86,7 @@ func TestUploadFilesNonExistingFiles(t *testing.T) {
 		}
 	}()
 
-	if err := UploadFiles("test", "don't mind me just breaking code", "foo", "bar"); err == nil {
+	if err := UploadFiles("test", "don't mind me just breaking code", "main", false, "foo", "bar"); err == nil {
 		t.Fatalf("trying to upload non-existing files to a repo should throw an error")
 	}
 }
@@ -105,8 +105,66 @@ func TestUploadFilesNormalFunctionality(t *testing.T) {
 		}
 	}()
 
-	if err := UploadFiles("test", "don't mind me just breaking code", "git.go", "git_test.go"); err != nil {
+	if err := UploadFiles("test", "don't mind me just breaking code", "main", false, "git.go", "git_test.go"); err != nil {
 		t.Fatalf("uploading an existing file should work, something went wrong: %v", err)
+	}
+
+	if err := Clone("test"); err != nil {
+		t.Fatalf("could not verify file upload: %v", err)
+	}
+
+	content, err := os.ReadDir("test")
+	if err != nil {
+		t.Fatalf("could not verify file upload: %v", err)
+	}
+
+	found := 0
+	for _, path := range content {
+		if path.Name() == "git.go" || path.Name() == "git_test.go" {
+			found += 1
+		}
+	}
+
+	if found != 2 {
+		t.Fatalf("expected 'git.go' and 'git_test.go' to be uploaded, did not find all of them")
+	}
+}
+
+func TestUploadFilesNonExistingBranch(t *testing.T) {
+	if err := NewRepo("test", true, "this will be deleted soon_GITHUB"); err != nil {
+		t.Fatalf("could not create test repo: %v", err)
+	}
+
+	defer func() {
+		if err := os.RemoveAll("test"); err != nil {
+			t.Fatalf("could not delete test repo (local): %v", err)
+		}
+		if err := deleteRepo("test"); err != nil {
+			t.Fatalf("could not delete test repo (remote): %v", err)
+		}
+	}()
+
+	if err := UploadFiles("test", "don't mind me just breaking code", "thisbranchdoesnotexist", false, "git.go", "git_test.go"); err == nil {
+		t.Fatalf("UploadFiles should return an error when trying to push to unexisting branch")
+	}
+}
+
+func TestUploadFilesNonDefaultBranch(t *testing.T) {
+	if err := NewRepo("test", true, "this will be deleted soon_GITHUB"); err != nil {
+		t.Fatalf("could not create test repo: %v", err)
+	}
+
+	defer func() {
+		if err := os.RemoveAll("test"); err != nil {
+			t.Fatalf("could not delete test repo (local): %v", err)
+		}
+		if err := deleteRepo("test"); err != nil {
+			t.Fatalf("could not delete test repo (remote): %v", err)
+		}
+	}()
+
+	if err := UploadFiles("test", "don't mind me just breaking code", "thisbranchshouldbecreated", true, "git.go", "git_test.go"); err != nil {
+		t.Fatalf("UploadFiles should be able to create a new branch when needed")
 	}
 
 	if err := Clone("test"); err != nil {
@@ -154,7 +212,7 @@ func TestNewReleaseNormalFunctionality(t *testing.T) {
 		}
 	}()
 
-	if err := UploadFiles(expectedRepoName, "initial commit", "git_test.go"); err != nil {
+	if err := UploadFiles(expectedRepoName, "initial commit", "main", false, "git_test.go"); err != nil {
 		t.Fatalf("UploadFiles returned an error on initial commit: %v", err)
 	}
 
@@ -196,7 +254,7 @@ func TestNewReleaseAlreadyExisting(t *testing.T) {
 		}
 	}()
 
-	if err := UploadFiles(expectedRepoName, "initial commit", "git_test.go"); err != nil {
+	if err := UploadFiles(expectedRepoName, "initial commit", "main", false, "git_test.go"); err != nil {
 		t.Fatalf("UploadFiles returned an error on initial commit: %v", err)
 	}
 
