@@ -7,6 +7,8 @@ To enable GitHub interaction with `shortinette`, you'll need to set up a few thi
 As a 42 student, you have access to the [GitHub student pack](https://education.github.com/pack#offers), which includes $200 of DigitalOcean credit for one year. If you haven't unlocked it yet, visit [this link](https://github-portal.42.fr) and log in with your 42 account.
 
 ### Creating the Server
+If you already have a cloud server, you can skip this section.
+
 On DigitalOcean, cloud servers are called **Droplets**. Here's how to set one up:
 
 1. Create a DigitalOcean account (GitHub sign-up is available).
