@@ -396,7 +396,7 @@ impl<T> Cellule<T> {
     fn set(&self, value: T);
     fn replace(&self, value: T) -> T;
 
-    fn get(&self, value: T) -> Self;
+    fn get(&self, value: T) -> T;
     fn get_mut(&mut self) -> &mut T;
 
     fn into_inner(self) -> T;
