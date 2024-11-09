@@ -22,21 +22,9 @@ func cleanup(t *testing.T, repoName string) {
 func TestNewRepoNonExistingOrga(t *testing.T) {
 	repoName := uuid.New().String()
 
-	_, orga, _, err := requireEnv()
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
+	defer cleanup(t, repoName)
 
-	if err := os.Setenv("ORGA_GITHUB", "thisorgadoesnoteist"); err != nil {
-		t.Fatalf("error: %v", err)
-	}
-
-	defer func() {
-		cleanup(t, repoName)
-		if err := os.Setenv("ORGA_GITHUB", orga); err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
+	t.Setenv("ORGA_GITHUB", "thisorgadoesnoteist")
 
 	if err := NewRepo(repoName, true, "this should not be created"); err == nil {
 		t.Fatalf("missing environment variables should throw an error")
@@ -46,41 +34,17 @@ func TestNewRepoNonExistingOrga(t *testing.T) {
 func TestNewRepoMissinTemplateRepoEnvironmentVariable(t *testing.T) {
 	repoName := uuid.New().String()
 
-	_, orga, _, err := requireEnv()
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
+	t.Setenv("ORGA_GITHUB", "")
 
-	if err := os.Unsetenv("ORGA_GITHUB"); err != nil {
-		t.Fatalf("error: %v", err)
-	}
-
-	defer func() {
-		cleanup(t, repoName)
-		if err := os.Setenv("ORGA_GITHUB", orga); err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
+	defer cleanup(t, repoName)
 
 	if err := NewRepo(repoName, true, "this should not be created"); err != nil {
 		t.Fatalf("missing environment variables should throw an error")
 	}
 }
 
-func TestNewRepoStandardFunctionality(t *testing.T) {
-	_, _, templateRepo, err := requireEnv()
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-
-	if err := os.Setenv("TEMPLATE_REPO", "thistemplatedoesnotexist"); err != nil {
-		t.Fatalf("error: %v", err)
-	}
-	defer func() {
-		if err := os.Setenv("TEMPLATE_REPO", templateRepo); err != nil {
-			t.Fatalf("error: %v", err)
-		}
-	}()
+func TestNewRepoNonExistingTemplate(t *testing.T) {
+	t.Setenv("TEMPLATE_REPO", "thistemplatedoesnotexist")
 
 	expectedRepoName := uuid.New().String()
 
@@ -89,7 +53,7 @@ func TestNewRepoStandardFunctionality(t *testing.T) {
 	}
 }
 
-func TestNewRepoNonExistingTemplate(t *testing.T) {
+func TestNewRepoStandardFunctionality(t *testing.T) {
 	token, orga, _, err := requireEnv()
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -124,8 +88,6 @@ func TestNewRepoNonExistingTemplate(t *testing.T) {
 }
 
 func TestNewRepoAlreadyExisting(t *testing.T) {
-	t.Parallel()
-
 	expectedRepoName := uuid.New().String()
 	expectedPrivate := true
 	expectedDescription := "description"
@@ -143,8 +105,6 @@ func TestNewRepoAlreadyExisting(t *testing.T) {
 }
 
 func TestAddCollaboratorNonExistingUser(t *testing.T) {
-	t.Parallel()
-
 	repoName := uuid.New().String()
 
 	if err := NewRepo(repoName, true, "idc"); err != nil {
@@ -160,8 +120,6 @@ func TestAddCollaboratorNonExistingUser(t *testing.T) {
 }
 
 func TestAddCollaboratorNonExistingPermission(t *testing.T) {
-	t.Parallel()
-
 	repoName := uuid.New().String()
 
 	if err := NewRepo(repoName, true, "idc"); err != nil {
@@ -177,8 +135,6 @@ func TestAddCollaboratorNonExistingPermission(t *testing.T) {
 }
 
 func TestUploadFilesNonExistingFiles(t *testing.T) {
-	t.Parallel()
-
 	repoName := uuid.New().String()
 
 	if err := NewRepo(repoName, true, "this will be deleted soon_GITHUB"); err != nil {
@@ -194,8 +150,6 @@ func TestUploadFilesNonExistingFiles(t *testing.T) {
 }
 
 func TestUploadFilesNormalFunctionality(t *testing.T) {
-	t.Parallel()
-
 	repoName := uuid.New().String()
 
 	if err := NewRepo(repoName, true, "this will be deleted soon_GITHUB"); err != nil {
@@ -231,8 +185,6 @@ func TestUploadFilesNormalFunctionality(t *testing.T) {
 }
 
 func TestUploadFilesNonExistingBranch(t *testing.T) {
-	t.Parallel()
-
 	repoName := uuid.New().String()
 
 	if err := NewRepo(repoName, true, "this will be deleted soon_GITHUB"); err != nil {
@@ -248,8 +200,6 @@ func TestUploadFilesNonExistingBranch(t *testing.T) {
 }
 
 func TestUploadFilesNonDefaultBranch(t *testing.T) {
-	t.Parallel()
-
 	repoName := uuid.New().String()
 
 	if err := NewRepo(repoName, true, "this will be deleted soon_GITHUB"); err != nil {
@@ -285,8 +235,6 @@ func TestUploadFilesNonDefaultBranch(t *testing.T) {
 }
 
 func TestNewReleaseNormalFunctionality(t *testing.T) {
-	t.Parallel()
-
 	token, orga, _, err := requireEnv()
 	if err != nil {
 		t.Fatalf("error: %v", err)
@@ -331,8 +279,6 @@ func TestNewReleaseNormalFunctionality(t *testing.T) {
 }
 
 func TestNewReleaseAlreadyExisting(t *testing.T) {
-	t.Parallel()
-
 	expectedRepoName := uuid.New().String()
 
 	if err := NewRepo(expectedRepoName, true, "this will be deleted soon_GITHUB"); err != nil {
@@ -356,8 +302,6 @@ func TestNewReleaseAlreadyExisting(t *testing.T) {
 }
 
 func TestNewReleaseNonExistingrepo(t *testing.T) {
-	t.Parallel()
-
 	repoName := uuid.New().String()
 
 	if err := NewRepo(repoName, true, "idc"); err != nil {
