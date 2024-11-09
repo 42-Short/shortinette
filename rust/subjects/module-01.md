@@ -148,32 +148,28 @@ files to turn in:
 
 allowed symbols:
     <[u32]>::{len, is_empty, contains}
-    std::iter*
+    std::iter::*
 ```
 
-Write a **function** that returns the largest subslice of `haystack` that contains *all* numbers in
-`needle`.
+Write a **function** that returns the first occurrence of `needle` in `haystack`.
 
 ```rust
 fn largest_group(haystack: &[u32], needle: &[u32]) -> &[u32];
 ```
 
-* When multiple groups match the `needle`, the largest one is returned.
-* When multiple largest groups are found, the first one is returned.
+* Note that you will need to add **lifetime annotations** to the function signature to ensure correct borrowing. The borrow checker must enforce that the resulting slice is borrowed from `haystack`, not from `needle`.
+* If `needle` is not in `haystack`, return an empty slice.
 
 Example:
 
 ```rust
-assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[5, 3]), &[3, 5, 5]);
-assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[5]), &[5, 5]);
-assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[]), &[]);
-assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[4, 1]), &[]);
+assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[1, 3]), &[1, 3]);
+assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[5]), &[5]);
+assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[6, 9]), &[]);
+assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[4, 3]), &[4, 3]);
 ```
 
-Once again, you may need to specify some *lifetime annotations* for the function. To check whether
-your annotations are correct for that case, you can use this pre-defined `test_lifetimes` test.
-It must compile and run.
-
+This test must compile and run:
 ```rust
 #[test]
 #[cfg(test)]
@@ -183,10 +179,11 @@ fn test_lifetimes() {
 
     {
         let needle = [2, 3];
+        // The result should be a valid slice of haystack after needle has expired
         result = largest_group(&haystack, &needle);
     }
-
-    assert_eq!(result, &[2, 3, 2]);
+    
+    assert_eq!(result, &[2, 3]);
 }
 ```
 
