@@ -291,8 +291,9 @@ allowed symbols:
 
 Create a simple TODO-List application.
 
-When the user starts the program, they are asked what to do. Available commands are the following:
-
+1. `Command` enum:
+Define it as shown below. Add the `from_input` function to parse
+commands and return the correct variant.
 ```rust
 enum Command {
     Todo(String),   // Command: "TODO"
@@ -302,14 +303,13 @@ enum Command {
 }
 
 impl Command {
-    fn prompt() -> Self;
+    fn from_input(input: &str) -> Result<Self, String> {
+        ...
+    }
 }
 ```
-
-* The `prompt` function must ask the user to write a command. End-Of-File generates the `Quit`
-command. On error, the function must simply ask the user again. See the final example for the
-required format.
-
+2. `TodoList` Struct:
+Define the struct as shown below.  
 ```rust
 struct TodoList {
     todos: Vec<String>,
@@ -326,13 +326,13 @@ impl TodoList {
 }
 ```
 
-* `display` must print the content of the todolist to the user.
-* `add` must add an item to be done.
-* `done` must mark an item as being done. Invalid indices should do nothing.
-* `purge` must purge any "done" task.
+* `add` appends a new task.
+* `done` removes the task at `index` from `todos` and pushes it to `dones`.
+* `purge` clears the `dones` vector.
+* `display` prints the content of the todolist to the user.
 
-Write a `main` function, responsible for using both `TodoList` and `Command`. The content of the
-todolist must be displayed to the user before each prompt.
+3. `main` Function:
+Write a `main` function, responsible for using both `TodoList` and `Command`. The content of the todolist must be displayed to the user before each prompt.
 
 You may design the interface you want to this exercise. Here is an example.
 
