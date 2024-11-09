@@ -334,7 +334,7 @@ impl TodoList {
 3. `main` Function:
 Write a `main` function, responsible for using both `TodoList` and `Command`. The content of the todolist must be displayed to the user before each prompt.
 
-You may design the interface you want to this exercise. Here is an example.
+You may design the interface you want to in this exercise. Here is an example.
 
 ```txt
 >_ cargo run
