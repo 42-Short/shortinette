@@ -12,6 +12,7 @@ jobs:
     env:
       TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
       ORGA_GITHUB: ${{ secrets.ORGA_GITHUB }}
+      TEMPLATE_REPO: ${{ secrets.TEMPLATE_REPO }}
         
     steps:
       - uses: actions/checkout@v4
