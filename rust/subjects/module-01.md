@@ -197,18 +197,23 @@ files to turn in:
     src/lib.rs  Cargo.toml
 
 allowed symbols:
-    <[i32]>::{len, is_empty, swap}  std::{assert, assert_eq, panic}
-    std::iter*
+    <[i32]>::{len, is_empty, swap}
+    std::{assert, assert_eq, panic}
+    std::iter::*
 ```
 
-You are given a list of boxes (`[width, height]`). Sort that list of boxes in a way for every box
-to be *contained* in the previous one. If the operation is not possible, the function must panic.
+Write a function that sorts a list of boxes in such a way that each box can be "contained" in the previous one without any box being flipped.
 
-You are **not** allowed to flip the boxes to make them fit.
-
+The function signature should look like this:
 ```rust
 fn sort_boxes(boxes: &mut [[u32; 2]]);
 ```
+
+The sorting should follow these criteria:
+* **Definition of containment:** A box `[width, height]` can be contained inside another box `[prev_width, prev_height]` if:
+    * `prev_width >= width`
+    * `prev_height >= height`
+* If sorting is not possible, the function should panic.
 
 Example:
 
