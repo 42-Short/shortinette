@@ -39,6 +39,7 @@ fn main() {
 in memory of Anna Harren.*
 
 ## General Rules
+* You **must not** have a `main` present if not specifically requested
 
 * Any exercise you turn in must compile using the `cargo` package manager, either with `cargo run`
 if the subject requires a _program_, or with `cargo test` otherwise. Only dependencies specified
@@ -75,17 +76,15 @@ allowed dependencies:
     ftkit
 
 allowed symbols:
-    <[T]>::{len, is_empty}  std::println  ftkit::random_number
+    <[T]>::{len, is_empty}  ftkit::random_number
 ```
 
 Create a **function** that randomly chooses a value among an input slice. If the provided list is
-empty, the function is allowed to panic.
+empty, return `None`
 
 ```rust
-fn choose<T>(values: &[T]) -> &T;
+fn choose<T>(values: &[T]) -> Option<&T>;
 ```
-
-You can write a `main` function to show that the function works as expected.
 
 ## Exercise 01: Point Of No Return (v3)
 
