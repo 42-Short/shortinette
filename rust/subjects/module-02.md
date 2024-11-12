@@ -119,36 +119,56 @@ lint to silence warnings about unused variables, functions, etc.
 * You are _strongly_ encouraged to write extensive tests for the functions and programs you turn in.
  Tests can use the symbols & attributes you want, even if they are not specified in the `allowed symbols` section. **However**, tests should **not** introduce **any additional external dependencies** beyond those already required by the subject.
 
-## Exercise 00: Dimensional Analysis
-
-```txt
+### Exercise 00: Bruh
+```
 turn-in directory:
     ex00/
 
 files to turn in:
-    src/main.rs  Cargo.toml
+    src/lib.rs  Cargo.toml
 ```
-
-Copy/Paste the following code and make it compile by adding type alias definitions.
-
+Given this struct
 ```rust
-fn seconds_to_minutes(seconds: Seconds) -> Minutes {
-    seconds / 60.0
+struct ComplexStruct {
+    name: String,
+    optional_value: Option<Box<i32>>,
+    values: Vec<i32>,
+    some_other: Vec<u128>,
+    metadata: std::collections::HashMap<String, Vec<u8>>,
+    nested: Box<NestedStruct>,
 }
 
-fn main() {
-    let s: Seconds = 120.0;
-    let m: Minutes = seconds_to_minutes(s);
-
-    println!("{s} seconds is {m} minutes");
+struct NestedStruct {
+    number: Box<i32>,
+    optional_floats: Vec<Option<Box<f64>>>,
+    data: std::collections::HashMap<String, Option<Box<i32>>>,
 }
 ```
-
-```txt
->_ cargo run
-120 seconds is 2 minutes
+implement this function 
+```rust
+impl ComplexStruct {
+    pub fn free(...); // ... stands for any kind and number of parameters passed to the function
+}
 ```
-
+so that this doesn't compile - **don't add this `main` to your submission**
+```rust
+pub fn main() {
+    let bruh: ComplexStruct = ComplexStruct {
+        name: "hey".to_string(),
+        optional_value: Some(Box::new(42)),
+        values: vec![1377; 5],
+        some_other: vec![137700000000; 5],
+        metadata: std::collections::HashMap::new(),
+        nested: Box::new(NestedStruct {
+            number: Box::new(42),
+            optional_floats: vec![Some(Box::new(42 as f64)), None, Some(Box::new(42 as f64 / 2.0))],
+            data: std::collections::HashMap::new(),
+        }),
+    };
+    bruh.free(); // If you remove this it should compile
+    println!("{}", bruh.name);
+}
+```
 ## Exercise 01: A Point In Space
 
 ```txt
@@ -187,48 +207,7 @@ impl Point {
 }
 ```
 
-## Exercise 02: Where's My Pizza?
-
-
-```txt
-turn-in directory:
-    ex02/
-
-files to turn in:
-    src/lib.rs  Cargo.toml
-```
-
-* Once a pizza has been ordered, it takes two days before the cook start working on it.
-* Making a pizza takes roughly 5 days.
-* Once the pizza is ready, the only delivery man must pick it up. It takes 3 days on average.
-* Delivering the pizza always takes a whole week.
-
-Define the following type:
-
-```rust
-enum PizzaStatus {
-    Ordered,
-    Cooking,
-    Cooked,
-    Delivering,
-    Delivered,
-}
-```
-
-It must have the following inherent methods.
-
-```rust
-impl PizzaStatus {
-    fn from_delivery_time(ordered_days_ago: u32) -> Self;
-    fn get_delivery_time_in_days(&self) -> u32;
-}
-```
-
-* `from_delivery_time` predicts the status of a pizza that was ordered `ordered_days_ago` days ago.
-* `get_delivery_time_in_days` returns the estimated time before the pizza is delivered, in days. The
-**worst case** (longest delivery time) is always returned.
-
-## Exercise 03: Dry Boilerplates
+## Exercise 02: Dry Boilerplates
 
 ```txt
 turn-in directory:
@@ -244,122 +223,118 @@ allowed symbols:
 
 Create a type, may it be a `struct` or an `enum`. You simply have to name it `MyType`.
 
+You are **not** allowed to use the `impl` keyword!
 ```rust
-fn main() {
-    let instance = MyType::default();
+#[cfg(test)]
+mod test {
+    use super::*;
 
-    let other_instance = instance.clone();
+    #[test]
+    fn test_my_type() {
+        let instance = MyType::default();
 
-    println!("the default value of MyType is {instance:?}");
-    println!("the clone of `instance` is {other_instance:#?}");
-    assert_eq!(
-        instance,
-        other_instance,
-        "the clone isn't the same :/"
-    );
-    assert!(
-        instance == other_instance,
-        "why would the clone be less or greater than the original?",
-    );
-}
-```
+        let other_instance = instance.clone();
 
-Copy the above `main` function and make it compile and run. You are not allowed to use the `impl`
-keyword!
-
-## Exercise 04: Todo List
-
-```txt
-turn-in directory:
-    ex04/
-
-files to turn in:
-    src/main.rs  Cargo.toml
-
-allowed dependencies:
-    ftkit
-
-allowed symbols:
-    std::{print, println}
-    std::io::stdout
-    std::io::Stdout::{flush}
-    std::vec::Vec::{new, push, remove, clear, len, is_empty}
-    std::string::String::as_str
-    str::{to_string, parse, len, is_empty, trim, strip_prefix, strip_suffix}
-    ftkit::{read_line, read_number}
-    std::result::Result
-```
-
-Create a simple TODO-List application.
-
-1. `Command` enum:
-Define it as shown below. Add the `from_input` function to parse
-commands and return the correct variant.
-```rust
-enum Command {
-    Todo(String),   // Command: "TODO"
-    Done(usize),    // Command: "DONE"
-    Purge,          // Command: "PURGE"
-    Quit,           // Command: "QUIT"
-}
-
-impl Command {
-    fn from_input(input: &str) -> Result<Self, String> {
-        ...
+        println!("the default value of MyType is {instance:?}");
+        println!("the clone of `instance` is {other_instance:#?}");
+        assert_eq!(
+            instance,
+            other_instance,
+            "the clone isn't the same :/"
+        );
+        assert!(
+            instance == other_instance,
+            "why would the clone be less or greater than the original?",
+        );
     }
 }
 ```
-2. `TodoList` Struct:
-Define the struct as shown below.  
+
+Copy the above `test` function and make it compile.
+
+## Exercise 03 Money money money
+
+```
+turn-in directory:
+    ex03/
+
+files to turn in:
+    src/lib.rs  Cargo.toml
+
+allowed symbols
+    TO_BE_DONE
+``` 
+
+You will have these type definitions (don't worry about the #[...] for now)
 ```rust
-struct TodoList {
-    todos: Vec<String>,
-    dones: Vec<String>,
+#[derive(PartialEq, Debug)]
+enum BuyError {
+    Broke,
+    TooLoaded,
+}
+#[derive(PartialEq, Debug)]
+enum SellError {
+    TooRich,
+    NotLoaded,
 }
 
-impl TodoList {
-    fn new() -> Self;
+#[repr(u8)]
+#[derive(Copy, Clone,Debug,PartialEq)]
+enum Item {
+    Sword = 10,        
+    Shield = 15,       
+    HealthPotion = 5,  
+    UpgradeStone = 25, 
+    Ring = 50,         
+}
 
-    fn display(&self);
-    fn add(&mut self, todo: String);
-    fn done(&mut self, index: usize);
-    fn purge(&mut self);
+#[derive(PartialEq, Debug)]
+struct Player {
+    coins: u8,
+    item: Option<Item>
 }
 ```
 
-* `add` appends a new task.
-* `done` removes the task at `index` from `todos` and pushes it to `dones`.
-* `purge` clears the `dones` vector.
-* `display` prints the content of the todolist to the user.
-
-3. `main` Function:
-Write a `main` function, responsible for using both `TodoList` and `Command`. The content of the todolist must be displayed to the user before each prompt.
-
-You may design the interface you want to in this exercise. Here is an example.
-
-```txt
->_ cargo run
-
-TODO star shortinette (https://github.com/42-Short/shortinette)
-
-    0 [ ] star shortinette (https://github.com/42-Short/shortinette)
-
-TODO finish this module
-
-    0 [ ] star shortinette (https://github.com/42-Short/shortinette)
-    1 [ ] finish this module
-
-DONE 0
-
-    0 [ ] finish this module
-      [x] star shortinette (https://github.com/42-Short/shortinette)
-
-PURGE
-
-    0 [ ] finish this module
-
-QUIT
+Implement these functions
+```rust
+impl Player {
+    pub fn buy(&mut self, item: Item) -> Result<(), BuyError>;
+    pub fn sell(&mut self) -> Result<(), SellError>;
 ```
+Ensure they operate as follows:
+
+`buy`: Verify that the player has sufficient coins and can store the item. If either condition is unmet, return the appropriate error.
+
+`sell`: Confirm that the player possesses an item and can store the received coins without his pocket `overflowing`. If either condition is unmet, return the relevant error.
+
+*Note: You don’t need to handle cases where both errors might apply simultaneously, as this will not be tested.*
+
+The following test must compile and execute successfully:
+```rust
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_player() {
+        let mut player = Player { coins: 0, item: None};
+
+
+        assert_eq!(player.buy(Item::HealthPotion), Err(BuyError::Broke));
+        player.coins = 250;
+        assert_eq!(player.buy(Item::Ring), Ok(()));
+        assert_eq!(player.buy(Item::UpgradeStone), Err(BuyError::TooLoaded));
+
+        player.coins = 242;
+        assert_eq!(player.sell(), Err(SellError::TooRich));
+        player.coins = 0;
+        assert_eq!(player.sell(),Ok(()));
+        assert_eq!(player.sell(), Err(SellError::NotLoaded));
+    }
+}
+```
+
+## Exercise 04: TO_BE_DONE iterator implemenation
 
 ## Exercise 05: Lexical Analysis
 
