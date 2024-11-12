@@ -60,9 +60,14 @@ Based on those sources we found these topics which we made into subjects:
 # Ideas
 Here we put topics that maybe one day go into the Rust short
 * String types and which one does what
-* Iter for game of life
 * Vectors
 * Complex Lifetime problems
 * Chaining of map iter and collect with anonymus functions
 * Benchmarking of stuff (iter vs. for loop)
-* Smart Pointers Box<T>
+
+
+TODO
+color ex _ => {} not allowed
+Describe that it has to free
+Put iter exc into 02 - 04
+xxd hexdump 
