@@ -1,6 +1,6 @@
 # It's finally time to get rusty @Students!
 
-We are happy to announce that the Rust Short will take place from `07/10/2024` to `13/10/2024`.
+We are happy to announce that the Rust Short will take place from `<start date>` to `<end date>`.
 
 ##  🦀 What is Rust?
 
@@ -18,7 +18,7 @@ Rust is a modern systems programming language focused on safety and performance.
 We recommend having completed the `minishell` and `philosophers` circle before participating in the Rust Piscine. These projects provide insights into C concurrency & memory management, and will help you better appreciate Rust's take on solving these challenges. If you haven't done so yet, don't worry—you can still participate! Just be prepared for a steeper learning curve 💪
 
 ##  🏊‍♂️ Details
-- **Duration:** 7 days (`07/10/2024` - `13/10/2024`)
+- **Duration:** 7 days (`<start date>` - `<end date>`)
 - **Daily Structure:**
     - Each day, you will receive a new module containing 8 exercises
 - **Time Commitment:** The first 5 exercises (50%) take about 6 hours/day, plan at least 10 for passing with 100%
