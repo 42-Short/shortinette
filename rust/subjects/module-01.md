@@ -20,6 +20,7 @@ fn punch_card() {
 *Extracted from `rustc`'s [unit tests](https://github.com/rust-lang/rust/blob/131f0c6df6777800aa884963bdba0739299cd31f/tests/ui/weird-exprs.rs#L126-L134).*
 
 ## General Rules
+* You **must not** have a `main` present if not specifically requested
 
 * Any exercise you turn in must compile using the `cargo` package manager, either with `cargo run`
 if the subject requires a _program_, or with `cargo test` otherwise. Only dependencies specified
@@ -71,6 +72,9 @@ turn-in directory:
 
 files to turn in:
     src/lib.rs  Cargo.toml
+
+allowed symbols:
+    none
 ```
 
 Write a **function** that returns the smallest value among two numbers.
@@ -83,7 +87,7 @@ fn min(a: &i32, b: &i32) -> &i32;
 compile.
 * The `return` keyword is still disallowed.
 
-## Exercise 02: It's getting GOOD
+## Exercise 02: Don't we all love darkmode?
 
 ```txt
 turn-in directory:
@@ -91,53 +95,63 @@ turn-in directory:
 
 files to turn in:
     src/lib.rs  Cargo.toml
+
+allowed symbols:
+    none
 ```
 
 Create a **function** that maps three color components to a name.
 
-The name of a color is determined using the following rules, applied in order. The first rule that
-`match`es the input color must be selected.
-
-* The color `[0, 0, 0]` is "pure black".
-* The color `[255, 255, 255]` is "pure white".
-* The color `[255, 0, 0]` is "pure red".
-* The color `[0, 255, 0]` is "pure green".
-* The color `[0, 0, 255]` is "pure blue".
-* The color `[128, 128, 128]` is "perfect grey".
-* Any color whose components are all bellow 31 is "almost black".
-* Any color whose red component is above 128, whose green and blue components are between 0 and 127 (inclusive),
-is "redish".
-* Any color whose green component is above 128, whose red and blue components are between 0 and 127 (inclusive),
-is "greenish".
-* Any color whose blue component is above 128, whose red and green components are between 0 and 127 (inclusive),
-is "blueish".
-* Any other color is named "unknown".
-
-The `if` keyword is **_not_** allowed!
-
 ```rust
 const fn color_name(color: &[u8; 3]) -> &str;
 ```
+The `if` keyword is **_not_** allowed!
 
-You might need to add *lifetime* annotations to the function to make it compile. Specifically, the
-following test must compile and run:
+The name of a color is determined using the following rules, applied in order. The first rule that
+`match`es the input color must be selected.
+
+`Legend: [red, green, blue]`
+
+* **"dark gray"**: Any color whose red, green, and blue components are all between 0 and 128 (inclusive) is "Dark Gray/Black".
+
+* **"dark red"**: Any color whose red component is between 128 and 255 (inclusive), and whose green and blue components are both between 0 and 128 (inclusive), is "Dark Red".
+
+* **"dark green"**: Any color whose green component is between 128 and 255 (inclusive), and whose red and blue components are both between 0 and 128 (inclusive), is "Dark Green".
+
+* **"olive"**: Any color whose red and green components are both between 128 and 255 (inclusive), and whose blue component is between 0 and 128 (inclusive), is "Dark Yellow/Olive".
+
+* **"dark blue"**: Any color whose blue component is between 128 and 255 (inclusive), and whose red and green components are both between 0 and 128 (inclusive), is "Dark Blue".
+
+* **"purple"**: Any color whose red and blue components are both between 128 and 255 (inclusive), and whose green component is between 0 and 128 (inclusive), is "Dark Magenta/Purple".
+
+* **"teal"**: Any color whose green and blue components are both between 128 and 255 (inclusive), and whose red component is between 0 and 128 (inclusive), is "Dark Cyan/Teal".
+
+* **"light gray"**: Any color whose red, green, and blue components are all between 128 and 255 (inclusive) is "Light Gray/White".
+
+
+**You might need to add *lifetime* annotations to the function to make it compile. Specifically, the
+following test must compile and run:**
 
 ```rust
 #[cfg(test)]
-#[test]
-fn test_lifetimes() {
-    let name_of_the_best_color;
+mod test {
+    use super::*;
 
-    {
-        let the_best_color = [42, 42, 42];
-        name_of_the_best_color = color_name(&the_best_color);
+    #[test]
+    fn test_lifetimes() {
+        let name_of_the_best_color;
+
+        {
+            let the_best_color = [42, 42, 42];
+            name_of_the_best_color = color_name(&the_best_color);
+        }
+
+        assert_eq!(name_of_the_best_color, "dark grey");
     }
-
-    assert_eq!(name_of_the_best_color, "unknown");
 }
 ```
 
-## Exercise 03: This module is fun!
+## Exercise 03: Where are my damn keys?!
 
 ```txt
 turn-in directory:
@@ -148,32 +162,27 @@ files to turn in:
 
 allowed symbols:
     <[u32]>::{len, is_empty, contains}
-    std::iter*
+    std::iter::*
 ```
 
-Write a **function** that returns the largest subslice of `haystack` that contains *all* numbers in
-`needle`.
+Write a **function** that returns the first occurrence of `needle` in `haystack`.
 
 ```rust
 fn largest_group(haystack: &[u32], needle: &[u32]) -> &[u32];
 ```
 
-* When multiple groups match the `needle`, the largest one is returned.
-* When multiple largest groups are found, the first one is returned.
+* Note that you will need to add **lifetime annotations** to the function signature to ensure correct borrowing. The borrow checker must enforce that the resulting slice is borrowed from `haystack`, not from `needle`.
+* If `needle` is not in `haystack`, return an empty slice.
 
 Example:
 
 ```rust
-assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[5, 3]), &[3, 5, 5]);
-assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[5]), &[5, 5]);
-assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[]), &[]);
-assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[4, 1]), &[]);
+assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[1, 3]), &[1, 3]);
+assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[5]), &[5]);
+assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[6, 9]), &[]);
+assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[4, 3]), &[4, 3]);
 ```
-
-Once again, you may need to specify some *lifetime annotations* for the function. To check whether
-your annotations are correct for that case, you can use this pre-defined `test_lifetimes` test.
-It must compile and run.
-
+This test must compile and run:
 ```rust
 #[test]
 #[cfg(test)]
@@ -183,10 +192,11 @@ fn test_lifetimes() {
 
     {
         let needle = [2, 3];
+        // The result should be a valid slice of haystack after needle has expired
         result = largest_group(&haystack, &needle);
     }
-
-    assert_eq!(result, &[2, 3, 2]);
+    
+    assert_eq!(result, &[2, 3]);
 }
 ```
 
@@ -200,18 +210,23 @@ files to turn in:
     src/lib.rs  Cargo.toml
 
 allowed symbols:
-    <[i32]>::{len, is_empty, swap}  std::{assert, assert_eq, panic}
-    std::iter*
+    <[i32]>::{len, is_empty, swap}
+    std::{assert, assert_eq, panic}
+    std::iter::*
 ```
 
-You are given a list of boxes (`[width, height]`). Sort that list of boxes in a way for every box
-to be *contained* in the previous one. If the operation is not possible, the function must panic.
+Write a function that sorts a list of boxes in such a way that each box can be "contained" in the previous one without any box being flipped.
 
-You are **not** allowed to flip the boxes to make them fit.
-
+The function signature should look like this:
 ```rust
 fn sort_boxes(boxes: &mut [[u32; 2]]);
 ```
+
+The sorting should follow these criteria:
+* **Definition of containment:** A box `[width, height]` can be contained inside another box `[prev_width, prev_height]` if:
+    * `prev_width >= width`
+    * `prev_height >= height`
+* If sorting is not possible, the function should panic.
 
 Example:
 

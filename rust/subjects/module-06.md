@@ -90,13 +90,12 @@ _The [first Rust Koan](https://users.rust-lang.org/t/rust-koans/2408)._
 
 ## General Rules
 
-* Any exercise you turn in must compile using the `cargo` package manager, either with `cargo run`
+* **Unless specified otherwise**, any exercise you turn in must compile using the `cargo` package manager, either with `cargo run`
 if the subject requires a _program_, or with `cargo test` otherwise. Only dependencies specified
 in the allowed dependencies section are allowed. Only symbols specified in the `allowed symbols`
 section are allowed.
 
-* Every exercise must be part of a virtual Cargo workspace, a single `workspace.members` table must
-be declared for the whole module.
+* Every exercise must be part of a virtual Cargo workspace, a single `workspace.members` table must be declared for the whole module.
 
 * Everything must compile _without warnings_ with the `rustc` compiler available on the school's
 machines without additional options.  You are _not_ allowed to use `unsafe` code anywere in your
@@ -396,7 +395,7 @@ impl<T> Cellule<T> {
     fn set(&self, value: T);
     fn replace(&self, value: T) -> T;
 
-    fn get(&self, value: T) -> Self;
+    fn get(&self, value: T) -> T;
     fn get_mut(&mut self) -> &mut T;
 
     fn into_inner(self) -> T;
@@ -688,6 +687,7 @@ fn ft_exit(code: u8) -> !;
 - `ft_exit` must exit the process with the specified exit code.
 - Create a **program** that calls `ft_putchar` trice. Once with '4', once with '2', and once with
   `\n`.
+- Up to you to find out how to make this compile! (Hint: it's not cargo :)).
 
 Example:
 

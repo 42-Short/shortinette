@@ -202,6 +202,10 @@ allowed symbols:
     std::sync::mpsc::{sync_channel, SyncSender, Receiver}
     std::thread::{spawn, sleep}
     std::time::Duration
+    ftkit::Args
+
+allowed dependencies:
+    ftkit
 ```
 
 Create a **program** that works in the following way:
