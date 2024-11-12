@@ -9,13 +9,13 @@ fn main() {
 ```
 
 ## General Rules
-
-* Any exercise you turn in must compile using the `cargo` package manager, either with `cargo run`
+* You **must not** have a `main` present if not specifically requested
+* Any exercise managed by cargo you turn in must compile using the `cargo` package manager, either with `cargo run`
 if the subject requires a _program_, or with `cargo test` otherwise. Only dependencies specified
 in the allowed dependencies section are allowed. Only symbols specified in the `allowed symbols`
 section are allowed.
 
-* Every exercise must be part of a virtual Cargo workspace, a single `workspace.members` table must
+* Every exercise managed by cargo must be part of a virtual Cargo workspace, a single `workspace.members` table must 
 be declared for the whole module.
 
 * Everything must compile _without warnings_ with the `rustc` compiler available on the school's
@@ -59,8 +59,10 @@ files to turn in:
 allowed symbols:
     std::println
 ```
+This exercise will be compiled and run with `rustc ex00/hello.rs && ./hello` not with `cargo run`
 
 Create a **program** that prints the string `Hello, World!`, followed by a line feed.
+
 
 ```txt
 >_ ./hello
@@ -77,11 +79,10 @@ files to turn in:
     min.rs
 
 allowed symbols:
-    std::println
+    none
 ```
 
-Create a `min` **function** that takes two integers, and returns the smaller one. To make the file compile and for it to be testable, you must submit a  `main` function to showing that your function is
-indeed correct.
+Create a `min` **function** that takes two integers, and returns the smaller one.
 
 The function must be prototyped like this:
 
