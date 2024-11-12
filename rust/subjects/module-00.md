@@ -9,6 +9,7 @@ fn main() {
 ```
 
 ## General Rules
+* You **must not** have a `main` present if not specifically requested
 * Any exercise managed by cargo you turn in must compile using the `cargo` package manager, either with `cargo run`
 if the subject requires a _program_, or with `cargo test` otherwise. Only dependencies specified
 in the allowed dependencies section are allowed. Only symbols specified in the `allowed symbols`
