@@ -79,11 +79,10 @@ files to turn in:
     min.rs
 
 allowed symbols:
-    std::println
+    none
 ```
 
-Create a `min` **function** that takes two integers, and returns the smaller one. To make the file compile and for it to be testable, you must submit a  `main` function to showing that your function is
-indeed correct.
+Create a `min` **function** that takes two integers, and returns the smaller one.
 
 The function must be prototyped like this:
 
