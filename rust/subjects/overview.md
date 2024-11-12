@@ -68,6 +68,8 @@ Here we put topics that maybe one day go into the Rust short
 
 TODO
 color ex _ => {} not allowed
-Describe that it has to free
+Describe that it has to free - what is even ownership
 Put iter exc into 02 - 04
 xxd hexdump 
+
+Exercise 04: What Time Is It? - with iter!!!!!!!
