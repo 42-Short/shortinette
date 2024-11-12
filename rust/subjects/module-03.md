@@ -247,17 +247,6 @@ mod test {
 }
 ```
 
-Output:
-
-```txt
->_ cargo run
-12 hours, 20 minutes
-15 hours, 14 minutes
-error: missing ':'
-error: invalid length
-error: invalid number
-```
-
 ## Exercise 05: Quick Math
 
 ```txt
