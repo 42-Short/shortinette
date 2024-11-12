@@ -96,6 +96,7 @@ At that moment, Maran was enlightened.
 *The [second Rust Koan](https://users.rust-lang.org/t/rust-koans/2408/2).*
 
 ## General Rules
+* You **must not** have a `main` present if not specifically requested
 
 * Any exercise you turn in must compile using the `cargo` package manager, either with `cargo run`
 if the subject requires a _program_, or with `cargo test` otherwise. Only dependencies specified
