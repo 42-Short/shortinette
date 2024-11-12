@@ -102,6 +102,9 @@ allowed symbols:
 
 Create a **function** that maps three color components to a name.
 
+```rust
+const fn color_name(color: &[u8; 3]) -> &str;
+```
 The `if` keyword is **_not_** allowed!
 
 The name of a color is determined using the following rules, applied in order. The first rule that
@@ -118,6 +121,35 @@ The name of a color is determined using the following rules, applied in order. T
 * **"olive"**: Any color whose red and green components are both between 128 and 255 (inclusive), and whose blue component is between 0 and 128 (inclusive), is "Dark Yellow/Olive".
 
 * **"dark blue"**: Any color whose blue component is between 128 and 255 (inclusive), and whose red and green components are both between 0 and 128 (inclusive), is "Dark Blue".
+
+* **"purple"**: Any color whose red and blue components are both between 128 and 255 (inclusive), and whose green component is between 0 and 128 (inclusive), is "Dark Magenta/Purple".
+
+* **"teal"**: Any color whose green and blue components are both between 128 and 255 (inclusive), and whose red component is between 0 and 128 (inclusive), is "Dark Cyan/Teal".
+
+* **"light gray"**: Any color whose red, green, and blue components are all between 128 and 255 (inclusive) is "Light Gray/White".
+
+
+**You might need to add *lifetime* annotations to the function to make it compile. Specifically, the
+following test must compile and run:**
+
+```rust
+#[cfg(test)]
+mod test {
+    use super::*;
+    
+    #[test]
+    fn test_lifetimes() {
+        let name_of_the_best_color;
+
+        {
+            let the_best_color = [42, 42, 42];
+            name_of_the_best_color = color_name(&the_best_color);
+        }
+
+        assert_eq!(name_of_the_best_color, "dark grey");
+    }
+}
+```
 ## Exercise 03: This module is fun!
 
 ```txt
