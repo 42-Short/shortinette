@@ -64,12 +64,3 @@ Here we put topics that maybe one day go into the Rust short
 * Complex Lifetime problems
 * Chaining of map iter and collect with anonymus functions
 * Benchmarking of stuff (iter vs. for loop)
-
-
-TODO
-color ex _ => {} not allowed
-Describe that it has to free - what is even ownership
-Put iter exc into 02 - 04
-xxd hexdump 
-
-Exercise 04: What Time Is It? - with iter!!!!!!!
