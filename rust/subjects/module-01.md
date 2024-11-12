@@ -136,7 +136,7 @@ following test must compile and run:**
 #[cfg(test)]
 mod test {
     use super::*;
-    
+
     #[test]
     fn test_lifetimes() {
         let name_of_the_best_color;
@@ -150,7 +150,8 @@ mod test {
     }
 }
 ```
-## Exercise 03: This module is fun!
+
+## Exercise 03: Where are my damn keys?!
 
 ```txt
 turn-in directory:
@@ -181,7 +182,6 @@ assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[5]), &[5]);
 assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[6, 9]), &[]);
 assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[4, 3]), &[4, 3]);
 ```
-
 This test must compile and run:
 ```rust
 #[test]
