@@ -16,7 +16,7 @@ import (
 )
 
 func deleteRepo(name string) (err error) {
-	token, orga, err := requireEnv()
+	token, orga, _, err := requireEnv()
 	if err != nil {
 		return fmt.Errorf("could not delete repo '%s': %v", name, err)
 	}
@@ -38,8 +38,8 @@ func deleteRepo(name string) (err error) {
 
 // Checks for environment variables required to interact with the GitHub API. Returns their values
 // if they exist, sets the error's value if not.
-func requireEnv() (githubToken string, githubOrga string, err error) {
-	if err := godotenv.Load("../.env", ".env"); err != nil {
+func requireEnv() (githubToken string, githubOrga string, templateRepo string, err error) {
+	if err := godotenv.Load("../.env"); err != nil {
 		fmt.Printf("warning: .env file not found, this is expected in the GitHub Actions environment, this is a problem if you are running this locally\n")
 	}
 
@@ -55,18 +55,23 @@ func requireEnv() (githubToken string, githubOrga string, err error) {
 		missingVars = append(missingVars, "ORGA_GITHUB")
 	}
 
+	templateRepo = os.Getenv("TEMPLATE_REPO")
+	if githubOrga == "" {
+		missingVars = append(missingVars, "TEMPLATE_REPO")
+	}
+
 	if len(missingVars) != 0 {
 		err = fmt.Errorf("missing environment variable(s): %s", strings.Join(missingVars, ", "))
 	}
 
-	return githubToken, githubOrga, err
+	return githubToken, githubOrga, templateRepo, err
 }
 
 // Checks whether `err` is related to the repo already existing.
 func isRepoAlreadyExists(err error) (exists bool) {
 	if githubErr, ok := err.(*github.ErrorResponse); ok {
 		for _, e := range githubErr.Errors {
-			if e.Message == "name already exists on this account" {
+			if strings.Contains(e.Message, "Name already exists on this account") {
 				return true
 			}
 		}
@@ -78,16 +83,14 @@ func isRepoAlreadyExists(err error) (exists bool) {
 // GITHUB_ORGANISATION environment variable. If `private` is true, the repository's
 // visibility will be private.
 func NewRepo(name string, private bool, description string) (err error) {
-	token, orga, err := requireEnv()
+	token, orga, templateRepo, err := requireEnv()
 	if err != nil {
 		return fmt.Errorf("could not create repo %s: %v", name, err)
 	}
 
 	client := github.NewClient(nil).WithAuthToken(token)
 
-	repo := &github.Repository{Name: &name, Private: &private, Description: &description}
-
-	createdRepo, response, err := client.Repositories.Create(context.Background(), orga, repo)
+	createdRepo, response, err := client.Repositories.CreateFromTemplate(context.Background(), orga, templateRepo, &github.TemplateRepoRequest{Name: &name, Private: &private, Owner: &orga, Description: &description})
 	if err != nil {
 		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
 			if isRepoAlreadyExists(err) {
@@ -105,7 +108,7 @@ func NewRepo(name string, private bool, description string) (err error) {
 // Adds collaborator `collaboratorName` to repo `repoName` (under the GitHub organisation specified by
 // the GITHUB_ORGANISATION environment variable) with access level `permission“.
 func AddCollaborator(repoName string, collaboratorName string, permission string) (err error) {
-	token, orga, err := requireEnv()
+	token, orga, _, err := requireEnv()
 	if err != nil {
 		return fmt.Errorf("could not add collaborator %s to repo %s: %v", collaboratorName, repoName, err)
 	}
@@ -132,7 +135,7 @@ func Clone(name string) (err error) {
 		return nil
 	}
 
-	token, orga, err := requireEnv()
+	token, orga, _, err := requireEnv()
 	if err != nil {
 		return fmt.Errorf("could not clone '%s': %v", name, err)
 	}
@@ -201,9 +204,48 @@ func copyFiles(target string, files ...string) (err error) {
 	return nil
 }
 
-// Copies `files` into `repoName` and pushes them to the remote. Clones the repo if necessary.
-func UploadFiles(repoName string, commitMessage string, files ...string) (err error) {
+func checkout(dir string, to string, createBranch bool) (err error) {
+	if to == "main" {
+		return nil
+	}
+
+	var cmd *exec.Cmd
+	if createBranch {
+		cmd = exec.Command("git", "checkout", "-b", to)
+	} else {
+		cmd = exec.Command("git", "checkout", to)
+	}
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Dir = dir
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("git checkout %s: %v", to, err)
+	}
+
+	cmd = exec.Command("git", "push", "--set-upstream", "origin", to)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Dir = dir
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("git --set-upstream origin %s: %v", to, err)
+	}
+
+	return nil
+}
+
+// Copies `files` into `repoName` and pushes them to the branch `branchName` on the remote.
+//
+// If `createBranch` is set to true, a new branch will be created.
+//
+// Clones the repo if necessary.
+func UploadFiles(repoName string, commitMessage string, branch string, createBranch bool, files ...string) (err error) {
 	if err := Clone(repoName); err != nil {
+		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
+	}
+
+	if err = checkout(repoName, branch, createBranch); err != nil {
 		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
 	}
 
@@ -235,7 +277,7 @@ func UploadFiles(repoName string, commitMessage string, files ...string) (err er
 // some content). This should not be an issue for shortinette though, since we always upload subjects when creating
 // the repos.
 func NewRelease(repoName string, tagName string, releaseName string, body string) (err error) {
-	token, orga, err := requireEnv()
+	token, orga, _, err := requireEnv()
 	if err != nil {
 		return fmt.Errorf("could not add release '%s', tagged '%s' in repo '%s': %v", releaseName, tagName, repoName, err)
 	}
