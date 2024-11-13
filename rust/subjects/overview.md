@@ -59,6 +59,7 @@ Based on those sources we found these topics which we made into subjects:
 
 # Ideas
 Here we put topics that maybe one day go into the Rust short
+* Playing uni in 06 with channels
 * String types and which one does what
 * Vectors
 * Complex Lifetime problems
