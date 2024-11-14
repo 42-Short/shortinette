@@ -24,7 +24,7 @@ type ModuleDAO struct {
 
 // InsertModule adds a new module to the modules table.
 func (dao *ModuleDAO) InsertModule(module *Module) error {
-	_, err := dao.DB.NamedExecWithTimeout(`
+	_, err := dao.DB.namedExecWithTimeout(`
 		INSERT INTO module (module_id, intra_login, attempts, score, last_graded, wait_time, grading_ongoing)
 		VALUES (:module_id, :intra_login, :attempts, :score, :last_graded, :wait_time, :grading_ongoing)
 	`, module)
@@ -34,7 +34,7 @@ func (dao *ModuleDAO) InsertModule(module *Module) error {
 
 func (dao *ModuleDAO) GetModuleByID(moduleID string) (*Module, error) {
 	var module Module
-	err := dao.DB.GetWithTimeout(&module, "SELECT * FROM module WHERE module_id = ?", moduleID)
+	err := dao.DB.getWithTimeout(&module, "SELECT * FROM module WHERE module_id = ?", moduleID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get module by ID with timeout: %v", err)
 	}
@@ -45,7 +45,7 @@ func (dao *ModuleDAO) GetModuleByID(moduleID string) (*Module, error) {
 // GetModulesByLogin retrieves all modules for a specific intraLogin.
 func (dao *ModuleDAO) GetModulesByLogin(intraLogin string) (*Module, error) {
 	var module Module
-	err := dao.DB.GetWithTimeout(&module, "SELECT * FROM module WHERE module_id = ?", intraLogin)
+	err := dao.DB.getWithTimeout(&module, "SELECT * FROM module WHERE module_id = ?", intraLogin)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get module by ID with timeout: %v", err)
 	}

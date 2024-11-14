@@ -33,57 +33,15 @@ func NewDB(dsn string, queryTimeout time.Duration) (*DB, error) {
 	return &DB{db, queryTimeout}, nil
 }
 
-// Executes a query with a timeout specified in the DB struct.
-// It returns sql.Result and any error encountered during execution.
-func (db *DB) ExecWithTimeout(query string, args ...any) (sql.Result, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
-	defer cancel()
-
-	result, err := db.Connection.ExecContext(ctx, query, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-// Executes a Named query with a timeout specified in the DB struct.
-// It returns sql.Result and any error encountered during execution.
-func (db *DB) NamedExecWithTimeout(query string, arg interface{}) (sql.Result, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
-	defer cancel()
-
-	result, err := db.Connection.NamedExecContext(ctx, query, arg)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-// Executes a query with a timeout specified in the DB struct.
-// It retrieves a single row from the database and maps it to the provided struct.
-func (db *DB) GetWithTimeout(dest interface{}, query string, args ...interface{}) error {
-	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
-	defer cancel()
-
-	err := db.Connection.GetContext(ctx, dest, query, args...)
-	if err != nil {
-		return fmt.Errorf("failed to get data with timeout: %v", err)
-	}
-
-	return nil
-}
-
 // Sets up the necessary schema in the database and enabling foreign key.
 // It returns an error if any of the schema operations fail.
 func (db *DB) Initialize() error {
-	_, err := db.ExecWithTimeout("PRAGMA foreign_keys = ON;")
+	_, err := db.execWithTimeout("PRAGMA foreign_keys = ON;")
 	if err != nil {
 		return fmt.Errorf("Error enabling foreign keys: %v", err)
 	}
 
-	_, err = db.ExecWithTimeout(`
+	_, err = db.execWithTimeout(`
 		CREATE TABLE IF NOT EXISTS participant (
 			intra_login TEXT PRIMARY KEY NOT NULL,
 			github_login TEXT NOT NULL
@@ -93,7 +51,7 @@ func (db *DB) Initialize() error {
 		return fmt.Errorf("Error creating Participant table: %v", err)
 	}
 
-	_, err = db.ExecWithTimeout(`
+	_, err = db.execWithTimeout(`
 		CREATE TABLE IF NOT EXISTS module (
 			module_id TEXT NOT NULL,
 			intra_login TEXT NOT NULL,
@@ -117,4 +75,46 @@ func (db *DB) Initialize() error {
 // Closes the database connection.
 func (db *DB) Close() error {
 	return db.Connection.Close()
+}
+
+// Executes a query with a timeout specified in the DB struct.
+// It returns sql.Result and any error encountered during execution.
+func (db *DB) execWithTimeout(query string, args ...any) (sql.Result, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
+	defer cancel()
+
+	result, err := db.Connection.ExecContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// Executes a Named query with a timeout specified in the DB struct.
+// It returns sql.Result and any error encountered during execution.
+func (db *DB) namedExecWithTimeout(query string, arg interface{}) (sql.Result, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
+	defer cancel()
+
+	result, err := db.Connection.NamedExecContext(ctx, query, arg)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// Executes a query with a timeout specified in the DB struct.
+// It retrieves a single row from the database and maps it to the provided struct.
+func (db *DB) getWithTimeout(dest interface{}, query string, args ...interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
+	defer cancel()
+
+	err := db.Connection.GetContext(ctx, dest, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to get data with timeout: %v", err)
+	}
+
+	return nil
 }
