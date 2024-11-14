@@ -107,6 +107,8 @@ const fn color_name(color: &[u8; 3]) -> &str;
 ```
 The `if` keyword is **_not_** allowed!
 
+You are not allowed to use the `_ => ...` syntax in the match statement.
+
 The name of a color is determined using the following rules, applied in order. The first rule that
 `match`es the input color must be selected.
 
