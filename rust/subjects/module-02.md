@@ -144,7 +144,7 @@ struct NestedStruct {
     data: std::collections::HashMap<String, Option<Box<i32>>>,
 }
 ```
-implement this function 
+implement this function so that `free` frees everything in the struct
 ```rust
 impl ComplexStruct {
     pub fn free(...); // ... stands for any kind and number of parameters passed to the function
@@ -166,7 +166,7 @@ pub fn main() {
         }),
     };
     bruh.free(); // If you remove this it should compile
-    println!("{}", bruh.name);
+    println!("{}", bruh.name); 
 }
 ```
 ## Exercise 01: A Point In Space
