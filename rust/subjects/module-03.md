@@ -70,7 +70,7 @@ turn-in directory:
     ex00/
 
 files to turn in:
-    src/main.rs  Cargo.toml
+    src/lib.rs  Cargo.toml
 
 allowed dependencies:
     ftkit
@@ -116,60 +116,14 @@ assert_eq!(min(String::from("abc"), String::from("def")), "abc");
 
 Still not allowed to use `return`!
 
-## Exercise 02: Oooooh... So, that's how it works!
+## Exercise 02: 42
 
 ```txt
 turn-in directory:
     ex02/
 
-file to turn in:
-    src/main.rs  Cargo.toml
-
-allowed symbols:
-    std::fmt::{Display, Debug, Binary, Formatter, Write}
-    std::write
-    std::result::Result
-```
-
-Create a type named `John` and implement the right such that executing the following code...
-
-```rust
-fn main() {
-    let john = John;
-
-    println!("1. {john}");
-    println!("2. |{john:<30}|");
-    println!("3. |{john:>30}|");
-    println!("4. {john:.6}");
-    println!("5. {john:.0}");
-    println!("6. {john:?}");
-    println!("7. {john:#?}");
-    println!("8. {john:b}");
-}
-```
-
-...produces this output.
-
-```txt
->_ cargo run
-1. Hey! I'm John.
-2. |Hey! I'm John.                |
-3. |                Hey! I'm John.|
-4. Hey! I
-5. Don't try to silence me!
-6. John, the man himself.
-7. John, the man himself. He's handsome AND formidable.
-8. Bip Boop?
-```
-
-## Exercise 03: 42
-
-```txt
-turn-in directory:
-    ex03/
-
 files to turn in:
-    src/main.rs  Cargo.toml
+    src/lib.rs  Cargo.toml
 
 allowed symbols:
     std::fmt::Debug  std::println
@@ -195,7 +149,48 @@ fn print_forty_two<T: Debug + FortyTwo>();
 * The `print_forty_two` function must create an instance of `T` using the `FortyTwo` trait, and then
 print it to the standard output using its `Debug` implementation.
 
-Create a `main` function that showcase this function being called for at least two distinct types.
+Create a `test` function that showcase this function being called for at least two distinct types.
+
+## Exercise 03: Hello again Mr. Collatz
+```txt
+turn-in directory:
+    ex03/
+
+files to turn in:
+    src/lib.rs  Cargo.toml
+
+allowed symbols:
+    std::iter::Iterator, core::iter::traits::collect::FromIterator<..>
+```
+
+Define the following struct
+```rust
+struct Collatz {
+    value: u32,
+}
+```
+and implement the `Iterator` and `FromIterator` trait so that this test compiles and runs.
+```rust
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_collatz() {
+        let mut c = Collatz { value: 10 };
+        let c_res = vec![5, 16, 8, 4, 2, 1];
+        assert_eq!(c.count(), 6);
+
+        c = Collatz { value: 10 }; // Reset Collatz since the init value was consumed
+        for (i, v) in c.enumerate() {
+            assert_eq!(c_res[i], v);
+        }
+
+        c = Collatz { value: 10 }; // Reset Collatz since the init value was consumed
+        assert_eq!(c.collect::<Vec<u32>>(), c_res);
+    }
+}
+```
 
 ## Exercise 04: What Time Is It?
 
@@ -204,7 +199,7 @@ turn-in directory:
     ex04/
 
 files to turn in:
-    src/main.rs  Cargo.toml
+    src/lib.rs  Cargo.toml
 
 allowed symbols:
     std::str::FromStr  std::fmt::{Display, Debug, Formatter}
@@ -227,35 +222,29 @@ enum TimeParseError {
 }
 ```
 
-Implement the right traits such that the provided `main` function compiles and produces the given
-output.
+Implement the right traits such that the provided `test` function compiles.
 
 ```rust
-fn main() {
-    let a: Time = "12:20".parse().unwrap();
-    let b: Time = "15:14".parse().unwrap();
+#[cfg(test)]
+mod test {
+    use super::*;
 
-    println!("{a}");
-    println!("{b}");
+    #[test]
+    fn test_collatz() {
+        let a = "12:20".parse::<Time>();
+        let b = "15:14".parse::<Time>();
 
-    let err1: TimeParseError = "12.20".parse::<Time>().unwrap_err();
-    let err2: TimeParseError = "12:2".parse::<Time>().unwrap_err();
-    let err3: TimeParseError = "12:2a".parse::<Time>().unwrap_err();
-    println!("error: {err1}");
-    println!("error: {err2}");
-    println!("error: {err3}");
+        assert!(a.is_ok());
+        assert!(b.is_ok());
+
+        let c = "12.20".parse::<Time>();
+        let d = "12:2".parse::<Time>();
+        let e = "12:2a".parse::<Time>();
+        assert!(c.is_err());
+        assert!(d.is_err());
+        assert!(e.is_err());
+    }
 }
-```
-
-Output:
-
-```txt
->_ cargo run
-12 hours, 20 minutes
-15 hours, 14 minutes
-error: missing ':'
-error: invalid length
-error: invalid number
 ```
 
 ## Exercise 05: Quick Math
