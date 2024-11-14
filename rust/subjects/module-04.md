@@ -106,41 +106,50 @@ lint to silence warnings about unused variables, functions, etc.
  Tests (when not specifically required by the subject) can use the symbols you want, even if
 they are not specified in the `allowed symbols` section. **However**, tests should **not** introduce **any additional external dependencies** beyond those already required by the subject.
 
-## Exercise 00: Didn't Panic!
+## Exercise 00: Wait thats it?
 
 ```txt
 turn-in directories:
     ex00/
 
 files to turn in:
-    src/main.rs  Cargo.toml
+    src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::io::{stdout, Write}
-    std::writeln
+    none
 ```
 
-Create a **program** that prints integers from 1 to 10.
+Create `Outcome` and `Maybe` which should mimic `Result` and `Option` so that test compiles and runs
 
-```txt
->_ cargo run
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-```
+```rust
+#[cfg(test)]
+mod test {
+    use super::*;
 
-The program must *never* panic.
+    fn outcome() -> Outcome<u32, &'static str> {
+        Outcome::Good(42)
+    }
 
-```txt
->_ cargo run | true
->_ 
+    fn maybe() -> Maybe<u8> {
+        Maybe::Defenitly(42)
+    }
+
+    #[test]
+    fn test() {
+        let o = outcome();
+        match o {
+            Outcome::Good(n) => assert_eq!(n, 42),
+            Outcome::Bad(_) => panic!("should be Good")
+        }
+
+        let m = maybe();
+        match m {
+            Maybe::Defenitly(n) => assert_eq!(n, 42),
+            Maybe::No => panic!("should be Defenitly")
+        }
+
+    }
+}
 ```
 
 ## Exercise 01: Tee-Hee
