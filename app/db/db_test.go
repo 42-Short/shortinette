@@ -44,7 +44,7 @@ func TestInitializeDB(t *testing.T) {
 		}
 	}()
 
-	err = db.InitializeDB()
+	err = db.Initialize()
 	if err != nil {
 		t.Fatalf("failed to initialize DB: %v", err)
 	}
@@ -95,12 +95,12 @@ func TestInitializeExistingTablesDB(t *testing.T) {
 	}
 	defer db.Close()
 
-	err = db.InitializeDB()
+	err = db.Initialize()
 	if err != nil {
 		t.Fatalf("failed to initialize DB: %v", err)
 	}
 
-	err = db.InitializeDB()
+	err = db.Initialize()
 	if err != nil {
 		t.Fatalf("failed to initialize DB again: %v", err)
 	}
