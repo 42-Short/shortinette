@@ -38,7 +38,6 @@ func (db *DB) ExecWithTimeout(query string, args ...any) (sql.Result, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
 	defer cancel()
 
-	fmt.Println("Timeout set to:", db.QueryTimeout)
 	result, err := db.Connection.ExecContext(ctx, query, args...)
 	if err != nil {
 		return nil, err

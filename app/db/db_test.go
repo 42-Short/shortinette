@@ -34,7 +34,7 @@ func verifySchemaTableExists(db *DB, targetTable string) error {
 	return nil
 }
 
-func TestInitializeDB(t *testing.T) {
+func TestInitialize(t *testing.T) {
 	db, err := NewDB("file::memory:?cache=shared", 2*time.Second)
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
@@ -70,7 +70,7 @@ func TestInvalidNewDB(t *testing.T) {
 	}
 }
 
-func TestCloseDB(t *testing.T) {
+func TestClose(t *testing.T) {
 	testFile := "test.db"
 
 	defer func() {
@@ -91,7 +91,7 @@ func TestCloseDB(t *testing.T) {
 	}
 }
 
-func TestInitializeExistingTablesDB(t *testing.T) {
+func TestInitializeExistingTables(t *testing.T) {
 	db, err := NewDB("file::memory:?cache=shared", 2*time.Second)
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
