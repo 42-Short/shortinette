@@ -111,14 +111,14 @@ Create a type named `Unique`.
 struct Unique(u8);
 
 impl Unique {
-    pub fn new() -> Self;
+    pub fn new() -> Option<Self>;
 }
 ```
 
 * There can be no two `Unique` instance with the same identifier (`u8`).
 * `new` must create a new, unique instance of `Unique`.
 * It must be possible to `Clone` a `Unique`, and the created `Unique` must still be unique.
-* Trying to create a `Unique` when no more identifiers are available causes the function to panic.
+* Trying to create a `Unique` when no more identifiers are available causes the function to return `None`.
 
 Example:
 
