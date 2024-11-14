@@ -11,7 +11,8 @@ type DB struct {
 	Connection *sql.DB
 }
 
-// Creates a new db connection
+// Creates a new database connection using the provided DSN.
+// It returns a pointer to a DB struct and an error if the connection cannot be established.
 func NewDB(dsn string) (*DB, error) {
 	db, err := sql.Open("sqlite3", dsn)
 	if err != nil {
@@ -28,7 +29,8 @@ func NewDB(dsn string) (*DB, error) {
 	return &DB{db}, nil
 }
 
-// Initializes the DB
+// Sets up the necessary schema in the database and enabling foreign key.
+// It returns an error if any of the schema operations fail.
 func (db *DB) Initialize() error {
 	_, err := db.Connection.Exec("PRAGMA foreign_keys = ON;")
 	if err != nil {
