@@ -12,6 +12,7 @@ type Module struct {
 	GradingOngoing bool      `db:"grading_ongoing"`
 }
 
+// ModuleDAO provides methods to interact with the module table
 type ModuleDAO struct {
 	DB *DB
 }

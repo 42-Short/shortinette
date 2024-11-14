@@ -15,12 +15,16 @@ type DB struct {
 func NewDB(dsn string) (*DB, error) {
 	db, err := sql.Open("sqlite3", dsn)
 	if err != nil {
-		return nil, fmt.Errorf("Cant open DB from dsn: %s: %v", dsn, err)
+		return nil, fmt.Errorf("failed to open DB with DSN '%s': %v", dsn, err)
 	}
 
-	if err := db.Ping(); err != nil {
+	err = db.Ping()
+	if err != nil {
+		db.Close()
 		return nil, fmt.Errorf("Cant ping DB: %v", err)
 	}
+
+	fmt.Println("Database successfully created.")
 	return &DB{db}, nil
 }
 
@@ -58,6 +62,7 @@ func (db *DB) Initialize() error {
 		return fmt.Errorf("Error creating Module table: %v", err)
 	}
 
+	fmt.Println("Schema Tables successfully created.")
 	return nil
 }
 
