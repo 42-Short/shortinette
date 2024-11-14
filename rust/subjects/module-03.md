@@ -205,6 +205,7 @@ allowed symbols:
     std::str::FromStr  std::fmt::{Display, Debug, Formatter}
     str::as_bytes  std::result::Result  std::{write, println}
     u8::is_ascii_digit
+    std::iter::*
 ```
 
 Create a type named `Time` responsible for storing, well, a time.
