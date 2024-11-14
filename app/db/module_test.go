@@ -6,21 +6,11 @@ import (
 )
 
 func TestInsertModule(t *testing.T) {
-	db := createDummyDB(t)
+	db, module, _ := newDummyDB(t)
 	dao := ModuleDAO{DB: db}
-	module := constructDummyModule()
-
-	err := insertDummyParticipant(dao.DB, module.IntraLogin)
-	if err != nil {
-		t.Fatalf("failed to insert participant into DB: %v", err)
-	}
-	err = dao.InsertModule(module)
-	if err != nil {
-		t.Fatalf("failed to insert module into DB: %v", err)
-	}
 
 	var retrievedModule Module
-	err = dao.DB.getWithTimeout(&retrievedModule, "SELECT * FROM module WHERE module_id = ?", module.ID)
+	err := dao.DB.getWithTimeout(&retrievedModule, "SELECT * FROM module WHERE module_id = ?", module.ID)
 	if err != nil {
 		t.Fatalf("failed to fetch module from DB: %v", err)
 	}

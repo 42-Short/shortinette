@@ -19,9 +19,17 @@ func TestNewDB(t *testing.T) {
 }
 
 func TestInitialize(t *testing.T) {
-	db := createDummyDB(t)
+	db, err := NewDB("file::memory:?cache=shared", 2*time.Second)
+	if err != nil {
+		t.Fatalf("failed to open DB: %v", err)
+	}
 
-	err := verifySchemaTableExists(db, "module")
+	err = db.Initialize()
+	if err != nil {
+		t.Fatalf("failed to Initialize DB: %v", err)
+	}
+
+	err = verifySchemaTableExists(db, "module")
 	if err != nil {
 		t.Fatalf("failed to verify table existence: %v", err)
 	}
@@ -52,9 +60,16 @@ func TestClose(t *testing.T) {
 }
 
 func TestInitializeExistingTables(t *testing.T) {
-	db := createDummyDB(t)
+	db, err := NewDB("file::memory:?cache=shared", 2*time.Second)
+	if err != nil {
+		t.Fatalf("failed to open DB: %v", err)
+	}
 
-	err := db.Initialize()
+	err = db.Initialize()
+	if err != nil {
+		t.Fatalf("failed to Initialize DB: %v", err)
+	}
+	err = db.Initialize()
 	if err != nil {
 		t.Fatalf("failed to initialize DB again: %v", err)
 	}

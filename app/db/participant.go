@@ -12,7 +12,11 @@ type ParticipantDAO struct {
 
 // InsertParticipant adds a new participant to the participants table.
 func (dao *ParticipantDAO) InsertParticipant(participant *Participant) error {
-	panic("InsertParticipant not implemented yet")
+	_, err := dao.DB.namedExecWithTimeout(`
+		INSERT INTO participant (intra_login, github_login)
+		VALUES (:intra_login, :github_login)
+	`, participant)
+	return err
 }
 
 // GetParticipantByLogin retrieves a participant by their intraLogin.
