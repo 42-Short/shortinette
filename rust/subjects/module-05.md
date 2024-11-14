@@ -91,66 +91,68 @@ assert_eq!(a.into_inner(), "DEF");
 assert_eq!(b.into_inner(), "ABC");
 ```
 
-## Exercise 01: Logger
+## Exercise 01: Atomical
 
 ```txt
 turn-in directory:
     ex01/
 
 files to turn in:
-    src/main.rs  Cargo.toml
+    src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::sync::{Arc,Mutex}
-    std::thread::spawn
-    std::io::Write
-    std::vec::Vec::into_boxed_slice
+    std::sync::atomic::{AtomicU8, Ordering}
 ```
 
-Create a `Logger` type.
+Create a type named `Unique`.
 
 ```rust
-struct Logger<W> {
-    buffer: Box<[u8]>,
-    writer: W,
-}
+#[derive(Debug, PartialEq, Eq)]
+struct Unique(u8);
 
-impl<W> Logger<W> {
-    pub fn new(threshold: usize, writer: W) -> Self;
+impl Unique {
+    pub fn new() -> Option<Self>;
 }
 ```
 
- * `new` must create a new `Logger` with a buffer of size `threshold` and the given `W` instance.
+* There can be no two `Unique` instance with the same identifier (`u8`).
+* `new` must create a new, unique instance of `Unique`.
+* It must be possible to `Clone` a `Unique`, and the created `Unique` must still be unique.
+* Trying to create a `Unique` when no more identifiers are available causes the function to return `None`.
 
-In order to avoid performing too many `write` system calls, you should first write the messages
-to an internal `buffer`, and THEN, write everything to the given writer.
+Example:
 
 ```rust
-impl<W: io::Write> Logger<W> {
-    pub fn log(&mut self, message: &str) -> io::Result<()>;
-    pub fn flush(&mut self) -> io::Result<()>;
+fn main()
+{
+    let a = Unique::new();
+    let b = Unique::new();
+    let c = Unique::new();
+
+    println!("{a:?}");
+    println!("{b:?}");
+    println!("{c:?}");
+
+    let d = a.clone();
+    let e = c.clone();
+
+    println!("{d:?}");
+    println!("{e:?}");
 }
 ```
 
- * `log` must try to write `message` to its internal buffer. When the buffer is full, everything
-   must be sent to the specified `io::Write` implementation. After that the buffer is cleared for
-   new data to be added. A `\n` is automatically added at the end of the message.
- * `flush` must properly send the content of the buffer and clears it.
-
-Create a `main` function spawning 10 threads. Each thread must try to write to the standard output
-using the same `Logger<Stdout>` 10 times.
+Would produce the following output:
 
 ```txt
 >_ cargo run
-hello 0 from thread 1!
-hello 0 from thread 2!
-hello 0 from thread 0!
-hello 0 from thread 6!
-hello 1 from thread 1!
-...
+Unique(0)
+Unique(1)
+Unique(2)
+Unique(3)
+Unique(4)
 ```
 
- * A message from any given thread must not appear within the message of another thread.
+What atomic memory ordering did you use? Why?
 
 ## Exercise 02: Last Error
 
@@ -235,68 +237,68 @@ the philosopher is thinking about b
 * The program runs until it receives `EOF`.
 * The size of the philosopher's brain is provided as a command-line argument.
 
-## Exercise 04: Atomical
+## Exercise 04: Logger
 
 ```txt
 turn-in directory:
     ex04/
 
 files to turn in:
-    src/lib.rs  Cargo.toml
+    src/main.rs  Cargo.toml
 
 allowed symbols:
-    std::sync::atomic::{AtomicU8, Ordering}
+    std::sync::{Arc,Mutex}
+    std::thread::spawn
+    std::io::Write
+    std::vec::Vec::into_boxed_slice
 ```
 
-Create a type named `Unique`.
+Create a `Logger` type.
 
 ```rust
-#[derive(Debug, PartialEq, Eq)]
-struct Unique(u8);
+struct Logger<W> {
+    buffer: Box<[u8]>,
+    writer: W,
+}
 
-impl Unique {
-    pub fn new() -> Self;
+impl<W> Logger<W> {
+    pub fn new(threshold: usize, writer: W) -> Self;
 }
 ```
 
-* There can be no two `Unique` instance with the same identifier (`u8`).
-* `new` must create a new, unique instance of `Unique`.
-* It must be possible to `Clone` a `Unique`, and the created `Unique` must still be unique.
-* Trying to create a `Unique` when no more identifiers are available causes the function to panic.
+ * `new` must create a new `Logger` with a buffer of size `threshold` and the given `W` instance.
 
-Example:
+In order to avoid performing too many `write` system calls, you should first write the messages
+to an internal `buffer`, and THEN, write everything to the given writer.
 
 ```rust
-fn main()
-{
-    let a = Unique::new();
-    let b = Unique::new();
-    let c = Unique::new();
-
-    println!("{a:?}");
-    println!("{b:?}");
-    println!("{c:?}");
-
-    let d = a.clone();
-    let e = c.clone();
-
-    println!("{d:?}");
-    println!("{e:?}");
+impl<W: io::Write> Logger<W> {
+    pub fn log(&mut self, message: &str) -> io::Result<()>;
+    pub fn flush(&mut self) -> io::Result<()>;
 }
 ```
 
-Would produce the following output:
+ * `log` must try to write `message` to its internal buffer. When the buffer is full, everything
+   must be sent to the specified `io::Write` implementation. After that the buffer is cleared for
+   new data to be added. A `\n` is automatically added at the end of the message.
+ * `flush` must properly send the content of the buffer and clears it.
+
+Create a `main` function spawning 10 threads. Each thread must try to write to the standard output
+using the same `Logger<Stdout>` 10 times.
 
 ```txt
 >_ cargo run
-Unique(0)
-Unique(1)
-Unique(2)
-Unique(3)
-Unique(4)
+hello 0 from thread 1!
+hello 0 from thread 2!
+hello 0 from thread 0!
+hello 0 from thread 6!
+hello 1 from thread 1!
+...
 ```
 
-What atomic memory ordering did you use? Why?
+ * A message from any given thread must not appear within the message of another thread.
+
+
 
 ## Exercise 05: PI * Rayon * Rayon
 
