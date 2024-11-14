@@ -6,18 +6,19 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 type DB struct {
-	Connection   *sql.DB
+	Connection   *sqlx.DB
 	QueryTimeout time.Duration
 }
 
 // Creates a new database connection using the provided DSN.
 // It returns a pointer to a DB struct and an error if the connection cannot be established.
 func NewDB(dsn string, queryTimeout time.Duration) (*DB, error) {
-	db, err := sql.Open("sqlite3", dsn)
+	db, err := sqlx.Open("sqlite3", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open DB with DSN '%s': %v", dsn, err)
 	}
@@ -44,6 +45,34 @@ func (db *DB) ExecWithTimeout(query string, args ...any) (sql.Result, error) {
 	}
 
 	return result, nil
+}
+
+// Executes a Named query with a timeout specified in the DB struct.
+// It returns sql.Result and any error encountered during execution.
+func (db *DB) NamedExecWithTimeout(query string, arg interface{}) (sql.Result, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
+	defer cancel()
+
+	result, err := db.Connection.NamedExecContext(ctx, query, arg)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// Executes a query with a timeout specified in the DB struct.
+// It retrieves a single row from the database and maps it to the provided struct.
+func (db *DB) GetWithTimeout(dest interface{}, query string, args ...interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
+	defer cancel()
+
+	err := db.Connection.GetContext(ctx, dest, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to get data with timeout: %v", err)
+	}
+
+	return nil
 }
 
 // Sets up the necessary schema in the database and enabling foreign key.
