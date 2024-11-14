@@ -5,7 +5,7 @@ type Participant struct {
 	GitHubLogin string `db:"github_login"`
 }
 
-// ParticipantDAO provides methods to interact with the participants table.
+// ParticipantDAO (Data Access Object) provides methods to interact with the participants table.
 type ParticipantDAO struct {
 	DB *DB
 }

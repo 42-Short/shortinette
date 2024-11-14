@@ -1,9 +1,14 @@
 package db
 
-import "time"
+import (
+	"fmt"
+	"time"
+
+	_ "github.com/jmoiron/sqlx"
+)
 
 type Module struct {
-	ModuleID       string    `db:"module_id"`
+	ID             string    `db:"module_id"`
 	IntraLogin     string    `db:"intra_login"`
 	Attempts       int       `db:"attempts"`
 	Score          int       `db:"score"`
@@ -12,19 +17,29 @@ type Module struct {
 	GradingOngoing bool      `db:"grading_ongoing"`
 }
 
-// ModuleDAO provides methods to interact with the module table
+// ModuleDAO (Data Access Object) provides methods to interact with the module table.
 type ModuleDAO struct {
 	DB *DB
 }
 
 // InsertModule adds a new module to the modules table.
 func (dao *ModuleDAO) InsertModule(module *Module) error {
-	panic("InsertModule not implemented yet")
+	_, err := dao.DB.NamedExecWithTimeout(`
+		INSERT INTO module (module_id, intra_login, attempts, score, last_graded, wait_time, grading_ongoing)
+		VALUES (:module_id, :intra_login, :attempts, :score, :last_graded, :wait_time, :grading_ongoing)
+	`, module)
+
+	return err
 }
 
-// GetModuleByID retrieves a module by its ID.
 func (dao *ModuleDAO) GetModuleByID(moduleID string) (*Module, error) {
-	panic("GetModuleByID not implemented yet")
+	var module Module
+	err := dao.DB.GetWithTimeout(&module, "SELECT * FROM module WHERE module_id = ?", moduleID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get module by ID with timeout: %v", err)
+	}
+
+	return &module, nil
 }
 
 // GetModulesByLogin retrieves all modules for a specific intraLogin.
