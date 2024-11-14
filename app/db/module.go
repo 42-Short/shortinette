@@ -43,8 +43,14 @@ func (dao *ModuleDAO) GetModuleByID(moduleID string) (*Module, error) {
 }
 
 // GetModulesByLogin retrieves all modules for a specific intraLogin.
-func (dao *ModuleDAO) GetModulesByLogin(intraLogin string) ([]Module, error) {
-	panic("GetModulesByLogin not implemented yet")
+func (dao *ModuleDAO) GetModulesByLogin(intraLogin string) (*Module, error) {
+	var module Module
+	err := dao.DB.GetWithTimeout(&module, "SELECT * FROM module WHERE module_id = ?", intraLogin)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get module by ID with timeout: %v", err)
+	}
+
+	return &module, nil
 }
 
 // GetAllModules retrieves all modules.

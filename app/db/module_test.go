@@ -36,7 +36,7 @@ func insertDummyParticipant(db *DB, intraLogin string) error {
 	return nil
 }
 
-func TestInsertModule(t *testing.T) {
+func createDummyDB(t *testing.T) *DB {
 	db, err := NewDB("file::memory:?cache=shared", 2*time.Second)
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
@@ -47,10 +47,26 @@ func TestInsertModule(t *testing.T) {
 		t.Fatalf("failed to Initialize DB: %v", err)
 	}
 
+	return db
+}
+
+func validateModule(module *Module, retrievedModule *Module) error {
+	if retrievedModule == nil {
+		return fmt.Errorf("module not found in DB")
+	}
+
+	if retrievedModule.ID != module.ID || retrievedModule.IntraLogin != module.IntraLogin {
+		return fmt.Errorf("retrieved module does not match the inserted module")
+	}
+	return nil
+}
+
+func TestInsertModule(t *testing.T) {
+	db := createDummyDB(t)
 	dao := ModuleDAO{DB: db}
 	module := constructDummyModule()
 
-	err = insertDummyParticipant(dao.DB, module.IntraLogin)
+	err := insertDummyParticipant(dao.DB, module.IntraLogin)
 	if err != nil {
 		t.Fatalf("failed to insert participant into DB: %v", err)
 	}
@@ -59,22 +75,19 @@ func TestInsertModule(t *testing.T) {
 		t.Fatalf("failed to insert module into DB: %v", err)
 	}
 
-	retrievedModule, err := dao.GetModuleByID(module.ID) //TODO: maybe get rid of this
+	var retrievedModule Module
+	err = dao.DB.GetWithTimeout(&module, "SELECT * FROM module WHERE module_id = ?", module.IntraLogin)
 	if err != nil {
 		t.Fatalf("failed to fetch module from DB: %v", err)
 	}
-
-	if retrievedModule == nil {
-		t.Fatalf("module not found in DB")
-	}
-
-	if retrievedModule.ID != module.ID || retrievedModule.IntraLogin != module.IntraLogin {
-		t.Errorf("retrieved module does not match the inserted module")
+	err = validateModule(module, &retrievedModule)
+	if err != nil {
+		t.Fatalf("module validation failed: %v", err)
 	}
 }
 
 func TestGetModuleByID(t *testing.T) {
-	t.Skip("TestGetModuleByID not implemented yet")
+
 }
 
 func TestGetModulesByLogin(t *testing.T) {
