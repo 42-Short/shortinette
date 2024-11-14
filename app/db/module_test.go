@@ -20,8 +20,8 @@ func TestInsertModule(t *testing.T) {
 	}
 }
 
-func TestGetModuleByID(t *testing.T) {
-
+func TestGetModulesByID(t *testing.T) {
+	t.Skip("TestGetModulesByID not implemented yet")
 }
 
 func TestGetModulesByLogin(t *testing.T) {
