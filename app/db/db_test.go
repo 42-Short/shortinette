@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 )
 
 func TestNewDB(t *testing.T) {
-	db, err := NewDB("file::memory:?cache=shared")
+	db, err := NewDB("file::memory:?cache=shared", 2*time.Second)
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
@@ -17,6 +18,8 @@ func TestNewDB(t *testing.T) {
 		t.Fatalf("failed to close DB: %v", err)
 	}
 }
+
+//TODO: write tests for ExecWithTimeout
 
 func verifySchemaTableExists(db *DB, targetTable string) error {
 	var count int
@@ -32,7 +35,7 @@ func verifySchemaTableExists(db *DB, targetTable string) error {
 }
 
 func TestInitializeDB(t *testing.T) {
-	db, err := NewDB("file::memory:?cache=shared")
+	db, err := NewDB("file::memory:?cache=shared", 2*time.Second)
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
@@ -61,7 +64,7 @@ func TestInitializeDB(t *testing.T) {
 }
 
 func TestInvalidNewDB(t *testing.T) {
-	_, err := NewDB("/path/to/invalid-dsn")
+	_, err := NewDB("/path/to/invalid-dsn", 2*time.Second)
 	if err == nil {
 		t.Fatalf("expected error when opening DB with invalid DSN, but got nil")
 	}
@@ -77,7 +80,7 @@ func TestCloseDB(t *testing.T) {
 		}
 	}()
 
-	db, err := NewDB("file:" + testFile + "?cache=shared&_mode=rwc")
+	db, err := NewDB("file:"+testFile+"?cache=shared&_mode=rwc", 2*time.Second)
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
@@ -89,7 +92,7 @@ func TestCloseDB(t *testing.T) {
 }
 
 func TestInitializeExistingTablesDB(t *testing.T) {
-	db, err := NewDB("file::memory:?cache=shared")
+	db, err := NewDB("file::memory:?cache=shared", 2*time.Second)
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
