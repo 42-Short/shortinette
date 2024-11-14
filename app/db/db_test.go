@@ -21,7 +21,7 @@ func TestNewDB(t *testing.T) {
 func verifySchemaTableExists(db *DB, targetTable string) error {
 	var count int
 	query := fmt.Sprintf("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='%s'", targetTable)
-	err := db.Conn.QueryRow(query).Scan(&count)
+	err := db.Connection.QueryRow(query).Scan(&count)
 	if err != nil {
 		return fmt.Errorf("failed to query %s table: %v", targetTable, err)
 	}

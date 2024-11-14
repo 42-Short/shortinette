@@ -8,7 +8,7 @@ import (
 )
 
 type DB struct {
-	Conn *sql.DB
+	Connection *sql.DB
 }
 
 // Creates a new db connection
@@ -30,12 +30,12 @@ func NewDB(dsn string) (*DB, error) {
 
 // Initializes the DB
 func (db *DB) Initialize() error {
-	_, err := db.Conn.Exec("PRAGMA foreign_keys = ON;")
+	_, err := db.Connection.Exec("PRAGMA foreign_keys = ON;")
 	if err != nil {
 		return fmt.Errorf("Error enabling foreign keys: %v", err)
 	}
 
-	_, err = db.Conn.Exec(`
+	_, err = db.Connection.Exec(`
 		CREATE TABLE IF NOT EXISTS participant (
 			intra_login TEXT PRIMARY KEY NOT NULL,
 			github_login TEXT NOT NULL
@@ -45,7 +45,7 @@ func (db *DB) Initialize() error {
 		return fmt.Errorf("Error creating Participant table: %v", err)
 	}
 
-	_, err = db.Conn.Exec(`
+	_, err = db.Connection.Exec(`
 		CREATE TABLE IF NOT EXISTS module (
 			module_id TEXT NOT NULL,
 			intra_login TEXT NOT NULL,
@@ -68,5 +68,5 @@ func (db *DB) Initialize() error {
 
 // Closes the database connection.
 func (db *DB) Close() error {
-	return db.Conn.Close()
+	return db.Connection.Close()
 }
