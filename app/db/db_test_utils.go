@@ -23,7 +23,7 @@ func newDummyDB(t *testing.T) (*DB, []Module, []Participant) {
 	participants := []Participant{}
 	modules := []Module{}
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 10; i++ {
 		participant := newDummyParticipant()
 		module := newDummyModule(participant.IntraLogin)
 

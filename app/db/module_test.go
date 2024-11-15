@@ -38,7 +38,7 @@ func TestGetModule(t *testing.T) {
 	dao := ModuleDAO{DB: db}
 	defer db.Close()
 
-	idx := rand.Intn(len(modules))
+	idx := rand.Intn(len(modules)) //TODO: random idx could be proplematic (potential same index)
 	retrievedModule, err := dao.GetModule(modules[idx].ID, participants[idx].IntraLogin)
 	if err != nil {
 		t.Fatalf("failed to fetch module from DB: %v", err)
@@ -103,7 +103,27 @@ func TestGetAllModules(t *testing.T) {
 }
 
 func TestUpdateModule(t *testing.T) {
-	t.Skip("TestUpdateModule not implemented yet")
+	db, modules, _ := newDummyDB(t)
+	dao := ModuleDAO{DB: db}
+	defer db.Close()
+
+	idx := rand.Intn(len(modules))
+	newModule := newDummyModule(modules[idx].IntraLogin)
+
+	err := dao.UpdateModule(modules[idx].ID, modules[idx].IntraLogin, newModule)
+	if err != nil {
+		t.Fatalf("failed to update module in DB: %v", err)
+	}
+
+	retrievedModule, err := dao.GetModule(modules[idx].ID, modules[idx].IntraLogin)
+	if err != nil {
+		t.Fatalf("failed to fetch updated module from DB: %v", err)
+	}
+
+	err = validateModule(newModule, retrievedModule)
+	if err == nil {
+		t.Fatalf("moduled did not get updated correctly: %v", err)
+	}
 }
 
 func TestDeleteModule(t *testing.T) {
