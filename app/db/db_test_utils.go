@@ -8,6 +8,7 @@ import (
 )
 
 func newDummyDB(t *testing.T) (*DB, []Module, []Participant) {
+	t.Helper()
 	db, err := NewDB("file::memory:?cache=shared", 2*time.Second)
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)

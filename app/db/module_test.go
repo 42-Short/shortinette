@@ -50,15 +50,56 @@ func TestGetModule(t *testing.T) {
 }
 
 func TestGetModulesByID(t *testing.T) {
-	t.Skip("TestGetModulesByID not implemented yet")
+	db, modules, _ := newDummyDB(t)
+	dao := ModuleDAO{DB: db}
+	defer db.Close()
+
+	idx := rand.Intn(len(modules))
+	retrievedModules, err := dao.GetModulesByID(modules[idx].ID)
+	if err != nil {
+		t.Fatalf("failed to fetch module from DB: %v", err)
+	}
+	for _, retrievedModule := range retrievedModules {
+		err = validateModule(&modules[idx], &retrievedModule)
+		if err != nil {
+			t.Fatalf("failed to validate module: %v", err)
+		}
+	}
 }
 
-func TestModuleByIDAndLogin(t *testing.T) {
-	t.Skip("TestModuleByIDAndLogin not implemented yet")
+func TestGetModulesByLogin(t *testing.T) {
+	db, modules, _ := newDummyDB(t)
+	dao := ModuleDAO{DB: db}
+	defer db.Close()
+
+	idx := rand.Intn(len(modules))
+	retrievedModules, err := dao.GetModulesByLogin(modules[idx].IntraLogin)
+	if err != nil {
+		t.Fatalf("failed to fetch module from DB: %v", err)
+	}
+	for _, retrievedModule := range retrievedModules {
+		err = validateModule(&modules[idx], &retrievedModule)
+		if err != nil {
+			t.Fatalf("failed to validate module: %v", err)
+		}
+	}
 }
 
 func TestGetAllModules(t *testing.T) {
-	t.Skip("TestGetAllModules not implemented yet")
+	db, modules, _ := newDummyDB(t)
+	dao := ModuleDAO{DB: db}
+	defer db.Close()
+
+	retrievedModules, err := dao.GetAllModules()
+	if err != nil {
+		t.Fatalf("failed to fetch module from DB: %v", err)
+	}
+	for i, module := range modules {
+		err = validateModule(&module, &retrievedModules[i])
+		if err != nil {
+			t.Fatalf("failed to validate module: %v", err)
+		}
+	}
 }
 
 func TestUpdateModule(t *testing.T) {
