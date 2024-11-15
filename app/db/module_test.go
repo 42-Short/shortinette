@@ -107,7 +107,33 @@ func TestUpdateModule(t *testing.T) {
 }
 
 func TestDeleteModule(t *testing.T) {
-	t.Skip("TestDeleteModule not implemented yet")
+	db, modules, _ := newDummyDB(t)
+	dao := ModuleDAO{DB: db}
+	defer db.Close()
+
+	retrievedModules, err := dao.GetAllModules()
+	if err != nil {
+		t.Fatalf("failed to fetch module from DB: %v", err)
+	}
+	if len(retrievedModules) != len(modules) || len(modules) == 0 {
+		t.Fatalf("failed to fetch all modules: %v", err)
+	}
+
+	for _, module := range modules {
+		err = dao.DeleteModule(module.ID, module.IntraLogin)
+		if err != nil {
+			t.Fatalf("failed to delete module: %v", err)
+		}
+	}
+
+	retrievedModules, err = dao.GetAllModules()
+	if err != nil {
+		t.Fatalf("failed to fetch module from DB: %v", err)
+	}
+	if len(retrievedModules) != 0 {
+		t.Fatalf("expected modules to be delted but got %d modules: %v", len(retrievedModules), err)
+	}
+
 }
 
 func validateModule(module *Module, retrievedModule *Module) error {

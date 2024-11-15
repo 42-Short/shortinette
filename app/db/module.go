@@ -81,7 +81,7 @@ func (dao *ModuleDAO) UpdateModule(module *Module) error {
 	panic("UpdateModule not implemented yet")
 }
 
-// DeleteModule removes a module by its ID.
-func (dao *ModuleDAO) DeleteModule(moduleID string, intraLogin string) error {
+// DeleteModule removes a module by its ID and IntraLogin.
+func (dao *ModuleDAO) DeleteModule(moduleID int, intraLogin string) error {
 	panic("DeleteModule not implemented yet")
 }
