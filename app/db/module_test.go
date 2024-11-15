@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 )
 
@@ -37,11 +38,12 @@ func TestGetModule(t *testing.T) {
 	dao := ModuleDAO{DB: db}
 	defer db.Close()
 
-	retrievedModule, err := dao.GetModule(modules[1].ID, participants[1].IntraLogin)
+	idx := rand.Intn(len(modules))
+	retrievedModule, err := dao.GetModule(modules[idx].ID, participants[idx].IntraLogin)
 	if err != nil {
 		t.Fatalf("failed to fetch module from DB: %v", err)
 	}
-	err = validateModule(&modules[1], retrievedModule)
+	err = validateModule(&modules[idx], retrievedModule)
 	if err != nil {
 		t.Fatalf("failed to validate module: %v", err)
 	}
