@@ -53,7 +53,7 @@ func (db *DB) Initialize() error {
 
 	_, err = db.execWithTimeout(`
 		CREATE TABLE IF NOT EXISTS module (
-			module_id TEXT NOT NULL,
+			module_id INTEGER NOT NULL,
 			intra_login TEXT NOT NULL,
 			attempts INTEGER,
 			score INTEGER,

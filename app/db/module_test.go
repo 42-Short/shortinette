@@ -28,6 +28,10 @@ func TestGetModulesByLogin(t *testing.T) {
 	t.Skip("TestGetModulesByLogin not implemented yet")
 }
 
+func TestModuleByIDAndLogin(t *testing.T) {
+	t.Skip("TestModuleByIDAndLogin not implemented yet")
+}
+
 func TestGetAllModules(t *testing.T) {
 	t.Skip("TestGetAllModules not implemented yet")
 }

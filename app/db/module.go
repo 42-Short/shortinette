@@ -8,7 +8,7 @@ import (
 )
 
 type Module struct {
-	ID             string    `db:"module_id"`
+	ID             int       `db:"module_id"`
 	IntraLogin     string    `db:"intra_login"`
 	Attempts       int       `db:"attempts"`
 	Score          int       `db:"score"`
@@ -56,6 +56,11 @@ func (dao *ModuleDAO) GetModulesByLogin(intraLogin string) ([]Module, error) {
 	return modules, nil
 }
 
+// GetModuleByIDAndLogin retrieves a unique module by ID and intraLogin
+func (dao *ModuleDAO) GetModuleByIDAndLogin(moduleID int, intraLogin string) (*Module, error) {
+	panic("GetModuleByIDAndLogin not implemented yet")
+}
+
 // GetAllModules retrieves all modules.
 func (dao *ModuleDAO) GetAllModules() ([]Module, error) {
 	panic("GetAllModules not implemented yet")
@@ -67,6 +72,6 @@ func (dao *ModuleDAO) UpdateModule(module *Module) error {
 }
 
 // DeleteModule removes a module by its ID.
-func (dao *ModuleDAO) DeleteModule(moduleID string) error {
+func (dao *ModuleDAO) DeleteModule(moduleID string, intraLogin string) error {
 	panic("DeleteModule not implemented yet")
 }

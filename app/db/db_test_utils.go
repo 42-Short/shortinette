@@ -36,7 +36,7 @@ func newDummyDB(t *testing.T) (*DB, *Module, *Participant) {
 
 func newDummyModule(intraLogin string) *Module {
 	return &Module{
-		ID:             strconv.Itoa(rand.Int()),
+		ID:             rand.Int(),
 		IntraLogin:     intraLogin,
 		Attempts:       42,
 		Score:          42,
