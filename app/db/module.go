@@ -32,6 +32,11 @@ func (dao *ModuleDAO) InsertModule(module *Module) error {
 	return err
 }
 
+// GetModuleretrieves a unique module by ID and intraLogin
+func (dao *ModuleDAO) GetModule(moduleID int, intraLogin string) (*Module, error) {
+	panic("GetModulenot implemented yet")
+}
+
 // GetModulesByID retrieves all modules for a specific moduleID.
 func (dao *ModuleDAO) GetModulesByID(moduleID string) ([]Module, error) {
 	var modules []Module
@@ -54,11 +59,6 @@ func (dao *ModuleDAO) GetModulesByLogin(intraLogin string) ([]Module, error) {
 	}
 
 	return modules, nil
-}
-
-// GetModuleByIDAndLogin retrieves a unique module by ID and intraLogin
-func (dao *ModuleDAO) GetModuleByIDAndLogin(moduleID int, intraLogin string) (*Module, error) {
-	panic("GetModuleByIDAndLogin not implemented yet")
 }
 
 // GetAllModules retrieves all modules.
