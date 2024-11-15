@@ -41,7 +41,7 @@ func (dao *ModuleDAO) GetModule(moduleID int, intraLogin string) (*Module, error
 func (dao *ModuleDAO) GetModulesByID(moduleID string) ([]Module, error) {
 	var modules []Module
 
-	err := dao.DB.getWithTimeout(&modules, "SELECT * FROM module WHERE module_id = ?", moduleID)
+	err := dao.DB.selectWithTimeout(&modules, "SELECT * FROM module WHERE module_id = ?", moduleID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get modules by ID with timeout: %v", err)
 	}
@@ -53,7 +53,7 @@ func (dao *ModuleDAO) GetModulesByID(moduleID string) ([]Module, error) {
 func (dao *ModuleDAO) GetModulesByLogin(intraLogin string) ([]Module, error) {
 	var modules []Module
 
-	err := dao.DB.getWithTimeout(&modules, "SELECT * FROM module WHERE intra_login = ?", intraLogin)
+	err := dao.DB.selectWithTimeout(&modules, "SELECT * FROM module WHERE intra_login = ?", intraLogin)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get modules by login with timeout: %v", err)
 	}

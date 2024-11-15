@@ -118,3 +118,17 @@ func (db *DB) getWithTimeout(dest interface{}, query string, args ...interface{}
 
 	return nil
 }
+
+// Executes a query with a timeout specified in the DB struct.
+// It retrieves multiple rows from the database and maps it to the provided struct.
+func (db *DB) selectWithTimeout(dest interface{}, query string, args ...interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
+	defer cancel()
+
+	err := db.Connection.SelectContext(ctx, dest, query, args...)
+	if err != nil {
+		return fmt.Errorf("failed to get data with timeout: %v", err)
+	}
+
+	return nil
+}

@@ -23,6 +23,7 @@ func TestInitialize(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
+	defer db.Close()
 
 	err = db.Initialize()
 	if err != nil {
@@ -33,7 +34,6 @@ func TestInitialize(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to verify table existence: %v", err)
 	}
-
 	err = verifySchemaTableExists(db, "participant")
 	if err != nil {
 		t.Fatalf("failed to verify table existence: %v", err)
@@ -41,8 +41,9 @@ func TestInitialize(t *testing.T) {
 }
 
 func TestInvalidNewDB(t *testing.T) {
-	_, err := NewDB("/path/to/invalid-dsn", 2*time.Second)
+	db, err := NewDB("/path/to/invalid-dsn", 2*time.Second)
 	if err == nil {
+		db.Close()
 		t.Fatalf("expected error when opening DB with invalid DSN, but got nil")
 	}
 }
@@ -64,6 +65,7 @@ func TestInitializeExistingTables(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
+	defer db.Close()
 
 	err = db.Initialize()
 	if err != nil {
@@ -78,7 +80,6 @@ func TestInitializeExistingTables(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to verify table existence: %v", err)
 	}
-
 	err = verifySchemaTableExists(db, "participant")
 	if err != nil {
 		t.Fatalf("failed to verify table existence: %v", err)

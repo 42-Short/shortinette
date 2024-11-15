@@ -6,17 +6,29 @@ import (
 )
 
 func TestInsertModule(t *testing.T) {
-	db, module, _ := newDummyDB(t)
+	db, modules, _ := newDummyDB(t)
 	dao := ModuleDAO{DB: db}
+	defer db.Close()
 
-	var retrievedModule Module
-	err := dao.DB.getWithTimeout(&retrievedModule, "SELECT * FROM module WHERE module_id = ?", module.ID)
+	var count int
+	err := dao.DB.getWithTimeout(&count, "SELECT COUNT(*) FROM module;")
+	if err != nil {
+		t.Fatalf("failed to count modules in DB: %v", err)
+	}
+	if count != len(modules) {
+		t.Fatalf("expected %d modules, but found %d in DB", len(modules), count)
+	}
+
+	retrievedModules := []Module{}
+	err = dao.DB.selectWithTimeout(&retrievedModules, "SELECT * FROM module;")
 	if err != nil {
 		t.Fatalf("failed to fetch module from DB: %v", err)
 	}
-	err = validateModule(module, &retrievedModule)
-	if err != nil {
-		t.Fatalf("module validation failed: %v", err)
+	for i, module := range modules {
+		err = validateModule(&module, &retrievedModules[i])
+		if err != nil {
+			t.Fatalf("failed to fetch module from DB: %v", err)
+		}
 	}
 }
 
