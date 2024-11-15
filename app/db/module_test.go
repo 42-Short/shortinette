@@ -27,13 +27,24 @@ func TestInsertModule(t *testing.T) {
 	for i, module := range modules {
 		err = validateModule(&module, &retrievedModules[i])
 		if err != nil {
-			t.Fatalf("failed to fetch module from DB: %v", err)
+			t.Fatalf("failed to validate module: %v", err)
 		}
 	}
 }
 
 func TestGetModule(t *testing.T) {
-	t.Skip("TestGetModulesByLogin not implemented yet")
+	db, modules, participants := newDummyDB(t)
+	dao := ModuleDAO{DB: db}
+	defer db.Close()
+
+	retrievedModule, err := dao.GetModule(modules[1].ID, participants[1].IntraLogin)
+	if err != nil {
+		t.Fatalf("failed to fetch module from DB: %v", err)
+	}
+	err = validateModule(&modules[1], retrievedModule)
+	if err != nil {
+		t.Fatalf("failed to validate module: %v", err)
+	}
 }
 
 func TestGetModulesByID(t *testing.T) {

@@ -48,7 +48,7 @@ func (db *DB) Initialize() error {
 		);
 	`)
 	if err != nil {
-		return fmt.Errorf("Error creating Participant table: %v", err)
+		return fmt.Errorf("Error creating Participant schema: %v", err)
 	}
 
 	_, err = db.execWithTimeout(`
@@ -65,7 +65,7 @@ func (db *DB) Initialize() error {
 		);
 	`)
 	if err != nil {
-		return fmt.Errorf("Error creating Module table: %v", err)
+		return fmt.Errorf("Error creating Module schema: %v", err)
 	}
 
 	fmt.Println("Schema Tables successfully created.")

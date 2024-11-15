@@ -32,15 +32,20 @@ func (dao *ModuleDAO) InsertModule(module *Module) error {
 	return err
 }
 
-// GetModuleretrieves a unique module by ID and intraLogin
+// GetModule retrieves a unique module by ID and intraLogin
 func (dao *ModuleDAO) GetModule(moduleID int, intraLogin string) (*Module, error) {
-	panic("GetModulenot implemented yet")
+	var module Module
+	err := dao.DB.getWithTimeout(&module, "SELECT * FROM module WHERE module_id = ? and intra_login = ?", moduleID, intraLogin)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get module with timeout: %v", err)
+	}
+
+	return &module, nil
 }
 
 // GetModulesByID retrieves all modules for a specific moduleID.
 func (dao *ModuleDAO) GetModulesByID(moduleID string) ([]Module, error) {
 	var modules []Module
-
 	err := dao.DB.selectWithTimeout(&modules, "SELECT * FROM module WHERE module_id = ?", moduleID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get modules by ID with timeout: %v", err)
@@ -52,7 +57,6 @@ func (dao *ModuleDAO) GetModulesByID(moduleID string) ([]Module, error) {
 // GetModulesByLogin retrieves all modules for a specific intraLogin.
 func (dao *ModuleDAO) GetModulesByLogin(intraLogin string) ([]Module, error) {
 	var modules []Module
-
 	err := dao.DB.selectWithTimeout(&modules, "SELECT * FROM module WHERE intra_login = ?", intraLogin)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get modules by login with timeout: %v", err)
