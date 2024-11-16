@@ -14,4 +14,11 @@ type Module struct {
 
 // ModuleDAO (Data Access Object) provides methods to interact with the module table.
 type ModuleDAO struct {
+	*BaseDAO[Module]
+}
+
+func newModuleDAO(db *DB) *ModuleDAO {
+	return &ModuleDAO{
+		BaseDAO: newBaseDao[Module](db, "module"),
+	}
 }

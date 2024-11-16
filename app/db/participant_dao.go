@@ -7,4 +7,11 @@ type Participant struct {
 
 // ParticipantDAO (Data Access Object) provides methods to interact with the participants table.
 type ParticipantDAO struct {
+	*BaseDAO[Participant]
+}
+
+func newParticipantDAO(db *DB) *ParticipantDAO {
+	return &ParticipantDAO{
+		BaseDAO: newBaseDao[Participant](db, "participant"),
+	}
 }
