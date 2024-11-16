@@ -1,6 +1,8 @@
 package db
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestDelete(t *testing.T) {
 
