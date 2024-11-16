@@ -11,7 +11,7 @@ import (
 )
 
 type DB struct {
-	Conn         *sqlx.DB
+	Connection   *sqlx.DB
 	QueryTimeout time.Duration
 }
 
@@ -74,7 +74,7 @@ func (db *DB) Initialize() error {
 
 // Closes the database connection.
 func (db *DB) Close() error {
-	return db.Conn.Close()
+	return db.Connection.Close()
 }
 
 // Executes a query with a timeout specified in the DB struct.
@@ -83,7 +83,7 @@ func (db *DB) execWithTimeout(query string, args ...any) (sql.Result, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
 	defer cancel()
 
-	result, err := db.Conn.ExecContext(ctx, query, args...)
+	result, err := db.Connection.ExecContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (db *DB) namedExecWithTimeout(query string, arg interface{}) (sql.Result, e
 	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
 	defer cancel()
 
-	result, err := db.Conn.NamedExecContext(ctx, query, arg)
+	result, err := db.Connection.NamedExecContext(ctx, query, arg)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func (db *DB) getWithTimeout(dest interface{}, query string, args ...interface{}
 	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
 	defer cancel()
 
-	err := db.Conn.GetContext(ctx, dest, query, args...)
+	err := db.Connection.GetContext(ctx, dest, query, args...)
 	if err != nil {
 		return fmt.Errorf("failed to get data with timeout: %v", err)
 	}
@@ -125,7 +125,7 @@ func (db *DB) selectWithTimeout(dest interface{}, query string, args ...interfac
 	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
 	defer cancel()
 
-	err := db.Conn.SelectContext(ctx, dest, query, args...)
+	err := db.Connection.SelectContext(ctx, dest, query, args...)
 	if err != nil {
 		return fmt.Errorf("failed to get data with timeout: %v", err)
 	}

@@ -1,7 +1,5 @@
 package db
 
-package db
-
 import (
 	"fmt"
 	"testing"
