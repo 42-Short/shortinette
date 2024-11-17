@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"io/ioutil"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -41,35 +42,14 @@ func NewDB(dsn string, queryTimeout time.Duration) (*DB, error) {
 // Sets up the necessary schema in the database and enabling foreign key.
 // It returns an error if any of the schema operations fail.
 func (db *DB) Initialize() error {
-	_, err := db.execWithTimeout("PRAGMA foreign_keys = ON;")
+
+	data, err := ioutil.ReadFile("schema.sql")
 	if err != nil {
-		return fmt.Errorf("Error enabling foreign keys: %v", err)
+		return fmt.Errorf("Error reading sql file: %v", err)
 	}
 
-	_, err = db.execWithTimeout(fmt.Sprintf(`
-		CREATE TABLE IF NOT EXISTS %s (
-			intra_login TEXT PRIMARY KEY NOT NULL UNIQUE,
-			github_login TEXT NOT NULL UNIQUE,
-			FOREIGN KEY (intra_login) REFERENCES participants(intra_login) ON DELETE CASCADE
-		);
-	`, participantTableName))
-	if err != nil {
-		return fmt.Errorf("Error creating Participant schema: %v", err)
-	}
-
-	_, err = db.execWithTimeout(fmt.Sprintf(`
-		CREATE TABLE IF NOT EXISTS %s (
-			module_id INTEGER NOT NULL,
-			intra_login TEXT NOT NULL,
-			attempts INTEGER DEFAULT 0,
-			score INTEGER DEFAULT 0,
-			last_graded DATETIME,
-			wait_time INTEGER DEFAULT 0,
-			grading_ongoing BOOLEAN DEFAULT 0,
-			PRIMARY KEY (module_id, intra_login),
-			FOREIGN KEY (intra_login) REFERENCES participants(intra_login) ON DELETE CASCADE
-		);
-	`, moduleTableName))
+	query := fmt.Sprintf(string(data), participantTableName, moduleTableName)
+	_, err = db.execWithTimeout(query)
 	if err != nil {
 		return fmt.Errorf("Error creating Module schema: %v", err)
 	}
