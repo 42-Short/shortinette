@@ -6,26 +6,32 @@ import (
 	"strings"
 )
 
-type BaseDAO[T any] struct {
-	DB        *DB
-	tableName string
-	dbTags    []string
+type DAO[T any] struct {
+	DB          *DB
+	tableName   string
+	dbTags      []string
+	primaryKeys []string
 }
 
-func NewBaseDao[T any](db *DB, tableName string) *BaseDAO[T] {
+func NewBaseDao[T any](db *DB, tableName string) *DAO[T] {
 	var dummy T
-	tags := extractStructTags(&dummy)
+	tags := extractTags(&dummy, "db")
 	if len(tags) == 0 {
-		panic("NewBaseDao: Expected database tags tags but got none")
+		panic("NewBaseDao: Expected database tags (db) tags but got 0")
 	}
-	return &BaseDAO[T]{
-		DB:        db,
-		tableName: tableName,
-		dbTags:    tags,
+	primaryKeys := extractTags(&dummy, "primaryKey")
+	if len(primaryKeys) == 0 {
+		panic("NewBaseDao: Expected primaryKey tags (primaryKey) tags but got 0")
+	}
+	return &DAO[T]{
+		DB:          db,
+		tableName:   tableName,
+		dbTags:      tags,
+		primaryKeys: primaryKeys,
 	}
 }
 
-func (dao *BaseDAO[T]) Insert(data *T) error {
+func (dao *DAO[T]) Insert(data *T) error {
 	query := dao.buildInsertQuery()
 	_, err := dao.DB.namedExecWithTimeout(query, data)
 	if err != nil {
@@ -34,7 +40,7 @@ func (dao *BaseDAO[T]) Insert(data *T) error {
 	return nil
 }
 
-func (dao *BaseDAO[T]) GetAll() ([]T, error) {
+func (dao *DAO[T]) GetAll() ([]T, error) {
 	query := fmt.Sprintf("SELECT * FROM %s;", dao.tableName)
 
 	var retrievedData []T
@@ -45,9 +51,11 @@ func (dao *BaseDAO[T]) GetAll() ([]T, error) {
 	return retrievedData, nil
 }
 
-func (dao *BaseDAO[T]) Get(columnNames []string, args ...any) (*T, error) {
+func (dao *DAO[T]) Get(args ...any) (*T, error) {
 	var retrievedData T
-	query := dao.buildGetQuery(columnNames)
+
+	query := dao.buildGetQuery(dao.primaryKeys)
+	fmt.Printf("query: %s\n", query)
 	err := dao.DB.getWithTimeout(&retrievedData, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get data from table %s: %v", dao.tableName, err)
@@ -55,7 +63,7 @@ func (dao *BaseDAO[T]) Get(columnNames []string, args ...any) (*T, error) {
 	return &retrievedData, err
 }
 
-func (dao *BaseDAO[T]) buildGetQuery(columnNames []string) string {
+func (dao *DAO[T]) buildGetQuery(columnNames []string) string {
 	conditions := make([]string, 0, len(columnNames))
 	for _, columnName := range columnNames {
 		conditions = append(conditions, fmt.Sprintf("%s = ?", columnName))
@@ -64,7 +72,7 @@ func (dao *BaseDAO[T]) buildGetQuery(columnNames []string) string {
 	return query
 }
 
-func (dao *BaseDAO[T]) buildInsertQuery() string {
+func (dao *DAO[T]) buildInsertQuery() string {
 	columns := strings.Join(dao.dbTags, ", ")
 	placeholders := strings.Join(createNamedPlaceholders(dao.dbTags), ", ")
 	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s);", dao.tableName, columns, placeholders)
@@ -79,14 +87,16 @@ func createNamedPlaceholders(tags []string) []string {
 	return placeholders
 }
 
-func extractStructTags[T any](data *T) []string {
+func extractTags[T any](data *T, key string) []string {
 	t := reflect.TypeOf(*data)
 
-	dbTags := make([]string, 0, t.NumField())
+	tags := []string{}
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
-		dbTag := field.Tag.Get("db")
-		dbTags = append(dbTags, dbTag)
+		tag := field.Tag.Get(key)
+		if tag != "" {
+			tags = append(tags, tag)
+		}
 	}
-	return dbTags
+	return tags
 }

@@ -24,11 +24,13 @@ func newDummyDB(t *testing.T) (*DB, []Module, []Participant) {
 }
 
 func createDummyData(t *testing.T, db *DB) ([]Module, []Participant) {
-	moduleDao := newModuleDAO(db)
-	participantDao := newParticipantDAO(db)
+	moduleDao := NewBaseDao[Module](db, moduleTableName)
+	participantDao := NewBaseDao[Participant](db, participantTableName)
 
-	const moduleAmount = 7
-	const participantAmount = 10
+	const (
+		moduleAmount      = 7
+		participantAmount = 40
+	)
 	participants := make([]Participant, 0, participantAmount)
 	modules := make([]Module, 0, moduleAmount*participantAmount)
 

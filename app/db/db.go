@@ -16,8 +16,8 @@ type DB struct {
 }
 
 const (
-	modulesTableName      string = "modules"
-	participantsTableName string = "participants"
+	moduleTableName      string = "modules"
+	participantTableName string = "participants"
 )
 
 // Creates a new database connection using the provided DSN.
@@ -52,7 +52,7 @@ func (db *DB) Initialize() error {
 			github_login TEXT NOT NULL UNIQUE,
 			FOREIGN KEY (intra_login) REFERENCES participants(intra_login) ON DELETE CASCADE
 		);
-	`, participantsTableName))
+	`, participantTableName))
 	if err != nil {
 		return fmt.Errorf("Error creating Participant schema: %v", err)
 	}
@@ -69,7 +69,7 @@ func (db *DB) Initialize() error {
 			PRIMARY KEY (module_id, intra_login),
 			FOREIGN KEY (intra_login) REFERENCES participants(intra_login) ON DELETE CASCADE
 		);
-	`, modulesTableName))
+	`, moduleTableName))
 	if err != nil {
 		return fmt.Errorf("Error creating Module schema: %v", err)
 	}

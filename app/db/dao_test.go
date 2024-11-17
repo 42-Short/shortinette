@@ -6,7 +6,7 @@ import (
 
 func TestInsert(t *testing.T) {
 	db, _, participants := newDummyDB(t)
-	participantDAO := newParticipantDAO(db)
+	participantDAO := NewBaseDao[Participant](db, participantTableName)
 	defer db.Close()
 
 	participant := newDummyParticipant()
@@ -26,8 +26,8 @@ func TestInsert(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	db, modules, participants := newDummyDB(t)
-	moduleDAO := newModuleDAO(db)
-	participantDAO := newParticipantDAO(db)
+	moduleDAO := NewBaseDao[Module](db, moduleTableName)
+	participantDAO := NewBaseDao[Participant](db, participantTableName)
 	defer db.Close()
 
 	retrievedParticipant, err := participantDAO.Get(participants[0].IntraLogin)
@@ -44,8 +44,8 @@ func TestGet(t *testing.T) {
 
 func TestGetAll(t *testing.T) {
 	db, modules, participants := newDummyDB(t)
-	moduleDAO := newModuleDAO(db)
-	participantDAO := newParticipantDAO(db)
+	moduleDAO := NewBaseDao[Module](db, moduleTableName)
+	participantDAO := NewBaseDao[Participant](db, participantTableName)
 	defer db.Close()
 
 	retrievedModules, err := moduleDAO.GetAll()
