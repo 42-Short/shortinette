@@ -15,6 +15,11 @@ type DB struct {
 	QueryTimeout time.Duration
 }
 
+const (
+	modulesTableName      string = "modules"
+	participantsTableName string = "participants"
+)
+
 // Creates a new database connection using the provided DSN.
 // It returns a pointer to a DB struct and an error if the connection cannot be established.
 func NewDB(dsn string, queryTimeout time.Duration) (*DB, error) {
@@ -41,18 +46,18 @@ func (db *DB) Initialize() error {
 		return fmt.Errorf("Error enabling foreign keys: %v", err)
 	}
 
-	_, err = db.execWithTimeout(`
-		CREATE TABLE IF NOT EXISTS participant (
+	_, err = db.execWithTimeout(fmt.Sprintf(`
+		CREATE TABLE IF NOT EXISTS %s (
 			intra_login TEXT PRIMARY KEY NOT NULL,
 			github_login TEXT NOT NULL
 		);
-	`)
+	`, participantsTableName))
 	if err != nil {
 		return fmt.Errorf("Error creating Participant schema: %v", err)
 	}
 
-	_, err = db.execWithTimeout(`
-		CREATE TABLE IF NOT EXISTS module (
+	_, err = db.execWithTimeout(fmt.Sprintf(`
+		CREATE TABLE IF NOT EXISTS %s (
 			module_id INTEGER NOT NULL,
 			intra_login TEXT NOT NULL,
 			attempts INTEGER,
@@ -61,9 +66,9 @@ func (db *DB) Initialize() error {
 			wait_time INTEGER,
 			grading_ongoing BOOLEAN,
 			PRIMARY KEY (module_id, intra_login),
-			FOREIGN KEY (intra_login) REFERENCES participant(intra_login) ON DELETE CASCADE
+			FOREIGN KEY (intra_login) REFERENCES participants(intra_login) ON DELETE CASCADE
 		);
-	`)
+	`, modulesTableName))
 	if err != nil {
 		return fmt.Errorf("Error creating Module schema: %v", err)
 	}
@@ -93,7 +98,7 @@ func (db *DB) execWithTimeout(query string, args ...any) (sql.Result, error) {
 
 // Executes a Named query with a timeout specified in the DB struct.
 // It returns sql.Result and any error encountered during execution.
-func (db *DB) namedExecWithTimeout(query string, arg interface{}) (sql.Result, error) {
+func (db *DB) namedExecWithTimeout(query string, arg any) (sql.Result, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
 	defer cancel()
 
@@ -107,7 +112,7 @@ func (db *DB) namedExecWithTimeout(query string, arg interface{}) (sql.Result, e
 
 // Executes a query with a timeout specified in the DB struct.
 // It retrieves a single row from the database and maps it to the provided struct.
-func (db *DB) getWithTimeout(dest interface{}, query string, args ...interface{}) error {
+func (db *DB) getWithTimeout(dest interface{}, query string, args ...any) error {
 	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
 	defer cancel()
 
@@ -121,7 +126,7 @@ func (db *DB) getWithTimeout(dest interface{}, query string, args ...interface{}
 
 // Executes a query with a timeout specified in the DB struct.
 // It retrieves multiple rows from the database and maps it to the provided struct.
-func (db *DB) selectWithTimeout(dest interface{}, query string, args ...interface{}) error {
+func (db *DB) selectWithTimeout(dest interface{}, query string, args ...any) error {
 	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
 	defer cancel()
 

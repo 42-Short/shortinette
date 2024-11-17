@@ -30,11 +30,11 @@ func TestInitialize(t *testing.T) {
 		t.Fatalf("failed to Initialize DB: %v", err)
 	}
 
-	err = verifySchemaTableExists(db, "module")
+	err = verifySchemaTableExists(db, modulesTableName)
 	if err != nil {
 		t.Fatalf("failed to verify table existence: %v", err)
 	}
-	err = verifySchemaTableExists(db, "participant")
+	err = verifySchemaTableExists(db, participantsTableName)
 	if err != nil {
 		t.Fatalf("failed to verify table existence: %v", err)
 	}
@@ -76,11 +76,11 @@ func TestInitializeExistingTables(t *testing.T) {
 		t.Fatalf("failed to initialize DB again: %v", err)
 	}
 
-	err = verifySchemaTableExists(db, "module")
+	err = verifySchemaTableExists(db, modulesTableName)
 	if err != nil {
 		t.Fatalf("failed to verify table existence: %v", err)
 	}
-	err = verifySchemaTableExists(db, "participant")
+	err = verifySchemaTableExists(db, participantsTableName)
 	if err != nil {
 		t.Fatalf("failed to verify table existence: %v", err)
 	}

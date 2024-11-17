@@ -45,7 +45,7 @@ func (dao *BaseDAO[T]) GetAll() ([]T, error) {
 	return retrievedData, nil
 }
 
-func (dao *BaseDAO[T]) Get(columnNames []string, args ...interface{}) (*T, error) {
+func (dao *BaseDAO[T]) Get(columnNames []string, args ...any) (*T, error) {
 	var retrievedData T
 	query := dao.buildGetQuery(columnNames)
 	err := dao.DB.getWithTimeout(&retrievedData, query, args...)
@@ -56,14 +56,11 @@ func (dao *BaseDAO[T]) Get(columnNames []string, args ...interface{}) (*T, error
 }
 
 func (dao *BaseDAO[T]) buildGetQuery(columnNames []string) string {
-	query := fmt.Sprintf("SELECT * FROM %s WHERE ", dao.tableName)
-
 	conditions := make([]string, 0, len(columnNames))
 	for _, columnName := range columnNames {
 		conditions = append(conditions, fmt.Sprintf("%s = ?", columnName))
 	}
-	query += strings.Join(conditions, " AND ")
-	fmt.Printf(query)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE %s", dao.tableName, strings.Join(conditions, " AND "))
 	return query
 }
 
@@ -85,7 +82,7 @@ func createNamedPlaceholders(tags []string) []string {
 func extractStructTags[T any](data *T) []string {
 	t := reflect.TypeOf(*data)
 
-	dbTags := []string{}
+	dbTags := make([]string, 0, t.NumField())
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		dbTag := field.Tag.Get("db")

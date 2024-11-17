@@ -12,7 +12,7 @@ type ParticipantDAO struct {
 
 func newParticipantDAO(db *DB) *ParticipantDAO {
 	return &ParticipantDAO{
-		BaseDAO: NewBaseDao[Participant](db, "participant"),
+		BaseDAO: NewBaseDao[Participant](db, participantsTableName),
 	}
 }
 

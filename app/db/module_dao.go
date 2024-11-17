@@ -21,7 +21,7 @@ type ModuleDAO struct {
 
 func newModuleDAO(db *DB) *ModuleDAO {
 	return &ModuleDAO{
-		BaseDAO: NewBaseDao[Module](db, "module"),
+		BaseDAO: NewBaseDao[Module](db, modulesTableName),
 	}
 }
 
