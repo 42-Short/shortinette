@@ -9,7 +9,7 @@ import (
 type BaseDAO[T any] struct {
 	DB        *DB
 	tableName string
-	tags      []string
+	dbTags    []string
 }
 
 func NewBaseDao[T any](db *DB, tableName string) *BaseDAO[T] {
@@ -21,7 +21,7 @@ func NewBaseDao[T any](db *DB, tableName string) *BaseDAO[T] {
 	return &BaseDAO[T]{
 		DB:        db,
 		tableName: tableName,
-		tags:      tags,
+		dbTags:    tags,
 	}
 }
 
@@ -65,8 +65,8 @@ func (dao *BaseDAO[T]) buildGetQuery(columnNames []string) string {
 }
 
 func (dao *BaseDAO[T]) buildInsertQuery() string {
-	columns := strings.Join(dao.tags, ", ")
-	placeholders := strings.Join(createNamedPlaceholders(dao.tags), ", ")
+	columns := strings.Join(dao.dbTags, ", ")
+	placeholders := strings.Join(createNamedPlaceholders(dao.dbTags), ", ")
 	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s);", dao.tableName, columns, placeholders)
 	return query
 }
