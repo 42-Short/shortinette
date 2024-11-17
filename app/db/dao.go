@@ -55,16 +55,15 @@ func (dao *BaseDAO[T]) Get(columnNames []string, args ...interface{}) (*T, error
 	return &retrievedData, err
 }
 
-// example: "SELECT * FROM module WHERE module_id = ? and intra_login = ?;"
 func (dao *BaseDAO[T]) buildGetQuery(columnNames []string) string {
 	query := fmt.Sprintf("SELECT * FROM %s WHERE ", dao.tableName)
 
-	conditions := []string{}
+	conditions := make([]string, 0, len(columnNames))
 	for _, columnName := range columnNames {
 		conditions = append(conditions, fmt.Sprintf("%s = ?", columnName))
 	}
 	query += strings.Join(conditions, " AND ")
-	fmt.Printf("%s", query)
+	fmt.Printf(query)
 	return query
 }
 
@@ -76,9 +75,9 @@ func (dao *BaseDAO[T]) buildInsertQuery() string {
 }
 
 func createNamedPlaceholders(tags []string) []string {
-	placeholders := make([]string, len(tags))
-	for i, tag := range tags {
-		placeholders[i] = ":" + tag
+	placeholders := make([]string, 0, len(tags))
+	for _, tag := range tags {
+		placeholders = append(placeholders, ":"+tag)
 	}
 	return placeholders
 }
