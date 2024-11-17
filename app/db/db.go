@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -43,7 +43,7 @@ func NewDB(dsn string, queryTimeout time.Duration) (*DB, error) {
 // It returns an error if any of the schema operations fail.
 func (db *DB) Initialize() error {
 
-	data, err := ioutil.ReadFile("schema.sql")
+	data, err := os.ReadFile("schema.sql")
 	if err != nil {
 		return fmt.Errorf("Error reading sql file: %v", err)
 	}

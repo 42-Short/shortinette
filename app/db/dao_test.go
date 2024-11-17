@@ -6,7 +6,7 @@ import (
 
 func TestInsert(t *testing.T) {
 	db, _, participants := newDummyDB(t)
-	participantDAO := NewBaseDao[Participant](db, participantTableName)
+	participantDAO := NewDAO[Participant](db, participantTableName)
 	defer db.Close()
 
 	participant := newDummyParticipant()
@@ -26,8 +26,8 @@ func TestInsert(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	db, modules, participants := newDummyDB(t)
-	moduleDAO := NewBaseDao[Module](db, moduleTableName)
-	participantDAO := NewBaseDao[Participant](db, participantTableName)
+	moduleDAO := NewDAO[Module](db, moduleTableName)
+	participantDAO := NewDAO[Participant](db, participantTableName)
 	defer db.Close()
 
 	retrievedParticipant, err := participantDAO.Get(participants[0].IntraLogin)
@@ -42,10 +42,33 @@ func TestGet(t *testing.T) {
 	assertParticipant(t, &participants[0], retrievedParticipant)
 }
 
+func TestGetFiltered(t *testing.T) {
+	db, _, participants := newDummyDB(t)
+	moduleDAO := NewDAO[Module](db, moduleTableName)
+	defer db.Close()
+
+	filters := map[string]any{
+		"intra_login": participants[0].IntraLogin,
+		"score":       42,
+	}
+	retrievedModules, err := moduleDAO.GetFiltered(filters)
+	if err != nil {
+		t.Fatalf("failed to fetch module from DB: %v", err)
+	}
+	for _, retrievedModule := range retrievedModules {
+		if retrievedModule.IntraLogin != participants[0].IntraLogin {
+			t.Fatalf("incorrect IntraLogin in filtered fetch: %v", err)
+		}
+		if retrievedModule.Score != 42 {
+			t.Fatalf("incorrect IntraLogin in filtered fetch: %v", err)
+		}
+	}
+}
+
 func TestGetAll(t *testing.T) {
 	db, modules, participants := newDummyDB(t)
-	moduleDAO := NewBaseDao[Module](db, moduleTableName)
-	participantDAO := NewBaseDao[Participant](db, participantTableName)
+	moduleDAO := NewDAO[Module](db, moduleTableName)
+	participantDAO := NewDAO[Participant](db, participantTableName)
 	defer db.Close()
 
 	retrievedModules, err := moduleDAO.GetAll()

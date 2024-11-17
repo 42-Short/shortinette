@@ -18,19 +18,15 @@ func newDummyDB(t *testing.T) (*DB, []Module, []Participant) {
 		t.Fatalf("failed to initialize DB: %v", err)
 	}
 
-	modules, participants := createDummyData(t, db)
+	modules, participants := createDummyData(t, db, 7, 40)
 
 	return db, modules, participants
 }
 
-func createDummyData(t *testing.T, db *DB) ([]Module, []Participant) {
-	moduleDao := NewBaseDao[Module](db, moduleTableName)
-	participantDao := NewBaseDao[Participant](db, participantTableName)
+func createDummyData(t *testing.T, db *DB, moduleAmount int, participantAmount int) ([]Module, []Participant) {
+	moduleDao := NewDAO[Module](db, moduleTableName)
+	participantDao := NewDAO[Participant](db, participantTableName)
 
-	const (
-		moduleAmount      = 7
-		participantAmount = 40
-	)
 	participants := make([]Participant, 0, participantAmount)
 	modules := make([]Module, 0, moduleAmount*participantAmount)
 
