@@ -57,7 +57,7 @@ func (dao *DAO[T]) GetAll() ([]T, error) {
 func (dao *DAO[T]) Get(args ...any) (*T, error) {
 	var retrievedData T
 
-	query := dao.buildGetQuery(dao.primaryKeys)
+	query := dao.buildQuery("SELECT", dao.primaryKeys)
 	err := dao.DB.getWithTimeout(&retrievedData, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get data from table %s: %v", dao.tableName, err)
@@ -66,7 +66,6 @@ func (dao *DAO[T]) Get(args ...any) (*T, error) {
 }
 
 func (dao *DAO[T]) GetFiltered(filters map[string]any) ([]T, error) {
-
 	fields := make([]string, 0, len(filters))
 	args := make([]any, 0, len(filters))
 	for field, value := range filters {
@@ -74,23 +73,31 @@ func (dao *DAO[T]) GetFiltered(filters map[string]any) ([]T, error) {
 		args = append(args, value)
 	}
 
-	query := dao.buildGetQuery(fields)
-
-	var results []T
-	err := dao.DB.selectWithTimeout(&results, query, args...)
+	var retrievedData []T
+	query := dao.buildQuery("SELECT", fields)
+	err := dao.DB.selectWithTimeout(&retrievedData, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to filter data: %v", err)
 	}
 
-	return results, nil
+	return retrievedData, nil
 }
 
-func (dao *DAO[T]) buildGetQuery(fields []string) string {
+func (dao *DAO[T]) Delete(args ...any) error {
+	query := dao.buildQuery("DELETE", dao.primaryKeys)
+	_, err := dao.DB.namedExecWithTimeout(query, args)
+	if err != nil {
+		return fmt.Errorf("failed to delte table %s: %v", dao.tableName, err)
+	}
+	return nil
+}
+
+func (dao *DAO[T]) buildQuery(queryType string, fields []string) string {
 	conditions := make([]string, 0, len(fields))
 	for _, field := range fields {
 		conditions = append(conditions, fmt.Sprintf("%s = ?", field))
 	}
-	query := fmt.Sprintf("SELECT * FROM %s WHERE %s", dao.tableName, strings.Join(conditions, " AND "))
+	query := fmt.Sprintf("%s * FROM %s WHERE %s", queryType, dao.tableName, strings.Join(conditions, " AND "))
 	return query
 }
 

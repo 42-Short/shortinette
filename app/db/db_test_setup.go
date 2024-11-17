@@ -24,6 +24,7 @@ func newDummyDB(t *testing.T) (*DB, []Module, []Participant) {
 }
 
 func createDummyData(t *testing.T, db *DB, moduleAmount int, participantAmount int) ([]Module, []Participant) {
+	t.Helper()
 	moduleDao := NewDAO[Module](db, moduleTableName)
 	participantDao := NewDAO[Participant](db, participantTableName)
 
@@ -53,11 +54,11 @@ func newDummyModule(moduleID int, intraLogin string) *Module {
 	return &Module{
 		Id:             moduleID,
 		IntraLogin:     intraLogin,
-		Attempts:       42,
-		Score:          42,
+		Attempts:       rand.Int(),
+		Score:          rand.Int(),
 		LastGraded:     time.Now(),
-		WaitTime:       42,
-		GradingOngoing: false,
+		WaitTime:       rand.Int(),
+		GradingOngoing: rand.Intn(2) == 0,
 	}
 }
 

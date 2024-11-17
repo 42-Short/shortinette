@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -43,24 +44,25 @@ func TestGet(t *testing.T) {
 }
 
 func TestGetFiltered(t *testing.T) {
-	db, _, participants := newDummyDB(t)
+	db, modules, _ := newDummyDB(t)
 	moduleDAO := NewDAO[Module](db, moduleTableName)
 	defer db.Close()
 
 	filters := map[string]any{
-		"intra_login": participants[0].IntraLogin,
-		"score":       42,
+		"wait_time": modules[0].WaitTime,
+		"attempts":  modules[0].Attempts,
 	}
 	retrievedModules, err := moduleDAO.GetFiltered(filters)
 	if err != nil {
 		t.Fatalf("failed to fetch module from DB: %v", err)
 	}
 	for _, retrievedModule := range retrievedModules {
-		if retrievedModule.IntraLogin != participants[0].IntraLogin {
-			t.Fatalf("incorrect IntraLogin in filtered fetch: %v", err)
+		fmt.Printf("%d vs %d\n", retrievedModule.WaitTime, modules[0].WaitTime)
+		if retrievedModule.WaitTime != modules[0].WaitTime {
+			t.Fatalf("incorrect WaitTime in filtered fetch")
 		}
-		if retrievedModule.Score != 42 {
-			t.Fatalf("incorrect IntraLogin in filtered fetch: %v", err)
+		if retrievedModule.Attempts != modules[0].Attempts {
+			t.Fatalf("incorrect Score in filtered fetch")
 		}
 	}
 }
