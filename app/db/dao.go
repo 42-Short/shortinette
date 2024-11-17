@@ -45,10 +45,27 @@ func (dao *BaseDAO[T]) GetAll() ([]T, error) {
 	return retrievedData, nil
 }
 
-// "SELECT * FROM module WHERE module_id = ? and intra_login = ?;"
 func (dao *BaseDAO[T]) Get(columnNames []string, args ...interface{}) (*T, error) {
-	panic("Get not implemented yet")
-	return nil, nil
+	var retrievedData T
+	query := dao.buildGetQuery(columnNames)
+	err := dao.DB.getWithTimeout(&retrievedData, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get data from table %s: %v", dao.tableName, err)
+	}
+	return &retrievedData, err
+}
+
+// example: "SELECT * FROM module WHERE module_id = ? and intra_login = ?;"
+func (dao *BaseDAO[T]) buildGetQuery(columnNames []string) string {
+	query := fmt.Sprintf("SELECT * FROM %s WHERE ", dao.tableName)
+
+	conditions := []string{}
+	for _, columnName := range columnNames {
+		conditions = append(conditions, fmt.Sprintf("%s = ?", columnName))
+	}
+	query += strings.Join(conditions, " AND ")
+	fmt.Printf("%s", query)
+	return query
 }
 
 func (dao *BaseDAO[T]) buildInsertQuery() string {

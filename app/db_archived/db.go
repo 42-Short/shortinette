@@ -87,7 +87,6 @@ func (db *DB) execWithTimeout(query string, args ...any) (sql.Result, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return result, nil
 }
 
@@ -101,7 +100,6 @@ func (db *DB) namedExecWithTimeout(query string, arg interface{}) (sql.Result, e
 	if err != nil {
 		return nil, err
 	}
-
 	return result, nil
 }
 
@@ -115,7 +113,6 @@ func (db *DB) getWithTimeout(dest interface{}, query string, args ...interface{}
 	if err != nil {
 		return fmt.Errorf("failed to get data with timeout: %v", err)
 	}
-
 	return nil
 }
 
@@ -129,6 +126,5 @@ func (db *DB) selectWithTimeout(dest interface{}, query string, args ...interfac
 	if err != nil {
 		return fmt.Errorf("failed to get data with timeout: %v", err)
 	}
-
 	return nil
 }
