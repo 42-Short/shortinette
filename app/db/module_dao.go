@@ -1,9 +1,11 @@
 package db
 
-import "time"
+import (
+	"time"
+)
 
 type Module struct {
-	ID             int       `db:"module_id"`
+	Id             int       `db:"module_id"`
 	IntraLogin     string    `db:"intra_login"`
 	Attempts       int       `db:"attempts"`
 	Score          int       `db:"score"`
@@ -21,4 +23,8 @@ func newModuleDAO(db *DB) *ModuleDAO {
 	return &ModuleDAO{
 		BaseDAO: NewBaseDao[Module](db, "module"),
 	}
+}
+
+func (dao *ModuleDAO) Get(id int, intra_login string) (*Module, error) {
+	return dao.BaseDAO.Get([]string{"module_id", "intra_login"}, id, intra_login)
 }

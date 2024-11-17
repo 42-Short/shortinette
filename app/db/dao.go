@@ -26,12 +26,8 @@ func NewBaseDao[T any](db *DB, tableName string) *BaseDAO[T] {
 }
 
 func (dao *BaseDAO[T]) Insert(data *T) error {
-	query, err := dao.buildInsertQuery()
-	if err != nil {
-		return fmt.Errorf("failed to build insertion query")
-	}
-
-	_, err = dao.DB.namedExecWithTimeout(query, data)
+	query := dao.buildInsertQuery()
+	_, err := dao.DB.namedExecWithTimeout(query, data)
 	if err != nil {
 		return fmt.Errorf("failed to insert data into table %s: %v", dao.tableName, err)
 	}
@@ -49,11 +45,17 @@ func (dao *BaseDAO[T]) GetAll() ([]T, error) {
 	return retrievedData, nil
 }
 
-func (dao *BaseDAO[T]) buildInsertQuery() (string, error) {
+// "SELECT * FROM module WHERE module_id = ? and intra_login = ?;"
+func (dao *BaseDAO[T]) Get(columnNames []string, args ...interface{}) (*T, error) {
+	panic("Get not implemented yet")
+	return nil, nil
+}
+
+func (dao *BaseDAO[T]) buildInsertQuery() string {
 	columns := strings.Join(dao.tags, ", ")
 	placeholders := strings.Join(createNamedPlaceholders(dao.tags), ", ")
 	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s);", dao.tableName, columns, placeholders)
-	return query, nil
+	return query
 }
 
 func createNamedPlaceholders(tags []string) []string {

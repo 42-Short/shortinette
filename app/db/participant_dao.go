@@ -15,3 +15,7 @@ func newParticipantDAO(db *DB) *ParticipantDAO {
 		BaseDAO: NewBaseDao[Participant](db, "participant"),
 	}
 }
+
+func (dao *ParticipantDAO) Get(intra_login string) (*Participant, error) {
+	return dao.BaseDAO.Get([]string{"intra_login"}, intra_login)
+}

@@ -48,13 +48,12 @@ func createDummyData(t *testing.T, db *DB) ([]Module, []Participant) {
 			modules = append(modules, *module)
 		}
 	}
-	t.Logf("%s", modules[0].IntraLogin)
 	return modules, participants
 }
 
 func newDummyModule(moduleID int, intraLogin string) *Module {
 	return &Module{
-		ID:             moduleID,
+		Id:             moduleID,
 		IntraLogin:     intraLogin,
 		Attempts:       42,
 		Score:          42,
