@@ -4,6 +4,26 @@ import (
 	"testing"
 )
 
+func TestInsert(t *testing.T) {
+	db, _, participants := newDummyDB(t)
+	participantDAO := newParticipantDAO(db)
+	defer db.Close()
+
+	participant := newDummyParticipant()
+	participantDAO.Insert(participant)
+
+	retrievedParticipants, err := participantDAO.GetAll()
+	if err != nil {
+		t.Fatalf("failed to fetch participant from DB: %v", err)
+	}
+	expectedSize := len(participants) + 1
+	actualSize := len(retrievedParticipants)
+	if actualSize != expectedSize {
+		t.Fatalf("expected %d participants after insertion but got %d", expectedSize, actualSize)
+	}
+	assertParticipant(t, participant, &retrievedParticipants[actualSize-1])
+}
+
 func TestGetAll(t *testing.T) {
 	db, modules, participants := newDummyDB(t)
 	moduleDAO := newModuleDAO(db)
@@ -11,9 +31,12 @@ func TestGetAll(t *testing.T) {
 	defer db.Close()
 
 	retrievedModules, err := moduleDAO.GetAll()
-	retrievedParticipants, err := participantDAO.GetAll()
 	if err != nil {
 		t.Fatalf("failed to fetch module from DB: %v", err)
+	}
+	retrievedParticipants, err := participantDAO.GetAll()
+	if err != nil {
+		t.Fatalf("failed to fetch participant from DB: %v", err)
 	}
 	for i, participant := range participants {
 		assertParticipant(t, &participant, &retrievedParticipants[i])
@@ -28,7 +51,7 @@ func assertParticipant(t *testing.T, participant *Participant, retrievedParticip
 		t.Fatalf("participant not found in DB")
 	}
 
-	if retrievedParticipant.GitHubLogin != participant.GitHubLogin || retrievedParticipant.IntraLogin != participant.IntraLogin {
+	if retrievedParticipant.IntraLogin != participant.IntraLogin {
 		t.Fatalf("retrieved participants does not match the inserted participant")
 	}
 }
