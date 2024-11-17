@@ -9,42 +9,52 @@ import (
 
 func newDummyDB(t *testing.T) (*DB, []Module, []Participant) {
 	t.Helper()
+
 	db, err := NewDB("file::memory:?cache=shared", 2*time.Second)
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
-	err = db.Initialize()
-	if err != nil {
+	if err := db.Initialize(); err != nil {
 		t.Fatalf("failed to initialize DB: %v", err)
 	}
 
-	moduleDao := newModuleDAO(db)
-	participantDao := newParticipantDAO(db)
-	participants := []Participant{}
-	modules := []Module{}
-
-	for i := 0; i < 10; i++ {
-		participant := newDummyParticipant()
-		module := newDummyModule(participant.IntraLogin)
-
-		err = participantDao.Insert(participant)
-		if err != nil {
-			t.Fatalf("failed to insert participant into DB: %v", err)
-		}
-		participants = append(participants, *participant)
-		err = moduleDao.Insert(module)
-		if err != nil {
-			t.Fatalf("failed to insert module into DB: %v", err)
-		}
-		modules = append(modules, *module)
-	}
+	modules, participants := createDummyData(t, db)
 
 	return db, modules, participants
 }
 
-func newDummyModule(intraLogin string) *Module {
+func createDummyData(t *testing.T, db *DB) ([]Module, []Participant) {
+	moduleDao := newModuleDAO(db)
+	participantDao := newParticipantDAO(db)
+
+	const moduleAmount = 7
+	const participantAmount = 10
+	participants := make([]Participant, 0, participantAmount)
+	modules := make([]Module, 0, moduleAmount*participantAmount)
+
+	for i := 0; i < participantAmount; i++ {
+		participant := newDummyParticipant()
+
+		if err := participantDao.Insert(participant); err != nil {
+			t.Fatalf("failed to insert participant into DB: %v", err)
+		}
+		participants = append(participants, *participant)
+
+		for j := 0; j < moduleAmount; j++ {
+			module := newDummyModule(j, participant.IntraLogin)
+			if err := moduleDao.Insert(module); err != nil {
+				t.Fatalf("failed to insert module into DB: %v", err)
+			}
+			modules = append(modules, *module)
+		}
+	}
+	t.Logf("%s", modules[0].IntraLogin)
+	return modules, participants
+}
+
+func newDummyModule(moduleID int, intraLogin string) *Module {
 	return &Module{
-		ID:             rand.Int(),
+		ID:             moduleID,
 		IntraLogin:     intraLogin,
 		Attempts:       42,
 		Score:          42,
@@ -56,5 +66,8 @@ func newDummyModule(intraLogin string) *Module {
 
 func newDummyParticipant() *Participant {
 	intraLogin := strconv.Itoa(rand.Int())
-	return &Participant{IntraLogin: intraLogin, GitHubLogin: "dummy_git_" + intraLogin}
+	return &Participant{
+		IntraLogin:  intraLogin,
+		GitHubLogin: "dummy_git_" + intraLogin,
+	}
 }
