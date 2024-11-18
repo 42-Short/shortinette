@@ -61,7 +61,13 @@ func PullImage(dockerClient *client.Client, dockerImage string) error {
 		return fmt.Errorf("error parsing name of docker image: %s", err)
 	}
 
-	_, err = dockerClient.ImagePull(ctx, reference.FamiliarName(namedRef), image.PullOptions{})
+	response, err := dockerClient.ImagePull(ctx, reference.FamiliarName(namedRef), image.PullOptions{})
+	if err != nil {
+		return fmt.Errorf("error pulling docker image: %s", err)
+	}
+	defer response.Close()
+
+	_, err = io.ReadAll(response)
 	if err != nil {
 		return fmt.Errorf("error pulling docker image: %s", err)
 	}
