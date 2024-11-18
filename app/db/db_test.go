@@ -100,8 +100,8 @@ func TestBackup(t *testing.T) {
 	}
 
 	const backupDir = "./test_backups"
-	db.StartBackupScheduler(backupDir, time.Second)
-	time.Sleep(3 * time.Second)
+	db.StartBackupScheduler(backupDir, time.Millisecond*300)
+	time.Sleep(1 * time.Second)
 
 	db.Close()
 	err = os.RemoveAll(backupDir)

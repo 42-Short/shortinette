@@ -12,7 +12,10 @@ func TestInsert(t *testing.T) {
 	defer db.Close()
 
 	participant := newDummyParticipant()
-	participantDAO.Insert(context.Background(), participant)
+	err := participantDAO.Insert(context.Background(), participant)
+	if err != nil {
+		t.Fatalf("failed to insert participant into DB: %v", err)
+	}
 
 	retrievedParticipants, err := participantDAO.GetAll(context.Background())
 	if err != nil {
