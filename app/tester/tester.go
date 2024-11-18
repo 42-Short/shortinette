@@ -136,7 +136,7 @@ func GradeExercise(exercise *config.Exercise, exerciseID int, exerciseDirectory 
 	if err != nil {
 		return failed(fmt.Errorf("error creating Docker container: %s", err), exerciseID, exercise)
 	}
-	defer container.Kill()
+	defer container.Kill() //nolint:errcheck
 
 	if err := container.CopyFilesToContainer(*exercise, exerciseDirectory); err != nil {
 		return failed(fmt.Errorf("error copying files into container: %s", err), exerciseID, exercise)

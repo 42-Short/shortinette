@@ -268,6 +268,6 @@ func (c *Container) Exec(timeout time.Duration) error {
 	}
 
 	err := c.wait(timeout)
-	c.DockerClient.ContainerRemove(ctx, c.ID, container.RemoveOptions{Force: true})
+	c.DockerClient.ContainerRemove(ctx, c.ID, container.RemoveOptions{Force: true}) //nolint:errcheck
 	return err
 }
