@@ -9,7 +9,7 @@ import (
 )
 
 func TestNewDB(t *testing.T) {
-	db, err := NewDB(context.TODO(), "file::memory:?cache=shared")
+	db, err := NewDB(context.Background(), "file::memory:?cache=shared")
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
@@ -21,7 +21,7 @@ func TestNewDB(t *testing.T) {
 }
 
 func TestInitialize(t *testing.T) {
-	db, err := NewDB(context.TODO(), "file::memory:?cache=shared")
+	db, err := NewDB(context.Background(), "file::memory:?cache=shared")
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
@@ -43,7 +43,7 @@ func TestInitialize(t *testing.T) {
 }
 
 func TestInvalidNewDB(t *testing.T) {
-	db, err := NewDB(context.TODO(), "/path/to/invalid-dsn")
+	db, err := NewDB(context.Background(), "/path/to/invalid-dsn")
 	if err == nil {
 		db.Close()
 		t.Fatalf("expected error when opening DB with invalid DSN, but got nil")
@@ -51,7 +51,7 @@ func TestInvalidNewDB(t *testing.T) {
 }
 
 func TestClose(t *testing.T) {
-	db, err := NewDB(context.TODO(), "file::memory:?cache=shared")
+	db, err := NewDB(context.Background(), "file::memory:?cache=shared")
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
@@ -63,7 +63,7 @@ func TestClose(t *testing.T) {
 }
 
 func TestInitializeExistingTables(t *testing.T) {
-	db, err := NewDB(context.TODO(), "file::memory:?cache=shared")
+	db, err := NewDB(context.Background(), "file::memory:?cache=shared")
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
@@ -89,7 +89,7 @@ func TestInitializeExistingTables(t *testing.T) {
 }
 
 func TestBackup(t *testing.T) {
-	db, err := NewDB(context.TODO(), "file::memory:?cache=shared")
+	db, err := NewDB(context.Background(), "file::memory:?cache=shared")
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}

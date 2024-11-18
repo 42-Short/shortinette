@@ -12,9 +12,9 @@ func TestInsert(t *testing.T) {
 	defer db.Close()
 
 	participant := newDummyParticipant()
-	participantDAO.Insert(context.TODO(), participant)
+	participantDAO.Insert(context.Background(), participant)
 
-	retrievedParticipants, err := participantDAO.GetAll(context.TODO())
+	retrievedParticipants, err := participantDAO.GetAll(context.Background())
 	if err != nil {
 		t.Fatalf("failed to fetch participant from DB: %v", err)
 	}
@@ -33,12 +33,12 @@ func TestUpdate(t *testing.T) {
 
 	modules[0].Score += 100
 	modules[0].Attempts += 1
-	err := moduleDAO.Update(context.TODO(), &modules[0])
+	err := moduleDAO.Update(context.Background(), &modules[0])
 	if err != nil {
 		t.Fatalf("failed to update module in DB %v", err)
 	}
 
-	retrievedModule, err := moduleDAO.Get(context.TODO(), modules[0].Id, modules[0].IntraLogin)
+	retrievedModule, err := moduleDAO.Get(context.Background(), modules[0].Id, modules[0].IntraLogin)
 	if err != nil {
 		t.Fatalf("failed to fetch module from DB: %v", err)
 	}
@@ -59,11 +59,11 @@ func TestGet(t *testing.T) {
 	participantDAO := NewDAO[Participant](db)
 	defer db.Close()
 
-	retrievedParticipant, err := participantDAO.Get(context.TODO(), participants[0].IntraLogin)
+	retrievedParticipant, err := participantDAO.Get(context.Background(), participants[0].IntraLogin)
 	if err != nil {
 		t.Fatalf("failed to fetch participant from DB: %v", err)
 	}
-	retrievedModule, err := moduleDAO.Get(context.TODO(), modules[0].Id, modules[0].IntraLogin)
+	retrievedModule, err := moduleDAO.Get(context.Background(), modules[0].Id, modules[0].IntraLogin)
 	if err != nil {
 		t.Fatalf("failed to fetch module from DB: %v", err)
 	}
@@ -80,7 +80,7 @@ func TestGetFiltered(t *testing.T) {
 		"wait_time": modules[0].WaitTime,
 		"attempts":  modules[0].Attempts,
 	}
-	retrievedModules, err := moduleDAO.GetFiltered(context.TODO(), filters)
+	retrievedModules, err := moduleDAO.GetFiltered(context.Background(), filters)
 	if err != nil {
 		t.Fatalf("failed to fetch module from DB: %v", err)
 	}
@@ -101,11 +101,11 @@ func TestGetAll(t *testing.T) {
 	participantDAO := NewDAO[Participant](db)
 	defer db.Close()
 
-	retrievedModules, err := moduleDAO.GetAll(context.TODO())
+	retrievedModules, err := moduleDAO.GetAll(context.Background())
 	if err != nil {
 		t.Fatalf("failed to fetch modules from DB: %v", err)
 	}
-	retrievedParticipants, err := participantDAO.GetAll(context.TODO())
+	retrievedParticipants, err := participantDAO.GetAll(context.Background())
 	if err != nil {
 		t.Fatalf("failed to fetch participants from DB: %v", err)
 	}
@@ -122,11 +122,11 @@ func TestDelete(t *testing.T) {
 	moduleDAO := NewDAO[Module](db)
 	defer db.Close()
 
-	err := moduleDAO.Delete(context.TODO(), modules[0].Id, modules[0].IntraLogin)
+	err := moduleDAO.Delete(context.Background(), modules[0].Id, modules[0].IntraLogin)
 	if err != nil {
 		t.Fatalf("failed to delete modules from DB: %v", err)
 	}
-	retrievedModules, err := moduleDAO.GetAll(context.TODO())
+	retrievedModules, err := moduleDAO.GetAll(context.Background())
 	if err != nil {
 		t.Fatalf("failed to fetch modules from DB: %v", err)
 	}

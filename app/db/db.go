@@ -35,13 +35,15 @@ func NewDB(ctx context.Context, dsn string) (*DB, error) {
 
 // Sets up the necessary schema in the database and enabling foreign key.
 func (db *DB) Initialize() error {
-
 	data, err := os.ReadFile("schema.sql")
 	if err != nil {
 		return fmt.Errorf("Error reading sql file: %v", err)
 	}
 
-	_, err = db.Conn.ExecContext(context.TODO(), string(data))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	_, err = db.Conn.ExecContext(ctx, string(data))
 	if err != nil {
 		return fmt.Errorf("Error creating Module schema: %v", err)
 	}
@@ -50,6 +52,7 @@ func (db *DB) Initialize() error {
 	return nil
 }
 
+// creates a backup of the DB in the specified directory
 func (db *DB) Backup(backupDir string) error {
 	err := os.MkdirAll(backupDir, 0755)
 	if err != nil {
@@ -67,6 +70,7 @@ func (db *DB) Backup(backupDir string) error {
 	return nil
 }
 
+// schedules backups at specified intervals
 func (db *DB) StartBackupScheduler(backupDir string, interval time.Duration) {
 	go func() {
 		ticker := time.NewTicker(interval)

@@ -2,12 +2,13 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"reflect"
 	"strings"
 	"sync"
 )
+
+//TODO: support transactions
 
 type DAO[T any] struct {
 	DB *DB
@@ -92,14 +93,6 @@ func (dao *DAO[T]) Delete(ctx context.Context, args ...any) error {
 		return fmt.Errorf("failed to execute query on table %s: %v", dao.md.tableName, err)
 	}
 	return nil
-}
-
-func (dao *DAO[T]) BeginTransaction(ctx context.Context) (*sql.Tx, error) {
-	tx, err := dao.DB.Conn.BeginTx(ctx, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to start transaction: %v", err)
-	}
-	return tx, nil
 }
 
 func buildInsertQuery(tableName string, dbTags []string) string {
