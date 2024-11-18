@@ -10,6 +10,7 @@ import (
 
 //TODO: support transactions
 
+// Data Access Object for interacting with the DB
 type DAO[T any] struct {
 	DB *DB
 	md metadata
