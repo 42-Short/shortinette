@@ -10,6 +10,18 @@ import (
 	"github.com/42-Short/shortinette/tester/docker"
 )
 
+func pullDebianImage() error {
+	dockerClient, err := docker.NewClient()
+	if err != nil {
+		return err
+	}
+
+	if err := docker.PullImage(dockerClient, "debian:latest"); err != nil {
+		return err
+	}
+	return nil
+}
+
 func TestGradeModuleBeforeStarttime(t *testing.T) {
 	startTime := time.Now().Add(time.Hour)
 	module := config.Module{
@@ -22,17 +34,25 @@ func TestGradeModuleBeforeStarttime(t *testing.T) {
 }
 
 func TestGradeModuleAfterStarttime(t *testing.T) {
+	if err := pullDebianImage(); err != nil {
+		t.Fatal(err)
+	}
+
 	startTime := time.Now().Add(-1 * time.Hour)
 	module := config.Module{
 		StartTime: startTime,
 	}
-	_, err := GradeModule(module, "repo", "shortinette-testenv")
+	_, err := GradeModule(module, "repo", "debian:latest")
 	if err != nil && matchesCustomError(err, EarlyGrading) {
 		t.Fatalf("Grading after starttime should be possible")
 	}
 }
 
 func TestGradeExerciseOk(t *testing.T) {
+	if err := pullDebianImage(); err != nil {
+		t.Fatal(err)
+	}
+
 	if err := os.Mkdir("test", 0755); err != nil {
 		t.Fatalf("Unable to create test folder: %s", err)
 	}
@@ -47,7 +67,7 @@ func TestGradeExerciseOk(t *testing.T) {
 		AllowedFiles:    []string{"test.rs"},
 		TurnInDirectory: "test",
 	}
-	result := GradeExercise(&exercise, 0, "test", "shortinette-testenv")
+	result := GradeExercise(&exercise, 0, "test", "debian:latest")
 
 	if !result.Passed {
 		t.Fatalf("Not passed: %v", result)
@@ -56,6 +76,10 @@ func TestGradeExerciseOk(t *testing.T) {
 }
 
 func TestGradeExerciseFail(t *testing.T) {
+	if err := pullDebianImage(); err != nil {
+		t.Fatal(err)
+	}
+
 	if err := os.Mkdir("test", 0755); err != nil {
 		t.Fatalf("Unable to create test folder: %s", err)
 	}
@@ -71,7 +95,7 @@ func TestGradeExerciseFail(t *testing.T) {
 		TurnInDirectory: "test",
 	}
 
-	result := GradeExercise(&exercise, 0, "test", "shortinette-testenv")
+	result := GradeExercise(&exercise, 0, "test", "debian:latest")
 
 	if result.Passed {
 		t.Fatalf("Exercise passed but shouldn't: %v", result)
@@ -79,6 +103,10 @@ func TestGradeExerciseFail(t *testing.T) {
 }
 
 func TestGradeExerciseNoPermission(t *testing.T) {
+	if err := pullDebianImage(); err != nil {
+		t.Fatal(err)
+	}
+
 	if err := os.Mkdir("test", 0755); err != nil {
 		t.Fatalf("Unable to create test folder: %s", err)
 	}
@@ -92,7 +120,7 @@ func TestGradeExerciseNoPermission(t *testing.T) {
 		AllowedFiles:    []string{"test/test.rs"},
 		TurnInDirectory: "test",
 	}
-	result := GradeExercise(&exercise, 0, "test", "shortinette-testenv")
+	result := GradeExercise(&exercise, 0, "test", "debian:latest")
 
 	if result.Passed {
 		t.Fatalf("Exercise passed but shouldn't: %v", result)
@@ -100,15 +128,7 @@ func TestGradeExerciseNoPermission(t *testing.T) {
 }
 
 func TestGradeModulePartlyFail(t *testing.T) {
-	dockerClient, err := docker.NewClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// For testing purposes only pull a prebuilt debian image,
-	// because building the Dockerfile would take pretty long
-	// and consume all the CI/CD minutes from Github
-	if err := docker.PullImage(dockerClient, "debian:latest"); err != nil {
+	if err := pullDebianImage(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -162,15 +182,7 @@ func TestGradeModulePartlyFail(t *testing.T) {
 }
 
 func TestGradeModuleFullPoints(t *testing.T) {
-	dockerClient, err := docker.NewClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// For testing purposes only pull a prebuilt debian image,
-	// because building the Dockerfile would take pretty long
-	// and consume all the CI/CD minutes from Github
-	if err := docker.PullImage(dockerClient, "debian:latest"); err != nil {
+	if err := pullDebianImage(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -224,15 +236,7 @@ func TestGradeModuleFullPoints(t *testing.T) {
 }
 
 func TestGradeModuleMissingFile(t *testing.T) {
-	dockerClient, err := docker.NewClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// For testing purposes only pull a prebuilt debian image,
-	// because building the Dockerfile would take pretty long
-	// and consume all the CI/CD minutes from Github
-	if err := docker.PullImage(dockerClient, "debian:latest"); err != nil {
+	if err := pullDebianImage(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -278,15 +282,7 @@ func TestGradeModuleMissingFile(t *testing.T) {
 }
 
 func TestGradeModuleAdditionalFiles(t *testing.T) {
-	dockerClient, err := docker.NewClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// For testing purposes only pull a prebuilt debian image,
-	// because building the Dockerfile would take pretty long
-	// and consume all the CI/CD minutes from Github
-	if err := docker.PullImage(dockerClient, "debian:latest"); err != nil {
+	if err := pullDebianImage(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -332,15 +328,7 @@ func TestGradeModuleAdditionalFiles(t *testing.T) {
 }
 
 func TestGradeModuleNothingTurnedIn(t *testing.T) {
-	dockerClient, err := docker.NewClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// For testing purposes only pull a prebuilt debian image,
-	// because building the Dockerfile would take pretty long
-	// and consume all the CI/CD minutes from Github
-	if err := docker.PullImage(dockerClient, "debian:latest"); err != nil {
+	if err := pullDebianImage(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -378,15 +366,7 @@ func TestGradeModuleNothingTurnedIn(t *testing.T) {
 }
 
 func TestGradeModuleContainerStopped(t *testing.T) {
-	dockerClient, err := docker.NewClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// For testing purposes only pull a prebuilt debian image,
-	// because building the Dockerfile would take pretty long
-	// and consume all the CI/CD minutes from Github
-	if err := docker.PullImage(dockerClient, "debian:latest"); err != nil {
+	if err := pullDebianImage(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -418,7 +398,7 @@ func TestGradeModuleContainerStopped(t *testing.T) {
 		StopAllGradings() //nolint:errcheck
 	}()
 
-	_, err = GradeModule(module, "testrepo", "debian:latest")
+	_, err := GradeModule(module, "testrepo", "debian:latest")
 
 	if err == nil {
 		t.Fatalf("GradeModule should return an error due to stopped containers: %s", err)
