@@ -96,6 +96,7 @@ At that moment, Maran was enlightened.
 *The [second Rust Koan](https://users.rust-lang.org/t/rust-koans/2408/2).*
 
 ## General Rules
+* You **must not** have a `main` present if not specifically requested
 
 * Any exercise you turn in must compile using the `cargo` package manager, either with `cargo run`
 if the subject requires a _program_, or with `cargo test` otherwise. Only dependencies specified
@@ -118,36 +119,56 @@ lint to silence warnings about unused variables, functions, etc.
 * You are _strongly_ encouraged to write extensive tests for the functions and programs you turn in.
  Tests can use the symbols & attributes you want, even if they are not specified in the `allowed symbols` section. **However**, tests should **not** introduce **any additional external dependencies** beyond those already required by the subject.
 
-## Exercise 00: Dimensional Analysis
-
-```txt
+### Exercise 00: Bruh
+```
 turn-in directory:
     ex00/
 
 files to turn in:
-    src/main.rs  Cargo.toml
+    src/lib.rs  Cargo.toml
 ```
-
-Copy/Paste the following code and make it compile by adding type alias definitions.
-
+Given this struct
 ```rust
-fn seconds_to_minutes(seconds: Seconds) -> Minutes {
-    seconds / 60.0
+struct ComplexStruct {
+    name: String,
+    optional_value: Option<Box<i32>>,
+    values: Vec<i32>,
+    some_other: Vec<u128>,
+    metadata: std::collections::HashMap<String, Vec<u8>>,
+    nested: Box<NestedStruct>,
 }
 
-fn main() {
-    let s: Seconds = 120.0;
-    let m: Minutes = seconds_to_minutes(s);
-
-    println!("{s} seconds is {m} minutes");
+struct NestedStruct {
+    number: Box<i32>,
+    optional_floats: Vec<Option<Box<f64>>>,
+    data: std::collections::HashMap<String, Option<Box<i32>>>,
 }
 ```
-
-```txt
->_ cargo run
-120 seconds is 2 minutes
+implement this function so that `free` frees everything in the struct
+```rust
+impl ComplexStruct {
+    pub fn free(...); // ... stands for any kind and number of parameters passed to the function
+}
 ```
-
+so that this doesn't compile - **don't add this `main` to your submission**
+```rust
+pub fn main() {
+    let bruh: ComplexStruct = ComplexStruct {
+        name: "hey".to_string(),
+        optional_value: Some(Box::new(42)),
+        values: vec![1377; 5],
+        some_other: vec![137700000000; 5],
+        metadata: std::collections::HashMap::new(),
+        nested: Box::new(NestedStruct {
+            number: Box::new(42),
+            optional_floats: vec![Some(Box::new(42 as f64)), None, Some(Box::new(42 as f64 / 2.0))],
+            data: std::collections::HashMap::new(),
+        }),
+    };
+    bruh.free(); // If you remove this it should compile
+    println!("{}", bruh.name); 
+}
+```
 ## Exercise 01: A Point In Space
 
 ```txt
@@ -186,48 +207,7 @@ impl Point {
 }
 ```
 
-## Exercise 02: Where's My Pizza?
-
-
-```txt
-turn-in directory:
-    ex02/
-
-files to turn in:
-    src/lib.rs  Cargo.toml
-```
-
-* Once a pizza has been ordered, it takes two days before the cook start working on it.
-* Making a pizza takes roughly 5 days.
-* Once the pizza is ready, the only delivery man must pick it up. It takes 3 days on average.
-* Delivering the pizza always takes a whole week.
-
-Define the following type:
-
-```rust
-enum PizzaStatus {
-    Ordered,
-    Cooking,
-    Cooked,
-    Delivering,
-    Delivered,
-}
-```
-
-It must have the following inherent methods.
-
-```rust
-impl PizzaStatus {
-    fn from_delivery_time(ordered_days_ago: u32) -> Self;
-    fn get_delivery_time_in_days(&self) -> u32;
-}
-```
-
-* `from_delivery_time` predicts the status of a pizza that was ordered `ordered_days_ago` days ago.
-* `get_delivery_time_in_days` returns the estimated time before the pizza is delivered, in days. The
-**worst case** (longest delivery time) is always returned.
-
-## Exercise 03: Dry Boilerplates
+## Exercise 02: Dry Boilerplates
 
 ```txt
 turn-in directory:
@@ -243,210 +223,120 @@ allowed symbols:
 
 Create a type, may it be a `struct` or an `enum`. You simply have to name it `MyType`.
 
+You are **not** allowed to use the `impl` keyword!
 ```rust
-fn main() {
-    let instance = MyType::default();
+#[cfg(test)]
+mod test {
+    use super::*;
 
-    let other_instance = instance.clone();
+    #[test]
+    fn test_my_type() {
+        let instance = MyType::default();
 
-    println!("the default value of MyType is {instance:?}");
-    println!("the clone of `instance` is {other_instance:#?}");
-    assert_eq!(
-        instance,
-        other_instance,
-        "the clone isn't the same :/"
-    );
-    assert!(
-        instance == other_instance,
-        "why would the clone be less or greater than the original?",
-    );
+        let other_instance = instance.clone();
+
+        println!("the default value of MyType is {instance:?}");
+        println!("the clone of `instance` is {other_instance:#?}");
+        assert_eq!(
+            instance,
+            other_instance,
+            "the clone isn't the same :/"
+        );
+        assert!(
+            instance == other_instance,
+            "why would the clone be less or greater than the original?",
+        );
+    }
 }
 ```
 
-Copy the above `main` function and make it compile and run. You are not allowed to use the `impl`
-keyword!
+Copy the above `test` function and make it compile.
 
-## Exercise 04: Todo List
+## Exercise 03 Money money money
 
-```txt
+```
 turn-in directory:
-    ex04/
-
-files to turn in:
-    src/main.rs  Cargo.toml
-
-allowed dependencies:
-    ftkit
-
-allowed symbols:
-    std::{print, println}
-    std::io::stdout
-    std::io::Stdout::{flush}
-    std::vec::Vec::{new, push, remove, clear, len, is_empty}
-    std::string::String::as_str
-    str::{to_string, parse, len, is_empty, trim, strip_prefix, strip_suffix}
-    ftkit::{read_line, read_number}
-    std::result::Result
-```
-
-Create a simple TODO-List application.
-
-When the user starts the program, they are asked what to do. Available commands are the following:
-
-```rust
-enum Command {
-    Todo(String),   // Command: "TODO"
-    Done(usize),    // Command: "DONE"
-    Purge,          // Command: "PURGE"
-    Quit,           // Command: "QUIT"
-}
-
-impl Command {
-    fn prompt() -> Self;
-}
-```
-
-* The `prompt` function must ask the user to write a command. End-Of-File generates the `Quit`
-command. On error, the function must simply ask the user again. See the final example for the
-required format.
-
-```rust
-struct TodoList {
-    todos: Vec<String>,
-    dones: Vec<String>,
-}
-
-impl TodoList {
-    fn new() -> Self;
-
-    fn display(&self);
-    fn add(&mut self, todo: String);
-    fn done(&mut self, index: usize);
-    fn purge(&mut self);
-}
-```
-
-* `display` must print the content of the todolist to the user.
-* `add` must add an item to be done.
-* `done` must mark an item as being done. Invalid indices should do nothing.
-* `purge` must purge any "done" task.
-
-Write a `main` function, responsible for using both `TodoList` and `Command`. The content of the
-todolist must be displayed to the user before each prompt.
-
-You may design the interface you want to this exercise. Here is an example.
-
-```txt
->_ cargo run
-
-TODO star shortinette (https://github.com/42-Short/shortinette)
-
-    0 [ ] star shortinette (https://github.com/42-Short/shortinette)
-
-TODO finish this module
-
-    0 [ ] star shortinette (https://github.com/42-Short/shortinette)
-    1 [ ] finish this module
-
-DONE 0
-
-    0 [ ] finish this module
-      [x] star shortinette (https://github.com/42-Short/shortinette)
-
-PURGE
-
-    0 [ ] finish this module
-
-QUIT
-```
-
-## Exercise 05: All Over Me
-
-```txt
-turn-in directory:
-    ex05/
+    ex03/
 
 files to turn in:
     src/lib.rs  Cargo.toml
 
-allowed symbols:
-    std::clone::Clone  std::maker::Copy  std::fmt::Debug  std::cmp::PartialEq
-    <[T]>::len
-```
+allowed symbols
+    TO_BE_DONE
+``` 
 
-Define a `Color` type, responsible for describing a color by its red, green and blue channels.
-
+You will have these type definitions (don't worry about the #[...] for now)
 ```rust
-struct Color {
-    red: u8,
-    green: u8,
-    blue: u8,
+#[derive(PartialEq, Debug)]
+enum BuyError {
+    Broke,
+    TooLoaded,
+}
+#[derive(PartialEq, Debug)]
+enum SellError {
+    TooRich,
+    NotLoaded,
 }
 
-impl Color {
-    const WHITE: Self = /* ... */;
-    const RED: Self = /* ... */;
-    const GREEN: Self = /* ... */;
-    const BLUE: Self = /* ... */;
-
-    const fn new(red: u8, green: u8, blue: u8) -> Self;
+#[repr(u8)]
+#[derive(Copy, Clone,Debug,PartialEq)]
+enum Item {
+    Sword = 10,        
+    Shield = 15,       
+    HealthPotion = 5,  
+    UpgradeStone = 25, 
+    Ring = 50,         
 }
-```
 
-* Fill the comments left in the above code, defining associated constants inherent to `Color`.
-* `WHITE` must return the color `#FFFFFF`.
-* `RED` must return the color `#FF0000`.
-* `GREEN` must return the color `#00FF00`.
-* `BLUE` must return the color `#0000FF`.
-
-```rust
-impl Color {
-    fn closest_mix(self, palette: &[(Self, u8)], max: u32) -> Self;
+#[derive(PartialEq, Debug)]
+struct Player {
+    coins: u8,
+    item: Option<Item>
 }
 ```
 
-* The `closest_mix` function must try mixing up to `max` colors taken from `palette`, as if painting
-on a white canvas. 
-* Each color in the `palette` array is a tuple where the first element is the color, and the second is its opacity (`alpha`), a value between $0$ and $255$. An opacity of $255$ means fully opaque, and $0$ means fully transparent.
-* The function should create a new color by blending up to `max` colors from the palette, and return the one that is **closest** to the original color (`self`).
-
-### Color Blending Formula 
-To blend two colors $A$ and $B$, use the following formula, where $B$ is fully opaque, and $A$ has an opacity $alpha$ between $0$ and $255$:
-
-$$
-A * (alpha / 255) + B * ((255 - alpha) / 255)
-$$
-
-* $A$ is the color being blended on top, with opacity $alpha$.
-* $B$ is the background color, which is fully opaque.
-* The result $C$ is the blended color.
-
-### Distance Between Two Colors
-The distance between two colors $A$ and $B$ is calculated by finding the difference between their red, green and blue values separately. For each color channel, (r, g and b), the distance is computed as the absolute difference between the values of $A$ and $B$. This can be expressed as:
-* $d_r$ is the distance between the red value of $A$ and the red value of $B$.
-* $d_g$ is the distance between the green value of $A$ and the green value of $B$.
-* $d_b$ is the distance between the blue value of $A$ and the blue value of $B$.
-
-In general, for each color channel (red, green, or blue), the distance is $d_x = |A_x - B_x|$, where $x$ represents one of the color channels.
-
-$$
-distance = d_r^2 + d_g^2 + d_b^2
-$$
-
-Example:
-
+Implement these functions
 ```rust
-assert_eq!(Color::RED.closest_mix(&[], 100), Color::WHITE);
-assert_eq!(Color::RED.closest_mix(&[(Color::RED, 255)], 0), Color::WHITE);
+impl Player {
+    pub fn buy(&mut self, item: Item) -> Result<(), BuyError>;
+    pub fn sell(&mut self) -> Result<(), SellError>;
+```
+Ensure they operate as follows:
 
-let palette = [(Color::RED, 100), (Color::GREEN, 100), (Color::BLUE, 100)];
-assert_eq!(
-    Color::new(254, 23, 102).closest_mix(&palette, 5),
-    Color::new(218, 20, 57),
-);
+`buy`: Verify that the player has sufficient coins and can store the item. If either condition is unmet, return the appropriate error.
+
+`sell`: Confirm that the player possesses an item and can store the received coins without his pocket `overflowing`. If either condition is unmet, return the relevant error.
+
+*Note: You don’t need to handle cases where both errors might apply simultaneously, as this will not be tested.*
+
+The following test must compile and execute successfully:
+```rust
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_player() {
+        let mut player = Player { coins: 0, item: None};
+
+
+        assert_eq!(player.buy(Item::HealthPotion), Err(BuyError::Broke));
+        player.coins = 250;
+        assert_eq!(player.buy(Item::Ring), Ok(()));
+        assert_eq!(player.buy(Item::UpgradeStone), Err(BuyError::TooLoaded));
+
+        player.coins = 242;
+        assert_eq!(player.sell(), Err(SellError::TooRich));
+        player.coins = 0;
+        assert_eq!(player.sell(),Ok(()));
+        assert_eq!(player.sell(), Err(SellError::NotLoaded));
+    }
+}
 ```
 
-## Exercise 06: Lexical Analysis
+## Exercise 04: TO_BE_DONE iterator implemenation
+
+## Exercise 05: Lexical Analysis
 
 ```txt
 turn-in directory:
@@ -535,6 +425,95 @@ Word("cat")
 Word("-e")
 RedirectStdout
 Word("file.txt")
+```
+
+## Exercise 06: Inventory Management
+
+```txt
+turn-in directory:
+    ex05/
+
+files to turn in:
+    src/lib.rs  Cargo.toml
+
+allowed symbols:
+    std::vec::Vec
+    std::string::String
+    std::collections::HashMap::*
+    std::fmt::Debug
+```
+Create an inventory management system for a shop. Define the following types:
+```rust
+#[derive(Debug, Clone)]
+struct Item {
+    name: String,
+    price: f32,
+    quantity: u32,
+}
+
+struct Inventory {
+    items: HashMap<String, Item>,
+}
+```
+Implement the following methods for `Inventory`:
+```rust
+impl Inventory {
+    fn new() -> Self;
+    fn add_item(&mut self, item: Item) -> Result<(), String>;
+    fn remove_item(&mut self, name: &str) -> Result<(), String>;
+    fn update_quantity(&mut self, name: &str, new_quantity: u32) -> Result<(), String>;
+    fn get_item(&self, name: &str) -> Option<&Item>;
+    fn list_items(&self) -> Vec<&Item>;
+    fn total_value(&self) -> f32;
+}
+```
+* `new`: Creates a new empty inventory.
+* `add_item`: Adds a new item to the inventory. If an item with the same name already exists, return an error.
+* `remove_item`: Removes an item from the inventory by name. If the item doesn't exist, return an error.
+* `update_quantity`: Updates the quantity of an existing item. If the item doesn't exist, return an error.
+* `get_item`: Returns a reference to an item by name, or None if it doesn't exist.
+* `list_items`: Returns a vector of references to all items in the inventory.
+* `total_value`: Calculates and returns the total value of all items in the inventory (price * quantity for each item).
+
+Implement a `Discountable` trait for `Item`:
+```rust
+trait Discountable {
+    fn apply_discount(&mut self, percentage: f32);
+}
+```
+Implement this trait for `Item` so that it reduces the price of the item by the given percentage. Invalid percentage values (`< 0 || > 100`) are considered **undefined behavior**. You are free to handle them as you please.
+
+Your implementation should work with the following test function:
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_inventory() {
+        let mut inventory = Inventory::new();
+        
+        let item1 = Item { name: "Apple".to_string(), price: 0.5, quantity: 100 };
+        let item2 = Item { name: "Banana".to_string(), price: 0.3, quantity: 150 };
+        
+        assert!(inventory.add_item(item1).is_ok());
+        assert!(inventory.add_item(item2).is_ok());
+        
+        assert_eq!(inventory.list_items().len(), 2);
+        
+        assert!(inventory.update_quantity("Apple", 90).is_ok());
+        assert_eq!(inventory.get_item("Apple").unwrap().quantity, 90);
+        
+        assert!((inventory.total_value() - 90.0).abs() < 0.001);
+        
+        let mut discounted_item = inventory.get_item("Banana").unwrap().clone();
+        discounted_item.apply_discount(10.0);
+        assert!((discounted_item.price - 0.27).abs() < 0.001);
+        
+        assert!(inventory.remove_item("Apple").is_ok());
+        assert_eq!(inventory.list_items().len(), 1);
+    }
+}
 ```
 
 ## Exercise 07: The Game Of Life

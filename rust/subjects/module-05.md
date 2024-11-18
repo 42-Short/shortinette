@@ -91,11 +91,157 @@ assert_eq!(a.into_inner(), "DEF");
 assert_eq!(b.into_inner(), "ABC");
 ```
 
-## Exercise 01: Logger
+## Exercise 01: Atomical
 
 ```txt
 turn-in directory:
     ex01/
+
+files to turn in:
+    src/lib.rs  Cargo.toml
+
+allowed symbols:
+    std::sync::atomic::{AtomicU8, Ordering}
+```
+
+Create a type named `Unique`.
+
+```rust
+#[derive(Debug, PartialEq, Eq)]
+struct Unique(u8);
+
+impl Unique {
+    pub fn new() -> Option<Self>;
+}
+```
+
+* There can be no two `Unique` instance with the same identifier (`u8`).
+* `new` must create a new, unique instance of `Unique`.
+* It must be possible to `Clone` a `Unique`, and the created `Unique` must still be unique.
+* Trying to create a `Unique` when no more identifiers are available causes the function to return `None`.
+
+Example:
+
+```rust
+fn main()
+{
+    let a = Unique::new();
+    let b = Unique::new();
+    let c = Unique::new();
+
+    println!("{a:?}");
+    println!("{b:?}");
+    println!("{c:?}");
+
+    let d = a.clone();
+    let e = c.clone();
+
+    println!("{d:?}");
+    println!("{e:?}");
+}
+```
+
+Would produce the following output:
+
+```txt
+>_ cargo run
+Unique(0)
+Unique(1)
+Unique(2)
+Unique(3)
+Unique(4)
+```
+
+What atomic memory ordering did you use? Why?
+
+## Exercise 02: Last Error
+
+```txt
+turn-in directory:
+    ex02/
+
+files to turn in:
+    src/lib.rs  Cargo.toml
+
+allowed symbols:
+    std::thread_local
+    std::cell::Cell
+    std::marker::Copy  std::clone::Clone
+```
+
+Create an `Error` enum with the following variants:
+
+```rust
+enum Error {
+    Success,
+    FileNotFound,
+    IsDirectory,
+    WriteFail,
+    ReadFail,
+}
+
+impl Error {
+    fn last() -> Self;
+    fn make_last(self);
+}
+```
+
+ * `last` must return the calling thread's last `Error` instance. If `make_last` has never been
+   called before, `Error::Success` is returned.
+ * `make_last` must set the calling thread's last `Error` instance.
+
+## Exercise 03: A Philosopher's Tiny Brain
+
+```txt
+turn-in directory:
+    ex03/
+
+files to turn in:
+    src/main.rs  Cargo.toml
+
+allowed symbols:
+    std::sync::Arc
+    std::sync::mpsc::{sync_channel, SyncSender, Receiver}
+    std::thread::{spawn, sleep}
+    std::time::Duration
+    ftkit::Args
+
+allowed dependencies:
+    ftkit
+```
+
+Create a **program** that works in the following way:
+
+```txt
+>_ cargo run -- 3
+cakes
+the philosopher is thinking about cakes
+code
+42
+the philosopher is thinking about code
+a
+b
+c
+the philosopher's head is full
+the philosopher is thinking about 42
+the philosopher is thinking about a
+the philosopher is thinking about b
+^C
+>_
+```
+
+* The program must ask the user to enter words in the standard input.
+* Each time a word is entered, it is saved in the philosopher's brain.
+* If the brain is full, an error is displayed and the word is not added to the brain.
+* When a word is available in the brain, the philosopher thinks about it for 5 seconds.
+* The program runs until it receives `EOF`.
+* The size of the philosopher's brain is provided as a command-line argument.
+
+## Exercise 04: Logger
+
+```txt
+turn-in directory:
+    ex04/
 
 files to turn in:
     src/main.rs  Cargo.toml
@@ -152,147 +298,7 @@ hello 1 from thread 1!
 
  * A message from any given thread must not appear within the message of another thread.
 
-## Exercise 02: Last Error
 
-```txt
-turn-in directory:
-    ex02/
-
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::thread_local
-    std::cell::Cell
-    std::marker::Copy  std::clone::Clone
-```
-
-Create an `Error` enum with the following variants:
-
-```rust
-enum Error {
-    Success,
-    FileNotFound,
-    IsDirectory,
-    WriteFail,
-    ReadFail,
-}
-
-impl Error {
-    fn last() -> Self;
-    fn make_last(self);
-}
-```
-
- * `last` must return the calling thread's last `Error` instance. If `make_last` has never been
-   called before, `Error::Success` is returned.
- * `make_last` must set the calling thread's last `Error` instance.
-
-## Exercise 03: A Philosopher's Tiny Brain
-
-```txt
-turn-in directory:
-    ex03/
-
-files to turn in:
-    src/main.rs  Cargo.toml
-
-allowed symbols:
-    std::sync::Arc
-    std::sync::mpsc::{sync_channel, SyncSender, Receiver}
-    std::thread::{spawn, sleep}
-    std::time::Duration
-```
-
-Create a **program** that works in the following way:
-
-```txt
->_ cargo run -- 3
-cakes
-the philosopher is thinking about cakes
-code
-42
-the philosopher is thinking about code
-a
-b
-c
-the philosopher's head is full
-the philosopher is thinking about 42
-the philosopher is thinking about a
-the philosopher is thinking about b
-^C
->_
-```
-
-* The program must ask the user to enter words in the standard input.
-* Each time a word is entered, it is saved in the philosopher's brain.
-* If the brain is full, an error is displayed and the word is not added to the brain.
-* When a word is available in the brain, the philosopher thinks about it for 5 seconds.
-* The program runs until it receives `EOF`.
-* The size of the philosopher's brain is provided as a command-line argument.
-
-## Exercise 04: Atomical
-
-```txt
-turn-in directory:
-    ex04/
-
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::sync::atomic::{AtomicU8, Ordering}
-```
-
-Create a type named `Unique`.
-
-```rust
-#[derive(Debug, PartialEq, Eq)]
-struct Unique(u8);
-
-impl Unique {
-    pub fn new() -> Self;
-}
-```
-
-* There can be no two `Unique` instance with the same identifier (`u8`).
-* `new` must create a new, unique instance of `Unique`.
-* It must be possible to `Clone` a `Unique`, and the created `Unique` must still be unique.
-* Trying to create a `Unique` when no more identifiers are available causes the function to panic.
-
-Example:
-
-```rust
-fn main()
-{
-    let a = Unique::new();
-    let b = Unique::new();
-    let c = Unique::new();
-
-    println!("{a:?}");
-    println!("{b:?}");
-    println!("{c:?}");
-
-    let d = a.clone();
-    let e = c.clone();
-
-    println!("{d:?}");
-    println!("{e:?}");
-}
-```
-
-Would produce the following output:
-
-```txt
->_ cargo run
-Unique(0)
-Unique(1)
-Unique(2)
-Unique(3)
-Unique(4)
-```
-
-What atomic memory ordering did you use? Why?
 
 ## Exercise 05: PI * Rayon * Rayon
 
