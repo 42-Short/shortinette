@@ -95,18 +95,23 @@ func (dao *DAO[T]) Delete(ctx context.Context, args ...any) error {
 	return nil
 }
 
+// Example query: INSERT INTO participant (intra_login, github_login) VALUES (:intra_login, :github_login)
 func buildInsertQuery(tableName string, dbTags []string) string {
 	columns := strings.Join(dbTags, ", ")
 	placeholders := ":" + strings.Join(dbTags, ", :")
 	return fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s);", tableName, columns, placeholders)
 }
 
+// Example query: UPDATE participant
+//
+//	SET intra_login = :intra_login, github_login = :github_login WHERE intra_login = ? AND github_login = ?
 func buildUpdateQuery(tableName string, dbTags, primaryKeys []string) string {
 	setClauses := strings.Join(buildClauses(dbTags), ", ")
 	whereClauses := strings.Join(buildClauses(primaryKeys), " AND ")
 	return fmt.Sprintf("UPDATE %s SET %s WHERE %s", tableName, setClauses, whereClauses)
 }
 
+// Example query: SELECT * FROM participant WHERE intra_login = ? AND github_login = ?
 func buildSelectQuery(tableName string, fields []string) string {
 	if len(fields) == 0 {
 		return fmt.Sprintf("SELECT * FROM %s", tableName)
@@ -115,11 +120,13 @@ func buildSelectQuery(tableName string, fields []string) string {
 	return fmt.Sprintf("SELECT * FROM %s WHERE %s", tableName, strings.Join(conditions, " AND "))
 }
 
+// Example query: DELETE FROM participant WHERE intra_login = ? AND github_login = ?
 func buildDeleteQuery(tableName string, primaryKeys []string) string {
 	conditions := buildConditions(primaryKeys)
 	return fmt.Sprintf("DELETE FROM %s WHERE %s", tableName, strings.Join(conditions, " AND "))
 }
 
+// Example: intra_login = :intra_login
 func buildClauses(fields []string) []string {
 	clauses := make([]string, len(fields))
 	for i, field := range fields {
@@ -128,6 +135,7 @@ func buildClauses(fields []string) []string {
 	return clauses
 }
 
+// Example: intra_login = ?
 func buildConditions(fields []string) []string {
 	conditions := make([]string, len(fields))
 	for i, field := range fields {
