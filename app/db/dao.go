@@ -181,7 +181,8 @@ func getOrExtractMetadata[T any]() metadata {
 
 func extractTags[T any](data *T, key string) []string {
 	t := reflect.TypeOf(*data)
-	tags := []string{}
+
+	tags := make([]string, 0, t.NumField())
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		tag := field.Tag.Get(key)
