@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -10,7 +11,7 @@ import (
 func newDummyDB(t *testing.T) (*DB, []Module, []Participant) {
 	t.Helper()
 
-	db, err := NewDB("file::memory:?cache=shared", 2*time.Second)
+	db, err := NewDB(context.TODO(), "file::memory:?cache=shared")
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
@@ -34,14 +35,14 @@ func createDummyData(t *testing.T, db *DB, moduleAmount int, participantAmount i
 	for i := 0; i < participantAmount; i++ {
 		participant := newDummyParticipant()
 
-		if err := participantDao.Insert(participant); err != nil {
+		if err := participantDao.Insert(context.TODO(), participant); err != nil {
 			t.Fatalf("failed to insert participant into DB: %v", err)
 		}
 		participants = append(participants, *participant)
 
 		for j := 0; j < moduleAmount; j++ {
 			module := newDummyModule(j, participant.IntraLogin)
-			if err := moduleDao.Insert(module); err != nil {
+			if err := moduleDao.Insert(context.TODO(), module); err != nil {
 				t.Fatalf("failed to insert module into DB: %v", err)
 			}
 			modules = append(modules, *module)

@@ -1,99 +1,105 @@
 package db
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 )
 
 type DAO[T any] struct {
-	DB          *DB
-	tableName   string
+	DB *DB
+	md metadata
+}
+
+type metadata struct {
 	dbTags      []string
 	primaryKeys []string
+	tableName   string
 }
+
+var metadataCache sync.Map
 
 func NewDAO[T any](db *DB) *DAO[T] {
-	var dummy T
-	tags := extractTags(&dummy, "db")
-	if len(tags) == 0 {
-		panic("NewDAO: Expected database tags (db) but got 0")
-	}
-	primaryKeys := extractTags(&dummy, "primaryKey")
-	if len(primaryKeys) == 0 {
-		panic("NewDAO: Expected primaryKey tags (primaryKey) but got 0")
-	}
-	tableName := deriveSchemaNameFromStruct(dummy)
+	md := getOrExtractMetadata[T]()
 	return &DAO[T]{
-		DB:          db,
-		tableName:   tableName,
-		dbTags:      tags,
-		primaryKeys: primaryKeys,
+		DB: db,
+		md: md,
 	}
 }
 
-// Adds a new record to the table.
-func (dao *DAO[T]) Insert(data *T) error {
-	query := buildInsertQuery(dao.tableName, dao.dbTags)
-	_, err := dao.DB.namedExecWithTimeout(query, data)
+// Adds a new record to the table
+func (dao *DAO[T]) Insert(ctx context.Context, data *T) error {
+	query := buildInsertQuery(dao.md.tableName, dao.md.dbTags)
+	_, err := dao.DB.Conn.NamedExecContext(ctx, query, data)
 	if err != nil {
-		return fmt.Errorf("failed to insert data in table %s: %v", dao.tableName, err)
+		return fmt.Errorf("failed to insert data in table %s: %v", dao.md.tableName, err)
 	}
 	return nil
 }
 
 // Modifies an existing record in the table using the DAO's primary keys.
-func (dao *DAO[T]) Update(data *T) error {
-	query := buildUpdateQuery(dao.tableName, dao.dbTags, dao.primaryKeys)
-	_, err := dao.DB.namedExecWithTimeout(query, data)
+func (dao *DAO[T]) Update(ctx context.Context, data *T) error {
+	query := buildUpdateQuery(dao.md.tableName, dao.md.dbTags, dao.md.primaryKeys)
+	_, err := dao.DB.Conn.NamedExecContext(ctx, query, data)
 	if err != nil {
-		return fmt.Errorf("failed to update data in table %s: %v", dao.tableName, err)
+		return fmt.Errorf("failed to update data in table %s: %v", dao.md.tableName, err)
 	}
 	return nil
 }
 
 // Retrieves all records from the table corresponding to the DAO's type.
-func (dao *DAO[T]) GetAll() ([]T, error) {
-	query := buildSelectQuery(dao.tableName, []string{})
+func (dao *DAO[T]) GetAll(ctx context.Context) ([]T, error) {
+	query := buildSelectQuery(dao.md.tableName, []string{})
 	var retrievedData []T
-	err := dao.DB.selectWithTimeout(&retrievedData, query)
+	err := dao.DB.Conn.SelectContext(ctx, &retrievedData, query)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get data from table %s: %v", dao.tableName, err)
+		return nil, fmt.Errorf("failed to get data from table %s: %v", dao.md.tableName, err)
 	}
 	return retrievedData, nil
 }
 
 // Retrieves a single record by the primary keys from the table.
-func (dao *DAO[T]) Get(args ...any) (*T, error) {
-	query := buildSelectQuery(dao.tableName, dao.primaryKeys)
+func (dao *DAO[T]) Get(ctx context.Context, args ...any) (*T, error) {
+	query := buildSelectQuery(dao.md.tableName, dao.md.primaryKeys)
 	var retrievedData T
-	err := dao.DB.getWithTimeout(&retrievedData, query, args...)
+	err := dao.DB.Conn.GetContext(ctx, &retrievedData, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get data from table %s: %v", dao.tableName, err)
+		return nil, fmt.Errorf("failed to get data from table %s: %v", dao.md.tableName, err)
 	}
 	return &retrievedData, err
 }
 
 // Retrieves records from the table that match the given filters.
-func (dao *DAO[T]) GetFiltered(filters map[string]any) ([]T, error) {
+func (dao *DAO[T]) GetFiltered(ctx context.Context, filters map[string]any) ([]T, error) {
 	fields, args := extractFieldsAndArgs(filters)
-	query := buildSelectQuery(dao.tableName, fields)
+	query := buildSelectQuery(dao.md.tableName, fields)
 	var retrievedData []T
-	err := dao.DB.selectWithTimeout(&retrievedData, query, args...)
+	err := dao.DB.Conn.SelectContext(ctx, &retrievedData, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get data from table %s: %v", dao.tableName, err)
+		return nil, fmt.Errorf("failed to get data from table %s: %v", dao.md.tableName, err)
 	}
 	return retrievedData, nil
 }
 
 // Removes a record from the table using the DAO's primary keys.
-func (dao *DAO[T]) Delete(args ...any) error {
-	query := buildDeleteQuery(dao.tableName, dao.primaryKeys)
-	_, err := dao.DB.execWithTimeout(query, args...)
+func (dao *DAO[T]) Delete(ctx context.Context, args ...any) error {
+	query := buildDeleteQuery(dao.md.tableName, dao.md.primaryKeys)
+	_, err := dao.DB.Conn.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("failed to execute query on table %s: %v", dao.tableName, err)
+		return fmt.Errorf("failed to execute query on table %s: %v", dao.md.tableName, err)
 	}
 	return nil
+}
+
+func (dao *DAO[T]) BeginTransaction(ctx context.Context) (*sql.Tx, error) {
+	tx, err := dao.DB.Conn.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start transaction: %v", err)
+	}
+	return tx, nil
 }
 
 func buildInsertQuery(tableName string, dbTags []string) string {
@@ -135,6 +141,34 @@ func buildConditions(fields []string) []string {
 		conditions[i] = fmt.Sprintf("%s = ?", field)
 	}
 	return conditions
+}
+
+func getOrExtractMetadata[T any]() metadata {
+	var dummy T
+	typ := reflect.TypeOf(dummy)
+
+	cached, ok := metadataCache.Load(typ)
+	if ok {
+		return cached.(metadata)
+	}
+
+	dbTags := extractTags(&dummy, "db")
+	if len(dbTags) == 0 {
+		panic("getOrExtractMetadata: Expected database tags (db) but got 0")
+	}
+	primaryKeys := extractTags(&dummy, "primaryKey")
+	if len(primaryKeys) == 0 {
+		panic("getOrExtractMetadata: Expected primaryKey tags (primaryKey) but got 0")
+	}
+	tableName := deriveSchemaNameFromStruct(dummy)
+
+	md := metadata{
+		dbTags:      dbTags,
+		primaryKeys: primaryKeys,
+		tableName:   tableName,
+	}
+	metadataCache.Store(typ, md)
+	return md
 }
 
 func extractTags[T any](data *T, key string) []string {

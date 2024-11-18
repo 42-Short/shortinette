@@ -1,13 +1,15 @@
 package db
 
 import (
+	"context"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 )
 
 func TestNewDB(t *testing.T) {
-	db, err := NewDB("file::memory:?cache=shared", 2*time.Second)
+	db, err := NewDB(context.TODO(), "file::memory:?cache=shared")
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
@@ -19,7 +21,7 @@ func TestNewDB(t *testing.T) {
 }
 
 func TestInitialize(t *testing.T) {
-	db, err := NewDB("file::memory:?cache=shared", 2*time.Second)
+	db, err := NewDB(context.TODO(), "file::memory:?cache=shared")
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
@@ -41,7 +43,7 @@ func TestInitialize(t *testing.T) {
 }
 
 func TestInvalidNewDB(t *testing.T) {
-	db, err := NewDB("/path/to/invalid-dsn", 2*time.Second)
+	db, err := NewDB(context.TODO(), "/path/to/invalid-dsn")
 	if err == nil {
 		db.Close()
 		t.Fatalf("expected error when opening DB with invalid DSN, but got nil")
@@ -49,7 +51,7 @@ func TestInvalidNewDB(t *testing.T) {
 }
 
 func TestClose(t *testing.T) {
-	db, err := NewDB("file::memory:?cache=shared", 2*time.Second)
+	db, err := NewDB(context.TODO(), "file::memory:?cache=shared")
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
@@ -61,7 +63,7 @@ func TestClose(t *testing.T) {
 }
 
 func TestInitializeExistingTables(t *testing.T) {
-	db, err := NewDB("file::memory:?cache=shared", 2*time.Second)
+	db, err := NewDB(context.TODO(), "file::memory:?cache=shared")
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
@@ -83,6 +85,28 @@ func TestInitializeExistingTables(t *testing.T) {
 	err = verifySchemaTableExists(db, deriveSchemaNameFromStruct(Participant{}))
 	if err != nil {
 		t.Fatalf("failed to verify table existence: %v", err)
+	}
+}
+
+func TestBackup(t *testing.T) {
+	db, err := NewDB(context.TODO(), "file::memory:?cache=shared")
+	if err != nil {
+		t.Fatalf("failed to open DB: %v", err)
+	}
+	err = db.Initialize()
+	if err != nil {
+		db.Close()
+		t.Fatalf("failed to Initialize DB: %v", err)
+	}
+
+	const backupDir = "./test_backups"
+	db.StartBackupScheduler(backupDir, time.Second)
+	time.Sleep(3 * time.Second)
+
+	db.Close()
+	err = os.RemoveAll(backupDir)
+	if err != nil {
+		t.Fatalf("failed to remove backup directory: %v", err)
 	}
 }
 

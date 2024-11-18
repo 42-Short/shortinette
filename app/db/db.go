@@ -2,9 +2,9 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"os"
+	"os/exec"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -12,30 +12,28 @@ import (
 )
 
 type DB struct {
-	Conn         *sqlx.DB
-	QueryTimeout time.Duration
+	Conn *sqlx.DB
+	dsn  string
 }
 
 // Creates a new database connection using the provided DSN.
-// It returns a pointer to a DB struct and an error if the connection cannot be established.
-func NewDB(dsn string, queryTimeout time.Duration) (*DB, error) {
+func NewDB(ctx context.Context, dsn string) (*DB, error) {
 	db, err := sqlx.Open("sqlite3", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open DB with DSN '%s': %v", dsn, err)
 	}
 
-	err = db.Ping()
+	err = db.PingContext(ctx)
 	if err != nil {
 		db.Close()
 		return nil, fmt.Errorf("Cant ping DB: %v", err)
 	}
 
 	fmt.Println("Database successfully created.")
-	return &DB{db, queryTimeout}, nil
+	return &DB{db, dsn}, nil
 }
 
 // Sets up the necessary schema in the database and enabling foreign key.
-// It returns an error if any of the schema operations fail.
 func (db *DB) Initialize() error {
 
 	data, err := os.ReadFile("schema.sql")
@@ -43,7 +41,7 @@ func (db *DB) Initialize() error {
 		return fmt.Errorf("Error reading sql file: %v", err)
 	}
 
-	_, err = db.execWithTimeout(string(data))
+	_, err = db.Conn.ExecContext(context.TODO(), string(data))
 	if err != nil {
 		return fmt.Errorf("Error creating Module schema: %v", err)
 	}
@@ -52,63 +50,38 @@ func (db *DB) Initialize() error {
 	return nil
 }
 
+func (db *DB) Backup(backupDir string) error {
+	err := os.MkdirAll(backupDir, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to create backup directory %s: %v", backupDir, err)
+	}
+
+	backupFile := fmt.Sprintf("%s/%s-backup.db", backupDir, time.Now().Format(time.RFC3339))
+	cmd := exec.Command("sqlite3", db.dsn, fmt.Sprintf(".backup %s", backupFile))
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to execute sqlite3 backup: %v, output: %s", err, string(output))
+	}
+
+	fmt.Printf("successfully created DB backup at %s\n", backupFile)
+	return nil
+}
+
+func (db *DB) StartBackupScheduler(backupDir string, interval time.Duration) {
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			err := db.Backup(backupDir)
+			if err != nil {
+				fmt.Printf("failed to backup DB: %v\n", err)
+			}
+		}
+	}()
+}
+
 // Closes the database connection.
 func (db *DB) Close() error {
 	return db.Conn.Close()
-}
-
-// Executes a query with a timeout specified in the DB struct.
-// It returns sql.Result and any error encountered during execution.
-func (db *DB) execWithTimeout(query string, args ...any) (sql.Result, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
-	defer cancel()
-
-	result, err := db.Conn.ExecContext(ctx, query, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-// Executes a Named query with a timeout specified in the DB struct.
-// It returns sql.Result and any error encountered during execution.
-func (db *DB) namedExecWithTimeout(query string, arg any) (sql.Result, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
-	defer cancel()
-
-	result, err := db.Conn.NamedExecContext(ctx, query, arg)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-// Executes a query with a timeout specified in the DB struct.
-// It retrieves a single row from the database and maps it to the provided struct.
-func (db *DB) getWithTimeout(dest interface{}, query string, args ...any) error {
-	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
-	defer cancel()
-
-	err := db.Conn.GetContext(ctx, dest, query, args...)
-	if err != nil {
-		return fmt.Errorf("failed to get data with timeout: %v", err)
-	}
-
-	return nil
-}
-
-// Executes a query with a timeout specified in the DB struct.
-// It retrieves multiple rows from the database and maps it to the provided struct.
-func (db *DB) selectWithTimeout(dest interface{}, query string, args ...any) error {
-	ctx, cancel := context.WithTimeout(context.Background(), db.QueryTimeout)
-	defer cancel()
-
-	err := db.Conn.SelectContext(ctx, dest, query, args...)
-	if err != nil {
-		return fmt.Errorf("failed to get data with timeout: %v", err)
-	}
-
-	return nil
 }
