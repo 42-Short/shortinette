@@ -13,18 +13,15 @@ type DAO[T any] struct {
 	primaryKeys []string
 }
 
-//Update Method
-// Delete Method
-
 func NewDAO[T any](db *DB) *DAO[T] {
 	var dummy T
 	tags := extractTags(&dummy, "db")
 	if len(tags) == 0 {
-		panic("NewBaseDao: Expected database tags (db) but got 0")
+		panic("NewDAO: Expected database tags (db) but got 0")
 	}
 	primaryKeys := extractTags(&dummy, "primaryKey")
 	if len(primaryKeys) == 0 {
-		panic("NewBaseDao: Expected primaryKey tags (primaryKey) but got 0")
+		panic("NewDAO: Expected primaryKey tags (primaryKey) but got 0")
 	}
 	tableName := deriveSchemaNameFromStruct(dummy)
 	return &DAO[T]{
@@ -36,20 +33,25 @@ func NewDAO[T any](db *DB) *DAO[T] {
 }
 
 func (dao *DAO[T]) Insert(data *T) error {
-	columns := strings.Join(dao.dbTags, ", ")
-	placeholders := ":" + strings.Join(dao.dbTags, ", :")
-	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s);", dao.tableName, columns, placeholders)
-
+	query := buildInsertQuery(dao.tableName, dao.dbTags)
 	_, err := dao.DB.namedExecWithTimeout(query, data)
 	if err != nil {
-		return fmt.Errorf("failed to insert data into table %s: %v", dao.tableName, err)
+		return fmt.Errorf("failed to insert data in table %s: %v", dao.tableName, err)
+	}
+	return nil
+}
+
+func (dao *DAO[T]) Update(data *T) error {
+	query := buildUpdateQuery(dao.tableName, dao.dbTags, dao.primaryKeys)
+	_, err := dao.DB.namedExecWithTimeout(query, data)
+	if err != nil {
+		return fmt.Errorf("failed to update data in table %s: %v", dao.tableName, err)
 	}
 	return nil
 }
 
 func (dao *DAO[T]) GetAll() ([]T, error) {
-	query := dao.buildSelectQuery([]string{})
-
+	query := buildSelectQuery(dao.tableName, []string{})
 	var retrievedData []T
 	err := dao.DB.selectWithTimeout(&retrievedData, query)
 	if err != nil {
@@ -59,9 +61,8 @@ func (dao *DAO[T]) GetAll() ([]T, error) {
 }
 
 func (dao *DAO[T]) Get(args ...any) (*T, error) {
+	query := buildSelectQuery(dao.tableName, dao.primaryKeys)
 	var retrievedData T
-
-	query := dao.buildSelectQuery(dao.primaryKeys)
 	err := dao.DB.getWithTimeout(&retrievedData, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get data from table %s: %v", dao.tableName, err)
@@ -70,40 +71,56 @@ func (dao *DAO[T]) Get(args ...any) (*T, error) {
 }
 
 func (dao *DAO[T]) GetFiltered(filters map[string]any) ([]T, error) {
-	fields := make([]string, 0, len(filters))
-	args := make([]any, 0, len(filters))
-	for field, value := range filters {
-		fields = append(fields, field)
-		args = append(args, value)
-	}
-
+	fields, args := extractFieldsAndArgs(filters)
+	query := buildSelectQuery(dao.tableName, fields)
 	var retrievedData []T
-	query := dao.buildSelectQuery(fields)
 	err := dao.DB.selectWithTimeout(&retrievedData, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to filter data: %v", err)
+		return nil, fmt.Errorf("failed to get data from table %s: %v", dao.tableName, err)
 	}
-
 	return retrievedData, nil
 }
 
 func (dao *DAO[T]) Delete(args ...any) error {
-	conditions := buildConditions(dao.primaryKeys)
-	query := fmt.Sprintf("DELETE FROM %s WHERE %s", dao.tableName, strings.Join(conditions, " AND "))
+	query := buildDeleteQuery(dao.tableName, dao.primaryKeys)
 	_, err := dao.DB.execWithTimeout(query, args...)
 	if err != nil {
-		return fmt.Errorf("failed to delete from table %s: %v", dao.tableName, err)
+		return fmt.Errorf("failed to execute query on table %s: %v", dao.tableName, err)
 	}
 	return nil
 }
 
-func (dao *DAO[T]) buildSelectQuery(fields []string) string {
+func buildInsertQuery(tableName string, dbTags []string) string {
+	columns := strings.Join(dbTags, ", ")
+	placeholders := ":" + strings.Join(dbTags, ", :")
+	return fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s);", tableName, columns, placeholders)
+}
+
+func buildUpdateQuery(tableName string, dbTags, primaryKeys []string) string {
+	setClauses := strings.Join(buildClauses(dbTags), ", ")
+	whereClauses := strings.Join(buildClauses(primaryKeys), " AND ")
+	return fmt.Sprintf("UPDATE %s SET %s WHERE %s", tableName, setClauses, whereClauses)
+}
+
+func buildSelectQuery(tableName string, fields []string) string {
 	if len(fields) == 0 {
-		return fmt.Sprintf("SELECT * FROM %s", dao.tableName)
+		return fmt.Sprintf("SELECT * FROM %s", tableName)
 	}
 	conditions := buildConditions(fields)
-	query := fmt.Sprintf("SELECT * FROM %s WHERE %s", dao.tableName, strings.Join(conditions, " AND "))
-	return query
+	return fmt.Sprintf("SELECT * FROM %s WHERE %s", tableName, strings.Join(conditions, " AND "))
+}
+
+func buildDeleteQuery(tableName string, primaryKeys []string) string {
+	conditions := buildConditions(primaryKeys)
+	return fmt.Sprintf("DELETE FROM %s WHERE %s", tableName, strings.Join(conditions, " AND "))
+}
+
+func buildClauses(fields []string) []string {
+	clauses := make([]string, len(fields))
+	for i, field := range fields {
+		clauses[i] = fmt.Sprintf("%s = :%s", field, field)
+	}
+	return clauses
 }
 
 func buildConditions(fields []string) []string {
@@ -116,7 +133,6 @@ func buildConditions(fields []string) []string {
 
 func extractTags[T any](data *T, key string) []string {
 	t := reflect.TypeOf(*data)
-
 	tags := []string{}
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
@@ -126,4 +142,14 @@ func extractTags[T any](data *T, key string) []string {
 		}
 	}
 	return tags
+}
+
+func extractFieldsAndArgs(filters map[string]any) ([]string, []any) {
+	fields := make([]string, 0, len(filters))
+	args := make([]any, 0, len(filters))
+	for field, value := range filters {
+		fields = append(fields, field)
+		args = append(args, value)
+	}
+	return fields, args
 }

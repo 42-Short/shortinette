@@ -25,6 +25,33 @@ func TestInsert(t *testing.T) {
 	assertParticipant(t, participant, &retrievedParticipants[actualSize-1])
 }
 
+func TestUpdate(t *testing.T) {
+	db, modules, _ := newDummyDB(t)
+	moduleDAO := NewDAO[Module](db)
+	defer db.Close()
+
+	modules[0].Score += 100
+	modules[0].Attempts += 1
+	err := moduleDAO.Update(&modules[0])
+	if err != nil {
+		t.Fatalf("failed to update module in DB %v", err)
+	}
+
+	retrievedModule, err := moduleDAO.Get(modules[0].Id, modules[0].IntraLogin)
+	if err != nil {
+		t.Fatalf("failed to fetch module from DB: %v", err)
+	}
+
+	assertModule(t, &modules[0], retrievedModule)
+	if modules[0].Score != retrievedModule.Score {
+		t.Fatalf("failed to update module score in DB: %v", err)
+	}
+	if modules[0].Attempts != retrievedModule.Attempts {
+		t.Fatalf("failed to update module Attempts in DB: %v", err)
+	}
+
+}
+
 func TestGet(t *testing.T) {
 	db, modules, participants := newDummyDB(t)
 	moduleDAO := NewDAO[Module](db)
