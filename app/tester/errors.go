@@ -3,12 +3,14 @@ package tester
 import "errors"
 
 const (
-	InternalError = iota + 1
+	Passed = iota + 1
+	InternalError
 	EarlyGrading
 	InvalidFiles
 	NothingTurnedIn
 	RuntimeError
 	Timeout
+	Cancelled
 )
 
 type GradingError struct {

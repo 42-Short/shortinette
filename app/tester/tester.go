@@ -1,6 +1,7 @@
 package tester
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -14,6 +15,7 @@ import (
 	"github.com/42-Short/shortinette/config"
 	"github.com/42-Short/shortinette/git"
 	"github.com/42-Short/shortinette/tester/docker"
+	"github.com/docker/docker/api/types/container"
 )
 
 type Result struct {
@@ -24,22 +26,25 @@ type Result struct {
 	output     string
 }
 
-func failed(err error, exerciseID int) Result {
+func failed(err error, exerciseID int, exercise *config.Exercise) Result {
 	var customError *GradingError
+	var errorcode int
+	var output string
+
 	if errors.As(err, &customError) {
-		return Result{
-			Passed:     false,
-			ExerciseID: exerciseID,
-			ErrorCode:  customError.code,
-			output:     customError.err,
-		}
+		errorcode = customError.code
+		output = customError.err
 	} else {
-		return Result{
-			Passed:     false,
-			ExerciseID: exerciseID,
-			ErrorCode:  InternalError,
-			output:     err.Error(),
-		}
+		errorcode = InternalError
+		output = err.Error()
+	}
+
+	return Result{
+		Passed:     false,
+		Score:      exercise.Score,
+		ExerciseID: exerciseID,
+		ErrorCode:  errorcode,
+		output:     output,
 	}
 }
 
@@ -47,7 +52,7 @@ func allowedFilesCheck(exercise config.Exercise, exerciseDirectory string) error
 	infos, err := os.Stat(exerciseDirectory)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return TestingError(NothingTurnedIn, "")
+			return TestingError(NothingTurnedIn, "Nothing turned in")
 		} else {
 			return TestingError(InternalError, err.Error())
 		}
@@ -111,50 +116,54 @@ func allowedFilesCheck(exercise config.Exercise, exerciseDirectory string) error
 	return nil
 }
 
-func GradeExercise(exercise *config.Exercise, exerciseID int, exerciseDirectory string) Result {
+func GradeExercise(exercise *config.Exercise, exerciseID int, exerciseDirectory string, dockerImage string) Result {
 	if err := allowedFilesCheck(*exercise, exerciseDirectory); err != nil {
-		return failed(err, exerciseID)
+		return failed(err, exerciseID, exercise)
 	}
 
 	dockerClient, err := docker.NewClient()
 	if err != nil {
-		return failed(fmt.Errorf("error connecting to docker socket: %s", err), exerciseID)
+		return failed(fmt.Errorf("error connecting to docker socket: %s", err), exerciseID, exercise)
 	}
 
-	// This should probably be moved to the startup phase in the future (and maybe also be able to trigger through the server/cli)
-	if err := docker.BuildImage(dockerClient, nil); err != nil {
-		return failed(fmt.Errorf("error building Docker image: %s", err), exerciseID)
-	}
-
-	container, err := docker.ContainerCreate(dockerClient, []string{filepath.Join("/root", filepath.Base(exercise.ExecutablePath))})
+	container, err := docker.ContainerCreate(dockerClient, []string{filepath.Join("/root", filepath.Base(exercise.ExecutablePath))}, dockerImage, fmt.Sprintf("shortinette-grade-%d-%s", exerciseID, exerciseDirectory))
 	if err != nil {
-		return failed(fmt.Errorf("error creating Docker container: %s", err), exerciseID)
+		return failed(fmt.Errorf("error creating Docker container: %s", err), exerciseID, exercise)
 	}
+	defer container.Kill()
 
 	if err := container.CopyFilesToContainer(*exercise, exerciseDirectory); err != nil {
-		container.Kill()
-		return failed(fmt.Errorf("error copying files into container: %s", err), exerciseID)
+		return failed(fmt.Errorf("error copying files into container: %s", err), exerciseID, exercise)
 	}
 
-	if err := container.Exec(time.Second); err != nil {
-		container.Kill()
-		return failed(err, exerciseID)
+	// Hard cap at 5 minutes just in case the test executable doesn't handle endless loops correctly
+	if err := container.Exec(5 * time.Minute); err != nil {
+		return failed(err, exerciseID, exercise)
 	}
+
+	var passed bool
+	var errorcode int
+
 	if container.ExitCode == 0 {
-		return Result{
-			Passed:     true,
-			Score:      exercise.Score,
-			ExerciseID: exerciseID,
-			output:     container.Logs,
-		}
+		errorcode = Passed
+		passed = true
+	} else if container.Timeout {
+		errorcode = Timeout
+		passed = false
+	} else if container.ExitCode == 137 {
+		errorcode = Cancelled
+		passed = false
 	} else {
-		return Result{
-			Passed:     false,
-			Score:      exercise.Score,
-			ExerciseID: exerciseID,
-			ErrorCode:  RuntimeError,
-			output:     container.Logs,
-		}
+		errorcode = RuntimeError
+		passed = false
+	}
+
+	return Result{
+		Passed:     passed,
+		Score:      exercise.Score,
+		ExerciseID: exerciseID,
+		ErrorCode:  errorcode,
+		output:     container.Logs,
 	}
 }
 
@@ -207,22 +216,38 @@ func writeTrace(results []Result, filename string) error {
 	}
 	defer file.Close()
 
-	firstFailed := -1
+	var traceIDs []int
 	output := ""
 	for i, result := range results {
-		if result.Passed {
-			output += fmt.Sprintf("Exercise %02d: OK\n", i)
-		} else {
-			if firstFailed == -1 {
-				firstFailed = i
+		matchError := func(errorcode int) string {
+			switch errorcode {
+			case Passed:
+				return "OK"
+			case RuntimeError:
+				return "KO"
+			case InternalError:
+				return "Internal Error"
+			case EarlyGrading:
+				return "Grading time for module hasn't started yet"
+			case InvalidFiles:
+				return "Invalid Files"
+			case NothingTurnedIn:
+				return "Nothing turned in"
+			case Timeout:
+				return "Timeout"
+			default:
+				return "Unknown error"
 			}
-			output += fmt.Sprintf("Exercise %02d: KO\n", i)
+		}
+		output += fmt.Sprintf("Exercise %02d: %s\n", i, matchError(result.ErrorCode))
+		if !result.Passed && result.output != "" {
+			traceIDs = append(traceIDs, i)
 		}
 	}
 
-	if firstFailed != -1 {
-		output += fmt.Sprintf("\n\n=====Trace for Exercise %02d=====\n", firstFailed)
-		output += results[firstFailed].output
+	for _, id := range traceIDs {
+		output += fmt.Sprintf("\n\n=====Trace for Exercise %02d=====\n", id)
+		output += results[id].output
 	}
 
 	if _, err := file.WriteString(output); err != nil {
@@ -231,17 +256,29 @@ func writeTrace(results []Result, filename string) error {
 	return nil
 }
 
+//nolint:errcheck
+func deleteRepo(repo string) error {
+	return os.RemoveAll(repo)
+}
+
+func checkGradingCancelled(results []Result) bool {
+	for _, result := range results {
+		if result.ErrorCode == Cancelled {
+			return true
+		}
+	}
+	return false
+}
+
 // Clones the specified repo and grades it according to the passed module.
 // Returns an error if the start time hasn't been reached, repo cloning or
 // upload failed, or if there was an issue writing the logs.
 // Returns true if the module was passed (enough points), false if not.
-func GradeModule(module config.Module, repo string) (bool, error) {
+func GradeModule(module config.Module, repo string, dockerImage string) (bool, error) {
 	if time.Now().Before(module.StartTime) {
 		return false, TestingError(EarlyGrading, fmt.Sprintf("start time for repo '%s' not reached yet", repo))
 	}
 
-	// This should probably be moved to the startup phase in the future,
-	// as there is not really a point in validating this for each grading.
 	for _, exercise := range module.Exercises {
 		if err := checkTestExecutable(exercise.ExecutablePath); err != nil {
 			return false, err
@@ -258,7 +295,7 @@ func GradeModule(module config.Module, repo string) (bool, error) {
 		wg.Add(1)
 		go func(e *config.Exercise, exerciseID int) {
 			defer wg.Done()
-			result := GradeExercise(e, i, path.Join(repo, exercise.TurnInDirectory))
+			result := GradeExercise(e, i, path.Join(repo, exercise.TurnInDirectory), dockerImage)
 			resultsChan <- result
 		}(&exercise, i)
 	}
@@ -267,13 +304,22 @@ func GradeModule(module config.Module, repo string) (bool, error) {
 	close(resultsChan)
 
 	results := sortResults(module, resultsChan)
+	defer deleteRepo(repo)
+
+	if checkGradingCancelled(results) {
+		return false, fmt.Errorf("grading for repo %s was cancelled", repo)
+	}
 	timestamp := time.Now().Local().Format("20060102_150405")
 	traceName := fmt.Sprintf("%s-%s.log", repo, timestamp)
 	if err := writeTrace(results, traceName); err != nil {
 		return false, err
 	}
-	// TODO: Trace should be uploaded to a different branch (maybe add a parameter to the UploadFiles function)
-	if err := git.UploadFiles(repo, "Trace", traceName); err != nil {
+
+	if err := git.UploadFiles(repo, "Trace", "traces", false, traceName); err != nil {
+		return false, err
+	}
+
+	if err := os.Remove(traceName); err != nil {
 		return false, err
 	}
 	totalPoints, maxPoints := calculateTotalPoints(results)
@@ -283,4 +329,32 @@ func GradeModule(module config.Module, repo string) (bool, error) {
 	}
 
 	return totalPoints >= module.MinimumScore, nil
+}
+
+// Stops all containers which are used for grading atm
+// Returns an error if creating the docker client  or
+// listing the containers fails. Sleeps 3 seconds to
+// make sure everything afterwards is handled correctly.
+func StopAllGradings() error {
+	dockerClient, err := docker.NewClient()
+	if err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	containers, err := dockerClient.ContainerList(ctx, container.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("could not get docker containers: %s", err)
+	}
+
+	for _, container := range containers {
+		for _, name := range container.Names {
+			if strings.Contains(name, "shortinette-grade-") {
+				dockerClient.ContainerKill(ctx, container.ID, "SIGKILL") //nolint:errcheck
+				break
+			}
+		}
+	}
+	time.Sleep(3 * time.Second)
+	return nil
 }

@@ -7,15 +7,17 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/42-Short/shortinette/config"
-	"github.com/docker/docker/api/types"
+	"github.com/distribution/reference"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/archive"
 )
 
 type Container struct {
@@ -27,55 +29,57 @@ type Container struct {
 }
 
 func NewClient() (*client.Client, error) {
-	dockerClient, err := client.NewClientWithOpts(client.WithHost("unix:///var/run/docker.sock"))
+	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
 	}
 
+	dockerClient.NegotiateAPIVersion(context.Background())
+
 	return dockerClient, nil
 }
 
-func BuildImage(dockerClient *client.Client, logger *io.Writer) error {
-	buildContext, err := archive.TarWithOptions("..", &archive.TarOptions{})
-	if err != nil {
-		return err
+func BuildImage(dockerClient *client.Client, logger io.Writer, dockerfile string, dockerImage string) error {
+	cmd := exec.Command("docker", "build", "-f", dockerfile, "-t", dockerImage, ".")
+	cmd.Stdout = logger
+	cmd.Stderr = logger
+
+	cmd.Dir = ".."
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("could not build docker image: %s", err)
 	}
 
+	fmt.Println("Docker image built successfully")
+	return nil
+}
+
+func PullImage(dockerClient *client.Client, dockerImage string) error {
 	ctx := context.Background()
-	imageBuildResponse, err := dockerClient.ImageBuild(
-		ctx,
-		buildContext,
-		types.ImageBuildOptions{
-			Dockerfile: "testenv/Dockerfile",
-			Tags:       []string{"shortinette-testenv:latest"},
-			Remove:     true,
-		},
-	)
 
+	namedRef, err := reference.ParseNormalizedNamed(dockerImage)
 	if err != nil {
-		return err
+		return fmt.Errorf("error parsing name of docker image: %s", err)
 	}
 
-	defer imageBuildResponse.Body.Close()
-	if logger != nil {
-		if _, err := io.Copy(*logger, imageBuildResponse.Body); err != nil {
-			return err
-		}
+	_, err = dockerClient.ImagePull(ctx, reference.FamiliarName(namedRef), image.PullOptions{})
+	if err != nil {
+		return fmt.Errorf("error pulling docker image: %s", err)
 	}
 
 	return nil
 }
 
-func ContainerCreate(dockerClient *client.Client, command []string) (*Container, error) {
+func ContainerCreate(dockerClient *client.Client, command []string, image string, name string) (*Container, error) {
 	containerConfig := container.Config{
-		Image: "shortinette-testenv",
+		Image: image,
 		Cmd:   command,
 	}
 
 	hostConfig := container.HostConfig{}
 	networkConfig := network.NetworkingConfig{}
 	ctx := context.Background()
-	resp, err := dockerClient.ContainerCreate(ctx, &containerConfig, &hostConfig, &networkConfig, nil, "")
+	name = strings.ReplaceAll(name, "/", "-")
+	resp, err := dockerClient.ContainerCreate(ctx, &containerConfig, &hostConfig, &networkConfig, nil, name)
 
 	if err != nil {
 		return nil, err
@@ -226,8 +230,8 @@ func (c *Container) Kill() error {
 func (c *Container) wait(timeout time.Duration) error {
 	ctx := context.Background()
 
-	time.AfterFunc(timeout, func() {
-		if err := c.DockerClient.ContainerStop(ctx, c.ID, container.StopOptions{}); err == nil {
+	timer := time.AfterFunc(timeout, func() {
+		if err := c.DockerClient.ContainerKill(ctx, c.ID, "SIGKILL"); err == nil {
 			c.Timeout = true
 		}
 	})
@@ -235,11 +239,11 @@ func (c *Container) wait(timeout time.Duration) error {
 	statusCh, errCh := c.DockerClient.ContainerWait(ctx, c.ID, container.WaitConditionNotRunning)
 	select {
 	case err := <-errCh:
-		c.Kill()
 		return fmt.Errorf("error waiting for container: %s", err)
 	case status := <-statusCh:
 		c.ExitCode = status.StatusCode
 	}
+	timer.Stop()
 
 	var buf bytes.Buffer
 	logs, err := c.DockerClient.ContainerLogs(ctx, c.ID, container.LogsOptions{ShowStdout: true, ShowStderr: true})

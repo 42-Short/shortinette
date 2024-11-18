@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/42-Short/shortinette/config"
+	"github.com/42-Short/shortinette/git"
+	"github.com/42-Short/shortinette/tester/docker"
 )
 
 func TestGradeModuleBeforeStarttime(t *testing.T) {
@@ -13,7 +15,7 @@ func TestGradeModuleBeforeStarttime(t *testing.T) {
 	module := config.Module{
 		StartTime: startTime,
 	}
-	_, err := GradeModule(module, "repo")
+	_, err := GradeModule(module, "repo", "shortinette-testenv")
 	if err == nil || !matchesCustomError(err, EarlyGrading) {
 		t.Fatalf("Grading before starttime shouldn't be possible")
 	}
@@ -24,7 +26,7 @@ func TestGradeModuleAfterStarttime(t *testing.T) {
 	module := config.Module{
 		StartTime: startTime,
 	}
-	_, err := GradeModule(module, "repo")
+	_, err := GradeModule(module, "repo", "shortinette-testenv")
 	if err != nil && matchesCustomError(err, EarlyGrading) {
 		t.Fatalf("Grading after starttime should be possible")
 	}
@@ -45,7 +47,7 @@ func TestGradeExerciseOk(t *testing.T) {
 		AllowedFiles:    []string{"test.rs"},
 		TurnInDirectory: "test",
 	}
-	result := GradeExercise(&exercise, 0, "test")
+	result := GradeExercise(&exercise, 0, "test", "shortinette-testenv")
 	if err := os.RemoveAll("test"); err != nil {
 		t.Fatalf("unable to remove test/ directory: %s", err)
 	}
@@ -71,7 +73,7 @@ func TestGradeExerciseFail(t *testing.T) {
 		AllowedFiles:    []string{"test/test.rs"},
 		TurnInDirectory: "test",
 	}
-	result := GradeExercise(&exercise, 0, "test")
+	result := GradeExercise(&exercise, 0, "test", "shortinette-testenv")
 	if err := os.RemoveAll("test"); err != nil {
 		t.Fatalf("unable to remove test/ directory: %s", err)
 	}
@@ -96,7 +98,7 @@ func TestGradeExerciseNoPermission(t *testing.T) {
 		AllowedFiles:    []string{"test/test.rs"},
 		TurnInDirectory: "test",
 	}
-	result := GradeExercise(&exercise, 0, "test")
+	result := GradeExercise(&exercise, 0, "test", "shortinette-testenv")
 	if err := os.RemoveAll("test"); err != nil {
 		t.Fatalf("unable to remove test/ directory: %s", err)
 	}
@@ -107,7 +109,27 @@ func TestGradeExerciseNoPermission(t *testing.T) {
 }
 
 func TestGradeModule(t *testing.T) {
-	// TODO: Create repo with some files
+	dockerClient, err := docker.NewClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// For testing purposes only pull a prebuilt debian image,
+	// because building the Dockerfile would take pretty long
+	// and consume all the CI/CD minutes from Github
+	if err := docker.PullImage(dockerClient, "debian:latest"); err != nil {
+		t.Fatal(err)
+	}
+
+	t.Setenv("TEMPLATE_REPO", "rust-short-template")
+	if err := git.NewRepo("testrepo", true, "description"); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := git.Clone("testrepo"); err != nil {
+		t.Fatal(err)
+	}
+
 	exercises := make([]config.Exercise, 3)
 	exercises[0] = config.Exercise{
 		ExecutablePath:  "executables/slow_executable.sh",
@@ -133,12 +155,7 @@ func TestGradeModule(t *testing.T) {
 		MinimumScore: 20,
 		StartTime:    time.Now(),
 	}
-	passed, err := GradeModule(module, "test2")
-	if err2 := os.RemoveAll("test2"); err2 != nil {
-		t.Fatalf("unable to remove test2/ directory: %s", err2)
-	}
-
-	// TODO: Delete repo again
+	passed, err := GradeModule(module, "testrepo", "debian:latest")
 
 	if err != nil {
 		t.Fatal(err)
