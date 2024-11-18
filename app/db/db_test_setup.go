@@ -25,8 +25,8 @@ func newDummyDB(t *testing.T) (*DB, []Module, []Participant) {
 
 func createDummyData(t *testing.T, db *DB, moduleAmount int, participantAmount int) ([]Module, []Participant) {
 	t.Helper()
-	moduleDao := NewDAO[Module](db, moduleTableName)
-	participantDao := NewDAO[Participant](db, participantTableName)
+	moduleDao := NewDAO[Module](db)
+	participantDao := NewDAO[Participant](db)
 
 	participants := make([]Participant, 0, participantAmount)
 	modules := make([]Module, 0, moduleAmount*participantAmount)

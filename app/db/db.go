@@ -16,11 +16,6 @@ type DB struct {
 	QueryTimeout time.Duration
 }
 
-const (
-	moduleTableName      string = "modules"
-	participantTableName string = "participants"
-)
-
 // Creates a new database connection using the provided DSN.
 // It returns a pointer to a DB struct and an error if the connection cannot be established.
 func NewDB(dsn string, queryTimeout time.Duration) (*DB, error) {
@@ -48,8 +43,7 @@ func (db *DB) Initialize() error {
 		return fmt.Errorf("Error reading sql file: %v", err)
 	}
 
-	query := fmt.Sprintf(string(data), participantTableName, moduleTableName)
-	_, err = db.execWithTimeout(query)
+	_, err = db.execWithTimeout(string(data))
 	if err != nil {
 		return fmt.Errorf("Error creating Module schema: %v", err)
 	}

@@ -16,7 +16,7 @@ type DAO[T any] struct {
 //Update Method
 // Delete Method
 
-func NewDAO[T any](db *DB, tableName string) *DAO[T] {
+func NewDAO[T any](db *DB) *DAO[T] {
 	var dummy T
 	tags := extractTags(&dummy, "db")
 	if len(tags) == 0 {
@@ -26,6 +26,7 @@ func NewDAO[T any](db *DB, tableName string) *DAO[T] {
 	if len(primaryKeys) == 0 {
 		panic("NewBaseDao: Expected primaryKey tags (primaryKey) but got 0")
 	}
+	tableName := deriveSchemaNameFromStruct(dummy)
 	return &DAO[T]{
 		DB:          db,
 		tableName:   tableName,
@@ -35,7 +36,10 @@ func NewDAO[T any](db *DB, tableName string) *DAO[T] {
 }
 
 func (dao *DAO[T]) Insert(data *T) error {
-	query := dao.buildInsertQuery()
+	columns := strings.Join(dao.dbTags, ", ")
+	placeholders := ":" + strings.Join(dao.dbTags, ", :")
+	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s);", dao.tableName, columns, placeholders)
+
 	_, err := dao.DB.namedExecWithTimeout(query, data)
 	if err != nil {
 		return fmt.Errorf("failed to insert data into table %s: %v", dao.tableName, err)
@@ -44,7 +48,7 @@ func (dao *DAO[T]) Insert(data *T) error {
 }
 
 func (dao *DAO[T]) GetAll() ([]T, error) {
-	query := fmt.Sprintf("SELECT * FROM %s;", dao.tableName)
+	query := dao.buildSelectQuery([]string{})
 
 	var retrievedData []T
 	err := dao.DB.selectWithTimeout(&retrievedData, query)
@@ -57,7 +61,7 @@ func (dao *DAO[T]) GetAll() ([]T, error) {
 func (dao *DAO[T]) Get(args ...any) (*T, error) {
 	var retrievedData T
 
-	query := dao.buildQuery("SELECT", dao.primaryKeys)
+	query := dao.buildSelectQuery(dao.primaryKeys)
 	err := dao.DB.getWithTimeout(&retrievedData, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get data from table %s: %v", dao.tableName, err)
@@ -74,7 +78,7 @@ func (dao *DAO[T]) GetFiltered(filters map[string]any) ([]T, error) {
 	}
 
 	var retrievedData []T
-	query := dao.buildQuery("SELECT", fields)
+	query := dao.buildSelectQuery(fields)
 	err := dao.DB.selectWithTimeout(&retrievedData, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to filter data: %v", err)
@@ -84,36 +88,30 @@ func (dao *DAO[T]) GetFiltered(filters map[string]any) ([]T, error) {
 }
 
 func (dao *DAO[T]) Delete(args ...any) error {
-	query := dao.buildQuery("DELETE", dao.primaryKeys)
-	_, err := dao.DB.namedExecWithTimeout(query, args)
+	conditions := buildConditions(dao.primaryKeys)
+	query := fmt.Sprintf("DELETE FROM %s WHERE %s", dao.tableName, strings.Join(conditions, " AND "))
+	_, err := dao.DB.execWithTimeout(query, args...)
 	if err != nil {
-		return fmt.Errorf("failed to delte table %s: %v", dao.tableName, err)
+		return fmt.Errorf("failed to delete from table %s: %v", dao.tableName, err)
 	}
 	return nil
 }
 
-func (dao *DAO[T]) buildQuery(queryType string, fields []string) string {
-	conditions := make([]string, 0, len(fields))
-	for _, field := range fields {
-		conditions = append(conditions, fmt.Sprintf("%s = ?", field))
+func (dao *DAO[T]) buildSelectQuery(fields []string) string {
+	if len(fields) == 0 {
+		return fmt.Sprintf("SELECT * FROM %s", dao.tableName)
 	}
-	query := fmt.Sprintf("%s * FROM %s WHERE %s", queryType, dao.tableName, strings.Join(conditions, " AND "))
+	conditions := buildConditions(fields)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE %s", dao.tableName, strings.Join(conditions, " AND "))
 	return query
 }
 
-func (dao *DAO[T]) buildInsertQuery() string {
-	columns := strings.Join(dao.dbTags, ", ")
-	placeholders := strings.Join(createNamedPlaceholders(dao.dbTags), ", ")
-	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s);", dao.tableName, columns, placeholders)
-	return query
-}
-
-func createNamedPlaceholders(tags []string) []string {
-	placeholders := make([]string, 0, len(tags))
-	for _, tag := range tags {
-		placeholders = append(placeholders, ":"+tag)
+func buildConditions(fields []string) []string {
+	conditions := make([]string, len(fields))
+	for i, field := range fields {
+		conditions[i] = fmt.Sprintf("%s = ?", field)
 	}
-	return placeholders
+	return conditions
 }
 
 func extractTags[T any](data *T, key string) []string {

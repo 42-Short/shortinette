@@ -7,7 +7,7 @@ import (
 
 func TestInsert(t *testing.T) {
 	db, _, participants := newDummyDB(t)
-	participantDAO := NewDAO[Participant](db, participantTableName)
+	participantDAO := NewDAO[Participant](db)
 	defer db.Close()
 
 	participant := newDummyParticipant()
@@ -27,8 +27,8 @@ func TestInsert(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	db, modules, participants := newDummyDB(t)
-	moduleDAO := NewDAO[Module](db, moduleTableName)
-	participantDAO := NewDAO[Participant](db, participantTableName)
+	moduleDAO := NewDAO[Module](db)
+	participantDAO := NewDAO[Participant](db)
 	defer db.Close()
 
 	retrievedParticipant, err := participantDAO.Get(participants[0].IntraLogin)
@@ -45,7 +45,7 @@ func TestGet(t *testing.T) {
 
 func TestGetFiltered(t *testing.T) {
 	db, modules, _ := newDummyDB(t)
-	moduleDAO := NewDAO[Module](db, moduleTableName)
+	moduleDAO := NewDAO[Module](db)
 	defer db.Close()
 
 	filters := map[string]any{
@@ -69,8 +69,8 @@ func TestGetFiltered(t *testing.T) {
 
 func TestGetAll(t *testing.T) {
 	db, modules, participants := newDummyDB(t)
-	moduleDAO := NewDAO[Module](db, moduleTableName)
-	participantDAO := NewDAO[Participant](db, participantTableName)
+	moduleDAO := NewDAO[Module](db)
+	participantDAO := NewDAO[Participant](db)
 	defer db.Close()
 
 	retrievedModules, err := moduleDAO.GetAll()
@@ -86,6 +86,24 @@ func TestGetAll(t *testing.T) {
 		for j, module := range modules {
 			assertModule(t, &module, &retrievedModules[j])
 		}
+	}
+}
+
+func TestDelete(t *testing.T) {
+	db, modules, _ := newDummyDB(t)
+	moduleDAO := NewDAO[Module](db)
+	defer db.Close()
+
+	err := moduleDAO.Delete(modules[0].Id, modules[0].IntraLogin)
+	if err != nil {
+		t.Fatalf("failed to delete modules from DB: %v", err)
+	}
+	retrievedModules, err := moduleDAO.GetAll()
+	if err != nil {
+		t.Fatalf("failed to fetch modules from DB: %v", err)
+	}
+	if len(retrievedModules) != len(modules)-1 {
+		t.Fatalf("failed to delete module from DB")
 	}
 }
 
