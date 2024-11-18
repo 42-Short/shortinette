@@ -2,11 +2,11 @@ package tester
 
 import (
 	"os"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/42-Short/shortinette/config"
-	"github.com/42-Short/shortinette/git"
 	"github.com/42-Short/shortinette/tester/docker"
 )
 
@@ -36,21 +36,18 @@ func TestGradeExerciseOk(t *testing.T) {
 	if err := os.Mkdir("test", 0755); err != nil {
 		t.Fatalf("Unable to create test folder: %s", err)
 	}
+	defer os.RemoveAll("test")
+
 	if _, err := os.Create("test/test.rs"); err != nil {
-		if err2 := os.Remove("test"); err2 != nil {
-			t.Fatalf("unable to create test/test.rs and unable to remove test/ folder")
-		}
 		t.Fatalf("unable to create test/test.rs file")
 	}
+
 	exercise := config.Exercise{
 		ExecutablePath:  "executables/testexecutable.sh",
 		AllowedFiles:    []string{"test.rs"},
 		TurnInDirectory: "test",
 	}
 	result := GradeExercise(&exercise, 0, "test", "shortinette-testenv")
-	if err := os.RemoveAll("test"); err != nil {
-		t.Fatalf("unable to remove test/ directory: %s", err)
-	}
 
 	if !result.Passed {
 		t.Fatalf("Not passed: %v", result)
@@ -62,21 +59,19 @@ func TestGradeExerciseFail(t *testing.T) {
 	if err := os.Mkdir("test", 0755); err != nil {
 		t.Fatalf("Unable to create test folder: %s", err)
 	}
+	defer os.RemoveAll("test")
+
 	if _, err := os.Create("test/test.rs"); err != nil {
-		if err2 := os.Remove("test"); err2 != nil {
-			t.Fatalf("unable to create test/test.rs and unable to remove test/ folder")
-		}
 		t.Fatalf("unable to create test/test.rs file")
 	}
+
 	exercise := config.Exercise{
 		ExecutablePath:  "executables/testexecutable_fail.sh",
 		AllowedFiles:    []string{"test/test.rs"},
 		TurnInDirectory: "test",
 	}
+
 	result := GradeExercise(&exercise, 0, "test", "shortinette-testenv")
-	if err := os.RemoveAll("test"); err != nil {
-		t.Fatalf("unable to remove test/ directory: %s", err)
-	}
 
 	if result.Passed {
 		t.Fatalf("Exercise passed but shouldn't: %v", result)
@@ -87,10 +82,9 @@ func TestGradeExerciseNoPermission(t *testing.T) {
 	if err := os.Mkdir("test", 0755); err != nil {
 		t.Fatalf("Unable to create test folder: %s", err)
 	}
+	defer os.RemoveAll("test")
+
 	if _, err := os.Create("test/test.rs"); err != nil {
-		if err2 := os.Remove("test"); err2 != nil {
-			t.Fatalf("unable to create test/test.rs and unable to remove test/ folder")
-		}
 		t.Fatalf("unable to create test/test.rs file")
 	}
 	exercise := config.Exercise{
@@ -99,16 +93,13 @@ func TestGradeExerciseNoPermission(t *testing.T) {
 		TurnInDirectory: "test",
 	}
 	result := GradeExercise(&exercise, 0, "test", "shortinette-testenv")
-	if err := os.RemoveAll("test"); err != nil {
-		t.Fatalf("unable to remove test/ directory: %s", err)
-	}
 
 	if result.Passed {
 		t.Fatalf("Exercise passed but shouldn't: %v", result)
 	}
 }
 
-func TestGradeModule(t *testing.T) {
+func TestGradeModulePartlyFail(t *testing.T) {
 	dockerClient, err := docker.NewClient()
 	if err != nil {
 		t.Fatal(err)
@@ -121,13 +112,17 @@ func TestGradeModule(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	t.Setenv("TEMPLATE_REPO", "rust-short-template")
-	if err := git.NewRepo("testrepo", true, "description"); err != nil {
-		t.Fatal(err)
+	if err := os.MkdirAll("testrepo/ex00", 0755); err != nil {
+		t.Fatalf("Unable to create testrepo folder: %s", err)
+	}
+	defer os.RemoveAll("testrepo")
+
+	if _, err := os.Create("testrepo/ex00/test.rs"); err != nil {
+		t.Fatalf("unable to create testrepo/ex00/test.rs file")
 	}
 
-	if err := git.Clone("testrepo"); err != nil {
-		t.Fatal(err)
+	if _, err := os.Create("testrepo/ex00/.gitignore"); err != nil {
+		t.Fatalf("unable to create testrepo/ex00/test.rs file")
 	}
 
 	exercises := make([]config.Exercise, 3)
@@ -155,28 +150,277 @@ func TestGradeModule(t *testing.T) {
 		MinimumScore: 20,
 		StartTime:    time.Now(),
 	}
-	passed, err := GradeModule(module, "testrepo", "debian:latest")
+	result, err := GradeModule(module, "testrepo", "debian:latest")
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if passed {
-		t.Fatalf("Module passed but shouldn't: %v", module)
+	if result.Passed || result.Score != 10 {
+		t.Fatalf("Module didn't reach exactly 10 points: %v", module)
 	}
 }
 
-/*
-Missing Tests rn:
-- Allowed files check
-	- one correct test
-	- one test with a missing file
-	- two tests with an additional file
-		- one of them a regular file
-		- one of them a hidden file like .gitignore which shouldn't be failed
-	- missing exercise folder to simulate "Nothing turned in"
-	- existing but empty exercise folder
-	- tests with existing files which don't have permission (folder needs r+w ig, files only read)
-- Test executables missing or no permission
-- Docker errors (Docker not implemented yet)
-*/
+func TestGradeModuleFullPoints(t *testing.T) {
+	dockerClient, err := docker.NewClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// For testing purposes only pull a prebuilt debian image,
+	// because building the Dockerfile would take pretty long
+	// and consume all the CI/CD minutes from Github
+	if err := docker.PullImage(dockerClient, "debian:latest"); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.MkdirAll("testrepo/ex00", 0755); err != nil {
+		t.Fatalf("Unable to create testrepo folder: %s", err)
+	}
+	defer os.RemoveAll("testrepo")
+
+	if _, err := os.Create("testrepo/ex00/test.rs"); err != nil {
+		t.Fatalf("unable to create testrepo/ex00/test.rs file")
+	}
+
+	if _, err := os.Create("testrepo/ex00/.gitignore"); err != nil {
+		t.Fatalf("unable to create testrepo/ex00/test.rs file")
+	}
+
+	exercises := make([]config.Exercise, 3)
+	exercises[0] = config.Exercise{
+		ExecutablePath:  "executables/slow_executable.sh",
+		Score:           10,
+		AllowedFiles:    []string{"test.rs"},
+		TurnInDirectory: "ex00",
+	}
+	exercises[1] = config.Exercise{
+		ExecutablePath:  "executables/testexecutable.sh",
+		Score:           10,
+		AllowedFiles:    []string{"test.rs"},
+		TurnInDirectory: "ex00",
+	}
+	exercises[2] = config.Exercise{
+		ExecutablePath:  "executables/testexecutable.sh",
+		Score:           10,
+		AllowedFiles:    []string{"test.rs"},
+		TurnInDirectory: "ex00",
+	}
+
+	module := config.Module{
+		Exercises:    exercises,
+		MinimumScore: 30,
+		StartTime:    time.Now(),
+	}
+	result, err := GradeModule(module, "testrepo", "debian:latest")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !result.Passed || result.Score != 30 {
+		t.Fatalf("Module didn't reach exactly 30 points: %v", module)
+	}
+}
+
+func TestGradeModuleMissingFile(t *testing.T) {
+	dockerClient, err := docker.NewClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// For testing purposes only pull a prebuilt debian image,
+	// because building the Dockerfile would take pretty long
+	// and consume all the CI/CD minutes from Github
+	if err := docker.PullImage(dockerClient, "debian:latest"); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.MkdirAll("testrepo/ex00", 0755); err != nil {
+		t.Fatalf("Unable to create testrepo folder: %s", err)
+	}
+	defer os.RemoveAll("testrepo")
+
+	if _, err := os.Create("testrepo/ex00/test.rs"); err != nil {
+		t.Fatalf("unable to create testrepo/ex00/test.rs file")
+	}
+
+	if _, err := os.Create("testrepo/ex00/.gitignore"); err != nil {
+		t.Fatalf("unable to create testrepo/ex00/test.rs file")
+	}
+
+	exercises := make([]config.Exercise, 1)
+	exercises[0] = config.Exercise{
+		ExecutablePath:  "executables/testexecutable.sh",
+		Score:           10,
+		AllowedFiles:    []string{"test.rs", "test2.rs"},
+		TurnInDirectory: "ex00",
+	}
+
+	module := config.Module{
+		Exercises:    exercises,
+		MinimumScore: 10,
+		StartTime:    time.Now(),
+	}
+	result, err := GradeModule(module, "testrepo", "debian:latest")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if result.Passed {
+		t.Fatalf("Module passed but shouldn't: %v", module)
+	}
+
+	if !strings.Contains(result.Trace, "Missing") {
+		t.Fatalf("Expected missing file error in trace: %s", result.Trace)
+	}
+}
+
+func TestGradeModuleAdditionalFiles(t *testing.T) {
+	dockerClient, err := docker.NewClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// For testing purposes only pull a prebuilt debian image,
+	// because building the Dockerfile would take pretty long
+	// and consume all the CI/CD minutes from Github
+	if err := docker.PullImage(dockerClient, "debian:latest"); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.MkdirAll("testrepo/ex00", 0755); err != nil {
+		t.Fatalf("Unable to create testrepo folder: %s", err)
+	}
+	defer os.RemoveAll("testrepo")
+
+	if _, err := os.Create("testrepo/ex00/test.rs"); err != nil {
+		t.Fatalf("unable to create testrepo/ex00/test.rs file")
+	}
+
+	if _, err := os.Create("testrepo/ex00/.gitignore"); err != nil {
+		t.Fatalf("unable to create testrepo/ex00/test.rs file")
+	}
+
+	exercises := make([]config.Exercise, 1)
+	exercises[0] = config.Exercise{
+		ExecutablePath:  "executables/testexecutable.sh",
+		Score:           10,
+		AllowedFiles:    []string{},
+		TurnInDirectory: "ex00",
+	}
+
+	module := config.Module{
+		Exercises:    exercises,
+		MinimumScore: 10,
+		StartTime:    time.Now(),
+	}
+	result, err := GradeModule(module, "testrepo", "debian:latest")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if result.Passed {
+		t.Fatalf("Module passed but shouldn't: %v", module)
+	}
+
+	if !strings.Contains(result.Trace, "Additional") {
+		t.Fatalf("Expected additional file error in trace: %s", result.Trace)
+	}
+}
+
+func TestGradeModuleNothingTurnedIn(t *testing.T) {
+	dockerClient, err := docker.NewClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// For testing purposes only pull a prebuilt debian image,
+	// because building the Dockerfile would take pretty long
+	// and consume all the CI/CD minutes from Github
+	if err := docker.PullImage(dockerClient, "debian:latest"); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.MkdirAll("testrepo", 0755); err != nil {
+		t.Fatalf("Unable to create testrepo folder: %s", err)
+	}
+	defer os.RemoveAll("testrepo")
+
+	exercises := make([]config.Exercise, 1)
+	exercises[0] = config.Exercise{
+		ExecutablePath:  "executables/testexecutable.sh",
+		Score:           10,
+		AllowedFiles:    []string{},
+		TurnInDirectory: "ex00",
+	}
+
+	module := config.Module{
+		Exercises:    exercises,
+		MinimumScore: 10,
+		StartTime:    time.Now(),
+	}
+	result, err := GradeModule(module, "testrepo", "debian:latest")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if result.Passed {
+		t.Fatalf("Module passed but shouldn't: %v", module)
+	}
+
+	if !strings.Contains(result.Trace, "Nothing") {
+		t.Fatalf("Expected Nothing turned in error in trace: %s", result.Trace)
+	}
+}
+
+func TestGradeModuleContainerStopped(t *testing.T) {
+	dockerClient, err := docker.NewClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// For testing purposes only pull a prebuilt debian image,
+	// because building the Dockerfile would take pretty long
+	// and consume all the CI/CD minutes from Github
+	if err := docker.PullImage(dockerClient, "debian:latest"); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.MkdirAll("testrepo/ex00", 0755); err != nil {
+		t.Fatalf("Unable to create testrepo folder: %s", err)
+	}
+	defer os.RemoveAll("testrepo")
+
+	if _, err := os.Create("testrepo/ex00/test.rs"); err != nil {
+		t.Fatalf("unable to create testrepo/ex00/test.rs file")
+	}
+
+	exercises := make([]config.Exercise, 1)
+	exercises[0] = config.Exercise{
+		ExecutablePath:  "executables/slow_executable.sh",
+		Score:           10,
+		AllowedFiles:    []string{"test.rs"},
+		TurnInDirectory: "ex00",
+	}
+
+	module := config.Module{
+		Exercises:    exercises,
+		MinimumScore: 10,
+		StartTime:    time.Now(),
+	}
+
+	go func() {
+		time.Sleep(3 * time.Second)
+		StopAllGradings() //nolint:errcheck
+	}()
+
+	_, err = GradeModule(module, "testrepo", "debian:latest")
+
+	if err == nil {
+		t.Fatalf("GradeModule should return an error due to stopped containers: %s", err)
+	}
+}

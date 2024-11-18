@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/42-Short/shortinette/config"
-	"github.com/42-Short/shortinette/git"
 	"github.com/42-Short/shortinette/tester/docker"
 	"github.com/docker/docker/api/types/container"
 )
@@ -24,6 +23,13 @@ type Result struct {
 	Score      int
 	ErrorCode  int
 	output     string
+}
+
+type GradingResult struct {
+	Passed   bool
+	Score    int
+	MaxScore int
+	Trace    string
 }
 
 func failed(err error, exerciseID int, exercise *config.Exercise) Result {
@@ -206,16 +212,7 @@ func calculateTotalPoints(results []Result) (int, int) {
 	return totalPoints, maxPoints
 }
 
-func writeTrace(results []Result, filename string) error {
-	if _, err := os.Stat(filename); err == nil {
-		return TestingError(InternalError, fmt.Sprintf("trace file %s already exists", filename))
-	}
-	file, err := os.Create(filename)
-	if err != nil {
-		return TestingError(InternalError, fmt.Sprintf("error creating trace file: %s", err.Error()))
-	}
-	defer file.Close()
-
+func getTraceContent(results []Result) string {
 	var traceIDs []int
 	output := ""
 	for i, result := range results {
@@ -250,15 +247,7 @@ func writeTrace(results []Result, filename string) error {
 		output += results[id].output
 	}
 
-	if _, err := file.WriteString(output); err != nil {
-		return err
-	}
-	return nil
-}
-
-//nolint:errcheck
-func deleteRepo(repo string) error {
-	return os.RemoveAll(repo)
+	return output
 }
 
 func checkGradingCancelled(results []Result) bool {
@@ -270,23 +259,19 @@ func checkGradingCancelled(results []Result) bool {
 	return false
 }
 
-// Clones the specified repo and grades it according to the passed module.
-// Returns an error if the start time hasn't been reached, repo cloning or
-// upload failed, or if there was an issue writing the logs.
-// Returns true if the module was passed (enough points), false if not.
-func GradeModule(module config.Module, repo string, dockerImage string) (bool, error) {
+// Grades the specified folder according to the passed module.
+// Returns an error if the start time hasn't been reached, or if there
+// is an issue with the test executables. Returns the reached points,
+// as well as the output that should be written in the logs.
+func GradeModule(module config.Module, folder string, dockerImage string) (*GradingResult, error) {
 	if time.Now().Before(module.StartTime) {
-		return false, TestingError(EarlyGrading, fmt.Sprintf("start time for repo '%s' not reached yet", repo))
+		return nil, TestingError(EarlyGrading, fmt.Sprintf("start time for repo '%s' not reached yet", folder))
 	}
 
 	for _, exercise := range module.Exercises {
 		if err := checkTestExecutable(exercise.ExecutablePath); err != nil {
-			return false, err
+			return nil, err
 		}
-	}
-
-	if err := git.Clone(repo); err != nil {
-		return false, err
 	}
 
 	var wg sync.WaitGroup
@@ -295,7 +280,7 @@ func GradeModule(module config.Module, repo string, dockerImage string) (bool, e
 		wg.Add(1)
 		go func(e *config.Exercise, exerciseID int) {
 			defer wg.Done()
-			result := GradeExercise(e, i, path.Join(repo, exercise.TurnInDirectory), dockerImage)
+			result := GradeExercise(e, i, path.Join(folder, exercise.TurnInDirectory), dockerImage)
 			resultsChan <- result
 		}(&exercise, i)
 	}
@@ -304,31 +289,22 @@ func GradeModule(module config.Module, repo string, dockerImage string) (bool, e
 	close(resultsChan)
 
 	results := sortResults(module, resultsChan)
-	defer deleteRepo(repo)
 
 	if checkGradingCancelled(results) {
-		return false, fmt.Errorf("grading for repo %s was cancelled", repo)
-	}
-	timestamp := time.Now().Local().Format("20060102_150405")
-	traceName := fmt.Sprintf("%s-%s.log", repo, timestamp)
-	if err := writeTrace(results, traceName); err != nil {
-		return false, err
+		return nil, fmt.Errorf("grading for repo %s was cancelled", folder)
 	}
 
-	if err := git.UploadFiles(repo, "Trace", "traces", false, traceName); err != nil {
-		return false, err
-	}
-
-	if err := os.Remove(traceName); err != nil {
-		return false, err
-	}
+	traceContent := getTraceContent(results)
 	totalPoints, maxPoints := calculateTotalPoints(results)
-	// TODO: Release Notes should contain some information (at least a link to the trace file)
-	if err := git.NewRelease(repo, fmt.Sprintf("grade-%s", timestamp), fmt.Sprintf("%d/%d", totalPoints, maxPoints), ""); err != nil {
-		return false, err
+
+	gradingResult := GradingResult{
+		Passed:   totalPoints >= module.MinimumScore,
+		Score:    totalPoints,
+		MaxScore: maxPoints,
+		Trace:    traceContent,
 	}
 
-	return totalPoints >= module.MinimumScore, nil
+	return &gradingResult, nil
 }
 
 // Stops all containers which are used for grading atm
