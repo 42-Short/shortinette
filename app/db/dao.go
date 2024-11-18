@@ -32,6 +32,7 @@ func NewDAO[T any](db *DB) *DAO[T] {
 	}
 }
 
+// Adds a new record to the table.
 func (dao *DAO[T]) Insert(data *T) error {
 	query := buildInsertQuery(dao.tableName, dao.dbTags)
 	_, err := dao.DB.namedExecWithTimeout(query, data)
@@ -41,6 +42,7 @@ func (dao *DAO[T]) Insert(data *T) error {
 	return nil
 }
 
+// Modifies an existing record in the table using the DAO's primary keys.
 func (dao *DAO[T]) Update(data *T) error {
 	query := buildUpdateQuery(dao.tableName, dao.dbTags, dao.primaryKeys)
 	_, err := dao.DB.namedExecWithTimeout(query, data)
@@ -50,6 +52,7 @@ func (dao *DAO[T]) Update(data *T) error {
 	return nil
 }
 
+// Retrieves all records from the table corresponding to the DAO's type.
 func (dao *DAO[T]) GetAll() ([]T, error) {
 	query := buildSelectQuery(dao.tableName, []string{})
 	var retrievedData []T
@@ -60,6 +63,7 @@ func (dao *DAO[T]) GetAll() ([]T, error) {
 	return retrievedData, nil
 }
 
+// Retrieves a single record by the primary keys from the table.
 func (dao *DAO[T]) Get(args ...any) (*T, error) {
 	query := buildSelectQuery(dao.tableName, dao.primaryKeys)
 	var retrievedData T
@@ -70,6 +74,7 @@ func (dao *DAO[T]) Get(args ...any) (*T, error) {
 	return &retrievedData, err
 }
 
+// Retrieves records from the table that match the given filters.
 func (dao *DAO[T]) GetFiltered(filters map[string]any) ([]T, error) {
 	fields, args := extractFieldsAndArgs(filters)
 	query := buildSelectQuery(dao.tableName, fields)
@@ -81,6 +86,7 @@ func (dao *DAO[T]) GetFiltered(filters map[string]any) ([]T, error) {
 	return retrievedData, nil
 }
 
+// Removes a record from the table using the DAO's primary keys.
 func (dao *DAO[T]) Delete(args ...any) error {
 	query := buildDeleteQuery(dao.tableName, dao.primaryKeys)
 	_, err := dao.DB.execWithTimeout(query, args...)
