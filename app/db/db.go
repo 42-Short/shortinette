@@ -33,7 +33,7 @@ func NewDB(ctx context.Context, dsn string) (*DB, error) {
 	return &DB{db, dsn}, nil
 }
 
-// Sets up the necessary schema in the database and enabling foreign key.
+// Sets up the necessary schema in the database
 func (db *DB) Initialize() error {
 	data, err := os.ReadFile("schema.sql")
 	if err != nil {

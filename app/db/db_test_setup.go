@@ -20,7 +20,6 @@ func newDummyDB(t *testing.T) (*DB, []Module, []Participant) {
 	}
 
 	modules, participants := createDummyData(t, db, 7, 40)
-
 	return db, modules, participants
 }
 
