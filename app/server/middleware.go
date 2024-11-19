@@ -12,13 +12,14 @@ func tokenAuthMiddleware() gin.HandlerFunc {
 	requiredToken := os.Getenv("API_TOKEN")
 
 	if requiredToken == "" {
-		logger.Error.Fatal("api access token is empty")
+		logger.Error.Fatal("API_TOKEN in .env is empty")
 	}
 
 	return func(c *gin.Context) {
 		token := c.Request.FormValue("api_token")
 		if token != requiredToken {
 			c.JSON(http.StatusBadRequest, gin.H{"message": "token invalid"})
+			c.Abort()
 			return
 		}
 

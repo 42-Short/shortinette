@@ -12,53 +12,43 @@ import (
 
 type Server struct {
 	*http.Server
+	Handler *gin.Engine
 }
 
 func NewServer(addr string) *Server {
 	handler := gin.Default()
-	// gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.DebugMode)
 
-	group := handler.Group("v1/")
-	group.Use(tokenAuthMiddleware())
-
-	return &Server{
+	server := &Server{
 		Server: &http.Server{
 			Addr:    addr,
 			Handler: handler,
 		},
+		Handler: handler,
 	}
+	server.setupRoutes()
+	return server
 }
 
-func (server *Server) Run(ctx context.CancelFunc) error {
+func (s *Server) Run() chan error {
 	errorCh := make(chan error, 1)
 
 	go func() {
-		err := server.ListenAndServe()
-		if err != nil {
-			errorCh <- err
-			return
-		}
-		close(errorCh)
+		err := s.ListenAndServe()
+		errorCh <- err
 	}()
-
-	select {
-	case err := <-errorCh:
-		if err != nil {
-			return fmt.Errorf("server encountered an error: %v", err)
-		}
-	}
-	logger.Info.Printf("Server is listening at %s...", server.Addr)
-	return nil
+	logger.Info.Printf("server is listening on %s", s.Addr)
+	return errorCh
 }
 
-func (server *Server) Shutdown() error {
+func (s *Server) Shutdown() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := server.Server.Shutdown(ctx)
+	err := s.Server.Shutdown(ctx)
 	if err != nil {
-		return fmt.Errorf("faild to shut down Server with addr: %s: %v", server.Addr, err)
+		return fmt.Errorf("faild to shut down Server with addr: %s: %v", s.Addr, err)
 	}
-	logger.Info.Printf("Server has gracefully shut down for addr: %s\n", server.Addr)
+	logger.Info.Printf("Server with addr: `%s` has  gracefully shut down.\n", s.Addr)
 	return nil
 }
