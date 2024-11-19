@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/42-Short/shortinette/logger"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -29,13 +30,13 @@ func NewDB(ctx context.Context, dsn string) (*DB, error) {
 		return nil, fmt.Errorf("Cant ping DB: %v", err)
 	}
 
-	fmt.Println("Database successfully created.")
+	logger.Info.Println("Database successfully created.")
 	return &DB{db, dsn}, nil
 }
 
 // Sets up the necessary schema in the database
-func (db *DB) Initialize() error {
-	data, err := os.ReadFile("schema.sql")
+func (db *DB) Initialize(schemaPath string) error {
+	data, err := os.ReadFile(schemaPath)
 	if err != nil {
 		return fmt.Errorf("Error reading sql file: %v", err)
 	}
@@ -48,7 +49,7 @@ func (db *DB) Initialize() error {
 		return fmt.Errorf("Error creating Module schema: %v", err)
 	}
 
-	fmt.Println("Schema Tables successfully created.")
+	logger.Info.Println("Schema Tables successfully created.")
 	return nil
 }
 
@@ -66,7 +67,7 @@ func (db *DB) Backup(backupDir string) error {
 		return fmt.Errorf("failed to execute sqlite3 backup: %v, output: %s", err, string(output))
 	}
 
-	fmt.Printf("successfully created DB backup at %s\n", backupFile)
+	logger.Info.Printf("successfully created DB backup at %s\n", backupFile)
 	return nil
 }
 
@@ -79,7 +80,7 @@ func (db *DB) StartBackupScheduler(backupDir string, interval time.Duration) {
 		for range ticker.C {
 			err := db.Backup(backupDir)
 			if err != nil {
-				fmt.Printf("failed to backup DB: %v\n", err)
+				logger.Error.Printf("failed to backup DB: %v\n", err)
 			}
 		}
 	}()

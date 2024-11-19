@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/42-Short/shortinette/logger"
 	"github.com/google/go-github/v66/github"
 	"github.com/joho/godotenv"
 )
@@ -27,12 +28,12 @@ func deleteRepo(name string) (err error) {
 		if resp.StatusCode != http.StatusNotFound {
 			return fmt.Errorf("could not delete repo '%s': %v", name, err)
 		} else {
-			fmt.Printf("repo '%s' not found in orga '%s'\n", name, orga)
+			logger.Warning.Printf("repo '%s' not found in orga '%s'\n", name, orga)
 			return nil
 		}
 	}
 
-	fmt.Printf("repo '%s' successfully deleted\n", name)
+	logger.Info.Printf("repo '%s' successfully deleted\n", name)
 	return nil
 }
 
@@ -40,7 +41,7 @@ func deleteRepo(name string) (err error) {
 // if they exist, sets the error's value if not.
 func requireEnv() (githubToken string, githubOrga string, templateRepo string, err error) {
 	if err := godotenv.Load("../.env"); err != nil {
-		fmt.Printf("warning: .env file not found, this is expected in the GitHub Actions environment, this is a problem if you are running this locally\n")
+		logger.Warning.Printf(".env file not found, this is expected in the GitHub Actions environment, this is a problem if you are running this locally\n")
 	}
 
 	missingVars := []string{}
@@ -94,14 +95,14 @@ func NewRepo(name string, private bool, description string) (err error) {
 	if err != nil {
 		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
 			if isRepoAlreadyExists(err) {
-				fmt.Printf("repo %s already exists under orga %s, skipping\n", name, orga)
+				logger.Info.Printf("repo %s already exists under orga %s, skipping\n", name, orga)
 				return nil
 			}
 		}
 		return fmt.Errorf("could not create repo %s: %v", name, err)
 	}
 
-	fmt.Printf("repo created: %s at URL: %s\n", *createdRepo.Name, *createdRepo.HTMLURL)
+	logger.Info.Printf("repo created: %s at URL: %s\n", *createdRepo.Name, *createdRepo.HTMLURL)
 	return nil
 }
 
@@ -123,7 +124,7 @@ func AddCollaborator(repoName string, collaboratorName string, permission string
 		return fmt.Errorf("could not add collaborator %s to repo %s: %v", collaboratorName, repoName, err)
 	}
 
-	fmt.Printf("user %s added to repo %s with %s access\n", collaboratorName, repoName, permission)
+	logger.Info.Printf("user %s added to repo %s with %s access\n", collaboratorName, repoName, permission)
 	return nil
 }
 
@@ -131,7 +132,7 @@ func AddCollaborator(repoName string, collaboratorName string, permission string
 // environment variable). Does nothing if the directory is cloned already.
 func Clone(name string) (err error) {
 	if _, err := os.Stat(name); !os.IsNotExist(err) {
-		fmt.Printf("'%s' seems to cloned already, returning\n", name)
+		logger.Info.Printf("'%s' seems to cloned already, returning\n", name)
 		return nil
 	}
 
@@ -150,7 +151,7 @@ func Clone(name string) (err error) {
 		return fmt.Errorf("could not clone '%s': %v", name, err)
 	}
 
-	fmt.Printf("'%s' cloned successfully\n", name)
+	logger.Info.Printf("'%s' cloned successfully\n", name)
 	return nil
 }
 
@@ -294,6 +295,6 @@ func NewRelease(repoName string, tagName string, releaseName string, body string
 		return fmt.Errorf("could not add release '%s', tagged '%s' to repo '%s': %v", releaseName, tagName, repoName, err)
 	}
 
-	fmt.Printf("added release '%s', tagged '%s' to repo '%s'", releaseName, tagName, repoName)
+	logger.Info.Printf("added release '%s', tagged '%s' to repo '%s'", releaseName, tagName, repoName)
 	return nil
 }

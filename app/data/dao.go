@@ -1,4 +1,4 @@
-package db
+package data
 
 import (
 	"context"
@@ -6,13 +6,15 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+
+	"github.com/42-Short/shortinette/db"
 )
 
 //TODO: support transactions
 
 // Data Access Object for interacting with the DB
 type DAO[T any] struct {
-	DB *DB
+	DB *db.DB
 	md metadata
 }
 
@@ -24,7 +26,7 @@ type metadata struct {
 
 var metadataCache sync.Map
 
-func NewDAO[T any](db *DB) *DAO[T] {
+func NewDAO[T any](db *db.DB) *DAO[T] {
 	md := getOrExtractMetadata[T]()
 	return &DAO[T]{
 		DB: db,
@@ -97,8 +99,9 @@ func (dao *DAO[T]) Delete(ctx context.Context, args ...any) error {
 }
 
 // Example query:
-// INSERT INTO participant (intra_login, github_login)
-// VALUES (:intra_login, :github_login);
+//
+//	INSERT INTO participant (intra_login, github_login)
+//	VALUES (:intra_login, :github_login);
 func buildInsertQuery(tableName string, dbTags []string) string {
 	columns := strings.Join(dbTags, ", ")
 	placeholders := ":" + strings.Join(dbTags, ", :")
@@ -117,8 +120,9 @@ func buildUpdateQuery(tableName string, dbTags, primaryKeys []string) string {
 }
 
 // Example query:
-// SELECT * FROM participant
-// WHERE intra_login = ? AND github_login = ?
+//
+//	SELECT * FROM participant
+//	WHERE intra_login = ? AND github_login = ?
 func buildSelectQuery(tableName string, fields []string) string {
 	if len(fields) == 0 {
 		return fmt.Sprintf("SELECT * FROM %s", tableName)
@@ -128,8 +132,9 @@ func buildSelectQuery(tableName string, fields []string) string {
 }
 
 // Example query:
-// DELETE FROM participant
-// WHERE intra_login = ? AND github_login = ?
+//
+//	DELETE FROM participant
+//	WHERE intra_login = ? AND github_login = ?
 func buildDeleteQuery(tableName string, primaryKeys []string) string {
 	conditions := buildConditions(primaryKeys)
 	return fmt.Sprintf("DELETE FROM %s WHERE %s", tableName, strings.Join(conditions, " AND "))
@@ -168,7 +173,7 @@ func getOrExtractMetadata[T any]() metadata {
 	if len(primaryKeys) == 0 {
 		panic("getOrExtractMetadata: Expected primaryKey tags (primaryKey) but got 0")
 	}
-	tableName := deriveSchemaNameFromStruct(dummy)
+	tableName := strings.ToLower(reflect.TypeOf(dummy).Name())
 
 	md := metadata{
 		dbTags:      dbTags,
