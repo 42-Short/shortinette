@@ -63,7 +63,7 @@ func (w *syncWriter) Write(p []byte) (n int, err error) {
 // init initializes the Info, Warning, and Error loggers
 // with appropriate prefixes and output destinations.
 func init() {
-	Info = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime)
-	Warning = log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime)
-	Error = log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+	Info = log.New(os.Stdout, "[INFO] ", log.Ldate|log.Ltime)
+	Warning = log.New(os.Stderr, "[ERROR] ", log.Ldate|log.Ltime)
+	Error = log.New(os.Stderr, "[ERROR] ", log.Ldate|log.Ltime|log.Lshortfile)
 }
