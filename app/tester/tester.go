@@ -6,15 +6,18 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"os/signal"
 	"path"
 	"path/filepath"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/42-Short/shortinette/config"
 	"github.com/42-Short/shortinette/tester/docker"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/client"
 )
 
 type Result struct {
@@ -323,14 +326,40 @@ func StopAllGradings() error {
 		return fmt.Errorf("could not get docker containers: %s", err)
 	}
 
+	var killedContainers []string
 	for _, container := range containers {
 		for _, name := range container.Names {
 			if strings.Contains(name, "shortinette-grade-") {
 				dockerClient.ContainerKill(ctx, container.ID, "SIGKILL") //nolint:errcheck
+				killedContainers = append(killedContainers, container.ID)
 				break
 			}
 		}
 	}
-	time.Sleep(3 * time.Second)
+
+	for _, containerID := range killedContainers {
+		for {
+			_, err := dockerClient.ContainerInspect(ctx, containerID)
+			if client.IsErrNotFound(err) {
+				break
+			}
+			time.Sleep(time.Second)
+		}
+	}
 	return nil
+}
+
+func HandleSignals(done chan bool, exit bool) {
+	signalChan := make(chan os.Signal, 1)
+
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-signalChan
+		StopAllGradings() //nolint:errcheck
+		done <- true
+		if exit {
+			os.Exit(0)
+		}
+	}()
 }
