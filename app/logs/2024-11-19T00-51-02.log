@@ -1,1 +1,0 @@
-[ERROR] 2024/11/19 00:51:02 main.go:35: error running gin server: listen tcp 0.0.0.0:5000: bind: address already in use
