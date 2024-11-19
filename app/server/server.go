@@ -29,6 +29,7 @@ func TokenAuthMiddleware() gin.HandlerFunc {
 
 func NewRouter() *gin.Engine {
 	r := gin.Default() //TODO: check if options are required
+	// gin.SetMode(gin.ReleaseMode)
 
 	group := r.Group("v1/")
 	group.Use(TokenAuthMiddleware())
