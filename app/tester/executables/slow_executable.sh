@@ -1,3 +1,3 @@
 #!/bin/sh
 
-sleep 5
+sleep 3
