@@ -1,10 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/42-Short/shortinette/logger"
 	"github.com/42-Short/shortinette/server"
@@ -19,14 +16,10 @@ func init() {
 }
 
 func main() {
-	r := server.NewRouter()
-
-	done := make(chan os.Signal)
-	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		if err := r.Run("0.0.0.0:5000"); err != nil {
-			fmt.Printf("error running gin server: %v", err)
-		}
-	}()
-	<-done
+	server := server.NewServer(os.Getenv("SERVER_ADDR"))
+	err := server.Run()
+	if err != nil {
+		logger.Error.Fatalf("failed to run Server: %v", err)
+	}
+	select {}
 }
