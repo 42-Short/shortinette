@@ -29,13 +29,24 @@ func NewServer(addr string) *Server {
 	}
 }
 
-func (server *Server) Run() error {
-	// go func (){
-	// 	err := server.ListenAndServe()
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
+func (server *Server) Run(ctx context.CancelFunc) error {
+	errorCh := make(chan error, 1)
+
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil {
+			errorCh <- err
+			return
+		}
+		close(errorCh)
+	}()
+
+	select {
+	case err := <-errorCh:
+		if err != nil {
+			return fmt.Errorf("server encountered an error: %v", err)
+		}
+	}
 	logger.Info.Printf("Server is listening at %s...", server.Addr)
 	return nil
 }
@@ -46,7 +57,7 @@ func (server *Server) Shutdown() error {
 
 	err := server.Server.Shutdown(ctx)
 	if err != nil {
-		return fmt.Errorf("faild to shut down Server with addr: %s gracefully: %v", server.Addr, err)
+		return fmt.Errorf("faild to shut down Server with addr: %s: %v", server.Addr, err)
 	}
 	logger.Info.Printf("Server has gracefully shut down for addr: %s\n", server.Addr)
 	return nil
