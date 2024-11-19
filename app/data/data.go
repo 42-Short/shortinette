@@ -1,8 +1,6 @@
-package db
+package data
 
 import (
-	"reflect"
-	"strings"
 	"time"
 )
 
@@ -19,8 +17,4 @@ type Module struct {
 type Participant struct {
 	IntraLogin  string `db:"intra_login" primaryKey:"intra_login"`
 	GitHubLogin string `db:"github_login"`
-}
-
-func deriveSchemaNameFromStruct[T any](dummy T) string {
-	return strings.ToLower(reflect.TypeOf(dummy).Name())
 }
