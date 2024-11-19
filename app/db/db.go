@@ -34,8 +34,8 @@ func NewDB(ctx context.Context, dsn string) (*DB, error) {
 }
 
 // Sets up the necessary schema in the database
-func (db *DB) Initialize() error {
-	data, err := os.ReadFile("schema.sql")
+func (db *DB) Initialize(schemaPath string) error {
+	data, err := os.ReadFile(schemaPath)
 	if err != nil {
 		return fmt.Errorf("Error reading sql file: %v", err)
 	}

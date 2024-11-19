@@ -172,7 +172,7 @@ func newDummyDB(t *testing.T) (*db.DB, []Module, []Participant) {
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
-	if err := db.Initialize(); err != nil {
+	if err := db.Initialize("../db/schema.sql"); err != nil {
 		t.Fatalf("failed to initialize DB: %v", err)
 	}
 

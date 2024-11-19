@@ -27,7 +27,7 @@ func TestInitialize(t *testing.T) {
 	}
 	defer db.Close()
 
-	err = db.Initialize()
+	err = db.Initialize("schema.sql")
 	if err != nil {
 		t.Fatalf("failed to Initialize DB: %v", err)
 	}
@@ -69,11 +69,11 @@ func TestInitializeExistingTables(t *testing.T) {
 	}
 	defer db.Close()
 
-	err = db.Initialize()
+	err = db.Initialize("schema.sql")
 	if err != nil {
 		t.Fatalf("failed to Initialize DB: %v", err)
 	}
-	err = db.Initialize()
+	err = db.Initialize("schema.sql")
 	if err != nil {
 		t.Fatalf("failed to initialize DB again: %v", err)
 	}
@@ -93,7 +93,7 @@ func TestBackup(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to open DB: %v", err)
 	}
-	err = db.Initialize()
+	err = db.Initialize("schema.sql")
 	if err != nil {
 		db.Close()
 		t.Fatalf("failed to Initialize DB: %v", err)
