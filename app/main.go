@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/42-Short/shortinette/tester"
+	"github.com/42-Short/shortinette/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,7 +26,7 @@ func main() {
 	tester.HandleSignals(done, true)
 	r := router()
 	if err := r.Run("0.0.0.0:5000"); err != nil {
-		fmt.Printf("error running gin server: %v", err)
+		logger.Error.Printf("error running gin server: %v", err)
 	}
 	done <- true
 
