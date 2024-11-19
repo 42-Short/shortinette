@@ -2,11 +2,11 @@ package data
 
 import (
 	"context"
-	"fmt"
-	"math/rand"
 	"strconv"
 	"testing"
 	"time"
+
+	"math/rand"
 
 	"github.com/42-Short/shortinette/db"
 )
@@ -93,7 +93,6 @@ func TestGetFiltered(t *testing.T) {
 		t.Fatalf("failed to fetch module from DB: %v", err)
 	}
 	for _, retrievedModule := range retrievedModules {
-		fmt.Printf("%d vs %d\n", retrievedModule.WaitTime, modules[0].WaitTime)
 		if retrievedModule.WaitTime != modules[0].WaitTime {
 			t.Fatalf("incorrect WaitTime in filtered fetch")
 		}

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
+	"github.com/42-Short/shortinette/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,6 +22,6 @@ func router() (router *gin.Engine) {
 func main() {
 	r := router()
 	if err := r.Run("0.0.0.0:5000"); err != nil {
-		fmt.Printf("error running gin server: %v", err)
+		logger.Error.Printf("error running gin server: %v", err)
 	}
 }
