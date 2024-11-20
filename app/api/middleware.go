@@ -22,7 +22,7 @@ func tokenAuthMiddleware(accessToken string) gin.HandlerFunc {
 		}
 
 		if token != accessToken {
-			logger.Warning.Printf("unauthorized access attempt with token: " + token + "\n")
+			logger.Warning.Printf("unauthorized access attempt with token: %s \n", token)
 			c.JSON(http.StatusUnauthorized, gin.H{"message": "token invalid"})
 			c.Abort()
 			return
