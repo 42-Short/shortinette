@@ -102,28 +102,6 @@ func TestDelete(t *testing.T) {
 	assert.Equal(t, len(retrievedModules), len(modules)-1, "failed to delete module from DB")
 }
 
-func assertParticipant(t *testing.T, participant *Participant, retrievedParticipant *Participant) {
-	t.Helper()
-	if retrievedParticipant == nil {
-		t.Fatalf("participant not found in DB")
-	}
-
-	if retrievedParticipant.IntraLogin != participant.IntraLogin {
-		t.Fatalf("retrieved participants does not match the inserted participant")
-	}
-}
-
-func assertModule(t *testing.T, module *Module, retrievedModule *Module) {
-	t.Helper()
-	if retrievedModule == nil {
-		t.Fatalf("module not found in DB")
-	}
-
-	if retrievedModule.IntraLogin != module.IntraLogin {
-		t.Fatalf("retrieved module does not match the inserted module")
-	}
-}
-
 func newDummyDB(t *testing.T) (*db.DB, []Module, []Participant) {
 	t.Helper()
 

@@ -34,7 +34,7 @@ func shutdown(sigCh chan os.Signal, errCh chan error) {
 	case sig := <-sigCh:
 		err := api.Shutdown()
 		if err != nil {
-			logger.Error.Printf("failed to shutdown server: %v", err)
+			logger.Error.Fatalf("failed to shutdown server: %v", err)
 		}
 		logger.Error.Fatalf("caught signal: %v", sig)
 	}
