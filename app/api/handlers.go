@@ -40,7 +40,11 @@ func GetAllItemsHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to get all %s`s: %v", dao.Name(), err)})
 			return
 		}
-		c.JSON(http.StatusOK, items)
+		if len(items) == 0 {
+			c.JSON(http.StatusNoContent, items)
+		} else {
+			c.JSON(http.StatusOK, items)
+		}
 	}
 }
 
