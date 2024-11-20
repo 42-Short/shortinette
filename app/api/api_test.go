@@ -12,6 +12,7 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -60,7 +61,7 @@ func TestMain(m *testing.M) {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
-	api = NewAPI(db, gin.TestMode)
+	api = NewAPI(db, gin.TestMode, time.Minute)
 	errCh := api.Run()
 	go shutdown(sigCh, errCh)
 
@@ -208,7 +209,7 @@ func serveRequest(t *testing.T, method string, url string, body io.Reader) *http
 	req, err := http.NewRequest(method, url, body)
 	require.NoError(t, err, fmt.Sprintf("failed to make request: %s", url))
 
-	req.Header.Set("Authorization", "Bearer "+apiToken)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiToken))
 
 	response := httptest.NewRecorder()
 	api.Engine.ServeHTTP(response, req)

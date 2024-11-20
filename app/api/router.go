@@ -13,18 +13,18 @@ func (api *API) setupRoutes() {
 	moduleDAO := data.NewDAO[data.Module](api.DB)
 	participantDAO := data.NewDAO[data.Participant](api.DB)
 
-	group.POST("/modules", InsertItemHandler(moduleDAO))
-	group.POST("/participants", InsertItemHandler(participantDAO))
+	group.POST("/modules", InsertItemHandler(moduleDAO, api.timeout))
+	group.POST("/participants", InsertItemHandler(participantDAO, api.timeout))
 
-	group.PUT("/modules", UpdateItemHandler(moduleDAO)) //TODO: add id and intra login to update
-	group.PUT("/participants", UpdateItemHandler(participantDAO))
+	group.PUT("/modules", UpdateItemHandler(moduleDAO, api.timeout))
+	group.PUT("/participants", UpdateItemHandler(participantDAO, api.timeout))
 
-	group.GET("/modules", GetAllItemsHandler(moduleDAO))
-	group.GET("/participants", GetAllItemsHandler(participantDAO))
+	group.GET("/modules", GetAllItemsHandler(moduleDAO, api.timeout))
+	group.GET("/participants", GetAllItemsHandler(participantDAO, api.timeout))
 
-	group.GET("/modules/:id/:intra_login", GetItemHandler(moduleDAO))
-	group.GET("/participants/:intra_login", GetItemHandler(participantDAO))
+	group.GET("/modules/:id/:intra_login", GetItemHandler(moduleDAO, api.timeout))
+	group.GET("/participants/:intra_login", GetItemHandler(participantDAO, api.timeout))
 
-	group.DELETE("/modules/:id/:intra_login", DeleteItemHandler(moduleDAO))
-	group.DELETE("/participants/:intra_login", DeleteItemHandler(participantDAO))
+	group.DELETE("/modules/:id/:intra_login", DeleteItemHandler(moduleDAO, api.timeout))
+	group.DELETE("/participants/:intra_login", DeleteItemHandler(participantDAO, api.timeout))
 }

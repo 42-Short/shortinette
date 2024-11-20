@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/42-Short/shortinette/data"
 	"github.com/gin-gonic/gin"
 )
 
-func InsertItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
+func InsertItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var item T
 		err := c.ShouldBindJSON(&item)
@@ -17,7 +18,11 @@ func InsertItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		err = dao.Insert(context.TODO(), item)
+
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		err = dao.Insert(ctx, item)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to insert %s: %v", dao.Name(), err)})
 			return
@@ -27,7 +32,7 @@ func InsertItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	}
 }
 
-func UpdateItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
+func UpdateItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var item T
 
@@ -37,7 +42,10 @@ func UpdateItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 			return
 		}
 
-		err = dao.Update(context.TODO(), item)
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		err = dao.Update(ctx, item)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to delete %s: %v: %v", dao.Name(), item, err)})
 			return
@@ -46,9 +54,12 @@ func UpdateItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	}
 }
 
-func GetAllItemsHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
+func GetAllItemsHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		items, err := dao.GetAll(context.TODO())
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		items, err := dao.GetAll(ctx)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to get all %s`s: %v", dao.Name(), err)})
 			return
@@ -61,10 +72,13 @@ func GetAllItemsHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	}
 }
 
-func GetItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
+func GetItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
 		args := collectArgs(c.Params)
-		item, err := dao.Get(context.TODO(), args...)
+		item, err := dao.Get(ctx, args...)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to get %s: %v: %v", dao.Name(), args, err)})
 			return
@@ -73,10 +87,13 @@ func GetItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	}
 }
 
-func DeleteItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
+func DeleteItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
 		args := collectArgs(c.Params)
-		err := dao.Delete(context.TODO(), args...)
+		err := dao.Delete(ctx, args...)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to delete %s: %v", dao.Name(), err)})
 			return

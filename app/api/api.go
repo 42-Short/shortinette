@@ -14,13 +14,14 @@ import (
 
 type API struct {
 	*http.Server
-	Engine *gin.Engine
-	DB     *db.DB
 
+	Engine      *gin.Engine
+	DB          *db.DB
+	timeout     time.Duration
 	accessToken string
 }
 
-func NewAPI(db *db.DB, mode string) *API {
+func NewAPI(db *db.DB, mode string, timeout time.Duration) *API {
 	accessToken := os.Getenv("API_TOKEN")
 	if accessToken == "" {
 		logger.Warning.Printf("API_TOKEN not found. Creating API without access Token")
@@ -40,6 +41,7 @@ func NewAPI(db *db.DB, mode string) *API {
 		},
 		Engine:      engine,
 		DB:          db,
+		timeout:     timeout,
 		accessToken: accessToken,
 	}
 	api.setupRoutes()
