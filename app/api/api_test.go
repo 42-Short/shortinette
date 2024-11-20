@@ -15,6 +15,7 @@ import (
 
 	"math/rand"
 
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/42-Short/shortinette/data"
@@ -26,27 +27,18 @@ import (
 var api *API
 var apiToken string
 
-func setupSignalHandler(cancel context.CancelFunc) {
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-sigCh
-		cancel()
-	}()
-}
-
-func shutdown(ctx context.Context, errCh chan error) {
+func shutdown(sigCh chan os.Signal, errCh chan error) {
 	select {
 	case err := <-errCh:
 		if err != nil {
 			logger.Error.Fatalf("failed to run server: %v", err)
 		}
-	case <-ctx.Done():
+	case sig := <-sigCh:
 		err := api.Shutdown()
 		if err != nil {
 			logger.Error.Printf("failed to shutdown server: %v", err)
 		}
-		os.Exit(1)
+		logger.Error.Fatalf("caught signal: %v", sig)
 	}
 }
 
@@ -67,14 +59,13 @@ func TestMain(m *testing.M) {
 		logger.Error.Fatalf("failed to initialize db: %v", err)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	setupSignalHandler(cancel)
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
 	apiToken = os.Getenv("API_TOKEN")
-	api = NewAPI(os.Getenv("SERVER_ADDR"), db)
+	api = NewAPI(os.Getenv("SERVER_ADDR"), db, gin.TestMode)
 	errCh := api.Run()
-	go shutdown(ctx, errCh)
+	go shutdown(sigCh, errCh)
 
 	exitCode := m.Run()
 	os.Exit(exitCode)

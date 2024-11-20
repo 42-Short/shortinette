@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/42-Short/shortinette/db"
@@ -15,11 +16,14 @@ type API struct {
 	*http.Server
 	Engine *gin.Engine
 	DB     *db.DB
+
+	errCh chan error
+	sigCh chan os.Signal
 }
 
-func NewAPI(addr string, db *db.DB) *API {
+func NewAPI(addr string, db *db.DB, mode string) *API {
 	engine := gin.Default()
-	gin.SetMode(gin.DebugMode)
+	gin.SetMode(mode)
 	api := &API{
 		Server: &http.Server{
 			Addr:    addr,
