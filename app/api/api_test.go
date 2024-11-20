@@ -3,21 +3,19 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"os/signal"
-	"strconv"
 	"strings"
 	"syscall"
 	"testing"
-	"time"
-
-	"math/rand"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/42-Short/shortinette/data"
 	"github.com/42-Short/shortinette/db"
@@ -60,6 +58,11 @@ func TestMain(m *testing.M) {
 		logger.Error.Fatalf("failed to initialize db: %v", err)
 	}
 
+	_, err = data.SeedDB(db)
+	if err != nil {
+		logger.Error.Fatalf("failed to seed DB: %v", err)
+	}
+
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
@@ -75,11 +78,12 @@ func TestMain(m *testing.M) {
 }
 
 func TestPost(t *testing.T) {
-	participant := newDummyParticipant()
-	participantJson, err := json.Marshal(participant)
-	if err != nil {
-		t.Fatalf("failed to marshal module: %v", err)
+	participant := data.Participant{
+		IntraLogin:  "foo",
+		GitHubLogin: "bar",
 	}
+	participantJson, err := json.Marshal(participant)
+	require.NoError(t, err, "failed to marshal module")
 
 	response := serveRequest(t, "POST", "/shortinette/v1/participants", strings.NewReader(string(participantJson)))
 	assert.Equal(t, http.StatusCreated, response.Code)
@@ -87,51 +91,30 @@ func TestPost(t *testing.T) {
 
 }
 
-// Todo: seed database instead of using POST
 func TestGetAll(t *testing.T) {
-	participant := newDummyParticipant()
-	participantJson, err := json.Marshal(participant)
-	if err != nil {
-		t.Fatalf("failed to marshal module: %v", err)
-	}
+	response := serveRequest(t, "GET", "/shortinette/v1/participants", nil)
 
-	response := serveRequest(t, "POST", "/shortinette/v1/participants", strings.NewReader(string(participantJson)))
-	assert.Equal(t, http.StatusCreated, response.Code)
+	var actualParticipants []data.Participant
+	err := json.Unmarshal(response.Body.Bytes(), &actualParticipants)
+	require.NoError(t, err, "failed to unmarshal module")
 
-	response = serveRequest(t, "GET", "/shortinette/v1/participants", nil)
+	participantDAO := data.NewDAO[data.Participant](api.DB)
+	expectedParticipants, err := participantDAO.GetAll(context.Background())
+	require.NoError(t, err)
+
 	assert.Equal(t, http.StatusOK, response.Code, response.Body)
+	assert.Equal(t, expectedParticipants, actualParticipants)
 }
 
 func serveRequest(t *testing.T, method string, url string, body io.Reader) *httptest.ResponseRecorder {
 	t.Helper()
 
 	req, err := http.NewRequest(method, url, body)
-	if err != nil {
-		t.Fatalf("failed to make request: %v", err)
-	}
+	require.NoError(t, err, fmt.Sprintf("failed to make request: %s", url))
+
 	req.Header.Set("Authorization", "Bearer "+apiToken)
 
 	response := httptest.NewRecorder()
 	api.Engine.ServeHTTP(response, req)
 	return response
-}
-
-func newDummyModule(moduleID int, intraLogin string) *data.Module {
-	return &data.Module{
-		Id:             moduleID,
-		IntraLogin:     intraLogin,
-		Attempts:       rand.Int(),
-		Score:          rand.Int(),
-		LastGraded:     time.Now(),
-		WaitTime:       rand.Int(),
-		GradingOngoing: rand.Intn(2) == 0,
-	}
-}
-
-func newDummyParticipant() *data.Participant {
-	intraLogin := strconv.Itoa(rand.Int())
-	return &data.Participant{
-		IntraLogin:  intraLogin,
-		GitHubLogin: "dummy_git_" + intraLogin,
-	}
 }
