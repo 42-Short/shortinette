@@ -71,8 +71,6 @@ func TestMain(m *testing.M) {
 	os.Exit(exitCode)
 }
 
-//TODO: new seeded db for every test
-
 func TestPostParticipant(t *testing.T) {
 	testPost(t, data.NewDummyParticipant(42), "/shortinette/v1/participants")
 }

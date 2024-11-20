@@ -23,8 +23,8 @@ type API struct {
 
 func NewAPI(db *db.DB, mode string, timeout time.Duration) *API {
 	accessToken := os.Getenv("API_TOKEN")
-	if accessToken == "" {
-		logger.Warning.Printf("API_TOKEN not found. Creating API without access Token")
+	if accessToken == "" && mode != gin.TestMode {
+		panic("API_TOKEN not found in .env")
 	}
 
 	addr := os.Getenv("SERVER_ADDR")
