@@ -25,5 +25,4 @@ func (api *API) setupRoutes() {
 
 	group.DELETE("/modules/:intra_login/:id", DeleteItemHandler(moduleDAO))
 	group.DELETE("/participants/:intra_login", DeleteItemHandler(participantDAO))
-
 }
