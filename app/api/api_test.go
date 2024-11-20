@@ -130,13 +130,19 @@ func TestDeleteModule(t *testing.T) {
 	testDelete[data.Module](t, url, intraLogin)
 }
 
+func TestUnauthorized(t *testing.T) {
+	response := serveRequest(t, "GET", "/shortinette/v1/participants", nil, "foo")
+
+	assert.Equal(t, http.StatusUnauthorized, response.Code)
+}
+
 func testPost(t *testing.T, item any, url string) {
 	t.Helper()
 
 	itemJson, err := json.Marshal(item)
 	require.NoError(t, err, "failed to marshal item")
 
-	response := serveRequest(t, "POST", url, strings.NewReader(string(itemJson)))
+	response := serveRequest(t, "POST", url, strings.NewReader(string(itemJson)), apiToken)
 	assert.Equal(t, http.StatusCreated, response.Code, response.Body)
 	assert.Equal(t, string(itemJson), response.Body.String())
 }
@@ -151,7 +157,7 @@ func testPut[T any](t *testing.T, url string, args ...any) {
 	itemJson, err := json.Marshal(item)
 	require.NoError(t, err, "failed to marshal item")
 
-	response := serveRequest(t, "PUT", url, strings.NewReader(string(itemJson)))
+	response := serveRequest(t, "PUT", url, strings.NewReader(string(itemJson)), apiToken)
 	assert.Equal(t, http.StatusOK, response.Code, response.Body)
 	assert.NotEqual(t, string(itemJson), response.Body.String())
 }
@@ -159,7 +165,7 @@ func testPut[T any](t *testing.T, url string, args ...any) {
 func testGetAll[T any](t *testing.T, url string) {
 	t.Helper()
 
-	response := serveRequest(t, "GET", url, nil)
+	response := serveRequest(t, "GET", url, nil, apiToken)
 
 	var actualItems []T
 	err := json.Unmarshal(response.Body.Bytes(), &actualItems)
@@ -176,7 +182,7 @@ func testGetAll[T any](t *testing.T, url string) {
 func testGet[T any](t *testing.T, url string, args ...any) {
 	t.Helper()
 
-	response := serveRequest(t, "GET", url, nil)
+	response := serveRequest(t, "GET", url, nil, apiToken)
 
 	var actualItem T
 	err := json.Unmarshal(response.Body.Bytes(), &actualItem)
@@ -193,7 +199,7 @@ func testGet[T any](t *testing.T, url string, args ...any) {
 func testDelete[T any](t *testing.T, url string, args ...any) {
 	t.Helper()
 
-	response := serveRequest(t, "DELETE", url, nil)
+	response := serveRequest(t, "DELETE", url, nil, apiToken)
 	assert.Equal(t, http.StatusOK, response.Code, response.Body)
 
 	dao := data.NewDAO[T](api.DB)
@@ -201,13 +207,13 @@ func testDelete[T any](t *testing.T, url string, args ...any) {
 	require.Error(t, err)
 }
 
-func serveRequest(t *testing.T, method string, url string, body io.Reader) *httptest.ResponseRecorder {
+func serveRequest(t *testing.T, method string, url string, body io.Reader, token string) *httptest.ResponseRecorder {
 	t.Helper()
 
 	req, err := http.NewRequest(method, url, body)
 	require.NoError(t, err, fmt.Sprintf("failed to make request: %s", url))
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiToken))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 
 	response := httptest.NewRecorder()
 	api.Engine.ServeHTTP(response, req)
