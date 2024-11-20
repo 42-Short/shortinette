@@ -64,6 +64,8 @@ func TestMain(m *testing.M) {
 	errCh := api.Run()
 	go shutdown(sigCh, errCh)
 
+	apiToken = api.accessToken
+
 	exitCode := m.Run()
 	os.Exit(exitCode)
 }

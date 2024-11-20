@@ -38,8 +38,9 @@ func NewAPI(db *db.DB, mode string) *API {
 			Addr:    addr,
 			Handler: engine,
 		},
-		Engine: engine,
-		DB:     db,
+		Engine:      engine,
+		DB:          db,
+		accessToken: requiredToken,
 	}
 	api.setupRoutes()
 	return api
