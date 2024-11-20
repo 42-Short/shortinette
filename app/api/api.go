@@ -21,10 +21,14 @@ type API struct {
 	accessToken string
 }
 
+// Initializes and returns a new API instance
+// timeout specifies the max duration per request
 func NewAPI(db *db.DB, mode string, timeout time.Duration) *API {
 	accessToken := os.Getenv("API_TOKEN")
 	if accessToken == "" && mode != gin.TestMode {
 		panic("API_TOKEN not found in .env")
+	} else if mode == gin.TestMode {
+		accessToken = "test"
 	}
 
 	addr := os.Getenv("SERVER_ADDR")
@@ -48,6 +52,8 @@ func NewAPI(db *db.DB, mode string, timeout time.Duration) *API {
 	return api
 }
 
+// Starts the server in a go routine and listens for incoming requests.
+// returns a channel for error monitoring
 func (api *API) Run() chan error {
 	errorCh := make(chan error, 1)
 
@@ -60,6 +66,7 @@ func (api *API) Run() chan error {
 	return errorCh
 }
 
+// Gracefully shuts down the API server
 func (api *API) Shutdown() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

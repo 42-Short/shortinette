@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InsertItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
+func insertItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var item T
 		err := c.ShouldBindJSON(&item)
@@ -32,7 +32,7 @@ func InsertItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.Handl
 	}
 }
 
-func UpdateItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
+func updateItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var item T
 
@@ -54,7 +54,7 @@ func UpdateItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.Handl
 	}
 }
 
-func GetAllItemsHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
+func getAllItemsHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
@@ -72,7 +72,7 @@ func GetAllItemsHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.Hand
 	}
 }
 
-func GetItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
+func getItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
@@ -87,7 +87,7 @@ func GetItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerF
 	}
 }
 
-func DeleteItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
+func deleteItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()

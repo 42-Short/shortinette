@@ -133,7 +133,7 @@ func TestDeleteModule(t *testing.T) {
 func TestUnauthorized(t *testing.T) {
 	response := serveRequest(t, "GET", "/shortinette/v1/participants", nil, "foo")
 
-	assert.Equal(t, http.StatusUnauthorized, response.Code)
+	assert.Equal(t, http.StatusUnauthorized, response.Code, response.Body)
 }
 
 func testPost(t *testing.T, item any, url string) {
