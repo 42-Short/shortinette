@@ -70,49 +70,136 @@ func TestMain(m *testing.M) {
 	os.Exit(exitCode)
 }
 
-//TODO make tests dynamic to test both endpoints
+//TODO: new seeded db for every test
 
-func TestPost(t *testing.T) {
-	participant := data.Participant{
-		IntraLogin:  "foo",
-		GitHubLogin: "bar",
-	}
-	participantJson, err := json.Marshal(participant)
-	require.NoError(t, err, "failed to marshal module")
-
-	response := serveRequest(t, "POST", "/shortinette/v1/participants", strings.NewReader(string(participantJson)))
-	assert.Equal(t, http.StatusCreated, response.Code)
-	assert.Equal(t, string(participantJson), response.Body.String())
+func TestPostParticipant(t *testing.T) {
+	testPost(t, data.NewDummyParticipant(42), "/shortinette/v1/participants")
 }
 
-func TestGetAll(t *testing.T) {
-	response := serveRequest(t, "GET", "/shortinette/v1/participants", nil)
+func TestPostModule(t *testing.T) {
+	testPost(t, data.NewDummyModule(42, "dummy_participant5"), "/shortinette/v1/modules")
+}
 
-	var actualParticipants []data.Participant
-	err := json.Unmarshal(response.Body.Bytes(), &actualParticipants)
-	require.NoError(t, err, "failed to unmarshal module")
+func TestGetAllParticipants(t *testing.T) {
+	testGetAll[data.Participant](t, "/shortinette/v1/participants")
+}
 
-	participantDAO := data.NewDAO[data.Participant](api.DB)
-	expectedParticipants, err := participantDAO.GetAll(context.Background())
+func TestGetAllModules(t *testing.T) {
+	testGetAll[data.Module](t, "/shortinette/v1/modules")
+}
+
+func TestGetModule(t *testing.T) {
+	const (
+		intraLogin = "dummy_participant5"
+		moduleID   = 0
+	)
+	url := fmt.Sprintf("/shortinette/v1/modules/%d/%s", moduleID, intraLogin)
+	testGet[data.Module](t, url, moduleID, intraLogin)
+}
+
+func TestGetParticipant(t *testing.T) {
+	const intraLogin = "dummy_participant5"
+	url := fmt.Sprintf("/shortinette/v1/participants/%s", intraLogin)
+	testGet[data.Participant](t, url, intraLogin)
+}
+
+func TestPutParticipant(t *testing.T) {
+	const intraLogin = "dummy_participant5"
+	testPut[data.Participant](t, "/shortinette/v1/participants", intraLogin)
+}
+
+func TestPutModule(t *testing.T) {
+	const (
+		intraLogin = "dummy_participant5"
+		moduleID   = 0
+	)
+	testPut[data.Module](t, "/shortinette/v1/modules", moduleID, intraLogin)
+}
+
+func TestDeleteParticipant(t *testing.T) {
+	const intraLogin = "dummy_participant5"
+	url := fmt.Sprintf("/shortinette/v1/participants/%s", intraLogin)
+	testDelete[data.Participant](t, url, intraLogin)
+}
+
+func TestDeleteModule(t *testing.T) {
+	const (
+		intraLogin = "dummy_participant5"
+		moduleID   = 0
+	)
+	url := fmt.Sprintf("/shortinette/v1/modules/%d/%s", moduleID, intraLogin)
+	testDelete[data.Module](t, url, intraLogin)
+}
+
+func testPost(t *testing.T, item any, url string) {
+	t.Helper()
+
+	itemJson, err := json.Marshal(item)
+	require.NoError(t, err, "failed to marshal item")
+
+	response := serveRequest(t, "POST", url, strings.NewReader(string(itemJson)))
+	assert.Equal(t, http.StatusCreated, response.Code, response.Body)
+	assert.Equal(t, string(itemJson), response.Body.String())
+}
+
+func testPut[T any](t *testing.T, url string, args ...any) {
+	t.Helper()
+
+	dao := data.NewDAO[T](api.DB)
+	item, err := dao.Get(context.Background(), args...)
+	require.NoError(t, err)
+
+	itemJson, err := json.Marshal(item)
+	require.NoError(t, err, "failed to marshal item")
+
+	response := serveRequest(t, "PUT", url, strings.NewReader(string(itemJson)))
+	assert.Equal(t, http.StatusOK, response.Code, response.Body)
+	assert.NotEqual(t, string(itemJson), response.Body.String())
+}
+
+func testGetAll[T any](t *testing.T, url string) {
+	t.Helper()
+
+	response := serveRequest(t, "GET", url, nil)
+
+	var actualItems []T
+	err := json.Unmarshal(response.Body.Bytes(), &actualItems)
+	require.NoError(t, err, "failed to unmarshal item")
+
+	dao := data.NewDAO[T](api.DB)
+	expectedItems, err := dao.GetAll(context.Background())
 	require.NoError(t, err)
 
 	assert.Equal(t, http.StatusOK, response.Code, response.Body)
-	assert.Equal(t, expectedParticipants, actualParticipants)
+	assert.Equal(t, expectedItems, actualItems)
 }
 
-func TestGet(t *testing.T) {
-	response := serveRequest(t, "GET", "/shortinette/v1/participants/dummy_participant5", nil)
+func testGet[T any](t *testing.T, url string, args ...any) {
+	t.Helper()
 
-	var actualParticipants data.Participant
-	err := json.Unmarshal(response.Body.Bytes(), &actualParticipants)
+	response := serveRequest(t, "GET", url, nil)
+
+	var actualItem T
+	err := json.Unmarshal(response.Body.Bytes(), &actualItem)
 	require.NoError(t, err, "failed to unmarshal module")
 
-	participantDAO := data.NewDAO[data.Participant](api.DB)
-	expectedParticipants, err := participantDAO.Get(context.Background(), "dummy_participant5")
+	dao := data.NewDAO[T](api.DB)
+	expectedItem, err := dao.Get(context.Background(), args...)
 	require.NoError(t, err)
 
 	assert.Equal(t, http.StatusOK, response.Code, response.Body)
-	assert.Equal(t, *expectedParticipants, actualParticipants)
+	assert.Equal(t, *expectedItem, actualItem)
+}
+
+func testDelete[T any](t *testing.T, url string, args ...any) {
+	t.Helper()
+
+	response := serveRequest(t, "DELETE", url, nil)
+	assert.Equal(t, http.StatusOK, response.Code, response.Body)
+
+	dao := data.NewDAO[T](api.DB)
+	_, err := dao.Get(context.Background(), args...)
+	require.Error(t, err)
 }
 
 func serveRequest(t *testing.T, method string, url string, body io.Reader) *httptest.ResponseRecorder {

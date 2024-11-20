@@ -21,8 +21,8 @@ type API struct {
 }
 
 func NewAPI(db *db.DB, mode string) *API {
-	requiredToken := os.Getenv("API_TOKEN")
-	if requiredToken == "" {
+	accessToken := os.Getenv("API_TOKEN")
+	if accessToken == "" {
 		logger.Warning.Printf("API_TOKEN not found. Creating API without access Token")
 	}
 
@@ -40,7 +40,7 @@ func NewAPI(db *db.DB, mode string) *API {
 		},
 		Engine:      engine,
 		DB:          db,
-		accessToken: requiredToken,
+		accessToken: accessToken,
 	}
 	api.setupRoutes()
 	return api

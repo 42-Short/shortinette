@@ -39,10 +39,10 @@ func UpdateItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 
 		err = dao.Update(context.TODO(), item)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to delete %s: %v", dao.Name(), err)})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to delete %s: %v: %v", dao.Name(), item, err)})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("deleted item from %s %v", dao.Name(), args)})
+		c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("deleted item %v from %s", item, dao.Name())})
 	}
 }
 
@@ -66,7 +66,7 @@ func GetItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 		args := collectArgs(c.Params)
 		item, err := dao.Get(context.TODO(), args...)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to get %s %v: %v", dao.Name(), args, err)})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to get %s: %v: %v", dao.Name(), args, err)})
 			return
 		}
 		c.JSON(http.StatusOK, item)

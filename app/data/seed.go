@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"math/rand"
-
 	"github.com/42-Short/shortinette/db"
 )
 
@@ -28,7 +26,7 @@ func SeedDB(db *db.DB) (*data, error) {
 	modules := make([]Module, 0, moduleAmount*participantAmount)
 
 	for i := 0; i < participantAmount; i++ {
-		participant := newDummyParticipant(i)
+		participant := NewDummyParticipant(i)
 
 		if err := participantDao.Insert(context.Background(), *participant); err != nil {
 			return nil, fmt.Errorf("failed to insert participant into DB: %v", err)
@@ -36,7 +34,7 @@ func SeedDB(db *db.DB) (*data, error) {
 		participants = append(participants, *participant)
 
 		for j := 0; j < moduleAmount; j++ {
-			module := newDummyModule(j, participant.IntraLogin)
+			module := NewDummyModule(j, participant.IntraLogin)
 			if err := moduleDao.Insert(context.Background(), *module); err != nil {
 				return nil, fmt.Errorf("failed to insert module into DB: %v", err)
 			}
@@ -46,19 +44,19 @@ func SeedDB(db *db.DB) (*data, error) {
 	return &data{participants: participants, modules: modules}, nil
 }
 
-func newDummyModule(moduleID int, intraLogin string) *Module {
+func NewDummyModule(moduleID int, intraLogin string) *Module {
 	return &Module{
 		Id:             moduleID,
 		IntraLogin:     intraLogin,
-		Attempts:       rand.Int(),
-		Score:          rand.Int(),
-		LastGraded:     time.Now(),
-		WaitTime:       rand.Int(),
-		GradingOngoing: rand.Intn(2) == 0,
+		Attempts:       42,
+		Score:          42,
+		LastGraded:     time.Date(2024, 11, 20, 0, 0, 0, 0, time.UTC),
+		WaitTime:       42,
+		GradingOngoing: false,
 	}
 }
 
-func newDummyParticipant(id int) *Participant {
+func NewDummyParticipant(id int) *Participant {
 	intraLogin := fmt.Sprintf("dummy_participant%d", id)
 	return &Participant{
 		IntraLogin:  intraLogin,

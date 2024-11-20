@@ -15,7 +15,7 @@ func TestInsert(t *testing.T) {
 	participantDAO := NewDAO[Participant](db)
 	defer db.Close()
 
-	participant := newDummyParticipant()
+	participant := NewDummyParticipant(100)
 	err := participantDAO.Insert(context.Background(), *participant)
 	require.NoError(t, err)
 

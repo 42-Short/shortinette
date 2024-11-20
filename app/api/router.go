@@ -16,7 +16,7 @@ func (api *API) setupRoutes() {
 	group.POST("/modules", InsertItemHandler(moduleDAO))
 	group.POST("/participants", InsertItemHandler(participantDAO))
 
-	group.PUT("/modules", UpdateItemHandler(moduleDAO))
+	group.PUT("/modules", UpdateItemHandler(moduleDAO)) //TODO: add id and intra login to update
 	group.PUT("/participants", UpdateItemHandler(participantDAO))
 
 	group.GET("/modules", GetAllItemsHandler(moduleDAO))
