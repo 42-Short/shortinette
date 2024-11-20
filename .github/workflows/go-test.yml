@@ -16,6 +16,7 @@ jobs:
       TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
       ORGA_GITHUB: ${{ secrets.ORGA_GITHUB }}
       TEMPLATE_REPO: ${{ secrets.TEMPLATE_REPO }}
+      API_TOKEN: ${{ secrets.API_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
@@ -35,6 +36,5 @@ jobs:
           git config --global user.email "actions@github.com"
           git config --global url."https://${{ secrets.TOKEN_GITHUB }}@github.com".insteadOf "https://github.com/"
       - name: Run tests
-        run: go test ./... 
+        run: go test ./...
         working-directory: './app'
-
