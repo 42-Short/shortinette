@@ -1,6 +1,8 @@
-package server
+package api
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/42-Short/shortinette/data"
@@ -9,7 +11,19 @@ import (
 
 func InsertItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "test"})
+		var item T
+		err := c.ShouldBindJSON(&item)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		err = dao.Insert(context.TODO(), item)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to insert %s: %v", dao.Name(), err)})
+			return
+		}
+
+		c.JSON(http.StatusOK, item)
 	}
 }
 

@@ -17,7 +17,7 @@ func TestInsert(t *testing.T) {
 	defer db.Close()
 
 	participant := newDummyParticipant()
-	err := participantDAO.Insert(context.Background(), participant)
+	err := participantDAO.Insert(context.Background(), *participant)
 	if err != nil {
 		t.Fatalf("failed to insert participant into DB: %v", err)
 	}
@@ -41,7 +41,7 @@ func TestUpdate(t *testing.T) {
 
 	modules[0].Score += 100
 	modules[0].Attempts += 1
-	err := moduleDAO.Update(context.Background(), &modules[0])
+	err := moduleDAO.Update(context.Background(), modules[0])
 	if err != nil {
 		t.Fatalf("failed to update module in DB %v", err)
 	}
@@ -190,14 +190,14 @@ func createDummyData(t *testing.T, db *db.DB, moduleAmount int, participantAmoun
 	for i := 0; i < participantAmount; i++ {
 		participant := newDummyParticipant()
 
-		if err := participantDao.Insert(context.Background(), participant); err != nil {
+		if err := participantDao.Insert(context.Background(), *participant); err != nil {
 			t.Fatalf("failed to insert participant into DB: %v", err)
 		}
 		participants = append(participants, *participant)
 
 		for j := 0; j < moduleAmount; j++ {
 			module := newDummyModule(j, participant.IntraLogin)
-			if err := moduleDao.Insert(context.Background(), module); err != nil {
+			if err := moduleDao.Insert(context.Background(), *module); err != nil {
 				t.Fatalf("failed to insert module into DB: %v", err)
 			}
 			modules = append(modules, *module)

@@ -1,22 +1,15 @@
-package server
+package api
 
 import (
-	"net/http"
-
 	"github.com/42-Short/shortinette/data"
-	"github.com/gin-gonic/gin"
 )
 
-func (s *Server) setupRoutes() {
-	group := s.Handler.Group("/shortinette/v1")
+func (api *API) setupRoutes() {
+	group := api.Engine.Group("/shortinette/v1")
 	group.Use(tokenAuthMiddleware())
 
-	moduleDAO := data.NewDAO[data.Module](nil)           //TODO
-	participantDAO := data.NewDAO[data.Participant](nil) //TODO
-
-	group.Any("/test", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "test"})
-	})
+	moduleDAO := data.NewDAO[data.Module](api.DB)
+	participantDAO := data.NewDAO[data.Participant](api.DB)
 
 	group.POST("/modules", InsertItemHandler(moduleDAO))
 	group.POST("/participants", InsertItemHandler(participantDAO))
