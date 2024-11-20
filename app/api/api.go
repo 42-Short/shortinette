@@ -20,10 +20,10 @@ type API struct {
 	accessToken string
 }
 
-func NewAPI(db *db.DB, mode string) (*API, error) {
+func NewAPI(db *db.DB, mode string) *API {
 	requiredToken := os.Getenv("API_TOKEN")
 	if requiredToken == "" {
-		return nil, fmt.Errorf("API_TOKEN in .env is empty")
+		logger.Warning.Printf("API_TOKEN not found. Creating API without access Token")
 	}
 
 	addr := os.Getenv("SERVER_ADDR")
@@ -42,7 +42,7 @@ func NewAPI(db *db.DB, mode string) (*API, error) {
 		DB:     db,
 	}
 	api.setupRoutes()
-	return api, nil
+	return api
 }
 
 func (api *API) Run() chan error {

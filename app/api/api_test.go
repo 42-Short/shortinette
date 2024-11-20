@@ -20,7 +20,6 @@ import (
 	"github.com/42-Short/shortinette/data"
 	"github.com/42-Short/shortinette/db"
 	"github.com/42-Short/shortinette/logger"
-	"github.com/joho/godotenv"
 )
 
 var api *API
@@ -42,11 +41,6 @@ func shutdown(sigCh chan os.Signal, errCh chan error) {
 }
 
 func TestMain(m *testing.M) {
-	err := godotenv.Load("../.env")
-	if err != nil {
-		logger.Error.Fatalf("failed to load .env file: %v", err)
-	}
-
 	db, err := db.NewDB(context.Background(), "file::memory:?cache=shared")
 	if err != nil {
 		logger.Error.Fatalf("failed to create db: %v", err)
@@ -66,10 +60,7 @@ func TestMain(m *testing.M) {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
-	api, err = NewAPI(db, gin.TestMode)
-	if err != nil {
-		logger.Error.Fatalf("failed to initialize API: %v", err)
-	}
+	api = NewAPI(db, gin.TestMode)
 	errCh := api.Run()
 	go shutdown(sigCh, errCh)
 
