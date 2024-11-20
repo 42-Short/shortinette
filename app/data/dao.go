@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/42-Short/shortinette/db"
+	"github.com/42-Short/shortinette/logger"
 )
 
 //TODO: support transactions
@@ -68,6 +69,7 @@ func (dao *DAO[T]) GetAll(ctx context.Context) ([]T, error) {
 // Retrieves a single record by the primary keys from the table.
 func (dao *DAO[T]) Get(ctx context.Context, args ...any) (*T, error) {
 	query := buildSelectQuery(dao.md.tableName, dao.md.primaryKeys)
+	logger.Info.Printf("query: %s\n", query)
 	var retrievedData T
 	err := dao.DB.Conn.GetContext(ctx, &retrievedData, query, args...)
 	if err != nil {

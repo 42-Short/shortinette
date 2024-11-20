@@ -3,7 +3,6 @@ package data
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"math/rand"
@@ -29,7 +28,7 @@ func SeedDB(db *db.DB) (*data, error) {
 	modules := make([]Module, 0, moduleAmount*participantAmount)
 
 	for i := 0; i < participantAmount; i++ {
-		participant := newDummyParticipant()
+		participant := newDummyParticipant(i)
 
 		if err := participantDao.Insert(context.Background(), *participant); err != nil {
 			return nil, fmt.Errorf("failed to insert participant into DB: %v", err)
@@ -59,8 +58,8 @@ func newDummyModule(moduleID int, intraLogin string) *Module {
 	}
 }
 
-func newDummyParticipant() *Participant {
-	intraLogin := strconv.Itoa(rand.Int())
+func newDummyParticipant(id int) *Participant {
+	intraLogin := fmt.Sprintf("dummy_participant%d", id)
 	return &Participant{
 		IntraLogin:  intraLogin,
 		GitHubLogin: "dummy_git_" + intraLogin,

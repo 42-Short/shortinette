@@ -70,6 +70,8 @@ func TestMain(m *testing.M) {
 	os.Exit(exitCode)
 }
 
+//TODO make tests dynamic to test both endpoints
+
 func TestPost(t *testing.T) {
 	participant := data.Participant{
 		IntraLogin:  "foo",
@@ -81,7 +83,6 @@ func TestPost(t *testing.T) {
 	response := serveRequest(t, "POST", "/shortinette/v1/participants", strings.NewReader(string(participantJson)))
 	assert.Equal(t, http.StatusCreated, response.Code)
 	assert.Equal(t, string(participantJson), response.Body.String())
-
 }
 
 func TestGetAll(t *testing.T) {
@@ -97,6 +98,21 @@ func TestGetAll(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, response.Code, response.Body)
 	assert.Equal(t, expectedParticipants, actualParticipants)
+}
+
+func TestGet(t *testing.T) {
+	response := serveRequest(t, "GET", "/shortinette/v1/participants/dummy_participant5", nil)
+
+	var actualParticipants data.Participant
+	err := json.Unmarshal(response.Body.Bytes(), &actualParticipants)
+	require.NoError(t, err, "failed to unmarshal module")
+
+	participantDAO := data.NewDAO[data.Participant](api.DB)
+	expectedParticipants, err := participantDAO.Get(context.Background(), "dummy_participant5")
+	require.NoError(t, err)
+
+	assert.Equal(t, http.StatusOK, response.Code, response.Body)
+	assert.Equal(t, *expectedParticipants, actualParticipants)
 }
 
 func serveRequest(t *testing.T, method string, url string, body io.Reader) *httptest.ResponseRecorder {

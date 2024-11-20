@@ -16,15 +16,15 @@ func (api *API) setupRoutes() {
 	group.POST("/modules", InsertItemHandler(moduleDAO))
 	group.POST("/participants", InsertItemHandler(participantDAO))
 
-	group.PUT("/modules/:intra_login/:id", UpdateItemHandler(moduleDAO))
-	group.PUT("/participants/:intra_login", UpdateItemHandler(participantDAO))
+	group.PUT("/modules", UpdateItemHandler(moduleDAO))
+	group.PUT("/participants", UpdateItemHandler(participantDAO))
 
 	group.GET("/modules", GetAllItemsHandler(moduleDAO))
 	group.GET("/participants", GetAllItemsHandler(participantDAO))
 
-	group.GET("/modules/:intra_login/:id", GetItemHandler(moduleDAO))
+	group.GET("/modules/:id/:intra_login", GetItemHandler(moduleDAO))
 	group.GET("/participants/:intra_login", GetItemHandler(participantDAO))
 
-	group.DELETE("/modules/:intra_login/:id", DeleteItemHandler(moduleDAO))
+	group.DELETE("/modules/:id/:intra_login", DeleteItemHandler(moduleDAO))
 	group.DELETE("/participants/:intra_login", DeleteItemHandler(participantDAO))
 }
