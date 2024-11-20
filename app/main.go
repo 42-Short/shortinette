@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/42-Short/shortinette/api"
 	"github.com/42-Short/shortinette/data"
@@ -57,7 +58,7 @@ func run() {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
-	api := api.NewAPI(db, gin.TestMode)
+	api := api.NewAPI(db, gin.TestMode, time.Minute)
 	errCh := api.Run()
 	go shutdown(api, sigCh, errCh)
 	select {}
