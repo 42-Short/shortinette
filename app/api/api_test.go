@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -62,8 +63,10 @@ func TestMain(m *testing.M) {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
-	apiToken = os.Getenv("API_TOKEN")
-	api = NewAPI(os.Getenv("SERVER_ADDR"), db, gin.TestMode)
+	api, err = NewAPI(db, gin.TestMode)
+	if err != nil {
+		logger.Error.Fatalf("failed to initialize API: %v", err)
+	}
 	errCh := api.Run()
 	go shutdown(sigCh, errCh)
 
@@ -73,20 +76,44 @@ func TestMain(m *testing.M) {
 
 func TestPost(t *testing.T) {
 	participant := newDummyParticipant()
-	w := httptest.NewRecorder()
-
 	participantJson, err := json.Marshal(participant)
 	if err != nil {
 		t.Fatalf("failed to marshal module: %v", err)
 	}
-	req, _ := http.NewRequest("POST", "/shortinette/v1/participants", strings.NewReader(string(participantJson)))
+
+	response := serveRequest(t, "POST", "/shortinette/v1/participants", strings.NewReader(string(participantJson)))
+	assert.Equal(t, http.StatusCreated, response.Code)
+	assert.Equal(t, string(participantJson), response.Body.String())
+
+}
+
+// Todo: seed database instead of using POST
+func TestGetAll(t *testing.T) {
+	participant := newDummyParticipant()
+	participantJson, err := json.Marshal(participant)
+	if err != nil {
+		t.Fatalf("failed to marshal module: %v", err)
+	}
+
+	response := serveRequest(t, "POST", "/shortinette/v1/participants", strings.NewReader(string(participantJson)))
+	assert.Equal(t, http.StatusCreated, response.Code)
+
+	response = serveRequest(t, "GET", "/shortinette/v1/participants", nil)
+	assert.Equal(t, http.StatusOK, response.Code, response.Body)
+}
+
+func serveRequest(t *testing.T, method string, url string, body io.Reader) *httptest.ResponseRecorder {
+	t.Helper()
+
+	req, err := http.NewRequest(method, url, body)
+	if err != nil {
+		t.Fatalf("failed to make request: %v", err)
+	}
 	req.Header.Set("Authorization", "Bearer "+apiToken)
 
-	api.Engine.ServeHTTP(w, req)
-
-	assert.Equal(t, 200, w.Code)
-	assert.Equal(t, string(participantJson), w.Body.String())
-
+	response := httptest.NewRecorder()
+	api.Engine.ServeHTTP(response, req)
+	return response
 }
 
 func newDummyModule(moduleID int, intraLogin string) *data.Module {

@@ -23,30 +23,35 @@ func InsertItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, item)
+		c.JSON(http.StatusCreated, item)
 	}
 }
 
 func UpdateItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "test"})
+		c.JSON(http.StatusNotImplemented, gin.H{"message": "not implemented yet"})
 	}
 }
 
 func GetAllItemsHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "test"})
+		items, err := dao.GetAll(context.TODO())
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to get all %s`s: %v", dao.Name(), err)})
+			return
+		}
+		c.JSON(http.StatusOK, items)
 	}
 }
 
 func GetItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "test"})
+		c.JSON(http.StatusNotImplemented, gin.H{"message": "not implemented yet"})
 	}
 }
 
 func DeleteItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "test"})
+		c.JSON(http.StatusNotImplemented, gin.H{"message": "not implemented yet"})
 	}
 }

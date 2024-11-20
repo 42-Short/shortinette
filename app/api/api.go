@@ -17,11 +17,20 @@ type API struct {
 	Engine *gin.Engine
 	DB     *db.DB
 
-	errCh chan error
-	sigCh chan os.Signal
+	accessToken string
 }
 
-func NewAPI(addr string, db *db.DB, mode string) *API {
+func NewAPI(db *db.DB, mode string) (*API, error) {
+	requiredToken := os.Getenv("API_TOKEN")
+	if requiredToken == "" {
+		return nil, fmt.Errorf("API_TOKEN in .env is empty")
+	}
+
+	addr := os.Getenv("SERVER_ADDR")
+	if addr == "" {
+		addr = "localhost:8080"
+	}
+
 	engine := gin.Default()
 	gin.SetMode(mode)
 	api := &API{
@@ -33,7 +42,7 @@ func NewAPI(addr string, db *db.DB, mode string) *API {
 		DB:     db,
 	}
 	api.setupRoutes()
-	return api
+	return api, nil
 }
 
 func (api *API) Run() chan error {
@@ -44,6 +53,7 @@ func (api *API) Run() chan error {
 		errorCh <- err
 	}()
 	logger.Info.Printf("server is listening on %s", api.Addr)
+
 	return errorCh
 }
 

@@ -2,19 +2,12 @@ package api
 
 import (
 	"net/http"
-	"os"
 
 	"github.com/42-Short/shortinette/logger"
 	"github.com/gin-gonic/gin"
 )
 
-func tokenAuthMiddleware() gin.HandlerFunc {
-	requiredToken := os.Getenv("API_TOKEN")
-
-	if requiredToken == "" {
-		logger.Error.Fatal("API_TOKEN in .env is empty\n")
-	}
-
+func tokenAuthMiddleware(accessToken string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -28,8 +21,8 @@ func tokenAuthMiddleware() gin.HandlerFunc {
 			token = authHeader[7:]
 		}
 
-		if token != requiredToken {
-			logger.Warning.Printf("Unauthorized access attempt with token: " + token + "\n")
+		if token != accessToken {
+			logger.Warning.Printf("unauthorized access attempt with token: " + token + "\n")
 			c.JSON(http.StatusUnauthorized, gin.H{"message": "token invalid"})
 			c.Abort()
 			return
