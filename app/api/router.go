@@ -6,9 +6,9 @@ import (
 
 func (api *API) setupRoutes() {
 	group := api.Engine.Group("/shortinette/v1")
-	if api.accessToken != "" {
-		group.Use(tokenAuthMiddleware(api.accessToken))
-	}
+	group.Use(tokenAuthMiddleware(api.accessToken))
+
+	group.POST("/webhook", githubWebhookHandler())
 
 	moduleDAO := data.NewDAO[data.Module](api.DB)
 	participantDAO := data.NewDAO[data.Participant](api.DB)
@@ -28,5 +28,4 @@ func (api *API) setupRoutes() {
 	group.DELETE("/modules/:id/:intra_login", deleteItemHandler(moduleDAO, api.timeout))
 	group.DELETE("/participants/:intra_login", deleteItemHandler(participantDAO, api.timeout))
 
-	group.POST("/webhook", githubWebhookHandler())
 }

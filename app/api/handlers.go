@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/42-Short/shortinette/data"
+	"github.com/42-Short/shortinette/logger"
 	"github.com/gin-gonic/gin"
 )
 
@@ -49,6 +50,7 @@ func githubWebhookHandler() gin.HandlerFunc {
 					return
 				}
 
+				logger.Info.Printf("push event on %s identified as submission.", payload.Repository.Name)
 				go processGrading(payload.Pusher.Name, moduleId)
 			}
 		}

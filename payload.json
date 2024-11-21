@@ -4,7 +4,7 @@
     "name": "intra_login02"
   },
   "pusher": {
-    "name": "intra_login"
+    "name": "github_login"
   },
   "head_commit": {
     "message": "grademe"
