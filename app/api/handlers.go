@@ -14,7 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type GitHubWebhookPayload struct {
+type gitHubWebhookPayload struct {
 	Ref        string `json:"ref"`
 	Repository struct {
 		Name string `json:"name"`
@@ -29,7 +29,7 @@ type GitHubWebhookPayload struct {
 
 func githubWebhookHandler(dao *data.DAO[data.Module]) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var payload GitHubWebhookPayload
+		var payload gitHubWebhookPayload
 
 		err := c.ShouldBindJSON(&payload)
 		if err != nil {
@@ -41,7 +41,7 @@ func githubWebhookHandler(dao *data.DAO[data.Module]) gin.HandlerFunc {
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
-		c.JSON(http.StatusOK, payload)
+		c.JSON(http.StatusProcessing, payload)
 	}
 }
 
@@ -58,7 +58,7 @@ func gradingHandler(dao *data.DAO[data.Module], timeout time.Duration) gin.Handl
 		}
 
 		go processGrading(dao, module.IntraLogin, module.Id)
-		c.JSON(http.StatusOK, fmt.Sprintf("grading %s%d...", module.IntraLogin, module.Id))
+		c.JSON(http.StatusProcessing, fmt.Sprintf("grading %s%d...", module.IntraLogin, module.Id))
 	}
 }
 
@@ -163,7 +163,7 @@ func collectArgs(params gin.Params) []any {
 	return args
 }
 
-func processGithubPayload(payload GitHubWebhookPayload, dao *data.DAO[data.Module]) error {
+func processGithubPayload(payload gitHubWebhookPayload, dao *data.DAO[data.Module]) error {
 	if payload.Ref == "refs/heads/main" && payload.Pusher.Name != os.Getenv("GITHUB_ADMIN") {
 		if strings.ToLower(payload.Commit.Message) == "grademe" {
 			if len(payload.Repository.Name) < len(payload.Pusher.Name) {

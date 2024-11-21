@@ -75,6 +75,30 @@ func TestMain(m *testing.M) {
 	os.Exit(exitCode)
 }
 
+func TestWebhookGrademe(t *testing.T) {
+	payload := gitHubWebhookPayload{}
+	payload.Ref = "refs/heads/main"
+	payload.Repository.Name = "intra_login02"
+	payload.Pusher.Name = "github_login"
+	payload.Commit.Message = "grademe"
+
+	payloadJson, err := json.Marshal(payload)
+	require.NoError(t, err, "failed to marshal item")
+
+	response := serveRequest(t, "POST", "http://localhost:8080/shortinette/v1/webhook/grademe", strings.NewReader(string(payloadJson)), apiToken)
+	assert.Equal(t, http.StatusProcessing, response.Code, response.Body)
+}
+
+func TestGrademe(t *testing.T) {
+	const (
+		intraLogin = "dummy_participant5"
+		moduleID   = 0
+	)
+	url := fmt.Sprintf("http://localhost:8080/shortinette/v1/modules/%d/%s/grademe", moduleID, intraLogin)
+	response := serveRequest(t, "POST", url, nil, apiToken)
+	assert.Equal(t, http.StatusProcessing, response.Code, response.Body)
+}
+
 func TestPostParticipant(t *testing.T) {
 	testPost(t, data.NewDummyParticipant(42), "/shortinette/v1/participants")
 }
