@@ -300,19 +300,20 @@ func NewRelease(repoName string, tagName string, releaseName string, body string
 	return nil
 }
 
-// ValidateUser checks if the provided GitHub username exists.
+// DoesAccountExist checks if the provided GitHub username exists.
 // Returns nil if valid, or an error if invalid.
-func ValidateUser(username string) error {
+func DoesAccountExist(username string) (bool, error) {
 	client := github.NewClient(nil)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
 	_, response, err := client.Users.Get(ctx, username)
 	if err != nil {
 		if response.StatusCode == http.StatusNotFound {
-			return fmt.Errorf("github username '%s' does not exist", username)
+			return false, nil
 		}
-		return fmt.Errorf("github API error for username '%s': %v", username, err)
+		return false, fmt.Errorf("github API error for username '%s': %v", username, err)
 	}
-	return nil
+	return true, nil
 }

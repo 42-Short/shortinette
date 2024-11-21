@@ -8,6 +8,8 @@ import (
 
 	"github.com/google/go-github/v66/github"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
+	"gotest.tools/v3/assert"
 )
 
 func cleanup(t *testing.T, repoName string) {
@@ -313,13 +315,13 @@ func TestNewReleaseNonExistingrepo(t *testing.T) {
 }
 
 func TestValidateUserNonExisting(t *testing.T) {
-	if err := ValidateUser("thisuserdoesnotexist_42424242424242424242424000"); err == nil {
-		t.Fatalf("ValidateUser did not return any error when trying to validate a non-existing user")
-	}
+	found, err := DoesAccountExist("thisuserdoesnotexist_42424242424242424242424000")
+	require.NoError(t, err)
+	assert.Equal(t, found, false, "DoesAccountExist returned true on an invalid user")
 }
 
 func TestValidateUserExisting(t *testing.T) {
-	if err := ValidateUser("Jakobus42"); err != nil {
-		t.Fatalf("ValidateUser returned an error on a standard use case: %v", err)
-	}
+	found, err := DoesAccountExist("Jakobus42")
+	require.NoError(t, err)
+	assert.Equal(t, found, true, "DoesAccountExist returned false on a valid user")
 }
