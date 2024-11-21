@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/42-Short/shortinette/logger"
 	"github.com/google/go-github/v66/github"
@@ -296,5 +297,23 @@ func NewRelease(repoName string, tagName string, releaseName string, body string
 	}
 
 	logger.Info.Printf("added release '%s', tagged '%s' to repo '%s'", releaseName, tagName, repoName)
+	return nil
+}
+
+// ValidateUser checks if the provided GitHub username exists.
+// Returns nil if valid, or an error if invalid.
+func ValidateUser(username string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	client := github.NewClient(nil)
+
+	_, response, err := client.Users.Get(ctx, username)
+	if err != nil {
+		if response.StatusCode == http.StatusNotFound {
+			return fmt.Errorf("github username '%s' does not exist", username)
+		}
+		return fmt.Errorf("github API error for username '%s': %v", username, err)
+	}
 	return nil
 }

@@ -311,3 +311,15 @@ func TestNewReleaseNonExistingrepo(t *testing.T) {
 		t.Fatalf("NewRelease did not return any error when trying to add a release to a non-existing repo")
 	}
 }
+
+func TestValidateUserNonExisting(t *testing.T) {
+	if err := ValidateUser("thisuserdoesnotexist_42424242424242424242424000"); err == nil {
+		t.Fatalf("ValidateUser did not return any error when trying to validate a non-existing user")
+	}
+}
+
+func TestValidateUserExisting(t *testing.T) {
+	if err := ValidateUser("Jakobus42"); err != nil {
+		t.Fatalf("ValidateUser returned an error on a standard use case: %v", err)
+	}
+}
