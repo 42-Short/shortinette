@@ -11,12 +11,14 @@ import (
 	"github.com/joho/godotenv"
 )
 
+//TODO: should be part of the short package
+//	ModuleDuration time.Duration
+//	StartTime      time.Time
+
 // Main struct, containing all necessary metadata
 type Config struct {
-	Participants   []Participant
-	Modules        []Module
-	ModuleDuration time.Duration
-	StartTime      time.Time
+	Participants []Participant
+	Modules      []Module
 
 	TEMPLATE_REPO string
 	GITHUB_TOKEN  string
