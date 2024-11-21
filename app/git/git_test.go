@@ -64,8 +64,8 @@ func TestNewRepoStandardFunctionality(t *testing.T) {
 
 	time.Sleep(5 * time.Second) // Generating templates takes a few seconds
 
-	client := github.NewClient(nil).WithAuthToken(config.C.GITHUB_TOKEN)
-	repo, _, err := client.Repositories.Get(context.Background(), config.C.GITHUB_ORGA, expectedRepoName)
+	client := github.NewClient(nil).WithAuthToken(config.C.TOKEN_GITHUB)
+	repo, _, err := client.Repositories.Get(context.Background(), config.C.ORGA_GITHUB, expectedRepoName)
 	if err != nil {
 		t.Fatalf("could not verify repo creation: %v", err)
 	}
@@ -249,9 +249,9 @@ func TestNewReleaseNormalFunctionality(t *testing.T) {
 		t.Fatalf("NewRelease returned an error on a standard use case: %v", err)
 	}
 
-	client := github.NewClient(nil).WithAuthToken(config.C.GITHUB_TOKEN)
+	client := github.NewClient(nil).WithAuthToken(config.C.TOKEN_GITHUB)
 
-	rel, _, err := client.Repositories.GetLatestRelease(context.Background(), config.C.GITHUB_ORGA, expectedRepoName)
+	rel, _, err := client.Repositories.GetLatestRelease(context.Background(), config.C.ORGA_GITHUB, expectedRepoName)
 	if err != nil {
 		t.Fatalf("could not verify release update: %v", err)
 	}
