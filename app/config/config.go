@@ -99,6 +99,7 @@ func (config *Config) LoadParticipants(participantsConfigPath string) error {
 			return fmt.Errorf("participant information incomplete")
 		}
 	}
+
 	return nil
 }
 
