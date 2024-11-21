@@ -4,11 +4,58 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/42-Short/shortinette/data"
 	"github.com/gin-gonic/gin"
 )
+
+type GitHubWebhookPayload struct {
+	Ref        string `json:"ref"`
+	Repository struct {
+		Name string `json:"name"`
+	} `json:"repository"`
+	Pusher struct {
+		Name string `json:"name"`
+	} `json:"pusher"`
+	Commit struct {
+		Message string `json:"message"`
+	} `json:"head_commit"`
+}
+
+func githubWebhookHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var payload GitHubWebhookPayload
+
+		err := c.ShouldBindJSON(&payload)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if payload.Ref == "refs/heads/main" && payload.Pusher.Name != os.Getenv("GITHUB_ADMIN") {
+			if strings.ToLower(payload.Commit.Message) == "grademe" {
+				if len(payload.Repository.Name) < len(payload.Pusher.Name) {
+					c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("invalid Repository name")})
+					return
+				}
+
+				moduleId, err := strconv.Atoi(payload.Repository.Name[len(payload.Pusher.Name):])
+				if err != nil {
+					c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("invalid Repository name: %v", err)})
+					return
+				}
+
+				go processGrading(payload.Pusher.Name, moduleId)
+			}
+		}
+
+		c.JSON(http.StatusOK, payload)
+	}
+}
 
 func insertItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {

@@ -27,4 +27,6 @@ func (api *API) setupRoutes() {
 
 	group.DELETE("/modules/:id/:intra_login", deleteItemHandler(moduleDAO, api.timeout))
 	group.DELETE("/participants/:intra_login", deleteItemHandler(participantDAO, api.timeout))
+
+	group.POST("/webhook", githubWebhookHandler())
 }
