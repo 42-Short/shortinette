@@ -4,14 +4,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
+
+	"github.com/42-Short/shortinette/logger"
+	"github.com/joho/godotenv"
 )
 
-// Main struct, containing all necessary information for running the Short
-type Short struct {
+// Main struct, containing all necessary metadata
+type Config struct {
+	Participants   []Participant
 	Modules        []Module
 	ModuleDuration time.Duration
 	StartTime      time.Time
+
+	TEMPLATE_REPO string
+	GITHUB_TOKEN  string
+	GITHUB_ORGA   string
+	SERVER_ADDR   string
+	API_TOKEN     string
+	CONFIG_PATH   string
 }
 
 // Group of exercises
@@ -30,72 +42,63 @@ type Exercise struct {
 }
 
 type Participant struct {
-	GithubUserName string
+	IntraLogin     string `json:"intra_login"`
+	GithubUserName string `json:"github_username"`
+}
+
+var C Config
+
+func init() {
+	err := godotenv.Load("../.env")
+	if err != nil {
+		logger.Warning.Printf(".env file not found, this is expected in the GitHub Actions environment, this is a problem if you are running this locally\n")
+	}
+
+	requiredEnvVars := map[string]*string{
+		"TEMPLATE_REPO": &C.TEMPLATE_REPO,
+		"GITHUB_TOKEN":  &C.GITHUB_TOKEN,
+		"GITHUB_ORGA":   &C.GITHUB_ORGA,
+		"API_TOKEN":     &C.API_TOKEN,
+		"SERVER_ADDR":   &C.SERVER_ADDR,
+		"CONFIG_PATH":   &C.CONFIG_PATH,
+	}
+
+	missingEnvVars := make([]string, 0, len(requiredEnvVars))
+	for key, value := range requiredEnvVars {
+		*value = os.Getenv(key)
+		if *value == "" {
+			missingEnvVars = append(missingEnvVars, key)
+		}
+	}
+
+	if len(missingEnvVars) > 0 {
+		logger.Error.Fatalf("missing environment variables: %s", strings.Join(missingEnvVars, ", "))
+	}
 }
 
 // Reads the participants list (json) from participantsListPath.
 //
 // Returns a slice of Participant structs containing the GitHub usernames of the participants.
-func NewParticipants(participantsListPath string) (participants []Participant, err error) {
-	data, err := os.ReadFile(participantsListPath)
+func (config *Config) LoadParticipants(participantsConfigPath string) error {
+	data, err := os.ReadFile(participantsConfigPath)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read config file %s: %v", participantsListPath, err)
+		return fmt.Errorf("unable to read config file %s: %v", participantsConfigPath, err)
 	}
 
-	var rawConfig struct {
-		Participants []struct {
-			GithubUserName string `json:"github_username"`
-		} `json:"participants"`
+	if err := json.Unmarshal(data, &config.Participants); err != nil {
+		return fmt.Errorf("unable to parse participants list: %v", err)
 	}
 
-	if err := json.Unmarshal(data, &rawConfig); err != nil {
-		return nil, fmt.Errorf("unable to parse participants list: %v", err)
+	if len(config.Participants) < 1 {
+		return fmt.Errorf("you need at least one participant")
+	}
+	for _, participant := range config.Participants {
+		if participant.IntraLogin == "" || participant.GithubUserName == "" {
+			return fmt.Errorf("participant information incomplete")
+		}
 	}
 
-	for _, p := range rawConfig.Participants {
-		participants = append(participants, Participant{
-			GithubUserName: p.GithubUserName,
-		})
-	}
-
-	if len(participants) < 1 {
-		return nil, fmt.Errorf("you need at least one participant")
-	}
-
-	return participants, nil
-}
-
-// Initializes a new Short.
-//
-// Arguments:
-//
-//   - modules: slice of Module structs
-//   - moduleDuration: how long one module should be active
-//   - startTime: when the Short starts
-func NewShort(modules []Module, moduleDuration time.Duration, startTime time.Time) (short *Short, err error) {
-	if modules == nil || len(modules) < 1 {
-		return nil, fmt.Errorf("you need at least one module to initialize a short")
-	}
-	if moduleDuration < 0 {
-		return nil, fmt.Errorf("moduleDuration cannot be negative")
-	}
-
-	currentStartTime := startTime
-	updatedModules := []Module{}
-	for _, mod := range modules {
-		updatedModules = append(updatedModules, Module{
-			Exercises:    mod.Exercises,
-			MinimumScore: mod.MinimumScore,
-			StartTime:    currentStartTime,
-		})
-		currentStartTime = currentStartTime.Add(moduleDuration)
-	}
-
-	return &Short{
-		Modules:        updatedModules,
-		ModuleDuration: moduleDuration,
-		StartTime:      startTime,
-	}, nil
+	return nil
 }
 
 // Initializes a new Module (group of Exercise structs).
@@ -104,7 +107,7 @@ func NewShort(modules []Module, moduleDuration time.Duration, startTime time.Tim
 //
 //   - exercises: list of single exercises
 //   - minimumScore: minimum score needed to pass the module
-func NewModule(exercises []Exercise, minimumScore int) (mod *Module, err error) {
+func (config *Config) NewModule(exercises []Exercise, minimumScore int) (mod *Module, err error) {
 	if exercises == nil || len(exercises) < 1 {
 		return nil, fmt.Errorf("you need at least one exercise to initialize a module")
 	}
@@ -132,7 +135,7 @@ func NewModule(exercises []Exercise, minimumScore int) (mod *Module, err error) 
 //   - score: score given when passing this exercise
 //   - allowedFiles: files allowed to be found in this exercise's directory
 //   - the repository's in which the exercise files are expected to be found
-func NewExercise(executablePath string, score int, allowedFiles []string, turnInDirectory string) (ex *Exercise, err error) {
+func (config *Config) NewExercise(executablePath string, score int, allowedFiles []string, turnInDirectory string) (ex *Exercise, err error) {
 	if allowedFiles == nil || len(allowedFiles) < 1 {
 		return nil, fmt.Errorf("at least one allowed file required")
 	}

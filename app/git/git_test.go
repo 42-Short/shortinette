@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/42-Short/shortinette/config"
 	"github.com/google/go-github/v66/github"
 	"github.com/google/uuid"
 )
@@ -52,11 +53,6 @@ func TestNewRepoNonExistingTemplate(t *testing.T) {
 }
 
 func TestNewRepoStandardFunctionality(t *testing.T) {
-	token, orga, _, err := requireEnv()
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-
 	expectedRepoName := uuid.New().String()
 	expectedPrivate := true
 	expectedDescription := "description"
@@ -68,8 +64,8 @@ func TestNewRepoStandardFunctionality(t *testing.T) {
 
 	time.Sleep(5 * time.Second) // Generating templates takes a few seconds
 
-	client := github.NewClient(nil).WithAuthToken(token)
-	repo, _, err := client.Repositories.Get(context.Background(), orga, expectedRepoName)
+	client := github.NewClient(nil).WithAuthToken(config.C.GITHUB_TOKEN)
+	repo, _, err := client.Repositories.Get(context.Background(), config.C.GITHUB_ORGA, expectedRepoName)
 	if err != nil {
 		t.Fatalf("could not verify repo creation: %v", err)
 	}
@@ -233,11 +229,6 @@ func TestUploadFilesNonDefaultBranch(t *testing.T) {
 }
 
 func TestNewReleaseNormalFunctionality(t *testing.T) {
-	token, orga, _, err := requireEnv()
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-
 	expectedRepoName := uuid.New().String()
 	expectedTagName := "tag"
 	expectedReleaseName := "release"
@@ -258,9 +249,9 @@ func TestNewReleaseNormalFunctionality(t *testing.T) {
 		t.Fatalf("NewRelease returned an error on a standard use case: %v", err)
 	}
 
-	client := github.NewClient(nil).WithAuthToken(token)
+	client := github.NewClient(nil).WithAuthToken(config.C.GITHUB_TOKEN)
 
-	rel, _, err := client.Repositories.GetLatestRelease(context.Background(), orga, expectedRepoName)
+	rel, _, err := client.Repositories.GetLatestRelease(context.Background(), config.C.GITHUB_ORGA, expectedRepoName)
 	if err != nil {
 		t.Fatalf("could not verify release update: %v", err)
 	}

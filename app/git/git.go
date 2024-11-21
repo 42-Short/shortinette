@@ -11,61 +11,25 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/42-Short/shortinette/config"
 	"github.com/42-Short/shortinette/logger"
 	"github.com/google/go-github/v66/github"
-	"github.com/joho/godotenv"
 )
 
 func deleteRepo(name string) (err error) {
-	token, orga, _, err := requireEnv()
-	if err != nil {
-		return fmt.Errorf("could not delete repo '%s': %v", name, err)
-	}
+	client := github.NewClient(nil).WithAuthToken(config.C.GITHUB_TOKEN)
 
-	client := github.NewClient(nil).WithAuthToken(token)
-
-	if resp, err := client.Repositories.Delete(context.Background(), orga, name); err != nil {
+	if resp, err := client.Repositories.Delete(context.Background(), config.C.GITHUB_ORGA, name); err != nil {
 		if resp.StatusCode != http.StatusNotFound {
 			return fmt.Errorf("could not delete repo '%s': %v", name, err)
 		} else {
-			logger.Warning.Printf("repo '%s' not found in orga '%s'\n", name, orga)
+			logger.Warning.Printf("repo '%s' not found in orga '%s'\n", name, config.C.GITHUB_ORGA)
 			return nil
 		}
 	}
 
 	logger.Info.Printf("repo '%s' successfully deleted\n", name)
 	return nil
-}
-
-// Checks for environment variables required to interact with the GitHub API. Returns their values
-// if they exist, sets the error's value if not.
-func requireEnv() (githubToken string, githubOrga string, templateRepo string, err error) {
-	if err := godotenv.Load("../.env"); err != nil {
-		logger.Warning.Printf(".env file not found, this is expected in the GitHub Actions environment, this is a problem if you are running this locally\n")
-	}
-
-	missingVars := []string{}
-
-	githubToken = os.Getenv("TOKEN_GITHUB")
-	if githubToken == "" {
-		missingVars = append(missingVars, "TOKEN_GITHUB")
-	}
-
-	githubOrga = os.Getenv("ORGA_GITHUB")
-	if githubOrga == "" {
-		missingVars = append(missingVars, "ORGA_GITHUB")
-	}
-
-	templateRepo = os.Getenv("TEMPLATE_REPO")
-	if githubOrga == "" {
-		missingVars = append(missingVars, "TEMPLATE_REPO")
-	}
-
-	if len(missingVars) != 0 {
-		err = fmt.Errorf("missing environment variable(s): %s", strings.Join(missingVars, ", "))
-	}
-
-	return githubToken, githubOrga, templateRepo, err
 }
 
 // Checks whether `err` is related to the repo already existing.
@@ -84,18 +48,13 @@ func isRepoAlreadyExists(err error) (exists bool) {
 // GITHUB_ORGANISATION environment variable. If `private` is true, the repository's
 // visibility will be private.
 func NewRepo(name string, private bool, description string) (err error) {
-	token, orga, templateRepo, err := requireEnv()
-	if err != nil {
-		return fmt.Errorf("could not create repo %s: %v", name, err)
-	}
+	client := github.NewClient(nil).WithAuthToken(config.C.GITHUB_TOKEN)
 
-	client := github.NewClient(nil).WithAuthToken(token)
-
-	createdRepo, response, err := client.Repositories.CreateFromTemplate(context.Background(), orga, templateRepo, &github.TemplateRepoRequest{Name: &name, Private: &private, Owner: &orga, Description: &description})
+	createdRepo, response, err := client.Repositories.CreateFromTemplate(context.Background(), config.C.GITHUB_ORGA, config.C.TEMPLATE_REPO, &github.TemplateRepoRequest{Name: &name, Private: &private, Owner: &config.C.GITHUB_ORGA, Description: &description})
 	if err != nil {
 		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
 			if isRepoAlreadyExists(err) {
-				logger.Info.Printf("repo %s already exists under orga %s, skipping\n", name, orga)
+				logger.Info.Printf("repo %s already exists under orga %s, skipping\n", name, config.C.GITHUB_ORGA)
 				return nil
 			}
 		}
@@ -109,18 +68,13 @@ func NewRepo(name string, private bool, description string) (err error) {
 // Adds collaborator `collaboratorName` to repo `repoName` (under the GitHub organisation specified by
 // the GITHUB_ORGANISATION environment variable) with access level `permission“.
 func AddCollaborator(repoName string, collaboratorName string, permission string) (err error) {
-	token, orga, _, err := requireEnv()
-	if err != nil {
-		return fmt.Errorf("could not add collaborator %s to repo %s: %v", collaboratorName, repoName, err)
-	}
-
-	client := github.NewClient(nil).WithAuthToken(token)
+	client := github.NewClient(nil).WithAuthToken(config.C.GITHUB_TOKEN)
 
 	options := &github.RepositoryAddCollaboratorOptions{
 		Permission: permission,
 	}
 
-	if _, _, err = client.Repositories.AddCollaborator(context.Background(), orga, repoName, collaboratorName, options); err != nil {
+	if _, _, err = client.Repositories.AddCollaborator(context.Background(), config.C.GITHUB_ORGA, repoName, collaboratorName, options); err != nil {
 		return fmt.Errorf("could not add collaborator %s to repo %s: %v", collaboratorName, repoName, err)
 	}
 
@@ -136,12 +90,7 @@ func Clone(name string) (err error) {
 		return nil
 	}
 
-	token, orga, _, err := requireEnv()
-	if err != nil {
-		return fmt.Errorf("could not clone '%s': %v", name, err)
-	}
-
-	cloneURL := fmt.Sprintf("https://%s@github.com/%s/%s.git", token, orga, name)
+	cloneURL := fmt.Sprintf("https://%s@github.com/%s/%s.git", config.C.GITHUB_TOKEN, config.C.GITHUB_ORGA, name)
 
 	cmd := exec.Command("git", "clone", cloneURL)
 	cmd.Stdout = os.Stdout
@@ -278,15 +227,10 @@ func UploadFiles(repoName string, commitMessage string, branch string, createBra
 // some content). This should not be an issue for shortinette though, since we always upload subjects when creating
 // the repos.
 func NewRelease(repoName string, tagName string, releaseName string, body string) (err error) {
-	token, orga, _, err := requireEnv()
-	if err != nil {
-		return fmt.Errorf("could not add release '%s', tagged '%s' in repo '%s': %v", releaseName, tagName, repoName, err)
-	}
-
-	client := github.NewClient(nil).WithAuthToken(token)
+	client := github.NewClient(nil).WithAuthToken(config.C.GITHUB_TOKEN)
 
 	makeLatest := "true"
-	if _, _, err := client.Repositories.CreateRelease(context.Background(), orga, repoName, &github.RepositoryRelease{
+	if _, _, err := client.Repositories.CreateRelease(context.Background(), config.C.GITHUB_ORGA, repoName, &github.RepositoryRelease{
 		Name:       &releaseName,
 		Body:       &body,
 		TagName:    &tagName,
