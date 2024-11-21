@@ -109,7 +109,7 @@ func (config *Config) LoadParticipants(participantsConfigPath string) error {
 //
 //   - exercises: list of single exercises
 //   - minimumScore: minimum score needed to pass the module
-func (config *Config) NewModule(exercises []Exercise, minimumScore int) (mod *Module, err error) {
+func NewModule(exercises []Exercise, minimumScore int) (mod *Module, err error) {
 	if exercises == nil || len(exercises) < 1 {
 		return nil, fmt.Errorf("you need at least one exercise to initialize a module")
 	}
@@ -137,7 +137,7 @@ func (config *Config) NewModule(exercises []Exercise, minimumScore int) (mod *Mo
 //   - score: score given when passing this exercise
 //   - allowedFiles: files allowed to be found in this exercise's directory
 //   - the repository's in which the exercise files are expected to be found
-func (config *Config) NewExercise(executablePath string, score int, allowedFiles []string, turnInDirectory string) (ex *Exercise, err error) {
+func NewExercise(executablePath string, score int, allowedFiles []string, turnInDirectory string) (ex *Exercise, err error) {
 	if allowedFiles == nil || len(allowedFiles) < 1 {
 		return nil, fmt.Errorf("at least one allowed file required")
 	}
