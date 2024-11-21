@@ -314,13 +314,13 @@ func TestNewReleaseNonExistingrepo(t *testing.T) {
 	}
 }
 
-func TestValidateUserNonExisting(t *testing.T) {
+func TestDoesAccountExistNonExisting(t *testing.T) {
 	found, err := DoesAccountExist("thisuserdoesnotexist_42424242424242424242424000")
 	require.NoError(t, err)
 	assert.Equal(t, found, false, "DoesAccountExist returned true on an invalid user")
 }
 
-func TestValidateUserExisting(t *testing.T) {
+func TestDoesAccountExistExisting(t *testing.T) {
 	found, err := DoesAccountExist("Jakobus42")
 	require.NoError(t, err)
 	assert.Equal(t, found, true, "DoesAccountExist returned false on a valid user")
