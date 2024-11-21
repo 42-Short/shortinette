@@ -54,16 +54,14 @@ func NewAPI(db *db.DB, mode string, timeout time.Duration) *API {
 
 // Starts the server in a go routine and listens for incoming requests.
 // returns a channel for error monitoring
-func (api *API) Run() chan error {
-	errorCh := make(chan error, 1)
-
-	go func() {
-		err := api.ListenAndServe()
-		errorCh <- err
-	}()
+func (api *API) Run() error {
 	logger.Info.Printf("server is listening on %s", api.Addr)
 
-	return errorCh
+	err := api.ListenAndServe()
+	if err != nil {
+		return fmt.Errorf("failed to listen to %s", api.Addr)
+	}
+	return nil
 }
 
 // Gracefully shuts down the API server

@@ -23,19 +23,13 @@ func init() {
 	}
 }
 
-func shutdown(api *api.API, sigCh chan os.Signal, errCh chan error) {
-	select {
-	case err := <-errCh:
-		if err != nil {
-			logger.Error.Fatalf("failed to run server: %v", err)
-		}
-	case sig := <-sigCh:
-		err := api.Shutdown()
-		if err != nil {
-			logger.Error.Fatalf("failed to shutdown server: %v", err)
-		}
-		logger.Error.Fatalf("caught signal: %v", sig)
+func shutdown(api *api.API, sigCh chan os.Signal) {
+	sig := <-sigCh
+	err := api.Shutdown()
+	if err != nil {
+		logger.Error.Fatalf("failed to shutdown server: %v", err)
 	}
+	logger.Error.Fatalf("caught signal: %v", sig)
 }
 
 func run() {
@@ -59,9 +53,11 @@ func run() {
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
 	api := api.NewAPI(db, gin.TestMode, time.Minute)
-	errCh := api.Run()
-	go shutdown(api, sigCh, errCh)
-	select {}
+	go shutdown(api, sigCh)
+	err = api.Run()
+	if err != nil {
+		logger.Error.Fatalf("failed to run api: %v", err)
+	}
 }
 
 func main() {

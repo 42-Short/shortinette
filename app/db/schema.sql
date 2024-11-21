@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS  module(
   score INTEGER DEFAULT 0,
   last_graded DATETIME,
   wait_time INTEGER DEFAULT 0,
-  grading_ongoing BOOLEAN DEFAULT 0,
   PRIMARY KEY (id, intra_login),
   FOREIGN KEY (intra_login) REFERENCES participant(intra_login) ON DELETE CASCADE
 );

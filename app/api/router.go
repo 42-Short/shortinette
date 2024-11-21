@@ -8,10 +8,11 @@ func (api *API) setupRoutes() {
 	group := api.Engine.Group("/shortinette/v1")
 	group.Use(tokenAuthMiddleware(api.accessToken))
 
-	group.POST("/webhook", githubWebhookHandler())
-
 	moduleDAO := data.NewDAO[data.Module](api.DB)
 	participantDAO := data.NewDAO[data.Participant](api.DB)
+
+	group.POST("/webhook/grademe", githubWebhookHandler(moduleDAO))
+	group.Any("/modules/:id/:intra_login/grademe", gradingHandler(moduleDAO, api.timeout))
 
 	group.POST("/modules", insertItemHandler(moduleDAO, api.timeout))
 	group.POST("/participants", insertItemHandler(participantDAO, api.timeout))

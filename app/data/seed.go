@@ -46,13 +46,12 @@ func SeedDB(db *db.DB) (*data, error) {
 
 func NewDummyModule(moduleID int, intraLogin string) *Module {
 	return &Module{
-		Id:             moduleID,
-		IntraLogin:     intraLogin,
-		Attempts:       42,
-		Score:          42,
-		LastGraded:     time.Date(2024, 11, 20, 0, 0, 0, 0, time.UTC),
-		WaitTime:       42,
-		GradingOngoing: false,
+		Id:         moduleID,
+		IntraLogin: intraLogin,
+		Attempts:   42,
+		Score:      42,
+		LastGraded: time.Date(2024, 11, 20, 0, 0, 0, 0, time.UTC),
+		WaitTime:   42,
 	}
 }
 

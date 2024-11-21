@@ -27,7 +27,7 @@ type GitHubWebhookPayload struct {
 	} `json:"head_commit"`
 }
 
-func githubWebhookHandler() gin.HandlerFunc {
+func githubWebhookHandler(dao *data.DAO[data.Module]) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var payload GitHubWebhookPayload
 
@@ -37,25 +37,28 @@ func githubWebhookHandler() gin.HandlerFunc {
 			return
 		}
 
-		if payload.Ref == "refs/heads/main" && payload.Pusher.Name != os.Getenv("GITHUB_ADMIN") {
-			if strings.ToLower(payload.Commit.Message) == "grademe" {
-				if len(payload.Repository.Name) < len(payload.Pusher.Name) {
-					c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("invalid Repository name")})
-					return
-				}
+		err = processGithubPayload(payload, dao)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+		c.JSON(http.StatusOK, payload)
+	}
+}
 
-				moduleId, err := strconv.Atoi(payload.Repository.Name[len(payload.Pusher.Name):])
-				if err != nil {
-					c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("invalid Repository name: %v", err)})
-					return
-				}
+func gradingHandler(dao *data.DAO[data.Module], timeout time.Duration) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
 
-				logger.Info.Printf("push event on %s identified as submission.", payload.Repository.Name)
-				go processGrading(payload.Pusher.Name, moduleId)
-			}
+		args := collectArgs(c.Params)
+		module, err := dao.Get(ctx, args...)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to get %s: %v: %v", dao.Name(), args, err)})
+			return
 		}
 
-		c.JSON(http.StatusOK, payload)
+		go processGrading(dao, module.IntraLogin, module.Id)
+		c.JSON(http.StatusOK, fmt.Sprintf("grading %s%d...", module.IntraLogin, module.Id))
 	}
 }
 
@@ -158,4 +161,23 @@ func collectArgs(params gin.Params) []any {
 		args = append(args, param.Value)
 	}
 	return args
+}
+
+func processGithubPayload(payload GitHubWebhookPayload, dao *data.DAO[data.Module]) error {
+	if payload.Ref == "refs/heads/main" && payload.Pusher.Name != os.Getenv("GITHUB_ADMIN") {
+		if strings.ToLower(payload.Commit.Message) == "grademe" {
+			if len(payload.Repository.Name) < len(payload.Pusher.Name) {
+				return fmt.Errorf("invalid Repository name: %s", payload.Repository.Name)
+			}
+
+			moduleId, err := strconv.Atoi(payload.Repository.Name[len(payload.Pusher.Name):])
+			if err != nil {
+				return fmt.Errorf("invalid Repository name: %s", payload.Repository.Name)
+			}
+
+			logger.Info.Printf("push event on %s identified as submission.", payload.Repository.Name)
+			go processGrading(dao, payload.Pusher.Name, moduleId)
+		}
+	}
+	return nil
 }

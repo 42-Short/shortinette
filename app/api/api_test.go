@@ -62,7 +62,11 @@ func TestMain(m *testing.M) {
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
 	api = NewAPI(db, gin.TestMode, time.Minute)
-	errCh := api.Run()
+	errCh := make(chan error, 1)
+	go func() {
+		err = api.Run()
+		errCh <- err
+	}()
 	go shutdown(sigCh, errCh)
 
 	apiToken = api.accessToken
