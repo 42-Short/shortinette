@@ -301,7 +301,9 @@ func NewRelease(repoName string, tagName string, releaseName string, body string
 }
 
 // DoesAccountExist checks if the provided GitHub username exists.
-// Returns nil if valid, or an error if invalid.
+// returns a bool indicating if the Account exists
+//
+// WARNING: Returns an error when the github api request was not successful
 func DoesAccountExist(username string) (bool, error) {
 	client := github.NewClient(nil)
 
