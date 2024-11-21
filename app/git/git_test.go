@@ -25,7 +25,11 @@ func TestNewRepoNonExistingOrga(t *testing.T) {
 
 	defer cleanup(t, repoName)
 
+	orgaName := config.C.ORGA_GITHUB
 	config.C.ORGA_GITHUB = "thisorgadoesnoteist"
+	defer func(orgaName string) {
+		config.C.ORGA_GITHUB = orgaName
+	}(orgaName)
 
 	if err := NewRepo(repoName, true, "this should not be created"); err == nil {
 		t.Fatalf("missing environment variables should throw an error")
@@ -35,7 +39,11 @@ func TestNewRepoNonExistingOrga(t *testing.T) {
 func TestNewRepoMissinTemplateRepoEnvironmentVariable(t *testing.T) {
 	repoName := uuid.New().String()
 
+	orgaName := config.C.ORGA_GITHUB
 	config.C.ORGA_GITHUB = ""
+	defer func(orgaName string) {
+		config.C.ORGA_GITHUB = orgaName
+	}(orgaName)
 
 	if err := NewRepo(repoName, true, "this should not be created"); err == nil {
 		t.Fatalf("missing environment variables should throw an error")
@@ -43,7 +51,12 @@ func TestNewRepoMissinTemplateRepoEnvironmentVariable(t *testing.T) {
 }
 
 func TestNewRepoNonExistingTemplate(t *testing.T) {
+	templateRepoName := config.C.TEMPLATE_REPO
 	config.C.TEMPLATE_REPO = "thistemplatedoesnotexist"
+	defer func(templateRepoName string) {
+		config.C.TEMPLATE_REPO = templateRepoName
+	}(templateRepoName)
+
 	expectedRepoName := uuid.New().String()
 
 	if err := NewRepo(expectedRepoName, true, "expectedDescription"); err == nil {
