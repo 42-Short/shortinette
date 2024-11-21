@@ -21,8 +21,8 @@ type Config struct {
 	Modules      []Module
 
 	TEMPLATE_REPO string
-	GITHUB_TOKEN  string
-	GITHUB_ORGA   string
+	TOKEN_GITHUB  string
+	ORGA_GITHUB   string
 	SERVER_ADDR   string
 	API_TOKEN     string
 	CONFIG_PATH   string
@@ -58,8 +58,8 @@ func init() {
 
 	requiredEnvVars := map[string]*string{
 		"TEMPLATE_REPO": &C.TEMPLATE_REPO,
-		"GITHUB_TOKEN":  &C.GITHUB_TOKEN,
-		"GITHUB_ORGA":   &C.GITHUB_ORGA,
+		"TOKEN_GITHUB":  &C.TOKEN_GITHUB,
+		"ORGA_GITHUB":   &C.ORGA_GITHUB,
 		"API_TOKEN":     &C.API_TOKEN,
 		"SERVER_ADDR":   &C.SERVER_ADDR,
 		"CONFIG_PATH":   &C.CONFIG_PATH,
