@@ -13,8 +13,8 @@ jobs:
       matrix:
         go-version: [ '*' ]
     env:
-      GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-      GITHUB_ORGA: ${{ secrets.ORGA_GITHUB }}
+      TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+      ORGA_GITHUB: ${{ secrets.ORGA_GITHUB }}
       TEMPLATE_REPO: ${{ secrets.TEMPLATE_REPO }}
       SERVER_ADDR: ${{ secrets.SERVER_ADDR }}
       CONFIG_PATH: ${{ secrets.CONFIG_PATH }}
