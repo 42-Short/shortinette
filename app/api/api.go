@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/42-Short/shortinette/db"
@@ -17,39 +16,24 @@ type API struct {
 
 	Engine      *gin.Engine
 	DB          *db.DB
-	timeout     time.Duration
 	accessToken string
 }
 
 // Initializes and returns a new API instance
 // timeout specifies the max duration per request
-func NewAPI(db *db.DB, mode string, timeout time.Duration) *API {
-	accessToken := os.Getenv("API_TOKEN")
-	if accessToken == "" && mode != gin.TestMode {
-		panic("API_TOKEN not found in .env")
-	} else if mode == gin.TestMode {
-		accessToken = "test"
-	}
-
-	addr := os.Getenv("SERVER_ADDR")
-	if addr == "" {
-		addr = "localhost:8080"
-	}
-
+func NewAPI(addr string, db *db.DB, accessToken string, mode string) *API {
 	engine := gin.Default()
 	gin.SetMode(mode)
-	api := &API{
+
+	return &API{
 		Server: &http.Server{
 			Addr:    addr,
 			Handler: engine,
 		},
 		Engine:      engine,
 		DB:          db,
-		timeout:     timeout,
 		accessToken: accessToken,
 	}
-	api.setupRoutes()
-	return api
 }
 
 // Starts the server in a go routine and listens for incoming requests.

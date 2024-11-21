@@ -12,7 +12,6 @@ import (
 	"strings"
 	"syscall"
 	"testing"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -61,7 +60,9 @@ func TestMain(m *testing.M) {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
-	api = NewAPI(db, gin.TestMode, time.Minute)
+	apiToken = "test"
+	api = NewAPI("localhost:8080", db, apiToken, gin.TestMode)
+	api.SetupRouter()
 	errCh := make(chan error, 1)
 	go func() {
 		err = api.Run()
@@ -235,13 +236,13 @@ func testDelete[T any](t *testing.T, url string, args ...any) {
 	require.Error(t, err)
 }
 
-func serveRequest(t *testing.T, method string, url string, body io.Reader, token string) *httptest.ResponseRecorder {
+func serveRequest(t *testing.T, method string, url string, body io.Reader, accessToken string) *httptest.ResponseRecorder {
 	t.Helper()
 
 	req, err := http.NewRequest(method, url, body)
 	require.NoError(t, err, fmt.Sprintf("failed to make request: %s", url))
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 
 	response := httptest.NewRecorder()
 	api.Engine.ServeHTTP(response, req)

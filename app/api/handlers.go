@@ -45,9 +45,9 @@ func githubWebhookHandler(dao *data.DAO[data.Module]) gin.HandlerFunc {
 	}
 }
 
-func gradingHandler(dao *data.DAO[data.Module], timeout time.Duration) gin.HandlerFunc {
+func gradingHandler(dao *data.DAO[data.Module]) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		args := collectArgs(c.Params)
@@ -62,7 +62,7 @@ func gradingHandler(dao *data.DAO[data.Module], timeout time.Duration) gin.Handl
 	}
 }
 
-func insertItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
+func insertItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var item T
 		err := c.ShouldBindJSON(&item)
@@ -71,7 +71,7 @@ func insertItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.Handl
 			return
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		err = dao.Insert(ctx, item)
@@ -84,7 +84,7 @@ func insertItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.Handl
 	}
 }
 
-func updateItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
+func updateItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var item T
 
@@ -94,7 +94,7 @@ func updateItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.Handl
 			return
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		err = dao.Update(ctx, item)
@@ -106,9 +106,9 @@ func updateItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.Handl
 	}
 }
 
-func getAllItemsHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
+func getAllItemsHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		items, err := dao.GetAll(ctx)
@@ -124,9 +124,9 @@ func getAllItemsHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.Hand
 	}
 }
 
-func getItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
+func getItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		args := collectArgs(c.Params)
@@ -139,9 +139,9 @@ func getItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerF
 	}
 }
 
-func deleteItemHandler[T any](dao *data.DAO[T], timeout time.Duration) gin.HandlerFunc {
+func deleteItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		args := collectArgs(c.Params)

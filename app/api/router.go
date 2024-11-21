@@ -4,7 +4,7 @@ import (
 	"github.com/42-Short/shortinette/data"
 )
 
-func (api *API) setupRoutes() {
+func (api *API) SetupRouter() {
 	group := api.Engine.Group("/shortinette/v1")
 	group.Use(tokenAuthMiddleware(api.accessToken))
 
@@ -12,21 +12,21 @@ func (api *API) setupRoutes() {
 	participantDAO := data.NewDAO[data.Participant](api.DB)
 
 	group.POST("/webhook/grademe", githubWebhookHandler(moduleDAO))
-	group.Any("/modules/:id/:intra_login/grademe", gradingHandler(moduleDAO, api.timeout))
+	group.Any("/modules/:id/:intra_login/grademe", gradingHandler(moduleDAO))
 
-	group.POST("/modules", insertItemHandler(moduleDAO, api.timeout))
-	group.POST("/participants", insertItemHandler(participantDAO, api.timeout))
+	group.POST("/modules", insertItemHandler(moduleDAO))
+	group.POST("/participants", insertItemHandler(participantDAO))
 
-	group.PUT("/modules", updateItemHandler(moduleDAO, api.timeout))
-	group.PUT("/participants", updateItemHandler(participantDAO, api.timeout))
+	group.PUT("/modules", updateItemHandler(moduleDAO))
+	group.PUT("/participants", updateItemHandler(participantDAO))
 
-	group.GET("/modules", getAllItemsHandler(moduleDAO, api.timeout))
-	group.GET("/participants", getAllItemsHandler(participantDAO, api.timeout))
+	group.GET("/modules", getAllItemsHandler(moduleDAO))
+	group.GET("/participants", getAllItemsHandler(participantDAO))
 
-	group.GET("/modules/:id/:intra_login", getItemHandler(moduleDAO, api.timeout))
-	group.GET("/participants/:intra_login", getItemHandler(participantDAO, api.timeout))
+	group.GET("/modules/:id/:intra_login", getItemHandler(moduleDAO))
+	group.GET("/participants/:intra_login", getItemHandler(participantDAO))
 
-	group.DELETE("/modules/:id/:intra_login", deleteItemHandler(moduleDAO, api.timeout))
-	group.DELETE("/participants/:intra_login", deleteItemHandler(participantDAO, api.timeout))
+	group.DELETE("/modules/:id/:intra_login", deleteItemHandler(moduleDAO))
+	group.DELETE("/participants/:intra_login", deleteItemHandler(participantDAO))
 
 }
