@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/42-Short/shortinette/api"
 	"github.com/42-Short/shortinette/data"
@@ -15,13 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
-
-func init() {
-	err := godotenv.Load()
-	if err != nil {
-		logger.Error.Fatalf("can't load .env file: %v", err)
-	}
-}
 
 func shutdown(api *api.API, sigCh chan os.Signal) {
 	sig := <-sigCh
@@ -33,6 +25,11 @@ func shutdown(api *api.API, sigCh chan os.Signal) {
 }
 
 func run() {
+	err := godotenv.Load()
+	if err != nil {
+		logger.Error.Fatalf("can't load .env file: %v", err)
+	}
+
 	db, err := db.NewDB(context.Background(), "file::memory:?cache=shared")
 	if err != nil {
 		logger.Error.Fatalf("failed to create db: %v", err)
@@ -52,7 +49,7 @@ func run() {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
-	api := api.NewAPI(db, gin.TestMode, time.Minute)
+	api := api.NewAPI("localhost:8080", db, os.Getenv("API_TOKEN"), gin.DebugMode)
 	go shutdown(api, sigCh)
 	err = api.Run()
 	if err != nil {
