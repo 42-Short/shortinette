@@ -14,7 +14,7 @@ shortinette is a framework designed to manage and automate the grading process f
 
 ### Prerequisites
 
-- Docker
+- Docker (with BuildKit enabled)
 - Go programming environment
 - GitHub account and personal access token
 - Public IP for the GitHub webhook

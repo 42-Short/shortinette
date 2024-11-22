@@ -54,7 +54,6 @@ WORKDIR /app
 COPY ./go.mod ./go.sum ./
 RUN --mount=type=cache,target=/root/.cache/go-mod go mod download
 
-COPY ./internal internal
 COPY ./main.go main.go
 
 ENV GOCACHE=/root/.cache/go-build
