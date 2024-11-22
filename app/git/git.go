@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/42-Short/shortinette/logger"
 	"github.com/google/go-github/v66/github"
@@ -297,4 +298,24 @@ func NewRelease(repoName string, tagName string, releaseName string, body string
 
 	logger.Info.Printf("added release '%s', tagged '%s' to repo '%s'", releaseName, tagName, repoName)
 	return nil
+}
+
+// DoesAccountExist checks if the provided GitHub username exists.
+// returns a bool indicating if the Account exists
+//
+// WARNING: Returns an error when the github api request was not successful
+func DoesAccountExist(username string) (bool, error) {
+	client := github.NewClient(nil)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, response, err := client.Users.Get(ctx, username)
+	if err != nil {
+		if response.StatusCode == http.StatusNotFound {
+			return false, nil
+		}
+		return false, fmt.Errorf("github API error for username '%s': %v", username, err)
+	}
+	return true, nil
 }
