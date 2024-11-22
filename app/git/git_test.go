@@ -321,7 +321,13 @@ func TestDoesAccountExistNonExisting(t *testing.T) {
 }
 
 func TestDoesAccountExistExisting(t *testing.T) {
-	found, err := DoesAccountExist("github")
+	found, err := DoesAccountExist("winstonallo")
 	require.NoError(t, err)
 	assert.Equal(t, found, true, "DoesAccountExist returned false on a valid user")
+}
+
+func TesDoesAccountExistOrga(t *testing.T) {
+	found, err := DoesAccountExist("github")
+	require.Error(t, err)
+	assert.Equal(t, found, true, "DoesAccountExist returned true on an organisation")
 }
