@@ -31,9 +31,6 @@ jobs:
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
       - name: Run golangci-lint
-        run: golangci-lint run
-        working-directory: './app'
-        with: 
-          args: --timeout=5m
-          skip-cache: false
+        run: golangci-lint run --timeout=5m
+        working-directory: ./app
         
