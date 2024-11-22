@@ -310,12 +310,12 @@ func DoesAccountExist(username string) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, response, err := client.Users.Get(ctx, username)
+	user, response, err := client.Users.Get(ctx, username)
 	if err != nil {
 		if response.StatusCode == http.StatusNotFound {
 			return false, nil
 		}
 		return false, fmt.Errorf("github API error for username '%s': %v", username, err)
 	}
-	return true, nil
+	return *user.Type == "User", nil
 }
