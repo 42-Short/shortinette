@@ -325,3 +325,21 @@ func TestNewReleaseNonExistingrepo(t *testing.T) {
 		t.Fatalf("NewRelease did not return any error when trying to add a release to a non-existing repo")
 	}
 }
+
+func TestDoesAccountExistNonExisting(t *testing.T) {
+	found, err := DoesAccountExist("thisuserdoesnotexist_42424242424242424242424000")
+	require.NoError(t, err)
+	assert.Equal(t, found, false, "DoesAccountExist returned true on an invalid user")
+}
+
+func TestDoesAccountExistExisting(t *testing.T) {
+	found, err := DoesAccountExist("winstonallo")
+	require.NoError(t, err)
+	assert.Equal(t, found, true, "DoesAccountExist returned false on a valid user")
+}
+
+func TesDoesAccountExistOrga(t *testing.T) {
+	found, err := DoesAccountExist("github")
+	require.Error(t, err)
+	assert.Equal(t, found, true, "DoesAccountExist returned true on an organisation")
+}
