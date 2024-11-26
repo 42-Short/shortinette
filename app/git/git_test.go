@@ -25,7 +25,8 @@ func TestMain(m *testing.M) {
 	orga = os.Getenv("ORGA_GITHUB")
 	token = os.Getenv("TOKEN_GITHUB")
 	templateRepo = os.Getenv("TEMPLATE_REPO")
-	m.Run()
+	code := m.Run()
+	os.Exit(code)
 }
 
 func cleanup(t *testing.T, gh *GithubService, repoName string) {
