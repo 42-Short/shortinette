@@ -11,19 +11,30 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/42-Short/shortinette/config"
 	"github.com/42-Short/shortinette/logger"
 	"github.com/google/go-github/v66/github"
 )
 
-func deleteRepo(name string) (err error) {
-	client := github.NewClient(nil).WithAuthToken(config.C.TOKEN_GITHUB)
+type GithubService struct {
+	Client *github.Client
+	Orga   string
+	Token  string
+}
 
-	if resp, err := client.Repositories.Delete(context.Background(), config.C.ORGA_GITHUB, name); err != nil {
+func NewGithubService(authToken string, orga string) *GithubService {
+	return &GithubService{
+		Client: github.NewClient(nil).WithAuthToken(authToken),
+		Orga:   orga,
+		Token:  authToken,
+	}
+}
+
+func (gh *GithubService) deleteRepo(name string) (err error) {
+	if resp, err := gh.Client.Repositories.Delete(context.Background(), gh.Orga, name); err != nil {
 		if resp.StatusCode != http.StatusNotFound {
 			return fmt.Errorf("could not delete repo '%s': %v", name, err)
 		} else {
-			logger.Warning.Printf("repo '%s' not found in orga '%s'\n", name, config.C.ORGA_GITHUB)
+			logger.Warning.Printf("repo '%s' not found in orga '%s'\n", name, gh.Orga)
 			return nil
 		}
 	}
@@ -44,17 +55,14 @@ func isRepoAlreadyExists(err error) (exists bool) {
 	return false
 }
 
-// Creates a new repository `name` under the GitHub organisation specified by the
-// GITHUB_ORGANISATION environment variable. If `private` is true, the repository's
-// visibility will be private.
-func NewRepo(name string, private bool, description string) (err error) {
-	client := github.NewClient(nil).WithAuthToken(config.C.TOKEN_GITHUB)
-
-	createdRepo, response, err := client.Repositories.CreateFromTemplate(context.Background(), config.C.ORGA_GITHUB, config.C.TEMPLATE_REPO, &github.TemplateRepoRequest{Name: &name, Private: &private, Owner: &config.C.ORGA_GITHUB, Description: &description})
+// Creates a new repository `name` under the GitHub organisation.
+// If `private` is true, the repository's visibility will be private.
+func (gh *GithubService) NewRepo(templateRepoName string, name string, private bool, description string) (err error) {
+	createdRepo, response, err := gh.Client.Repositories.CreateFromTemplate(context.Background(), gh.Orga, templateRepoName, &github.TemplateRepoRequest{Name: &name, Private: &private, Owner: &gh.Orga, Description: &description})
 	if err != nil {
 		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
 			if isRepoAlreadyExists(err) {
-				logger.Info.Printf("repo %s already exists under orga %s, skipping\n", name, config.C.ORGA_GITHUB)
+				logger.Info.Printf("repo %s already exists under orga %s, skipping\n", name, gh.Orga)
 				return nil
 			}
 		}
@@ -65,16 +73,14 @@ func NewRepo(name string, private bool, description string) (err error) {
 	return nil
 }
 
-// Adds collaborator `collaboratorName` to repo `repoName` (under the GitHub organisation specified by
-// the GITHUB_ORGANISATION environment variable) with access level `permission“.
-func AddCollaborator(repoName string, collaboratorName string, permission string) (err error) {
-	client := github.NewClient(nil).WithAuthToken(config.C.TOKEN_GITHUB)
-
+// Adds collaborator `collaboratorName` to repo `repoName` (under the GitHub organisation)
+// with access level `permission“.
+func (gh *GithubService) AddCollaborator(repoName string, collaboratorName string, permission string) (err error) {
 	options := &github.RepositoryAddCollaboratorOptions{
 		Permission: permission,
 	}
 
-	if _, _, err = client.Repositories.AddCollaborator(context.Background(), config.C.ORGA_GITHUB, repoName, collaboratorName, options); err != nil {
+	if _, _, err = gh.Client.Repositories.AddCollaborator(context.Background(), gh.Orga, repoName, collaboratorName, options); err != nil {
 		return fmt.Errorf("could not add collaborator %s to repo %s: %v", collaboratorName, repoName, err)
 	}
 
@@ -82,15 +88,15 @@ func AddCollaborator(repoName string, collaboratorName string, permission string
 	return nil
 }
 
-// Clones repo `name` (from the GitHub organisation specified by the GITHUB_ORGANISATION
-// environment variable). Does nothing if the directory is cloned already.
-func Clone(name string) (err error) {
+// Clones repo `name` (from the GitHub organisation).
+// Does nothing if the directory is cloned already.
+func (gh *GithubService) Clone(name string) (err error) {
 	if _, err := os.Stat(name); !os.IsNotExist(err) {
 		logger.Info.Printf("'%s' seems to cloned already, returning\n", name)
 		return nil
 	}
 
-	cloneURL := fmt.Sprintf("https://%s@github.com/%s/%s.git", config.C.TOKEN_GITHUB, config.C.ORGA_GITHUB, name)
+	cloneURL := fmt.Sprintf("https://%s@github.com/%s/%s.git", gh.Token, gh.Orga, name)
 
 	cmd := exec.Command("git", "clone", cloneURL)
 	cmd.Stdout = os.Stdout
@@ -190,8 +196,8 @@ func checkout(dir string, to string, createBranch bool) (err error) {
 // If `createBranch` is set to true, a new branch will be created.
 //
 // Clones the repo if necessary.
-func UploadFiles(repoName string, commitMessage string, branch string, createBranch bool, files ...string) (err error) {
-	if err := Clone(repoName); err != nil {
+func (gh *GithubService) UploadFiles(repoName string, commitMessage string, branch string, createBranch bool, files ...string) (err error) {
+	if err := gh.Clone(repoName); err != nil {
 		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
 	}
 
@@ -226,11 +232,9 @@ func UploadFiles(repoName string, commitMessage string, branch string, createBra
 // WARNING 2: Returns an error when the repository is empty (due to tarball creation not being possible without
 // some content). This should not be an issue for shortinette though, since we always upload subjects when creating
 // the repos.
-func NewRelease(repoName string, tagName string, releaseName string, body string) (err error) {
-	client := github.NewClient(nil).WithAuthToken(config.C.TOKEN_GITHUB)
-
+func (gh *GithubService) NewRelease(repoName string, tagName string, releaseName string, body string) (err error) {
 	makeLatest := "true"
-	if _, _, err := client.Repositories.CreateRelease(context.Background(), config.C.ORGA_GITHUB, repoName, &github.RepositoryRelease{
+	if _, _, err := gh.Client.Repositories.CreateRelease(context.Background(), gh.Orga, repoName, &github.RepositoryRelease{
 		Name:       &releaseName,
 		Body:       &body,
 		TagName:    &tagName,
