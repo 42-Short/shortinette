@@ -9,6 +9,8 @@ import (
 	"github.com/google/go-github/v66/github"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -316,7 +318,7 @@ func TestNewReleaseNonExistingrepo(t *testing.T) {
 	gh := NewGithubService(token, orga)
 	repoName := uuid.New().String()
 
-	if err := gh.NewRepo(os.Getenv("TEMPLATE_REPO"), repoName, true, "idc"); err != nil {
+	if err := gh.NewRepo(templateRepo, repoName, true, "idc"); err != nil {
 		t.Fatalf("NewRepo returned an error on a standard use case: %v", err)
 	}
 	defer cleanup(t, gh, repoName)
