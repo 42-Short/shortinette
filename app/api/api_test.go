@@ -23,7 +23,8 @@ import (
 )
 
 var api *API
-var apiToken string
+
+const apiToken = "test"
 
 func shutdown(sigCh chan os.Signal, errCh chan error) {
 	select {
@@ -60,17 +61,15 @@ func TestMain(m *testing.M) {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
-	apiToken = "test"
 	api = NewAPI("localhost:8080", db, apiToken, gin.TestMode)
 	api.SetupRouter()
+
 	errCh := make(chan error, 1)
 	go func() {
 		err = api.Run()
 		errCh <- err
 	}()
 	go shutdown(sigCh, errCh)
-
-	apiToken = api.accessToken
 
 	exitCode := m.Run()
 	os.Exit(exitCode)

@@ -49,7 +49,7 @@ func run() {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
-	api := api.NewAPI("localhost:8080", db, os.Getenv("API_TOKEN"), gin.DebugMode)
+	api := api.NewAPI(os.Getenv("SERVER_ADDR"), db, os.Getenv("API_TOKEN"), gin.DebugMode)
 	go shutdown(api, sigCh)
 	err = api.Run()
 	if err != nil {
