@@ -50,6 +50,7 @@ func run() {
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
 	api := api.NewAPI(os.Getenv("SERVER_ADDR"), db, os.Getenv("API_TOKEN"), gin.DebugMode)
+	api.SetupRouter()
 	go shutdown(api, sigCh)
 	err = api.Run()
 	if err != nil {
