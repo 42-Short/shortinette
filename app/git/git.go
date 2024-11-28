@@ -14,59 +14,34 @@ import (
 
 	"github.com/42-Short/shortinette/logger"
 	"github.com/google/go-github/v66/github"
-	"github.com/joho/godotenv"
 )
 
-func deleteRepo(name string) (err error) {
-	token, orga, _, err := requireEnv()
-	if err != nil {
-		return fmt.Errorf("could not delete repo '%s': %v", name, err)
+type GithubService struct {
+	Client *github.Client
+	Orga   string
+	Token  string
+}
+
+func NewGithubService(authToken string, orga string) *GithubService {
+	return &GithubService{
+		Client: github.NewClient(nil).WithAuthToken(authToken),
+		Orga:   orga,
+		Token:  authToken,
 	}
+}
 
-	client := github.NewClient(nil).WithAuthToken(token)
-
-	if resp, err := client.Repositories.Delete(context.Background(), orga, name); err != nil {
+func (gh *GithubService) deleteRepo(name string) (err error) {
+	if resp, err := gh.Client.Repositories.Delete(context.Background(), gh.Orga, name); err != nil {
 		if resp.StatusCode != http.StatusNotFound {
 			return fmt.Errorf("could not delete repo '%s': %v", name, err)
 		} else {
-			logger.Warning.Printf("repo '%s' not found in orga '%s'\n", name, orga)
+			logger.Warning.Printf("repo '%s' not found in orga '%s'\n", name, gh.Orga)
 			return nil
 		}
 	}
 
 	logger.Info.Printf("repo '%s' successfully deleted\n", name)
 	return nil
-}
-
-// Checks for environment variables required to interact with the GitHub API. Returns their values
-// if they exist, sets the error's value if not.
-func requireEnv() (githubToken string, githubOrga string, templateRepo string, err error) {
-	if err := godotenv.Load("../.env"); err != nil {
-		logger.Warning.Printf(".env file not found, this is expected in the GitHub Actions environment, this is a problem if you are running this locally\n")
-	}
-
-	missingVars := []string{}
-
-	githubToken = os.Getenv("TOKEN_GITHUB")
-	if githubToken == "" {
-		missingVars = append(missingVars, "TOKEN_GITHUB")
-	}
-
-	githubOrga = os.Getenv("ORGA_GITHUB")
-	if githubOrga == "" {
-		missingVars = append(missingVars, "ORGA_GITHUB")
-	}
-
-	templateRepo = os.Getenv("TEMPLATE_REPO")
-	if githubOrga == "" {
-		missingVars = append(missingVars, "TEMPLATE_REPO")
-	}
-
-	if len(missingVars) != 0 {
-		err = fmt.Errorf("missing environment variable(s): %s", strings.Join(missingVars, ", "))
-	}
-
-	return githubToken, githubOrga, templateRepo, err
 }
 
 // Checks whether `err` is related to the repo already existing.
@@ -81,22 +56,14 @@ func isRepoAlreadyExists(err error) (exists bool) {
 	return false
 }
 
-// Creates a new repository `name` under the GitHub organisation specified by the
-// GITHUB_ORGANISATION environment variable. If `private` is true, the repository's
-// visibility will be private.
-func NewRepo(name string, private bool, description string) (err error) {
-	token, orga, templateRepo, err := requireEnv()
-	if err != nil {
-		return fmt.Errorf("could not create repo %s: %v", name, err)
-	}
-
-	client := github.NewClient(nil).WithAuthToken(token)
-
-	createdRepo, response, err := client.Repositories.CreateFromTemplate(context.Background(), orga, templateRepo, &github.TemplateRepoRequest{Name: &name, Private: &private, Owner: &orga, Description: &description})
+// Creates a new repository `name` under the GitHub organisation.
+// If `private` is true, the repository's visibility will be private.
+func (gh *GithubService) NewRepo(templateRepoName string, name string, private bool, description string) (err error) {
+	createdRepo, response, err := gh.Client.Repositories.CreateFromTemplate(context.Background(), gh.Orga, templateRepoName, &github.TemplateRepoRequest{Name: &name, Private: &private, Owner: &gh.Orga, Description: &description})
 	if err != nil {
 		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
 			if isRepoAlreadyExists(err) {
-				logger.Info.Printf("repo %s already exists under orga %s, skipping\n", name, orga)
+				logger.Info.Printf("repo %s already exists under orga %s, skipping\n", name, gh.Orga)
 				return nil
 			}
 		}
@@ -107,21 +74,14 @@ func NewRepo(name string, private bool, description string) (err error) {
 	return nil
 }
 
-// Adds collaborator `collaboratorName` to repo `repoName` (under the GitHub organisation specified by
-// the GITHUB_ORGANISATION environment variable) with access level `permission“.
-func AddCollaborator(repoName string, collaboratorName string, permission string) (err error) {
-	token, orga, _, err := requireEnv()
-	if err != nil {
-		return fmt.Errorf("could not add collaborator %s to repo %s: %v", collaboratorName, repoName, err)
-	}
-
-	client := github.NewClient(nil).WithAuthToken(token)
-
+// Adds collaborator `collaboratorName` to repo `repoName` (under the GitHub organisation)
+// with access level `permission“.
+func (gh *GithubService) AddCollaborator(repoName string, collaboratorName string, permission string) (err error) {
 	options := &github.RepositoryAddCollaboratorOptions{
 		Permission: permission,
 	}
 
-	if _, _, err = client.Repositories.AddCollaborator(context.Background(), orga, repoName, collaboratorName, options); err != nil {
+	if _, _, err = gh.Client.Repositories.AddCollaborator(context.Background(), gh.Orga, repoName, collaboratorName, options); err != nil {
 		return fmt.Errorf("could not add collaborator %s to repo %s: %v", collaboratorName, repoName, err)
 	}
 
@@ -129,20 +89,15 @@ func AddCollaborator(repoName string, collaboratorName string, permission string
 	return nil
 }
 
-// Clones repo `name` (from the GitHub organisation specified by the GITHUB_ORGANISATION
-// environment variable). Does nothing if the directory is cloned already.
-func Clone(name string) (err error) {
+// Clones repo `name` (from the GitHub organisation).
+// Does nothing if the directory is cloned already.
+func (gh *GithubService) Clone(name string) (err error) {
 	if _, err := os.Stat(name); !os.IsNotExist(err) {
 		logger.Info.Printf("'%s' seems to cloned already, returning\n", name)
 		return nil
 	}
 
-	token, orga, _, err := requireEnv()
-	if err != nil {
-		return fmt.Errorf("could not clone '%s': %v", name, err)
-	}
-
-	cloneURL := fmt.Sprintf("https://%s@github.com/%s/%s.git", token, orga, name)
+	cloneURL := fmt.Sprintf("https://%s@github.com/%s/%s.git", gh.Token, gh.Orga, name)
 
 	cmd := exec.Command("git", "clone", cloneURL)
 	cmd.Stdout = os.Stdout
@@ -242,8 +197,8 @@ func checkout(dir string, to string, createBranch bool) (err error) {
 // If `createBranch` is set to true, a new branch will be created.
 //
 // Clones the repo if necessary.
-func UploadFiles(repoName string, commitMessage string, branch string, createBranch bool, files ...string) (err error) {
-	if err := Clone(repoName); err != nil {
+func (gh *GithubService) UploadFiles(repoName string, commitMessage string, branch string, createBranch bool, files ...string) (err error) {
+	if err := gh.Clone(repoName); err != nil {
 		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
 	}
 
@@ -278,16 +233,9 @@ func UploadFiles(repoName string, commitMessage string, branch string, createBra
 // WARNING 2: Returns an error when the repository is empty (due to tarball creation not being possible without
 // some content). This should not be an issue for shortinette though, since we always upload subjects when creating
 // the repos.
-func NewRelease(repoName string, tagName string, releaseName string, body string) (err error) {
-	token, orga, _, err := requireEnv()
-	if err != nil {
-		return fmt.Errorf("could not add release '%s', tagged '%s' in repo '%s': %v", releaseName, tagName, repoName, err)
-	}
-
-	client := github.NewClient(nil).WithAuthToken(token)
-
+func (gh *GithubService) NewRelease(repoName string, tagName string, releaseName string, body string) (err error) {
 	makeLatest := "true"
-	if _, _, err := client.Repositories.CreateRelease(context.Background(), orga, repoName, &github.RepositoryRelease{
+	if _, _, err := gh.Client.Repositories.CreateRelease(context.Background(), gh.Orga, repoName, &github.RepositoryRelease{
 		Name:       &releaseName,
 		Body:       &body,
 		TagName:    &tagName,

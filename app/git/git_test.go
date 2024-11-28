@@ -8,65 +8,75 @@ import (
 
 	"github.com/google/go-github/v66/github"
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gotest.tools/v3/assert"
 )
 
-func cleanup(t *testing.T, repoName string) {
+var (
+	orga         string
+	token        string
+	templateRepo string
+)
+
+func TestMain(m *testing.M) {
+	_ = godotenv.Load("../.env")
+
+	orga = os.Getenv("ORGA_GITHUB")
+	token = os.Getenv("TOKEN_GITHUB")
+	templateRepo = os.Getenv("TEMPLATE_REPO")
+	code := m.Run()
+	os.Exit(code)
+}
+
+func cleanup(t *testing.T, gh *GithubService, repoName string) {
 	if err := os.RemoveAll(repoName); err != nil {
 		t.Fatalf("cleanup failed: %v", err)
 	}
-	if err := deleteRepo(repoName); err != nil {
+	if err := gh.deleteRepo(repoName); err != nil {
 		t.Fatalf("cleanup failed: %v", err)
 	}
 }
 
 func TestNewRepoNonExistingOrga(t *testing.T) {
+	gh := NewGithubService(token, "thisorgadoesnoteist")
 	repoName := uuid.New().String()
 
-	defer cleanup(t, repoName)
+	defer cleanup(t, gh, repoName)
 
-	t.Setenv("ORGA_GITHUB", "thisorgadoesnoteist")
-
-	if err := NewRepo(repoName, true, "this should not be created"); err == nil {
+	if err := gh.NewRepo(templateRepo, repoName, true, "this should not be created"); err == nil {
 		t.Fatalf("missing environment variables should throw an error")
 	}
 }
 
 func TestNewRepoMissinTemplateRepoEnvironmentVariable(t *testing.T) {
+	gh := NewGithubService(token, orga)
 	repoName := uuid.New().String()
 
-	t.Setenv("ORGA_GITHUB", "")
-
-	if err := NewRepo(repoName, true, "this should not be created"); err == nil {
+	if err := gh.NewRepo("", repoName, true, "this should not be created"); err == nil {
 		t.Fatalf("missing environment variables should throw an error")
 	}
 }
 
 func TestNewRepoNonExistingTemplate(t *testing.T) {
-	t.Setenv("TEMPLATE_REPO", "thistemplatedoesnotexist")
-
+	gh := NewGithubService(token, orga)
 	expectedRepoName := uuid.New().String()
 
-	if err := NewRepo(expectedRepoName, true, "expectedDescription"); err == nil {
+	if err := gh.NewRepo("thistemplatedoesnotexist", expectedRepoName, true, "expectedDescription"); err == nil {
 		t.Fatalf("NewRepo returned an error on a standard use case: %v", err)
 	}
 }
 
 func TestNewRepoStandardFunctionality(t *testing.T) {
-	token, orga, _, err := requireEnv()
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-
+	gh := NewGithubService(token, orga)
 	expectedRepoName := uuid.New().String()
 	expectedPrivate := true
 	expectedDescription := "description"
 
-	if err := NewRepo(expectedRepoName, expectedPrivate, expectedDescription); err != nil {
+	if err := gh.NewRepo(templateRepo, expectedRepoName, expectedPrivate, expectedDescription); err != nil {
 		t.Fatalf("NewRepo returned an error on a standard use case: %v", err)
 	}
-	defer cleanup(t, expectedRepoName)
+	defer cleanup(t, gh, expectedRepoName)
 
 	time.Sleep(5 * time.Second) // Generating templates takes a few seconds
 
@@ -88,82 +98,87 @@ func TestNewRepoStandardFunctionality(t *testing.T) {
 }
 
 func TestNewRepoAlreadyExisting(t *testing.T) {
+	gh := NewGithubService(token, orga)
 	expectedRepoName := uuid.New().String()
 	expectedPrivate := true
 	expectedDescription := "description"
 
-	if err := NewRepo(expectedRepoName, expectedPrivate, expectedDescription); err != nil {
+	if err := gh.NewRepo(templateRepo, expectedRepoName, expectedPrivate, expectedDescription); err != nil {
 		t.Fatalf("NewRepo returned an error on a standard use case: %v", err)
 	}
-	defer cleanup(t, expectedRepoName)
+	defer cleanup(t, gh, expectedRepoName)
 
 	time.Sleep(5 * time.Second) // Generating templates takes a few seconds
 
-	if err := NewRepo(expectedRepoName, expectedPrivate, expectedDescription); err != nil {
+	if err := gh.NewRepo(templateRepo, expectedRepoName, expectedPrivate, expectedDescription); err != nil {
 		t.Fatalf("NewRepo should not error on already exsiting repos: %v", err)
 	}
 }
 
 func TestAddCollaboratorNonExistingUser(t *testing.T) {
+	gh := NewGithubService(token, orga)
 	repoName := uuid.New().String()
 
-	if err := NewRepo(repoName, true, "idc"); err != nil {
+	if err := gh.NewRepo(templateRepo, repoName, true, "idc"); err != nil {
 		t.Fatalf("NewRepo returned an error on a standard use case: %v", err)
 	}
-	defer cleanup(t, repoName)
+	defer cleanup(t, gh, repoName)
 
 	time.Sleep(5 * time.Second) // Generating templates takes a few seconds
 
-	if err := AddCollaborator("repo", "ireallydonotthinkthatthisgithubuserexists", "read"); err == nil {
+	if err := gh.AddCollaborator("repo", "ireallydonotthinkthatthisgithubuserexists", "read"); err == nil {
 		t.Fatalf("non-existing user should throw an error")
 	}
 }
 
 func TestAddCollaboratorNonExistingPermission(t *testing.T) {
+	gh := NewGithubService(token, orga)
 	repoName := uuid.New().String()
 
-	if err := NewRepo(repoName, true, "idc"); err != nil {
+	if err := gh.NewRepo(templateRepo, repoName, true, "idc"); err != nil {
 		t.Fatalf("NewRepo returned an error on a standard use case: %v", err)
 	}
-	defer cleanup(t, repoName)
+	defer cleanup(t, gh, repoName)
 
 	time.Sleep(5 * time.Second) // Generating templates takes a few seconds
 
-	if err := AddCollaborator("repo", "winstonallo", "fornicate"); err == nil {
+	if err := gh.AddCollaborator("repo", "winstonallo", "fornicate"); err == nil {
 		t.Fatalf("non-existing permission level should throw an error")
 	}
 }
 
 func TestUploadFilesNonExistingFiles(t *testing.T) {
+	gh := NewGithubService(token, orga)
 	repoName := uuid.New().String()
 
-	if err := NewRepo(repoName, true, "this will be deleted soon_GITHUB"); err != nil {
+	if err := gh.NewRepo(templateRepo, repoName, true, "this will be deleted soon_GITHUB"); err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	defer cleanup(t, repoName)
+	defer cleanup(t, gh, repoName)
 
 	time.Sleep(5 * time.Second) // Generating templates takes a few seconds
 
-	if err := UploadFiles(repoName, "don't mind me just breaking code", "main", false, "foo", "bar"); err == nil {
+	if err := gh.UploadFiles(repoName, "don't mind me just breaking code", "main", false, "foo", "bar"); err == nil {
 		t.Fatalf("trying to upload non-existing files to a repo should throw an error")
 	}
 }
 
 func TestUploadFilesNormalFunctionality(t *testing.T) {
+	gh := NewGithubService(token, orga)
 	repoName := uuid.New().String()
 
-	if err := NewRepo(repoName, true, "this will be deleted soon_GITHUB"); err != nil {
+	if err := gh.NewRepo(templateRepo, repoName, true, "this will be deleted soon_GITHUB"); err != nil {
 		t.Fatalf("could not create test repo: %v", err)
 	}
-	defer cleanup(t, repoName)
+	defer cleanup(t, gh, repoName)
 
 	time.Sleep(5 * time.Second) // Generating templates takes a few seconds
 
-	if err := UploadFiles(repoName, "don't mind me just breaking code", "main", false, "git.go", "git_test.go"); err != nil {
+	if err := gh.UploadFiles(repoName, "don't mind me just breaking code", "main", false, "git.go", "git_test.go"); err != nil {
 		t.Fatalf("uploading an existing file should work, something went wrong: %v", err)
 	}
 
-	if err := Clone(repoName); err != nil {
+	if err := gh.Clone(repoName); err != nil {
 		t.Fatalf("could not verify file upload: %v", err)
 	}
 
@@ -185,35 +200,37 @@ func TestUploadFilesNormalFunctionality(t *testing.T) {
 }
 
 func TestUploadFilesNonExistingBranch(t *testing.T) {
+	gh := NewGithubService(token, orga)
 	repoName := uuid.New().String()
 
-	if err := NewRepo(repoName, true, "this will be deleted soon_GITHUB"); err != nil {
+	if err := gh.NewRepo(templateRepo, repoName, true, "this will be deleted soon_GITHUB"); err != nil {
 		t.Fatalf("could not create test repo: %v", err)
 	}
-	defer cleanup(t, repoName)
+	defer cleanup(t, gh, repoName)
 
 	time.Sleep(5 * time.Second) // Generating templates takes a few seconds
 
-	if err := UploadFiles(repoName, "don't mind me just breaking code", "thisbranchdoesnotexist", false, "git.go", "git_test.go"); err == nil {
+	if err := gh.UploadFiles(repoName, "don't mind me just breaking code", "thisbranchdoesnotexist", false, "git.go", "git_test.go"); err == nil {
 		t.Fatalf("UploadFiles should return an error when trying to push to unexisting branch")
 	}
 }
 
 func TestUploadFilesNonDefaultBranch(t *testing.T) {
+	gh := NewGithubService(token, orga)
 	repoName := uuid.New().String()
 
-	if err := NewRepo(repoName, true, "this will be deleted soon_GITHUB"); err != nil {
+	if err := gh.NewRepo(templateRepo, repoName, true, "this will be deleted soon_GITHUB"); err != nil {
 		t.Fatalf("could not create test repo: %v", err)
 	}
-	defer cleanup(t, repoName)
+	defer cleanup(t, gh, repoName)
 
 	time.Sleep(5 * time.Second) // Generating templates takes a few seconds
 
-	if err := UploadFiles(repoName, "don't mind me just breaking code", "thisbranchshouldbecreated", true, "git.go", "git_test.go"); err != nil {
+	if err := gh.UploadFiles(repoName, "don't mind me just breaking code", "thisbranchshouldbecreated", true, "git.go", "git_test.go"); err != nil {
 		t.Fatalf("UploadFiles should be able to create a new branch when needed")
 	}
 
-	if err := Clone(repoName); err != nil {
+	if err := gh.Clone(repoName); err != nil {
 		t.Fatalf("could not verify file upload: %v", err)
 	}
 
@@ -235,28 +252,24 @@ func TestUploadFilesNonDefaultBranch(t *testing.T) {
 }
 
 func TestNewReleaseNormalFunctionality(t *testing.T) {
-	token, orga, _, err := requireEnv()
-	if err != nil {
-		t.Fatalf("error: %v", err)
-	}
-
+	gh := NewGithubService(token, orga)
 	expectedRepoName := uuid.New().String()
 	expectedTagName := "tag"
 	expectedReleaseName := "release"
 	expectedBody := "body"
 
-	if err := NewRepo(expectedRepoName, true, "this will be deleted soon"); err != nil {
+	if err := gh.NewRepo(templateRepo, expectedRepoName, true, "this will be deleted soon"); err != nil {
 		t.Fatalf("could not create test repo: %v", err)
 	}
-	defer cleanup(t, expectedRepoName)
+	defer cleanup(t, gh, expectedRepoName)
 
 	time.Sleep(5 * time.Second) // Generating templates takes a few seconds
 
-	if err := UploadFiles(expectedRepoName, "initial commit", "main", false, "git_test.go"); err != nil {
+	if err := gh.UploadFiles(expectedRepoName, "initial commit", "main", false, "git_test.go"); err != nil {
 		t.Fatalf("UploadFiles returned an error on initial commit: %v", err)
 	}
 
-	if err := NewRelease(expectedRepoName, expectedTagName, expectedReleaseName, expectedBody); err != nil {
+	if err := gh.NewRelease(expectedRepoName, expectedTagName, expectedReleaseName, expectedBody); err != nil {
 		t.Fatalf("NewRelease returned an error on a standard use case: %v", err)
 	}
 
@@ -279,37 +292,39 @@ func TestNewReleaseNormalFunctionality(t *testing.T) {
 }
 
 func TestNewReleaseAlreadyExisting(t *testing.T) {
+	gh := NewGithubService(token, orga)
 	expectedRepoName := uuid.New().String()
 
-	if err := NewRepo(expectedRepoName, true, "this will be deleted soon_GITHUB"); err != nil {
+	if err := gh.NewRepo(templateRepo, expectedRepoName, true, "this will be deleted soon_GITHUB"); err != nil {
 		t.Fatalf("could not create test repo: %v", err)
 	}
-	defer cleanup(t, expectedRepoName)
+	defer cleanup(t, gh, expectedRepoName)
 
 	time.Sleep(5 * time.Second) // Generating templates takes a few seconds
 
-	if err := UploadFiles(expectedRepoName, "initial commit", "main", false, "git_test.go"); err != nil {
+	if err := gh.UploadFiles(expectedRepoName, "initial commit", "main", false, "git_test.go"); err != nil {
 		t.Fatalf("UploadFiles returned an error on initial commit: %v", err)
 	}
 
-	if err := NewRelease(expectedRepoName, "tag", "release", "body"); err != nil {
+	if err := gh.NewRelease(expectedRepoName, "tag", "release", "body"); err != nil {
 		t.Fatalf("NewRelease returned an error on a standard use case: %v", err)
 	}
 
-	if err := NewRelease(expectedRepoName, "tag", "release", "body"); err == nil {
+	if err := gh.NewRelease(expectedRepoName, "tag", "release", "body"); err == nil {
 		t.Fatalf("duplicate tag names should return an error")
 	}
 }
 
 func TestNewReleaseNonExistingrepo(t *testing.T) {
+	gh := NewGithubService(token, orga)
 	repoName := uuid.New().String()
 
-	if err := NewRepo(repoName, true, "idc"); err != nil {
+	if err := gh.NewRepo(templateRepo, repoName, true, "idc"); err != nil {
 		t.Fatalf("NewRepo returned an error on a standard use case: %v", err)
 	}
-	defer cleanup(t, repoName)
+	defer cleanup(t, gh, repoName)
 
-	if err := NewRelease("thisrepodoesnotexist", "tag", "release", "body"); err == nil {
+	if err := gh.NewRelease("thisrepodoesnotexist", "tag", "release", "body"); err == nil {
 		t.Fatalf("NewRelease did not return any error when trying to add a release to a non-existing repo")
 	}
 }

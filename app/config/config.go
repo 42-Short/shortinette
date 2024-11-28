@@ -4,14 +4,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
+
+	"github.com/42-Short/shortinette/logger"
+	"github.com/joho/godotenv"
 )
 
-// Main struct, containing all necessary information for running the Short
-type Short struct {
+// Main struct, containing all necessary metadata
+type Config struct {
 	Modules        []Module
 	ModuleDuration time.Duration
 	StartTime      time.Time
+
+	TemplateRepo string
+	TokenGithub  string
+	OrgaGithub   string
+	ServerAddr   string
+	ApiToken     string
+
+	//Note: this is just temporary as the participants will get inserted via the api
+	Participants []Participant
 }
 
 // Group of exercises
@@ -29,73 +42,27 @@ type Exercise struct {
 	TurnInDirectory string
 }
 
+// temporary struct to store a single participant
 type Participant struct {
-	GithubUserName string
+	IntraLogin     string `json:"intra_login"`
+	GithubUserName string `json:"github_username"`
 }
 
-// Reads the participants list (json) from participantsListPath.
-//
-// Returns a slice of Participant structs containing the GitHub usernames of the participants.
-func NewParticipants(participantsListPath string) (participants []Participant, err error) {
-	data, err := os.ReadFile(participantsListPath)
-	if err != nil {
-		return nil, fmt.Errorf("unable to read config file %s: %v", participantsListPath, err)
-	}
-
-	var rawConfig struct {
-		Participants []struct {
-			GithubUserName string `json:"github_username"`
-		} `json:"participants"`
-	}
-
-	if err := json.Unmarshal(data, &rawConfig); err != nil {
-		return nil, fmt.Errorf("unable to parse participants list: %v", err)
-	}
-
-	for _, p := range rawConfig.Participants {
-		participants = append(participants, Participant{
-			GithubUserName: p.GithubUserName,
-		})
-	}
-
-	if len(participants) < 1 {
-		return nil, fmt.Errorf("you need at least one participant")
-	}
-
-	return participants, nil
-}
-
-// Initializes a new Short.
+// Initializes a new Config (group of all configurations)
 //
 // Arguments:
 //
-//   - modules: slice of Module structs
-//   - moduleDuration: how long one module should be active
-//   - startTime: when the Short starts
-func NewShort(modules []Module, moduleDuration time.Duration, startTime time.Time) (short *Short, err error) {
-	if modules == nil || len(modules) < 1 {
-		return nil, fmt.Errorf("you need at least one module to initialize a short")
-	}
-	if moduleDuration < 0 {
-		return nil, fmt.Errorf("moduleDuration cannot be negative")
-	}
-
-	currentStartTime := startTime
-	updatedModules := []Module{}
-	for _, mod := range modules {
-		updatedModules = append(updatedModules, Module{
-			Exercises:    mod.Exercises,
-			MinimumScore: mod.MinimumScore,
-			StartTime:    currentStartTime,
-		})
-		currentStartTime = currentStartTime.Add(moduleDuration)
-	}
-
-	return &Short{
-		Modules:        updatedModules,
+//   - participants: list of single participant
+//   - modules: list of single module
+//   - moduleDuration: duration of each module
+//   - startTime: time on which to start the short
+func NewConfig(participants []Participant, modules []Module, moduleDuration time.Duration, startTime time.Time) (conf *Config) {
+	return &Config{
+		Participants:   participants,
+		Modules:        modules,
 		ModuleDuration: moduleDuration,
 		StartTime:      startTime,
-	}, nil
+	}
 }
 
 // Initializes a new Module (group of Exercise structs).
@@ -152,4 +119,60 @@ func NewExercise(executablePath string, score int, allowedFiles []string, turnIn
 		AllowedFiles:    allowedFiles,
 		TurnInDirectory: turnInDirectory,
 	}, nil
+}
+
+func (config *Config) FetchEnvVariables() error {
+	err := godotenv.Load("../.env")
+	if err != nil {
+		logger.Warning.Printf(".env file not found, this is expected in the GitHub Actions environment, this is a problem if you are running this locally\n")
+	}
+	requiredEnvVars := map[string]*string{
+		"TEMPLATE_REPO": &config.TemplateRepo,
+		"TOKEN_GITHUB":  &config.TokenGithub,
+		"ORGA_GITHUB":   &config.OrgaGithub,
+		"API_TOKEN":     &config.ApiToken,
+		"SERVER_ADDR":   &config.ServerAddr,
+	}
+
+	missingEnvVars := make([]string, 0, len(requiredEnvVars))
+	for key, value := range requiredEnvVars {
+		*value = os.Getenv(key)
+		if *value == "" {
+			missingEnvVars = append(missingEnvVars, key)
+		}
+	}
+
+	if len(missingEnvVars) > 0 {
+		return fmt.Errorf("missing environment variables: %s", strings.Join(missingEnvVars, ", "))
+	}
+	return nil
+}
+
+// Reads the participants list (json) from participantsConfigPath.
+//
+// Returns a slice of Participant structs containing the GitHub usernames of the participants.
+// Note: this is just temporary as the participants will get inserted via the api.
+//
+//	verifying the participants will only happen in the endpoint as this is only for testing and config
+//	should not include the db package
+func (config *Config) FetchParticipants(participantsConfigPath string) error {
+	data, err := os.ReadFile(participantsConfigPath)
+	if err != nil {
+		return fmt.Errorf("unable to read config file %s: %v", participantsConfigPath, err)
+	}
+
+	if err := json.Unmarshal(data, &config.Participants); err != nil {
+		return fmt.Errorf("unable to parse participants list: %v", err)
+	}
+
+	if len(config.Participants) < 1 {
+		return fmt.Errorf("you need at least one participant")
+	}
+	for _, participant := range config.Participants {
+		if participant.IntraLogin == "" || participant.GithubUserName == "" {
+			return fmt.Errorf("participant information incomplete")
+		}
+	}
+
+	return nil
 }

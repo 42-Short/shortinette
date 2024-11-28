@@ -1,24 +1,43 @@
 package config
 
 import (
+	"os"
 	"testing"
 	"time"
 )
 
+func TestFetchEnvVariables(t *testing.T) {
+	c := NewConfig([]Participant{}, []Module{}, 0, time.Now())
+	if err := c.FetchEnvVariables(); err != nil {
+		t.Fatalf("failed to fetch env variables")
+	}
+}
+
+func TestFetchEnvVariablesMissing(t *testing.T) {
+	os.Setenv("ORGA_GITHUB", "")
+	c := NewConfig([]Participant{}, []Module{}, 0, time.Now())
+	if err := c.FetchEnvVariables(); err == nil {
+		t.Fatalf("missing env vars should throw an error")
+	}
+}
+
 func TestNewParticipantsNonExistingJsonPath(t *testing.T) {
-	if _, err := NewParticipants("foo"); err == nil {
+	c := NewConfig([]Participant{}, []Module{}, 0, time.Now())
+	if err := c.FetchParticipants("foo"); err == nil {
 		t.Fatalf("a non-existing participants list should throw an error")
 	}
 }
 
 func TestNewParticipantsMalformedJson(t *testing.T) {
-	if _, err := NewParticipants("config/malformed.json"); err == nil {
+	c := NewConfig([]Participant{}, []Module{}, 0, time.Now())
+	if err := c.FetchParticipants("config/malformed.json"); err == nil {
 		t.Fatalf("a malformed participants list should throw an error")
 	}
 }
 
 func TestNewParticipantsEmptyList(t *testing.T) {
-	if _, err := NewParticipants("config/empty.json"); err == nil {
+	c := NewConfig([]Participant{}, []Module{}, 0, time.Now())
+	if err := c.FetchParticipants("config/empty.json"); err == nil {
 		t.Fatalf("an empty participants list should throw an error")
 	}
 }
@@ -82,26 +101,5 @@ func TestNewModuleNoExercises(t *testing.T) {
 func TestNewModuleNilExercises(t *testing.T) {
 	if _, err := NewModule(nil, 0); err == nil {
 		t.Fatalf("exercises cannot be nil")
-	}
-}
-
-func TestNewShortNegativeDuration(t *testing.T) {
-	ex, _ := NewExercise("foo", 10, []string{"bar"}, "bar")
-	mod, _ := NewModule([]Exercise{0: *ex}, 10)
-
-	if _, err := NewShort([]Module{0: *mod}, time.Hour*-24, time.Now()); err == nil {
-		t.Fatalf("moduleDuration should not be negative")
-	}
-}
-
-func TestNewShortNoModules(t *testing.T) {
-	if _, err := NewShort([]Module{}, time.Hour*24, time.Now()); err == nil {
-		t.Fatalf("should not be possible to initialize a Short with no modules")
-	}
-}
-
-func TestNewShortNilModules(t *testing.T) {
-	if _, err := NewShort(nil, time.Hour*24, time.Now()); err == nil {
-		t.Fatalf("modules cannot be nil")
 	}
 }
