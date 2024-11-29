@@ -18,6 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/42-Short/shortinette/config"
 	"github.com/42-Short/shortinette/data"
 	"github.com/42-Short/shortinette/db"
 	"github.com/42-Short/shortinette/logger"
@@ -40,6 +41,52 @@ func shutdown(sigCh chan os.Signal, errCh chan error) {
 		}
 		logger.Error.Fatalf("caught signal: %v", sig)
 	}
+}
+
+func newDummyConfig() *config.Config {
+	exercises1 := []config.Exercise{
+		{
+			ExecutablePath:  "/path/to/executable1",
+			Score:           10,
+			AllowedFiles:    []string{"file1.txt", "file2.txt"},
+			TurnInDirectory: "/path/to/turnin1",
+		},
+		{
+			ExecutablePath:  "/path/to/executable2",
+			Score:           20,
+			AllowedFiles:    []string{"file3.txt", "file4.txt"},
+			TurnInDirectory: "/path/to/turnin2",
+		},
+	}
+
+	exercises2 := []config.Exercise{
+		{
+			ExecutablePath:  "/path/to/executable3",
+			Score:           30,
+			AllowedFiles:    []string{"file5.txt", "file6.txt"},
+			TurnInDirectory: "/path/to/turnin3",
+		},
+		{
+			ExecutablePath:  "/path/to/executable4",
+			Score:           40,
+			AllowedFiles:    []string{"file7.txt", "file8.txt"},
+			TurnInDirectory: "/path/to/turnin4",
+		},
+	}
+
+	modules := []config.Module{
+		{
+			Exercises:    exercises1,
+			MinimumScore: 50,
+			StartTime:    time.Now().Add(-time.Hour * 24),
+		},
+		{
+			Exercises:    exercises2,
+			MinimumScore: 60,
+			StartTime:    time.Now().Add(-time.Hour * 48),
+		},
+	}
+	return config.NewConfig(nil, modules, time.Duration(24)*time.Hour, time.Now())
 }
 
 func TestMain(m *testing.M) {
@@ -68,7 +115,9 @@ func TestMain(m *testing.M) {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
-	api = NewAPI("localhost:8080", db, apiToken, gin.TestMode)
+	config := newDummyConfig()
+
+	api = NewAPI(config, db, gin.TestMode)
 	api.SetupRouter()
 
 	errCh := make(chan error, 1)

@@ -6,7 +6,7 @@ import (
 
 func (api *API) SetupRouter() {
 	group := api.Engine.Group("/shortinette/v1")
-	group.Use(tokenAuthMiddleware(api.accessToken))
+	group.Use(tokenAuthMiddleware(api.config.ApiToken))
 
 	moduleDAO := data.NewDAO[data.Module](api.DB)
 	participantDAO := data.NewDAO[data.Participant](api.DB)

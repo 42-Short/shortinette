@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/42-Short/shortinette/config"
 	"github.com/42-Short/shortinette/db"
 	"github.com/42-Short/shortinette/logger"
 	"github.com/gin-gonic/gin"
@@ -17,22 +18,22 @@ type API struct {
 	Engine *gin.Engine
 	DB     *db.DB
 
-	accessToken string
+	config *config.Config
 }
 
 // Initializes and returns a new API instance
-func NewAPI(addr string, db *db.DB, accessToken string, mode string) *API {
+func NewAPI(config *config.Config, db *db.DB, mode string) *API {
 	engine := gin.Default()
 	gin.SetMode(mode)
 
 	return &API{
 		Server: &http.Server{
-			Addr:    addr,
+			Addr:    config.ServerAddr,
 			Handler: engine,
 		},
-		Engine:      engine,
-		DB:          db,
-		accessToken: accessToken,
+		Engine: engine,
+		DB:     db,
+		config: config,
 	}
 }
 
