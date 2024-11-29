@@ -1,9 +1,5 @@
 # Module 01: Indirections
-```
-The original work, available at https://github.com/nils-mathieu/piscine-rust, is licensed under the MIT License.
-All modifications made by contributors, as listed at https://github.com/42-Short/shortinette/blob/main/CONTRIBUTORS, are licensed under the GFDL License.
-You can view the GFDL License details at https://github.com/42-Short/shortinette/blob/main/rust/subjects/LICENSE.
-```
+
 ## Foreword
 
 ```rust
@@ -349,3 +345,13 @@ You do not need to perform any input checks. You _may_ assume the following:
 * `task[i].end_time >= 1`
 
 What you _may not_ assume is our tester not having a timeout ಠ_ಠ, so **_don't be a brute_**.
+
+---
+**License Notice:**
+This file contains content licensed under two different terms:
+- The MIT License applies to the original content (see `LICENSES/MIT-rust-subjects.txt`).
+- The Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0 applies to any modifications or additions (see `LICENSES/CC-BY-SA-4.0.txt`).
+
+When distributing modified versions, you must comply with both the MIT License and the CC BY-SA 4.0.
+For complete details, refer to the main licensing file of Shortinette.
+---
