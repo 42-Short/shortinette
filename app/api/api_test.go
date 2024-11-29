@@ -44,7 +44,10 @@ func shutdown(sigCh chan os.Signal, errCh chan error) {
 
 func TestMain(m *testing.M) {
 	os.Setenv("TZ", "UTC")
-	time.LoadLocation("UTC")
+	_, err := time.LoadLocation("UTC")
+	if err != nil {
+		logger.Error.Fatalf("failed to load UTC location: %v", err)
+	}
 
 	db, err := db.NewDB(context.Background(), "file::memory:?cache=shared")
 	if err != nil {
