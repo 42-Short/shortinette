@@ -1,4 +1,5 @@
 # Module 05: Concurrence
+
 ## Foreword
 
 ```txt
@@ -457,26 +458,12 @@ impl<T> RendezVous<T> {
  * A thread must never [spin](https://en.wikipedia.org/wiki/Busy_waiting) when waiting for
    something to happen!
 
-```
-MIT License
+---
+**License Notice:**
+This file contains content licensed under two different terms:
+- The MIT License applies to the original content (see `LICENSES/MIT-rust-subjects.txt`).
+- The Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0 applies to any modifications or additions (see `LICENSES/CC-BY-SA-4.0.txt`).
 
-Copyright (c) 2024 Nils Mathieu
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+When distributing modified versions, you must comply with both the MIT License and the CC BY-SA 4.0.
+For complete details, refer to the main licensing file of Shortinette.
+---

@@ -61,4 +61,7 @@ func run() {
 func main() {
 	run()
 	fmt.Printf("Hello World\n")
+=======
+func main() {
+>>>>>>> main
 }
