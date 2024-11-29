@@ -21,7 +21,6 @@ type API struct {
 }
 
 // Initializes and returns a new API instance
-// timeout specifies the max duration per request
 func NewAPI(addr string, db *db.DB, accessToken string, mode string) *API {
 	engine := gin.Default()
 	gin.SetMode(mode)
@@ -38,7 +37,6 @@ func NewAPI(addr string, db *db.DB, accessToken string, mode string) *API {
 }
 
 // Starts the server in a go routine and listens for incoming requests.
-// returns a channel for error monitoring
 func (api *API) Run() error {
 	logger.Info.Printf("server is listening on %s", api.Addr)
 

@@ -28,7 +28,7 @@ func processGrading(dao *data.DAO[data.Module], intra_login string, module_id in
 		return
 	}
 	if time.Since(module.LastGraded) < module.WaitTime {
-		logger.Warning.Printf("noticed early grading attempt for %s%d, aborting grading", intra_login, module_id)
+		logger.Warning.Printf("noticed early grading attempt for %s%d, aborting grading.", intra_login, module_id)
 		return
 	}
 	err = updateModuleGradingState(dao, module)
@@ -36,6 +36,6 @@ func processGrading(dao *data.DAO[data.Module], intra_login string, module_id in
 		logger.Error.Printf("failed to set grading state for %s%d, aborting grading: %v", intra_login, module_id, err)
 		return
 	}
-	logger.Info.Printf("[STATE] id: %d name: %s waittime: %d attempts: %d", module.Id, module.IntraLogin, module.WaitTime, module.Attempts)
+	logger.Info.Printf("[STATE] id: %d name: %s waittime: %.2f minutes attempts: %d", module.Id, module.IntraLogin, module.WaitTime.Minutes(), module.Attempts)
 	time.Sleep(time.Second * 3)
 }
