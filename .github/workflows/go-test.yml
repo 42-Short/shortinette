@@ -16,11 +16,8 @@ jobs:
       TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
       ORGA_GITHUB: ${{ secrets.ORGA_GITHUB }}
       TEMPLATE_REPO: ${{ secrets.TEMPLATE_REPO }}
-<<<<<<< HEAD
-=======
       SERVER_ADDR: ${{ secrets.SERVER_ADDR }}
       CONFIG_PATH: ${{ secrets.CONFIG_PATH }}
->>>>>>> main
       API_TOKEN: ${{ secrets.API_TOKEN }}
 
     steps:

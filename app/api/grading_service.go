@@ -18,7 +18,6 @@ func updateModuleGradingState(dao *data.DAO[data.Module], module *data.Module) e
 	if err != nil {
 		return fmt.Errorf("failed to update module in DB")
 	}
-
 	return nil
 }
 
