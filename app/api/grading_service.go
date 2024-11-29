@@ -9,9 +9,9 @@ import (
 	"github.com/42-Short/shortinette/logger"
 )
 
-func setModuleInGradingState(dao *data.DAO[data.Module], module *data.Module) error {
+func updateModuleGradingState(dao *data.DAO[data.Module], module *data.Module) error {
 	module.LastGraded = time.Now()
-	module.WaitTime = module.Attempts * 2 //TODO: set a reasonable wait time
+	module.WaitTime = 1 //module.Attempts * 2 //TODO: set a reasonable wait time
 	module.Attempts++
 
 	err := dao.Update(context.TODO(), *module)
@@ -32,11 +32,11 @@ func processGrading(dao *data.DAO[data.Module], intra_login string, module_id in
 		logger.Warning.Printf("noticed early grading attempt for %s%d, aborting grading", intra_login, module_id)
 		return
 	}
-	err = setModuleInGradingState(dao, module)
+	err = updateModuleGradingState(dao, module)
 	if err != nil {
 		logger.Error.Printf("failed to set grading state for %s%d, aborting grading: %v", intra_login, module_id, err)
 		return
 	}
-	logger.Info.Printf("state: id: %d name: %s waittime: %d attempts: %d", module.Id, module.IntraLogin, module.WaitTime, module.Attempts)
+	logger.Info.Printf("[STATE] id: %d name: %s waittime: %d attempts: %d", module.Id, module.IntraLogin, module.WaitTime, module.Attempts)
 	time.Sleep(time.Second * 3)
 }
