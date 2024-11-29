@@ -48,10 +48,10 @@ func NewDummyModule(moduleID int, intraLogin string) *Module {
 	return &Module{
 		Id:         moduleID,
 		IntraLogin: intraLogin,
-		Attempts:   42,
-		Score:      42,
+		Attempts:   0,
+		Score:      0,
 		LastGraded: time.Date(2024, 11, 20, 0, 0, 0, 0, time.UTC),
-		WaitTime:   42,
+		WaitTime:   0,
 	}
 }
 

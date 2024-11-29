@@ -12,6 +12,7 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -42,6 +43,9 @@ func shutdown(sigCh chan os.Signal, errCh chan error) {
 }
 
 func TestMain(m *testing.M) {
+	os.Setenv("TZ", "UTC")
+	time.LoadLocation("UTC")
+
 	db, err := db.NewDB(context.Background(), "file::memory:?cache=shared")
 	if err != nil {
 		logger.Error.Fatalf("failed to create db: %v", err)
