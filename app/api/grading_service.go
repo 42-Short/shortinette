@@ -11,7 +11,7 @@ import (
 
 func updateModuleGradingState(dao *data.DAO[data.Module], module *data.Module) error {
 	module.LastGraded = time.Now()
-	module.WaitTime = 1 //module.Attempts * 2 //TODO: set a reasonable wait time
+	module.WaitTime = time.Duration(1<<module.Attempts) * time.Minute // 1, 2, 4, 8, 16, 32,... //TODO: maybe too much?
 	module.Attempts++
 
 	err := dao.Update(context.TODO(), *module)
@@ -28,7 +28,7 @@ func processGrading(dao *data.DAO[data.Module], intra_login string, module_id in
 		logger.Error.Printf("failed to get target module for %s%d: %v", intra_login, module_id, err)
 		return
 	}
-	if time.Since(module.LastGraded) < time.Duration(module.WaitTime)*time.Second {
+	if time.Since(module.LastGraded) < module.WaitTime {
 		logger.Warning.Printf("noticed early grading attempt for %s%d, aborting grading", intra_login, module_id)
 		return
 	}

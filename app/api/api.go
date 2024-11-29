@@ -14,8 +14,9 @@ import (
 type API struct {
 	*http.Server
 
-	Engine      *gin.Engine
-	DB          *db.DB
+	Engine *gin.Engine
+	DB     *db.DB
+
 	accessToken string
 }
 
