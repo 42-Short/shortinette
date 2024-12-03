@@ -43,7 +43,7 @@ func (api *API) Run() error {
 
 	err := api.ListenAndServe()
 	if err != nil {
-		return fmt.Errorf("failed to listen to %s", api.Addr)
+		return fmt.Errorf("failed to listen to %s: %v", api.Addr, err)
 	}
 	return nil
 }
