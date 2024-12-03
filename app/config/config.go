@@ -57,6 +57,9 @@ type Participant struct {
 //   - moduleDuration: duration of each module
 //   - startTime: time on which to start the short
 func NewConfig(participants []Participant, modules []Module, moduleDuration time.Duration, startTime time.Time) (conf *Config) {
+	for i := range modules {
+		modules[i].StartTime = startTime.Add(time.Duration(i) * moduleDuration)
+	}
 	return &Config{
 		Participants:   participants,
 		Modules:        modules,
