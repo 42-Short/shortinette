@@ -6,8 +6,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/42-Short/shortinette/api"
+	"github.com/42-Short/shortinette/config"
 	"github.com/42-Short/shortinette/data"
 	"github.com/42-Short/shortinette/db"
 	"github.com/42-Short/shortinette/logger"
@@ -49,7 +51,9 @@ func run() {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
-	api := api.NewAPI(os.Getenv("SERVER_ADDR"), db, os.Getenv("API_TOKEN"), gin.DebugMode)
+	config := config.NewConfig(nil, nil, 0, time.Now())
+	config.FetchEnvVariables()
+	api := api.NewAPI(config, db, gin.DebugMode)
 	api.SetupRouter()
 	go shutdown(api, sigCh)
 	err = api.Run()

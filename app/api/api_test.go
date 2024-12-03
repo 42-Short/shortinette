@@ -26,7 +26,7 @@ import (
 
 var api *API
 
-const apiToken = "test"
+var apiToken string
 
 func shutdown(sigCh chan os.Signal, errCh chan error) {
 	select {
@@ -43,50 +43,27 @@ func shutdown(sigCh chan os.Signal, errCh chan error) {
 	}
 }
 
-func newDummyConfig() *config.Config {
-	exercises1 := []config.Exercise{
-		{
-			ExecutablePath:  "/path/to/executable1",
-			Score:           10,
-			AllowedFiles:    []string{"file1.txt", "file2.txt"},
-			TurnInDirectory: "/path/to/turnin1",
-		},
-		{
-			ExecutablePath:  "/path/to/executable2",
-			Score:           20,
-			AllowedFiles:    []string{"file3.txt", "file4.txt"},
-			TurnInDirectory: "/path/to/turnin2",
-		},
-	}
+func newDummyExercises() config.Exercise {
+	ex, _ := config.NewExercise("foo", 10, []string{"foo.c", "bar.c"}, "foo")
+	return *ex
+}
 
-	exercises2 := []config.Exercise{
-		{
-			ExecutablePath:  "/path/to/executable3",
-			Score:           30,
-			AllowedFiles:    []string{"file5.txt", "file6.txt"},
-			TurnInDirectory: "/path/to/turnin3",
-		},
-		{
-			ExecutablePath:  "/path/to/executable4",
-			Score:           40,
-			AllowedFiles:    []string{"file7.txt", "file8.txt"},
-			TurnInDirectory: "/path/to/turnin4",
-		},
-	}
+func newDummyConfig() (*config.Config, error) {
+	exercises := []config.Exercise{newDummyExercises(), newDummyExercises()}
 
 	modules := []config.Module{
 		{
-			Exercises:    exercises1,
+			Exercises:    exercises,
 			MinimumScore: 50,
-			StartTime:    time.Now().Add(-time.Hour * 24),
 		},
 		{
-			Exercises:    exercises2,
+			Exercises:    exercises,
 			MinimumScore: 60,
-			StartTime:    time.Now().Add(-time.Hour * 48),
 		},
 	}
-	return config.NewConfig(nil, modules, time.Duration(24)*time.Hour, time.Now())
+	config := config.NewConfig(nil, modules, time.Duration(24)*time.Hour, time.Now())
+	err := config.FetchEnvVariables()
+	return config, err
 }
 
 func TestMain(m *testing.M) {
@@ -115,7 +92,12 @@ func TestMain(m *testing.M) {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
-	config := newDummyConfig()
+	config, err := newDummyConfig()
+	if err != nil {
+		logger.Error.Fatalf("failed to create dummy config: %v", err)
+	}
+
+	apiToken = config.ApiToken
 
 	api = NewAPI(config, db, gin.TestMode)
 	api.SetupRouter()
