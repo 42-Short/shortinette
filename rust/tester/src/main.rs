@@ -1,6 +1,7 @@
-use std::{env, process::ExitCode};
+use std::env;
 
 use module::Module;
+use result::TestResult;
 
 mod module;
 mod result;
@@ -14,7 +15,7 @@ mod module04;
 mod module05;
 mod module06;
 
-fn main() -> ExitCode {
+fn main() -> TestResult {
     let module = {
         let module = env::var("MODULE").expect("MODULE env variable not set");
         let exercise = env::var("EXERCISE").expect("EXERCISE env variable not set");
@@ -30,11 +31,5 @@ fn main() -> ExitCode {
         })
     };
 
-    let test_result = module.run_test();
-
-    if test_result.is_success() {
-        ExitCode::SUCCESS
-    } else {
-        ExitCode::FAILURE
-    }
+    module.run_test()
 }

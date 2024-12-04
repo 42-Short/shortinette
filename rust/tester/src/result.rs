@@ -1,3 +1,5 @@
+use std::process;
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum TestResult {
     Passed,
@@ -10,6 +12,16 @@ pub enum TestResult {
 impl TestResult {
     pub fn is_success(&self) -> bool {
         self == &Self::Passed
+    }
+}
+
+impl process::Termination for TestResult {
+    fn report(self) -> process::ExitCode {
+        if self.is_success() {
+            process::ExitCode::SUCCESS
+        } else {
+            process::ExitCode::FAILURE
+        }
     }
 }
 
