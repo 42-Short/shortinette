@@ -1,8 +1,9 @@
-use std::env;
+use std::{env, path};
 
 use module::Module;
 use result::TestResult;
 
+mod cargo;
 mod module;
 mod result;
 mod testable;
@@ -32,4 +33,15 @@ fn main() -> TestResult {
     };
 
     module.run_test()
+}
+
+fn repository_path() -> path::PathBuf {
+    let repository_path = env::var("REPOSITORY")
+        .map(|path| path::PathBuf::from(&path))
+        .unwrap_or_else(|_| env::current_dir().expect("Failed to access cwd"));
+
+    // Assert is fine here since the tester should only be run on valid directories
+    assert!(repository_path.exists(), "Repository path does not exist");
+
+    repository_path
 }

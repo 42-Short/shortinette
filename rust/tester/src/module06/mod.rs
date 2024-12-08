@@ -7,7 +7,7 @@ use exercise05::Exercise05;
 use exercise06::Exercise06;
 use exercise07::Exercise07;
 
-use crate::{result::TestResult, testable::Testable};
+use crate::{repository_path, result::TestResult, testable::Testable};
 
 mod exercise00;
 mod exercise01;
@@ -60,6 +60,10 @@ impl Testable for Module06 {
             Self::Ex06(exercise) => exercise.run_test(),
             Self::Ex07(exercise) => exercise.run_test(),
         }
+    }
+
+    fn path(&self) -> std::path::PathBuf {
+        repository_path()
     }
 }
 
