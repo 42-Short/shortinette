@@ -99,7 +99,8 @@ func (gh *GithubService) Clone(name string) (err error) {
 
 	cloneURL := fmt.Sprintf("https://%s@github.com/%s/%s.git", gh.Token, gh.Orga, name)
 
-	cmd := exec.Command("git", "clone", cloneURL)
+	// `--depth=1` because we do not care about the commit history
+	cmd := exec.Command("git", "clone", cloneURL, "--depth=1")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
