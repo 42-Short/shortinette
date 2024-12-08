@@ -4,13 +4,16 @@ import "errors"
 
 const (
 	Passed = iota + 1
-	InternalError
+	Cancelled
+	CompilationError
 	EarlyGrading
+	Failed
+	ForbiddenFunction
+	InternalError
 	InvalidFiles
 	NothingTurnedIn
 	RuntimeError
 	Timeout
-	Cancelled
 )
 
 type GradingError struct {
