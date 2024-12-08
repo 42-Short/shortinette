@@ -55,7 +55,7 @@ allowed symbols:
 Write a **function** with the following prototype:
 
 ```rust
-fn swap_u32(a: &Cell<u32>, b: &Cell<u32>);
+pub fn swap_u32(a: &Cell<u32>, b: &Cell<u32>);
 ```
 
 * The `swap_u32` function must swap the integers it is given.
@@ -63,19 +63,25 @@ fn swap_u32(a: &Cell<u32>, b: &Cell<u32>);
 Example:
 
 ```rust
-let a = Cell::new(1);
-let b = Cell::new(3);
+#[cfg(test)]
+mod tests {
+    #[test]    
+    fn example() {
+        let a = Cell::new(1);
+        let b = Cell::new(3);
 
-swap_u32(&a, &b);
+        swap_u32(&a, &b);
 
-assert_eq!(a.get(), 3);
-assert_eq!(b.get(), 1);
+        assert_eq!(a.get(), 3);
+        assert_eq!(b.get(), 1);
+    }
+}
 ```
 
 Let's complicate things a bit!
 
 ```rust
-fn swap_string(a: &Cell<String>, b: &Cell<String>);
+pub fn swap_string(a: &Cell<String>, b: &Cell<String>);
 ```
 
 * The `swap_string` function must swap the strings it is given.
@@ -83,13 +89,19 @@ fn swap_string(a: &Cell<String>, b: &Cell<String>);
 Example:
 
 ```rust
-let a = Cell::new("ABC".into());
-let b = Cell::new("DEF".into());
+#[cfg(test)]
+mod tests {
+    #[test]    
+    fn example() {
+        let a = Cell::new("ABC".into());
+        let b = Cell::new("DEF".into());
 
-swap_string(&a, &b);
+        swap_string(&a, &b);
 
-assert_eq!(a.into_inner(), "DEF");
-assert_eq!(b.into_inner(), "ABC");
+        assert_eq!(a.into_inner(), "DEF");
+        assert_eq!(b.into_inner(), "ABC");
+    }
+}
 ```
 
 ## Exercise 01: Atomical
@@ -109,17 +121,20 @@ Create a type named `Unique`.
 
 ```rust
 #[derive(Debug, PartialEq, Eq)]
-struct Unique(u8);
+pub struct Unique(u8);
 
 impl Unique {
     pub fn new() -> Option<Self>;
+    pub fn id(&self) -> u8;
 }
 ```
 
 * There can be no two `Unique` instance with the same identifier (`u8`).
 * `new` must create a new, unique instance of `Unique`.
+* `id` must return the unique id of the instance of `Unique`.
 * It must be possible to `Clone` a `Unique`, and the created `Unique` must still be unique.
 * Trying to create a `Unique` when no more identifiers are available causes the function to return `None`.
+* Since `Unique` uses an `u8` it is only possible to create up to `255` instances of `Unique`. Think about why this is the case.
 
 Example:
 
@@ -173,7 +188,7 @@ allowed symbols:
 Create an `Error` enum with the following variants:
 
 ```rust
-enum Error {
+pub enum Error {
     Success,
     FileNotFound,
     IsDirectory,
@@ -182,8 +197,8 @@ enum Error {
 }
 
 impl Error {
-    fn last() -> Self;
-    fn make_last(self);
+    pub fn last() -> Self;
+    pub fn make_last(self);
 }
 ```
 
@@ -237,6 +252,8 @@ the philosopher is thinking about b
 * When a word is available in the brain, the philosopher thinks about it for 5 seconds.
 * The program runs until it receives `EOF`.
 * The size of the philosopher's brain is provided as a command-line argument.
+* The nature of `sync_channel` makes it possible for the philosopher to think about a single topic even if the brain size is `0`. Think about it.
+* Read the example very careful.
 
 ## Exercise 04: Logger
 
@@ -257,13 +274,15 @@ allowed symbols:
 Create a `Logger` type.
 
 ```rust
-struct Logger<W> {
+pub struct Logger<W> {
     buffer: Box<[u8]>,
     writer: W,
 }
 
 impl<W> Logger<W> {
     pub fn new(threshold: usize, writer: W) -> Self;
+    pub fn buffer(&self) -> &Box<[u8]>
+    pub fn writer(&self) -> &W
 }
 ```
 
@@ -365,10 +384,13 @@ Create a `ThreadPool` type.
 ```rust
 type Task = Box<dyn 'static + Send + FnOnce()>;
 
-struct ThreadPool {
-    threads: Vec<JoinHandle<()>>,
-    should_stop: Arc<RwLock<bool>>,
-    task_sender: Sender<Task>,
+pub struct ThreadPool {
+    // Normally you would not make this pub, but the tester needs it.
+    pub threads: Vec<JoinHandle<()>>,
+    // Normally you would not make this pub, but the tester needs it.
+    pub should_stop: Arc<RwLock<bool>>,
+    // Normally you would not make this pub, but the tester needs it.
+    pub task_sender: Sender<Task>,
 }
 
 impl ThreadPool {
@@ -440,12 +462,12 @@ assert_eq!(a, 42u32);
 The "Rendez-Vous" must be defined as follows:
 
 ```rust
-struct RendezVous<T> { /* ... */ }
+pub struct RendezVous<T> { /* ... */ }
 
 impl<T> RendezVous<T> {
     const fn new() -> Self;
-    fn wait(&self, value: T) -> T;
-    fn try_wait(&self, value: T) -> Result<T, T>;
+    pub fn wait(&self, value: T) -> T;
+    pub fn try_wait(&self, value: T) -> Result<T, T>;
 }
 ```
 
