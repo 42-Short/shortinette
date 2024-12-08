@@ -66,6 +66,18 @@ func TestNewExerciseNilAllowedFiles(t *testing.T) {
 	}
 }
 
+func TestNewExerciseAllowedFilesWithInvalidGlobPattern(t *testing.T) {
+	if _, err := NewExercise("foo", 10, []string{"/foo/[]*.go"}, "bar"); err == nil {
+		t.Fatalf("allowedFiles contains an invalid glob pattern")
+	}
+}
+
+func TestNewExerciseAllowedFiles(t *testing.T) {
+	if _, err := NewExercise("foo", 10, []string{"/foo/*.go", "ok.go"}, "bar"); err != nil {
+		t.Fatalf("allowedFiles contains valid files")
+	}
+}
+
 func TestNewExerciseNegativeScore(t *testing.T) {
 	if _, err := NewExercise("foo", -10, []string{"bar"}, "bar"); err == nil {
 		t.Fatalf("it should not be possible to initialize an exercise with negative score")

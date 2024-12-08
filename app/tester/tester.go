@@ -16,6 +16,7 @@ import (
 
 	"github.com/42-Short/shortinette/config"
 	"github.com/42-Short/shortinette/tester/docker"
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 )
@@ -93,11 +94,19 @@ func allowedFilesCheck(exercise config.Exercise, exerciseDirectory string) error
 	}
 
 	missingFiles := []string{}
-	for _, allowedFile := range exercise.AllowedFiles {
-		if _, exists := submittedFiles[allowedFile]; !exists {
-			missingFiles = append(missingFiles, allowedFile)
-		} else {
-			delete(submittedFiles, allowedFile)
+	for _, allowedFilePattern := range exercise.AllowedFiles {
+		exists := false
+		for submittedFile := range submittedFiles {
+			// Pattern was validated by config checker
+			// Cannot break loop after this, since it could still match other submitted files
+			if doublestar.PathMatchUnvalidated(allowedFilePattern, submittedFile) {
+				exists = true
+				delete(submittedFiles, submittedFile)
+			}
+		}
+
+		if !exists {
+			missingFiles = append(missingFiles, allowedFilePattern)
 		}
 	}
 
