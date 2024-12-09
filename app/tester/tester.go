@@ -159,21 +159,30 @@ func GradeExercise(exercise *config.Exercise, exerciseID int, exerciseDirectory 
 		return failed(err, exerciseID, exercise)
 	}
 
-	var passed bool
+	passed := false
 	var errorcode int
 
-	if container.ExitCode == 0 {
+	switch container.ExitCode {
+	case 0:
 		errorcode = Passed
 		passed = true
-	} else if container.Timeout {
+	case 1:
+		errorcode = Failed
+	case 2:
 		errorcode = Timeout
-		passed = false
-	} else if container.ExitCode == 137 {
+	case 3:
+		errorcode = CompilationError
+	case 4:
+		errorcode = ForbiddenFunction
+	case 137:
 		errorcode = Cancelled
-		passed = false
-	} else {
+
+	default:
 		errorcode = RuntimeError
-		passed = false
+	}
+
+	if container.Timeout {
+		errorcode = Timeout
 	}
 
 	return Result{
@@ -232,18 +241,27 @@ func getTraceContent(results []Result) string {
 			switch errorcode {
 			case Passed:
 				return "OK"
-			case RuntimeError:
-				return "KO"
-			case InternalError:
-				return "Internal Error"
+			case Cancelled:
+				return "Cancelled"
+			case CompilationError:
+				return "Compilation Error"
 			case EarlyGrading:
 				return "Grading time for module hasn't started yet"
+			case Failed:
+				return "KO"
+			case ForbiddenFunction:
+				return "Forbidden Function"
+			case InternalError:
+				return "Internal Error"
 			case InvalidFiles:
 				return "Invalid Files"
 			case NothingTurnedIn:
 				return "Nothing turned in"
+			case RuntimeError:
+				return "KO"
 			case Timeout:
 				return "Timeout"
+
 			default:
 				return "Unknown error"
 			}
