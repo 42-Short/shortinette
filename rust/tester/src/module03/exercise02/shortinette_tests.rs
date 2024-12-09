@@ -1,65 +1,67 @@
 #[cfg(test)]
 mod shortinette_tests {
+    use std::cell::Cell;
+
     use super::*;
 
     #[test]
-    fn display() {
-        let john = John;
+    fn new_type() {
+        #[derive(PartialEq, Eq, Debug)]
+        struct NewType;
 
-        assert_eq!(format!("{}", john), "Hey! I'm John.");
-    }
-
-    #[test]
-    fn width() {
-        let john = John;
-
-        assert_eq!(
-            format!("|{:<30}|", john),
-            "|Hey! I'm John.                |"
-        );
+        impl FortyTwo for NewType {
+            fn forty_two() -> Self {
+                Self
+            }
+        }
 
         assert_eq!(
-            format!("|{:>30}|", john),
-            "|                Hey! I'm John.|"
-        );
-
-        assert_eq!(
-            format!("|{:^30}|", john),
-            "|        Hey! I'm John.        |"
+            <NewType as FortyTwo>::forty_two(),
+            NewType,
+            "FortyTwo::forty_two() did not return correct result for a custom type"
         );
     }
 
     #[test]
-    fn precision() {
-        let john = John;
+    fn obvious() {
+        assert_eq!(u32::forty_two(), 42);
 
-        assert_eq!(format!("{john:.6}"), "Hey! I");
-        assert_eq!(format!("{john:.100}"), "Hey! I'm John.");
-
-        assert_eq!(format!("{john:.0}"), "Don't try to silence me!");
+        String::forty_two();
     }
 
+    // Probably the most hacky test ever.
+    // It does not check whether the println! output is correct.
+    // But come on, if FortyTwo::forty_two() was called AND the debug formatting
+    // was called then it makes no sense to not call println! lol.
     #[test]
-    fn debug() {
-        let john = John;
+    fn forty_two() {
+        thread_local! {
+            static FT_CALLED: Cell<bool> = const { Cell::new(false) };
+            static DEBUG_CALLED: Cell<bool> = const { Cell::new(false) };
+        }
 
-        assert_eq!(format!("{john:?}"), "John, the man himself.");
-    }
+        #[derive(PartialEq, Eq)]
+        struct NewType;
 
-    #[test]
-    fn debug_alternate() {
-        let john = John;
+        impl FortyTwo for NewType {
+            fn forty_two() -> Self {
+                FT_CALLED.set(true);
 
-        assert_eq!(
-            format!("{john:#?}"),
-            "John, the man himself. He's handsome AND formidable."
-        );
-    }
+                Self
+            }
+        }
 
-    #[test]
-    fn binary() {
-        let john = John;
+        impl Debug for NewType {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                DEBUG_CALLED.set(true);
 
-        assert_eq!(format!("{john:b}"), "Bip Boop?");
+                f.write_str("42")
+            }
+        }
+
+        print_forty_two::<NewType>();
+
+        assert!(FT_CALLED.get());
+        assert!(DEBUG_CALLED.get());
     }
 }
