@@ -377,6 +377,7 @@ allowed symbols:
     std::sync::{Arc, RwLock}
     std::net::{TcpListener, SocketAddr}
     std::io::{Result, Error}
+    std::eprintln
 ```
 
 Create a `ThreadPool` type.
@@ -403,8 +404,8 @@ impl ThreadPool {
 
  * The `new` function must create a new `ThreadPool` instance by spawning `thread_count` threads.
  * The `spawn_task` function must send the task to a thread in the thread pool.
- * When a `ThreadPool` is dropped, its threads must stop. If any of the threads panicked, dropping
-   the `ThreadPool` must panic too.
+ * When a `ThreadPool` is dropped, its threads must stop. If any of the threads panicked, en error
+   should be printed to standard error.
 
 When a thread is not executing a task, it waits until one is available and executes it.
 
