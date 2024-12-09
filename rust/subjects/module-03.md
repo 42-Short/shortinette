@@ -83,7 +83,7 @@ Create a **function** that randomly chooses a value among an input slice. If the
 empty, return `None`
 
 ```rust
-fn choose<T>(values: &[T]) -> Option<&T>;
+pub fn choose<T>(values: &[T]) -> Option<&T>;
 ```
 
 ## Exercise 01: Point Of No Return (v3)
@@ -102,7 +102,7 @@ allowed symbols:
 
 Again? Yes. Another `min` function! But I promise, this one's the last one.
 
-* Create a `min` function that takes *any* two values of a type that supports the `<` operator, and
+* Create a public `min` function that takes *any* two values of a type that supports the `<` operator, and
 returns the smaller one.
 
 Example:
@@ -132,7 +132,7 @@ allowed symbols:
 Define the following trait:
 
 ```rust
-trait FortyTwo {
+pub trait FortyTwo {
     fn forty_two() -> Self;
 }
 ```
@@ -143,7 +143,7 @@ the number 42 in some way.
 Implement this trait for some common types, at least `u32` and `String`.
 
 ```rust
-fn print_forty_two<T: Debug + FortyTwo>();
+pub fn print_forty_two<T: Debug + FortyTwo>();
 ```
 
 * The `print_forty_two` function must create an instance of `T` using the `FortyTwo` trait, and then
@@ -165,14 +165,14 @@ allowed symbols:
 
 Define the following struct
 ```rust
-struct Collatz {
+pub struct Collatz {
     value: u32,
 }
 ```
 and implement the `Iterator` and `FromIterator` trait so that this test compiles and runs.
 ```rust
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     #[test]
@@ -211,12 +211,12 @@ allowed symbols:
 Create a type named `Time` responsible for storing, well, a time.
 
 ```rust
-struct Time {
+pub struct Time {
     hours: u32,
     minutes: u32,
 }
 
-enum TimeParseError {
+pub enum TimeParseError {
     MissingColon,
     InvalidLength,
     InvalidNumber,
@@ -227,7 +227,7 @@ Implement the right traits such that the provided `test` function compiles.
 
 ```rust
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     #[test]
@@ -266,13 +266,13 @@ allowed symbols:
 ```
 
 ```rust
-struct Vector<T> {
-    x: T,
-    y: Y,
+pub struct Vector<T> {
+    pub x: T,
+    pub y: Y,
 }
 
 impl<T> Vector<T> {
-    fn new(x: T, y: T) -> Self;
+    pub fn new(x: T, y: T) -> Self;
 }
 ```
 
@@ -291,25 +291,26 @@ The following tests must compile and run properly:
 
 ```rust
 #[cfg(test)]
-#[test]
-fn test_a() {
-    let v = Vector {
-        x: String::from("Hello, World!"),
-        y: String::from("Hello, Rust!"),
-    };
+mod tests {
+    #[test]
+    fn test_a() {
+        let v = Vector {
+            x: String::from("Hello, World!"),
+            y: String::from("Hello, Rust!"),
+        };
 
-    let w = v.clone();
+        let w = v.clone();
 
-    assert_eq!(&v, &w);
-}
+        assert_eq!(&v, &w);
+    }
 
-#[cfg(test)]
-#[test]
-fn test_b() {
-    let v = Vector::new("Hello, World!", "Hello, Rust!");
-    let a = v;
-    let b = v;
-    assert_eq!(a, b);
+    #[test]
+    fn test_b() {
+        let v = Vector::new("Hello, World!", "Hello, Rust!");
+        let a = v;
+        let b = v;
+        assert_eq!(a, b);
+    }
 }
 ```
 
@@ -330,29 +331,32 @@ allowed symbols:
 * Create a linked list type named `List<T>` defined as follows.
 
 ```rust
-struct Node<T> {
-    value: T,
-    next: Option<Box<Node<T>>>,
+pub struct Node<T> {
+    // Normally you would not make this pub, but the tester needs it.
+    pub value: T,
+    // Normally you would not make this pub, but the tester needs it.
+    pub next: Option<Box<Node<T>>>,
 }
 
-struct List<T> {
-    head: Option<Box<Node<T>>>
+pub struct List<T> {
+    // Normally you would not make this pub, but the tester needs it.
+    pub head: Option<Box<Node<T>>>
 }
 
 impl<T> List<T> {
-    fn new() -> Self;
+    pub fn new() -> Self;
 
-    fn push_front(&mut self, value: T);
-    fn push_back(&mut self, value: T);
+    pub fn push_front(&mut self, value: T);
+    pub fn push_back(&mut self, value: T);
 
-    fn count(&self) -> usize;
+    pub fn count(&self) -> usize;
 
-    fn get(&self, i: usize) -> Option<&T>;
-    fn get_mut(&mut self, i: usize) -> Option<&mut T>;
+    pub fn get(&self, i: usize) -> Option<&T>;
+    pub fn get_mut(&mut self, i: usize) -> Option<&mut T>;
 
-    fn remove_front(&mut self) -> Option<T>;
-    fn remove_back(&mut self) -> Option<T>;
-    fn clear(&mut self);
+    pub fn remove_front(&mut self) -> Option<T>;
+    pub fn remove_back(&mut self) -> Option<T>;
+    pub fn clear(&mut self);
 }
 ```
 
@@ -370,35 +374,35 @@ The following tests must compile and pass.
 
 ```rust
 #[cfg(test)]
-#[test]
-fn default_list_is_empty() {
-    let list: List<i32> = Default::default();
-    assert_eq!(list.count(), 0);
-}
+mod tests {
+    #[test]
+    fn default_list_is_empty() {
+        let list: List<i32> = Default::default();
+        assert_eq!(list.count(), 0);
+    }
 
-#[cfg(test)]
-#[test]
-fn cloned_list_are_equal() {
-    let mut list = List::new();
-    list.push_back(String::from("Hello"));
-    list.push_back(String::from("World"));
+    #[test]
+    fn cloned_list_are_equal() {
+        let mut list = List::new();
+        list.push_back(String::from("Hello"));
+        list.push_back(String::from("World"));
 
-    let cloned = list.clone();
-    assert_eq!(cloned.count(), list.count());
-    assert_eq!(&cloned[0], &list[0]);
-    assert_eq!(&cloned[1], &list[1]);
-}
+        let cloned = list.clone();
+        assert_eq!(cloned.count(), list.count());
+        assert_eq!(&cloned[0], &list[0]);
+        assert_eq!(&cloned[1], &list[1]);
+    }
 
-#[cfg(test)]
-#[test]
-#[should_panic(expected = "tried to access out of bound index 10")]
-fn out_of_bound_access_panics() {
-    let mut list: List<u32> = List::new();
-    list.push_back(1);
-    list.push_back(2);
-    list.push_back(3);
+    #[test]
+    #[should_panic(expected = "tried to access out of bound index 10")]
+    fn out_of_bound_access_panics() {
+        let mut list: List<u32> = List::new();
+        list.push_back(1);
+        list.push_back(2);
+        list.push_back(3);
 
-    assert_eq!(list[10], 42);
+        assert_eq!(list[10], 42);
+    }
 }
 ```
 
@@ -432,10 +436,10 @@ Each line corresponds to a *record*, and each column corresponds to a *field*.
 * Create a `Field` trait, which describes how to encode or decode a value.
 
 ```rust
-struct EncodingError;
-struct DecodingError;
+pub struct EncodingError;
+pub struct DecodingError;
 
-trait Field: Sized {
+pub trait Field: Sized {
     fn encode(&self, target: &mut String) -> Result<(), EncodingError>;
     fn decode(field: &str) -> Result<Self, DecodingError>;
 }
@@ -456,7 +460,7 @@ impl_field_for_int!(u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isi
 * Create a `Record` trait, which describes how to encode or decode a collection of `Field`s.
 
 ```rust
-trait Record: Sized {
+pub trait Record: Sized {
     fn encode(&self, target: &mut String) -> Result<(), EncodingError>;
     fn decode(line: &str) -> Result<Self, DecodingError>; 
 }
@@ -465,8 +469,8 @@ trait Record: Sized {
 * Now, you have everything you need to create `decode_csv` and `encode_csv` functions.
 
 ```rust
-fn encode_csv<R: Record>(records: &[R]) -> Result<String, EncodingError>;
-fn decode_csv<R: Record>(contents: &str) -> Result<Vec<R>, DecodingError>;
+pub fn encode_csv<R: Record>(records: &[R]) -> Result<String, EncodingError>;
+pub fn decode_csv<R: Record>(contents: &str) -> Result<Vec<R>, DecodingError>;
 ```
 
 * `encode_csv` takes a list of records and encode them into a `String`.
@@ -476,65 +480,63 @@ Example:
 
 ```rust
 #[cfg(test)]
-#[derive(Debug, PartialEq)]
-struct User {
-    name: String,
-    age: u32,
-}
+mod tests {
+    #[derive(Debug, PartialEq)]
+    struct User {
+        name: String,
+        age: u32,
+    }
 
-#[cfg(test)]
-impl Record for User { /* ... */ }
+    impl Record for User { /* ... */ }
 
-#[cfg(test)]
-#[test]
-fn test_encode() {
-    let database = [
-        User { name: "aaa".into(), age : 23 },
-        User { name: "bb".into(), age: 2 },
-    ];
+    #[test]
+    fn test_encode() {
+        let database = [
+            User { name: "aaa".into(), age : 23 },
+            User { name: "bb".into(), age: 2 },
+        ];
 
-    let csv = encode_csv(&database).unwrap();
+        let csv = encode_csv(&database).unwrap();
 
-    assert_eq!(
-        csv,
-        "\
-        aaa,23\n\
-        bb,2\n\
-        "
-    );
-}
+        assert_eq!(
+            csv,
+            "\
+            aaa,23\n\
+            bb,2\n\
+            "
+        );
+    }
 
-#[cfg(test)]
-#[test]
-fn test_decode() {
-    let csv = "\
-        hello,2\n\
-        yes,5\n\
-        no,100\n\
-    ";
+    #[test]
+    fn test_decode() {
+        let csv = "\
+            hello,2\n\
+            yes,5\n\
+            no,100\n\
+        ";
 
-    let database: Vec<User> = decode_csv(csv).unwrap();
+        let database: Vec<User> = decode_csv(csv).unwrap();
 
-    assert_eq!(
-        database,
-        [
-            User { name: "hello".into(), age: 2 },
-            User { name: "yes".into(), age: 5 },
-            User { name: "no".into(), age: 100 },
-        ]
-    );
-}
+        assert_eq!(
+            database,
+            [
+                User { name: "hello".into(), age: 2 },
+                User { name: "yes".into(), age: 5 },
+                User { name: "no".into(), age: 100 },
+            ]
+        );
+    }
 
-#[cfg(test)]
-#[test]
-fn decoding_error() {
-    let csv = "\
-        hello,2\n\
-        yes,6\n\
-        no,23,hello\n\
-    ";
+    #[test]
+    fn decoding_error() {
+        let csv = "\
+            hello,2\n\
+            yes,6\n\
+            no,23,hello\n\
+        ";
 
-    decode_csv::<User>(csv).unwrap_err();
+        decode_csv::<User>(csv).unwrap_err();
+    }
 }
 
 ```
@@ -553,23 +555,25 @@ struct MyType {
 impl_record!(MyType(id, name));
 
 #[cfg(test)]
-#[test]
-fn test_impl_record() {
-    let records = [
-        MyType { id: 10, name: "Marvin".into() },
-        MyType { id: 11, name: "Marvin".into() },
-        MyType { id: 12, name: "Marvin".into() },
-    ];
+mod tests {
+    #[test]
+    fn test_impl_record() {
+        let records = [
+            MyType { id: 10, name: "Marvin".into() },
+            MyType { id: 11, name: "Marvin".into() },
+            MyType { id: 12, name: "Marvin".into() },
+        ];
 
-    let csv = encode_csv(&records).unwrap();
-    assert_eq!(
-        csv,
-        "\
-        10,Marvin\n\
-        11,Marvin\n\
-        12,Marvin\n\
-        "
-    );
+        let csv = encode_csv(&records).unwrap();
+        assert_eq!(
+            csv,
+            "\
+            10,Marvin\n\
+            11,Marvin\n\
+            12,Marvin\n\
+            "
+        );
+    }
 }
 ```
 
