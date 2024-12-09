@@ -1,4 +1,4 @@
-use std::path;
+use std::{fs, io::Write, path};
 
 use rand::seq::SliceRandom;
 
@@ -28,11 +28,11 @@ pub trait Testable {
     }
 
     fn run_cargo_tests(&self) -> Result<(), String> {
-        let mut cargo_test_list = self.get_cargo().test_list(&["shortinette_tests"]);
-        assert!(!cargo_test_list.is_empty(), "No shortinette tests found");
-
         // We do not want to create a new Cargo project for every test
-        let cargo = self.get_cargo();
+        let cargo = self.prepare_cargo_tests();
+
+        let mut cargo_test_list = cargo.test_list(&["shortinette_tests"]);
+        assert!(!cargo_test_list.is_empty(), "No shortinette tests found");
 
         let mut rng = rand::thread_rng();
         cargo_test_list.shuffle(&mut rng);
@@ -51,6 +51,29 @@ pub trait Testable {
         } else {
             Err(failed_output.join("\n"))
         }
+    }
+
+    fn prepare_cargo_tests(&self) -> Cargo {
+        let cargo = Cargo::new("shortinette-test-module", true);
+        cargo
+            .add_local_dependency(
+                self.path()
+                    .to_str()
+                    .expect("Path did not contain valid unicode"),
+            )
+            .expect("Failed to add exercise as dependency to test project");
+
+        let mut lib_file = fs::File::create(cargo.path().join("src/lib.rs"))
+            .expect("Failed to open src/lib.rs of test module");
+        lib_file
+            .write_all(self.cargo_test_mod().as_bytes())
+            .expect("Failed to write test module into src/lib.rs of test module");
+
+        cargo
+    }
+
+    fn cargo_test_mod(&self) -> &'static str {
+        include_str!("./default-cargo-test.rs")
     }
 
     fn path(&self) -> path::PathBuf;
