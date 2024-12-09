@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod shortinette_tests {
-    use super::*;
+    use ex00::choose;
 
     #[test]
     #[should_panic]
