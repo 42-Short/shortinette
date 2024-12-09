@@ -9,13 +9,21 @@ pub struct Cargo {
 }
 
 impl Cargo {
-    pub fn new(name: &str) -> Self {
+    pub fn new(name: &str, is_lib: bool) -> Self {
         let dir = tempfile::tempdir().expect("Failed to create directory for cargo project");
 
-        let init_output = process::Command::new("cargo")
+        let mut init_command = process::Command::new("cargo");
+
+        init_command
             .arg("init")
             .arg(dir.path())
-            .args(["--name", name])
+            .args(["--name", name]);
+
+        if is_lib {
+            init_command.arg("--lib");
+        }
+
+        let init_output = init_command
             .output()
             .expect("Failed to execute cargo command");
 
@@ -75,6 +83,43 @@ impl Cargo {
             .expect("Failed to get path to compiled exercise");
 
         Ok(executable_path)
+    }
+
+    pub fn path(&self) -> &path::Path {
+        self.dir.path()
+    }
+
+    pub fn add_dependency(&self, name: &str, version: &str) -> Result<(), ()> {
+        let add_output = process::Command::new("cargo")
+            .current_dir(self.dir.path())
+            .arg("add")
+            .arg(name)
+            .arg("--version")
+            .arg(version)
+            .output()
+            .expect("Failed to execute cargo add");
+
+        if add_output.status.success() {
+            Ok(())
+        } else {
+            Err(())
+        }
+    }
+
+    pub fn add_local_dependency(&self, path: &str) -> Result<(), ()> {
+        let add_output = process::Command::new("cargo")
+            .current_dir(self.dir.path())
+            .arg("add")
+            .arg("--path")
+            .arg(path)
+            .output()
+            .expect("Failed to execute cargo add");
+
+        if add_output.status.success() {
+            Ok(())
+        } else {
+            Err(())
+        }
     }
 
     pub fn run_test<'a>(
