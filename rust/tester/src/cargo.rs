@@ -51,7 +51,7 @@ impl Cargo {
         Self { dir }
     }
 
-    pub fn compile(&self) -> Result<path::PathBuf, ()> {
+    pub fn compile(&self) -> Result<Option<path::PathBuf>, ()> {
         let compile_output = process::Command::new("cargo")
             .current_dir(self.dir.path())
             .arg("build")
@@ -69,7 +69,7 @@ impl Cargo {
         #[derive(Debug, serde::Deserialize)]
         struct CompilerOutput {
             reason: String,
-            executable: String,
+            executable: Option<String>,
         }
 
         let executable_path = reader
@@ -79,7 +79,7 @@ impl Cargo {
             .filter_map(Result::ok)
             .filter(|output| output.reason.as_str() == "compiler-artifact")
             .last()
-            .map(|output| path::PathBuf::from(output.executable))
+            .map(|output| output.executable.map(path::PathBuf::from))
             .expect("Failed to get path to compiled exercise");
 
         Ok(executable_path)

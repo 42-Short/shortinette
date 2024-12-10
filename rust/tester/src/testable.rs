@@ -87,7 +87,7 @@ pub trait Testable {
         path
     }
 
-    fn compile(&self) -> Result<path::PathBuf, TestResult> {
+    fn compile(&self) -> Result<Option<path::PathBuf>, TestResult> {
         Cargo::copy_from(&self.ensure_path())
             .compile()
             .map_err(|_| TestResult::CompilationError)
