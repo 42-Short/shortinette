@@ -23,10 +23,10 @@ var (
 //   - repoID: the unique identifier for the repository
 //
 // Returns a string representing the file path for the new trace file.
-func GetNewTraceFile(repoID string) string {
+func GetNewTraceFile(repoID int) string {
 	t := time.Now()
 	formattedTime := t.Format("20060102_150405")
-	return fmt.Sprintf("traces/%s-%s.log", repoID, formattedTime)
+	return fmt.Sprintf("traces/module%d-%s.log", repoID, formattedTime)
 }
 
 // InitializeTraceLogger sets up the File logger to write to the specified trace file.

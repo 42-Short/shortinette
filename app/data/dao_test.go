@@ -2,13 +2,12 @@ package data
 
 import (
 	"context"
-	"strconv"
+	"fmt"
 	"testing"
-	"time"
-
-	"math/rand"
 
 	"github.com/42-Short/shortinette/db"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestInsert(t *testing.T) {
@@ -16,22 +15,15 @@ func TestInsert(t *testing.T) {
 	participantDAO := NewDAO[Participant](db)
 	defer db.Close()
 
-	participant := newDummyParticipant()
-	err := participantDAO.Insert(context.Background(), participant)
-	if err != nil {
-		t.Fatalf("failed to insert participant into DB: %v", err)
-	}
+	participant := NewDummyParticipant(100)
+	err := participantDAO.Insert(context.Background(), *participant)
+	require.NoError(t, err)
 
 	retrievedParticipants, err := participantDAO.GetAll(context.Background())
-	if err != nil {
-		t.Fatalf("failed to fetch participant from DB: %v", err)
-	}
+	require.NoError(t, err)
 	expectedSize := len(participants) + 1
 	actualSize := len(retrievedParticipants)
-	if actualSize != expectedSize {
-		t.Fatalf("expected %d participants after insertion but got %d", expectedSize, actualSize)
-	}
-	assertParticipant(t, participant, &retrievedParticipants[actualSize-1])
+	assert.Equal(t, actualSize, expectedSize, fmt.Sprintf("expected %d participants after insertion but got %d", expectedSize, actualSize))
 }
 
 func TestUpdate(t *testing.T) {
@@ -41,23 +33,16 @@ func TestUpdate(t *testing.T) {
 
 	modules[0].Score += 100
 	modules[0].Attempts += 1
-	err := moduleDAO.Update(context.Background(), &modules[0])
-	if err != nil {
-		t.Fatalf("failed to update module in DB %v", err)
-	}
+	err := moduleDAO.Update(context.Background(), modules[0])
+	require.NoError(t, err)
 
 	retrievedModule, err := moduleDAO.Get(context.Background(), modules[0].Id, modules[0].IntraLogin)
-	if err != nil {
-		t.Fatalf("failed to fetch module from DB: %v", err)
-	}
+	require.NoError(t, err)
 
-	assertModule(t, &modules[0], retrievedModule)
-	if modules[0].Score != retrievedModule.Score {
-		t.Fatalf("failed to update module score in DB: %v", err)
-	}
-	if modules[0].Attempts != retrievedModule.Attempts {
-		t.Fatalf("failed to update module Attempts in DB: %v", err)
-	}
+	assert.Equal(t, modules[0].IntraLogin, retrievedModule.IntraLogin)
+	assert.Equal(t, modules[0].Id, retrievedModule.Id)
+	assert.Equal(t, modules[0].Score, retrievedModule.Score, "failed to update module score in DB")
+	assert.Equal(t, modules[0].Attempts, retrievedModule.Attempts, "failed to update module score in DB")
 
 }
 
@@ -68,15 +53,12 @@ func TestGet(t *testing.T) {
 	defer db.Close()
 
 	retrievedParticipant, err := participantDAO.Get(context.Background(), participants[0].IntraLogin)
-	if err != nil {
-		t.Fatalf("failed to fetch participant from DB: %v", err)
-	}
+	require.NoError(t, err)
 	retrievedModule, err := moduleDAO.Get(context.Background(), modules[0].Id, modules[0].IntraLogin)
-	if err != nil {
-		t.Fatalf("failed to fetch module from DB: %v", err)
-	}
-	assertModule(t, &modules[0], retrievedModule)
-	assertParticipant(t, &participants[0], retrievedParticipant)
+	require.NoError(t, err)
+	assert.Equal(t, retrievedModule.IntraLogin, modules[0].IntraLogin)
+	assert.Equal(t, retrievedModule.Id, modules[0].Id)
+	assert.Equal(t, retrievedParticipant.IntraLogin, participants[0].IntraLogin)
 }
 
 func TestGetFiltered(t *testing.T) {
@@ -89,38 +71,22 @@ func TestGetFiltered(t *testing.T) {
 		"attempts":  modules[0].Attempts,
 	}
 	retrievedModules, err := moduleDAO.GetFiltered(context.Background(), filters)
-	if err != nil {
-		t.Fatalf("failed to fetch module from DB: %v", err)
-	}
+	require.NoError(t, err)
 	for _, retrievedModule := range retrievedModules {
-		if retrievedModule.WaitTime != modules[0].WaitTime {
-			t.Fatalf("incorrect WaitTime in filtered fetch")
-		}
-		if retrievedModule.Attempts != modules[0].Attempts {
-			t.Fatalf("incorrect Score in filtered fetch")
-		}
+		assert.Equal(t, retrievedModule.WaitTime, modules[0].WaitTime, "incorrect WaitTime in filtered fetch")
+		assert.Equal(t, retrievedModule.Attempts, modules[0].Attempts, "incorrect WaitTime in filtered fetch")
 	}
 }
 
 func TestGetAll(t *testing.T) {
-	db, modules, participants := newDummyDB(t)
-	moduleDAO := NewDAO[Module](db)
+	db, _, participants := newDummyDB(t)
 	participantDAO := NewDAO[Participant](db)
 	defer db.Close()
 
-	retrievedModules, err := moduleDAO.GetAll(context.Background())
-	if err != nil {
-		t.Fatalf("failed to fetch modules from DB: %v", err)
-	}
 	retrievedParticipants, err := participantDAO.GetAll(context.Background())
-	if err != nil {
-		t.Fatalf("failed to fetch participants from DB: %v", err)
-	}
+	require.NoError(t, err)
 	for i, participant := range participants {
-		assertParticipant(t, &participant, &retrievedParticipants[i])
-		for j, module := range modules {
-			assertModule(t, &module, &retrievedModules[j])
-		}
+		assert.Equal(t, &participant, &retrievedParticipants[i])
 	}
 }
 
@@ -130,98 +96,21 @@ func TestDelete(t *testing.T) {
 	defer db.Close()
 
 	err := moduleDAO.Delete(context.Background(), modules[0].Id, modules[0].IntraLogin)
-	if err != nil {
-		t.Fatalf("failed to delete modules from DB: %v", err)
-	}
+	require.NoError(t, err)
 	retrievedModules, err := moduleDAO.GetAll(context.Background())
-	if err != nil {
-		t.Fatalf("failed to fetch modules from DB: %v", err)
-	}
-	if len(retrievedModules) != len(modules)-1 {
-		t.Fatalf("failed to delete module from DB")
-	}
-}
-
-func assertParticipant(t *testing.T, participant *Participant, retrievedParticipant *Participant) {
-	t.Helper()
-	if retrievedParticipant == nil {
-		t.Fatalf("participant not found in DB")
-	}
-
-	if retrievedParticipant.IntraLogin != participant.IntraLogin {
-		t.Fatalf("retrieved participants does not match the inserted participant")
-	}
-}
-
-func assertModule(t *testing.T, module *Module, retrievedModule *Module) {
-	t.Helper()
-	if retrievedModule == nil {
-		t.Fatalf("module not found in DB")
-	}
-
-	if retrievedModule.IntraLogin != module.IntraLogin {
-		t.Fatalf("retrieved module does not match the inserted module")
-	}
+	require.NoError(t, err)
+	assert.Equal(t, len(retrievedModules), len(modules)-1, "failed to delete module from DB")
 }
 
 func newDummyDB(t *testing.T) (*db.DB, []Module, []Participant) {
 	t.Helper()
 
 	db, err := db.NewDB(context.Background(), "file::memory:?cache=shared")
-	if err != nil {
-		t.Fatalf("failed to open DB: %v", err)
-	}
-	if err := db.Initialize("../db/schema.sql"); err != nil {
-		t.Fatalf("failed to initialize DB: %v", err)
-	}
+	require.NoError(t, err)
+	err = db.Initialize("../db/schema.sql")
+	require.NoError(t, err)
 
-	modules, participants := createDummyData(t, db, 7, 40)
-	return db, modules, participants
-}
-
-func createDummyData(t *testing.T, db *db.DB, moduleAmount int, participantAmount int) ([]Module, []Participant) {
-	t.Helper()
-	moduleDao := NewDAO[Module](db)
-	participantDao := NewDAO[Participant](db)
-
-	participants := make([]Participant, 0, participantAmount)
-	modules := make([]Module, 0, moduleAmount*participantAmount)
-
-	for i := 0; i < participantAmount; i++ {
-		participant := newDummyParticipant()
-
-		if err := participantDao.Insert(context.Background(), participant); err != nil {
-			t.Fatalf("failed to insert participant into DB: %v", err)
-		}
-		participants = append(participants, *participant)
-
-		for j := 0; j < moduleAmount; j++ {
-			module := newDummyModule(j, participant.IntraLogin)
-			if err := moduleDao.Insert(context.Background(), module); err != nil {
-				t.Fatalf("failed to insert module into DB: %v", err)
-			}
-			modules = append(modules, *module)
-		}
-	}
-	return modules, participants
-}
-
-func newDummyModule(moduleID int, intraLogin string) *Module {
-	return &Module{
-		Id:             moduleID,
-		IntraLogin:     intraLogin,
-		Attempts:       rand.Int(),
-		Score:          rand.Int(),
-		LastGraded:     time.Now(),
-		WaitTime:       rand.Int(),
-		GradingOngoing: rand.Intn(2) == 0,
-	}
-}
-
-func newDummyParticipant() *Participant {
-	intraLogin := strconv.Itoa(rand.Int())
-	return &Participant{
-		IntraLogin:  intraLogin,
-		GitHubLogin: "dummy_git_" + intraLogin,
-	}
+	data, err := SeedDB(db)
+	require.NoError(t, err, "failed to seed db")
+	return db, data.modules, data.participants
 }

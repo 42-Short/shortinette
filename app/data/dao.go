@@ -35,7 +35,7 @@ func NewDAO[T any](db *db.DB) *DAO[T] {
 }
 
 // Adds a new record to the table
-func (dao *DAO[T]) Insert(ctx context.Context, data *T) error {
+func (dao *DAO[T]) Insert(ctx context.Context, data T) error {
 	query := buildInsertQuery(dao.md.tableName, dao.md.dbTags)
 	_, err := dao.DB.Conn.NamedExecContext(ctx, query, data)
 	if err != nil {
@@ -45,7 +45,7 @@ func (dao *DAO[T]) Insert(ctx context.Context, data *T) error {
 }
 
 // Modifies an existing record in the table using the DAO's primary keys.
-func (dao *DAO[T]) Update(ctx context.Context, data *T) error {
+func (dao *DAO[T]) Update(ctx context.Context, data T) error {
 	query := buildUpdateQuery(dao.md.tableName, dao.md.dbTags, dao.md.primaryKeys)
 	_, err := dao.DB.Conn.NamedExecContext(ctx, query, data)
 	if err != nil {
@@ -96,6 +96,10 @@ func (dao *DAO[T]) Delete(ctx context.Context, args ...any) error {
 		return fmt.Errorf("failed to execute query on table %s: %v", dao.md.tableName, err)
 	}
 	return nil
+}
+
+func (dao *DAO[T]) Name() string {
+	return dao.md.tableName
 }
 
 // Example query:
