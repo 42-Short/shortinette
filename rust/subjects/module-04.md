@@ -131,7 +131,7 @@ mod test {
     }
 
     fn maybe() -> Maybe<u8> {
-        Maybe::Defenitly(42)
+        Maybe::Definitely(42)
     }
 
     #[test]
@@ -144,8 +144,8 @@ mod test {
 
         let m = maybe();
         match m {
-            Maybe::Defenitly(n) => assert_eq!(n, 42),
-            Maybe::No => panic!("should be Defenitly")
+            Maybe::Definitely(n) => assert_eq!(n, 42),
+            Maybe::No => panic!("should be Definitely")
         }
 
     }
