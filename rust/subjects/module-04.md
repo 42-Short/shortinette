@@ -204,9 +204,7 @@ allowed symbols:
     std::{print, println, eprintln}
 ```
 
-Create a **program** that computes the total size of a directory or file. The program must write the
-aggregated size of directories *in real-time*. As more files are taken in account in the count,
-the total size must be updated in the terminal.
+Create a **program** that computes the total size of a directory or file. Once computed, print the size followed by a newline, and formatted like in the examples below.
 
 ```txt
 >_ cargo run -- ~
