@@ -22,17 +22,9 @@ be declared for the whole module.
 machines without additional options.  You are _not_ allowed to use `unsafe` code anywere in your
 code.
 
-* You are generally not authorized to modify lint levels - either using `#[attributes]`,
+* If not specified otherwise by the task description, you are generally not authorized to modify lint levels - either using `#[attributes]`,
 `#![global_attributes]` or with command-line arguments. You may optionally allow the `dead_code`
 lint to silence warnings about unused variables, functions, etc.
-
-* For exercises managed with cargo, the command `cargo clippy -- -D warnings` must run with no errors!
-
-* You are _strongly_ encouraged to write extensive tests for the functions and programs you turn in.
- Tests (when not specifically required by the subject) can use the symbols you want, even if
-they are not specified in the `allowed symbols` section. **However**, tests should **not** introduce **any additional external dependencies** beyond those already required by the subject.
-
-* When a type is in the allowed symbols, it is **implied** that its methods and attributes are also allowed to be used (e.g., if `Vec` is allowed, you can use `Vec::push()`).
 
 ```rust
 // Either globally:
@@ -43,11 +35,15 @@ they are not specified in the `allowed symbols` section. **However**, tests shou
 fn my_unused_function() {}
 ```
 
-* For exercises managed with cargo, the command `cargo clippy -- -D warnings` must run **with no errors**!
+* For exercises managed with cargo, the command `cargo clippy -- -D warnings` must run with no errors!
 
-* You are *strongly* encouraged to write extensive tests for the functions and programs you turn in. However, for function/library submissions (_anything which is not a program_), do **not** submit a main. Tests can use the symbols and lint levels you want, even if they are not specified in the `allowed symbols` section.
+* You are _strongly_ encouraged to write extensive tests for the functions and programs you turn in.
+ Tests (when not specifically required by the subject) can use the symbols you want, even if
+they are not specified in the `allowed symbols` section. **However**, tests should **not** introduce **any additional external dependencies** beyond those already required by the subject.
 
+* When a type is in the allowed symbols, it is **implied** that its methods and attributes are also allowed to be used (e.g., if `Vec` is allowed, you can use `Vec::push()`).
 
+* You are **always** allowed to use `Option` and `Result` types (not the `std::io::Result`, _just the plain one_), even when they are not in the allowed symbols!
 
 ## Exercise 00: Hello, World!
 

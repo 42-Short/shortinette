@@ -34,9 +34,18 @@ be declared for the whole module.
 machines without additional options.  You are _not_ allowed to use `unsafe` code anywere in your
 code.
 
-* You are generally not authorized to modify lint levels - either using `#[attributes]`,
+* If not specified otherwise by the task description, you are generally not authorized to modify lint levels - either using `#[attributes]`,
 `#![global_attributes]` or with command-line arguments. You may optionally allow the `dead_code`
 lint to silence warnings about unused variables, functions, etc.
+
+```rust
+// Either globally:
+#![allow(dead_code)] 
+
+// Or locally, for a simple item:
+#[allow(dead_code)]
+fn my_unused_function() {}
+```
 
 * For exercises managed with cargo, the command `cargo clippy -- -D warnings` must run with no errors!
 
@@ -45,6 +54,8 @@ lint to silence warnings about unused variables, functions, etc.
 they are not specified in the `allowed symbols` section. **However**, tests should **not** introduce **any additional external dependencies** beyond those already required by the subject.
 
 * When a type is in the allowed symbols, it is **implied** that its methods and attributes are also allowed to be used (e.g., if `Vec` is allowed, you can use `Vec::push()`).
+
+* You are **always** allowed to use `Option` and `Result` types (not the `std::io::Result`, _just the plain one_), even when they are not in the allowed symbols!
 
 ## Exercise 00: Reference me daddy
 
