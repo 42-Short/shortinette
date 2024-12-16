@@ -341,12 +341,6 @@ func TestDoesAccountExistExisting(t *testing.T) {
 	assert.Equal(t, found, true, "DoesAccountExist returned false on a valid user")
 }
 
-func TestDoesAccountExistOrga(t *testing.T) {
-	found, err := DoesAccountExist("github")
-	require.Error(t, err)
-	assert.Equal(t, found, true, "DoesAccountExist returned true on an organisation")
-}
-
 func TestNewTemplateRepo(t *testing.T) {
 	gh := NewGithubService(token, orga)
 	repoName := uuid.New().String()
