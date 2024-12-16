@@ -19,7 +19,7 @@ jobs:
       SERVER_ADDR: ${{ secrets.SERVER_ADDR }}
       CONFIG_PATH: ${{ secrets.CONFIG_PATH }}
       API_TOKEN: ${{ secrets.API_TOKEN }}
-      BASE_PATH: $GITHUB_WORKSPACE
+      BASE_PATH: ${{ GITHUB_WORKSPACE }}
 
     steps:
       - uses: actions/checkout@v4
