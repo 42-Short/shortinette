@@ -18,16 +18,18 @@ import (
 )
 
 type GithubService struct {
-	Client *github.Client
-	Orga   string
-	Token  string
+	Client   *github.Client
+	Orga     string
+	Token    string
+	BasePath string
 }
 
-func NewGithubService(authToken string, orga string) *GithubService {
+func NewGithubService(authToken string, orga string, basePath string) *GithubService {
 	return &GithubService{
-		Client: github.NewClient(nil).WithAuthToken(authToken),
-		Orga:   orga,
-		Token:  authToken,
+		Client:   github.NewClient(nil).WithAuthToken(authToken),
+		Orga:     orga,
+		Token:    authToken,
+		BasePath: basePath,
 	}
 }
 
@@ -49,7 +51,7 @@ func (gh *GithubService) deleteRepo(name string) (err error) {
 func isRepoAlreadyExists(err error) (exists bool) {
 	if githubErr, ok := err.(*github.ErrorResponse); ok {
 		for _, e := range githubErr.Errors {
-			if strings.Contains(e.Message, "Name already exists on this account") {
+			if strings.Contains(e.Message, "name already exists on this account") {
 				return true
 			}
 		}
@@ -334,39 +336,11 @@ func DoesAccountExist(username string) (bool, error) {
 	return *user.Type == "User", nil
 }
 
-func (gh *GithubService) NewTemplateRepo(name string, content ...string) (err error) {
-	isTemplate := true
-
-	createdRepo, response, err := gh.Client.Repositories.Create(context.Background(), gh.Orga, &github.Repository{Name: &name, IsTemplate: &isTemplate})
-	if err != nil {
-		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
-			if isRepoAlreadyExists(err) {
-				logger.Info.Printf("repo %s already exists under orga %s, skipping\n", name, gh.Orga)
-				return nil
-			}
-		}
-		return fmt.Errorf("could not create repo %s: %v", name, err)
-	}
-
-	if err = gh.Clone(name); err != nil {
-		return fmt.Errorf("could not clone template repo '%s': %v", name, err)
-	}
-
-	for _, file := range content {
-		if err = gh.UploadFiles(name, "initial commit", "main", false, file); err != nil {
-			return fmt.Errorf("could not upload file '%s' to repo '%s': %v", file, name, err)
-		}
-	}
-
-	logger.Info.Printf("repo created: %s at URL: %s\n", *createdRepo.Name, *createdRepo.HTMLURL)
-	return nil
-}
-
 func (gh *GithubService) CreateModuleTemplate(module int) (err error) {
 	isTemplate := true
-	templateName := fmt.Sprintf("module-%s-template")
+	templateName := fmt.Sprintf("module-0%d-template", module)
 
-	createdRepo, response, err := gh.Client.Repositories.Create(context.Background(), gh.Orga, &github.Repository{Name: &name, IsTemplate: &isTemplate})
+	_, response, err := gh.Client.Repositories.Create(context.Background(), gh.Orga, &github.Repository{Name: &templateName, IsTemplate: &isTemplate})
 	if err != nil {
 		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
 			if isRepoAlreadyExists(err) {
@@ -381,12 +355,11 @@ func (gh *GithubService) CreateModuleTemplate(module int) (err error) {
 		return fmt.Errorf("could not clone template repo '%s': %v", templateName, err)
 	}
 
-	subjectPath := 
+	subjectPath := filepath.Join(gh.BasePath, "rust", "subjects", fmt.Sprintf("0%d", module), "README.md")
+	devcontainerConfigPath := filepath.Join(gh.BasePath, "rust", ".devcontainer")
 
-	for _, file := range content {
-		if err = gh.UploadFiles(name, "initial commit", "main", false, file); err != nil {
-			return fmt.Errorf("could not upload file '%s' to repo '%s': %v", file, name, err)
-		}
+	if err = gh.UploadFiles(templateName, fmt.Sprintf("add: devcontainer config + subject for module 0%d", module), "main", false, subjectPath, devcontainerConfigPath); err != nil {
+		return fmt.Errorf("could not upload files: %v", err)
 	}
 
 	return nil
