@@ -341,8 +341,19 @@ func TestDoesAccountExistExisting(t *testing.T) {
 	assert.Equal(t, found, true, "DoesAccountExist returned false on a valid user")
 }
 
-func TesDoesAccountExistOrga(t *testing.T) {
+func TestDoesAccountExistOrga(t *testing.T) {
 	found, err := DoesAccountExist("github")
 	require.Error(t, err)
 	assert.Equal(t, found, true, "DoesAccountExist returned true on an organisation")
+}
+
+func TestNewTemplateRepo(t *testing.T) {
+	gh := NewGithubService(token, orga)
+	repoName := uuid.New().String()
+
+	if err := gh.NewTemplateRepo(repoName); err != nil {
+		t.Fatalf("NewTemplateRepo failed on a standard use case: %v", err)
+	}
+
+	defer cleanup(t, gh, repoName)
 }

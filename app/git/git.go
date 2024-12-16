@@ -5,6 +5,7 @@ package git
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -148,16 +149,80 @@ func push(dir string) (err error) {
 	return nil
 }
 
-func copyFiles(target string, files ...string) (err error) {
-	for _, file := range files {
-		data, err := os.ReadFile(file)
+func copyDirectory(src string, dest string) (err error) {
+	err = os.MkdirAll(dest, 0755)
+	if err != nil {
+		return err
+	}
+
+	err = filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return fmt.Errorf("could not copy file '%s' to '%s': %v", file, target, err)
+			return err
 		}
 
-		if err = os.WriteFile(filepath.Join(target, file), data, 0644); err != nil {
-			return fmt.Errorf("could not copy file '%s' to '%s': %v", file, target, err)
+		relativePath, err := filepath.Rel(src, path)
+		if err != nil {
+			return err
 		}
+
+		destPath := filepath.Join(dest, relativePath)
+
+		if info.IsDir() {
+			return os.MkdirAll(destPath, info.Mode())
+		}
+
+		return copyFile(path, destPath)
+	})
+
+	return err
+}
+
+func copyFile(src string, dest string) (err error) {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	destFile, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+	defer destFile.Close()
+
+	_, err = io.Copy(destFile, srcFile)
+	if err != nil {
+		return err
+	}
+
+	srcInfo, err := os.Stat(src)
+	if err == nil {
+		err = os.Chmod(dest, srcInfo.Mode())
+	}
+
+	return err
+}
+
+func copyFiles(target string, files ...string) (err error) {
+	for _, file := range files {
+
+		info, err := os.Stat(file)
+		if err != nil {
+			return fmt.Errorf("could not stat '%s': %v", file, err)
+		}
+
+		if info.IsDir() {
+			err = copyDirectory(file, filepath.Join(target, filepath.Base(file)))
+			if err != nil {
+				return fmt.Errorf("could not copy directory '%s': %v", file, err)
+			}
+		} else {
+			err = copyFile(file, filepath.Join(target, filepath.Base(file)))
+			if err != nil {
+				return fmt.Errorf("could not copy file '%s' to '%s': %v", file, target, err)
+			}
+		}
+
 	}
 	return nil
 }
@@ -267,4 +332,32 @@ func DoesAccountExist(username string) (bool, error) {
 		return false, fmt.Errorf("github API error for username '%s': %v", username, err)
 	}
 	return *user.Type == "User", nil
+}
+
+func (gh *GithubService) NewTemplateRepo(name string, content ...string) (err error) {
+	isTemplate := true
+
+	createdRepo, response, err := gh.Client.Repositories.Create(context.Background(), gh.Orga, &github.Repository{Name: &name, IsTemplate: &isTemplate})
+	if err != nil {
+		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
+			if isRepoAlreadyExists(err) {
+				logger.Info.Printf("repo %s already exists under orga %s, skipping\n", name, gh.Orga)
+				return nil
+			}
+		}
+		return fmt.Errorf("could not create repo %s: %v", name, err)
+	}
+
+	if err = gh.Clone(name); err != nil {
+		return fmt.Errorf("could not clone template repo '%s': %v", name, err)
+	}
+
+	for _, file := range content {
+		if err = gh.UploadFiles(name, "initial commit", "main", false, file); err != nil {
+			return fmt.Errorf("could not upload file '%s' to repo '%s': %v", file, name, err)
+		}
+	}
+
+	logger.Info.Printf("repo created: %s at URL: %s\n", *createdRepo.Name, *createdRepo.HTMLURL)
+	return nil
 }
