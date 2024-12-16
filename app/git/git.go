@@ -361,3 +361,33 @@ func (gh *GithubService) NewTemplateRepo(name string, content ...string) (err er
 	logger.Info.Printf("repo created: %s at URL: %s\n", *createdRepo.Name, *createdRepo.HTMLURL)
 	return nil
 }
+
+func (gh *GithubService) CreateModuleTemplate(module int) (err error) {
+	isTemplate := true
+	templateName := fmt.Sprintf("module-%s-template")
+
+	createdRepo, response, err := gh.Client.Repositories.Create(context.Background(), gh.Orga, &github.Repository{Name: &name, IsTemplate: &isTemplate})
+	if err != nil {
+		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
+			if isRepoAlreadyExists(err) {
+				logger.Info.Printf("repo %s already exists under orga %s, skipping\n", templateName, gh.Orga)
+				return nil
+			}
+		}
+		return fmt.Errorf("could not create repo %s: %v", templateName, err)
+	}
+
+	if err = gh.Clone(templateName); err != nil {
+		return fmt.Errorf("could not clone template repo '%s': %v", templateName, err)
+	}
+
+	subjectPath := 
+
+	for _, file := range content {
+		if err = gh.UploadFiles(name, "initial commit", "main", false, file); err != nil {
+			return fmt.Errorf("could not upload file '%s' to repo '%s': %v", file, name, err)
+		}
+	}
+
+	return nil
+}
