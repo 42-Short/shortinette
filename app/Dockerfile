@@ -2,14 +2,15 @@ FROM golang:1.22.2
 
 WORKDIR /app
 
-COPY ./app/go.mod ./app/go.sum ./
+COPY go.mod go.sum ./
 
 RUN go mod download
 
-COPY ./app .
+COPY . .
 
 RUN go build .
 
 EXPOSE 5000
 
-CMD [ "go", "run", "." ]
+# CMD [ "go", "run", "." ]
+CMD [ "bash" ]
