@@ -12,5 +12,4 @@ RUN go build .
 
 EXPOSE 5000
 
-# CMD [ "go", "run", "." ]
-CMD [ "bash" ]
+CMD [ "go", "run", "." ]
