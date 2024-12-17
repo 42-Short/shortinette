@@ -1,0 +1,13 @@
+services:
+
+  rust-short:
+    container_name: rust-short
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    environment:
+      - BASE_PATH=${PWD}
+    volumes:
+      - "./rust:/app/rust"
+    profiles:
+      - rust
