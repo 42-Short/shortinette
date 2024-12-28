@@ -8,6 +8,7 @@ pub struct Cargo {
     dir: tempfile::TempDir,
 }
 
+#[allow(unused)]
 impl Cargo {
     pub fn new(name: &str, is_lib: bool) -> Self {
         let dir = tempfile::tempdir().expect("Failed to create directory for cargo project");
