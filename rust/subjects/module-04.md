@@ -176,7 +176,7 @@ Write a **function** that copies `input`, to `writer` and all filenames provided
 Your function must have the following signature:
 
 ```rust
-pub fn tee<R: std::io::Read, W: std::io::Write>(input: R, writer: &mut W, filenames: &[String]);
+pub fn tee<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, filenames: &[String]);
 ```
 
 Example:
