@@ -165,18 +165,19 @@ allowed symbols:
     std::io::{Write, Read, stdin, stdout}
     std::io::{Stdout, StdoutLock, Stdin, StdinLock}
     std::io::{Error, Result}
-    std::fs::File  std::env::args
-    std::vec::Vec  std::string::String
+    std::fs::File 
+    std::vec::Vec
+    std::string::String
     std::iter::*
     std::{print, println, eprintln}
 ```
 
-Write a **function** that copies `input`, to `writer` and all filenames provided as arguments.
+Write a **function** that copies `input` to `writer` and all filenames provided as arguments.
 
 Your function must have the following signature:
 
 ```rust
-pub fn tee<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, filenames: &[String]);
+pub fn tee<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, filenames: Vec<String>);
 ```
 
 Example:
@@ -206,30 +207,41 @@ turn-in directory:
     ex02/
 
 files to turn in:
-    src/main.rs  Cargo.toml
+    src/lib.rs  Cargo.toml
 
 allowed symbols:
     std::fs::{metadata, Metadata, read_dir, DirEntry, ReadDir}
-    std::path::Path  std::io::{Error, Result}
-    std::env::args
+    std::path::Path
     std::{print, println, eprintln}
 ```
 
-Create a **program** that computes the total size of a directory or file. Once computed, print the size followed by a newline, and formatted like in the examples below.
+Create a **function** that computes the total size of a directory or file. Once computed, write the size followed by a newline, and formatted like in the examples below.
 
-```txt
->_ cargo run -- ~
-1.2 gigabytes
+Your function must have the following signature:
+```rust
+pub fn duh<W: std::io::Write>(writer: &mut W, basedir: &str);
+```
+
+Example Usage:
+
+```rust
+fn main() {
+    let arg: String = std::env::args().nth(1);
+    duh(&mut std::io::stdout(), &arg);
+}
+
+// Output:
+// 1.2 gigabytes
 ```
 
  * If a size is less than a kilobyte, it is written in bytes. (e.g. 245 bytes)
  * If a size is more than a kilobyte, it is written in kilobytes, with one decimal (e.g. `12.2 kilobytes`).
  * If a size is more than a megabyte, it is written in megabytes, with one decimal (e.g. `100.4 megabytes`).
  * If a size is more than a gigabyte, it is written in gigabytes, with one decimal (e.g. `23.9 gigabytes`).
- * For simplicty's sake, we'll assume that a kilobyte is `1000 bytes`, a megabyte is `1000 kilobytes`,
+ * For simplicity, you will assume that a kilobyte is `1000 bytes`, a megabyte is `1000 kilobytes`,
    etc.
 
-Your program must not panic when interacting with the file system. Errors must be handled properly.
+Your function must never panic when interacting with the file system. Errors must be handled properly.
 
 ## Exercise 03: Pipe-Line
 
@@ -238,35 +250,41 @@ turn-in directory:
     ex03/
 
 files to turn in:
-    src/main.rs  Cargo.toml
+    src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::env::args
     std::process::Command
     std::os::unix::process::CommandExt
     std::io::{Read, stdin}
-    std::vec::Vector
+    std::vec::Vec
     std::iter::*
 ```
 
-Create a **program** that takes a path and some arguments as an input, and spawns that process with:
-
-1. The arguments passed in command-line arguments.
-2. Each line of its standard input.
-
-Example:
+Create a **function** with the following signature:
 
 ```rust
->_ << EOF cargo run -- echo -n
-hello
-test
-EOF
-hello test>_
+pub fn pipeline<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, args: Vec<String>);
 ```
 
-The program invoked the `echo -n hello test` command.
+It must spawn a process using the path (`args[0]`, arguments (`args[1..]`)), and input (`input`) passed as arguments,
+and write its output to `writer`.
 
-Your program must not panic when interacting with the system, you must handle errors properly.
+Example Usage:
+
+```rust
+fn main() {
+    pipeline(&mut std::io::stdin(), &mut std::io::stdout(), vec![String::from("echo"), String::from("-n")]);
+}
+```
+Expected Output:
+```
+$ echo "Hello, World!" | cargo run
+Hello, World!%
+```
+
+The example invoked the `echo -n "Hello, World!"` command.
+
+Your function must never panic when interacting with the system, you must handle errors properly.
 
 ## Exercise 04: Command Multiplexer
 
@@ -275,10 +293,10 @@ turn-in directory:
     ex04/
 
 files to turn in:
-    src/main.rs  Cargo.toml
+    src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::env::args  std::iter::*
+    std::iter::*
     std::process::{Command, Stdio, Child}
     std::vec::Vec
     std::io::{stdout, Write, Read}
@@ -286,7 +304,13 @@ allowed symbols:
     std::eprintln
 ```
 
-Create a **program** that starts multiple commands, and prints each command followed by its output to `stdout`, separated by empty lines. 
+Create a **function** with the following signature:
+
+```rust
+pub fn multiplexer<W: std::io::Write>(writer: &mut W, command_lines: Vec<Vec<String>>);
+```
+
+It must start multiple command lines passed as arguments, and write each of them followed by its output to `stdout`, separated by empty lines, to `writer`. 
 **The different commands' outputs must _not_ be mixed up.**
 
  * Commands must be executed in parallel. You must spawn a process for each command.
@@ -294,25 +318,32 @@ Create a **program** that starts multiple commands, and prints each command foll
  * Any error occuring when interacting with the system must be handled properly. Your program must never panic.
  * The output of a child must be displayed entirely as soon as it finishes execution, even when other commands are still in progress.
 
-Example:
+Example Usage:
 
+```rust
+fn main() {
+    let command_lines = vec![
+        vec![String::from("echo"), String::from("a"), String::from("b")],
+        vec![String::from("sleep"), String::from("1")],
+        vec![String::from("cat"), String::from("Cargo.toml")],
+    ];
+
+    multiplexer(&mut std::io::stdout(), command_lines);
+}
+```
+
+Expected Output:
 ```txt
->_ cargo run -- echo a b , sleep 1 , echo b , cat Cargo.toml , cat i-dont-exit.txt
-cat i-dont-exit.txt
-
+>_ cargo run
 echo a b
 a b
 
-echo b
-b
-
 cat Cargo.toml
 [package]
-name = "ex03"
+name = "ex04"
 version = "0.1.0"
 
 sleep 1
-
 ```
 
 ## Exercise 05: GET
@@ -322,36 +353,52 @@ turn-in directory:
     ex05/
 
 files to turn in:
-    src/main.rs  Cargo.toml
+    src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::env::args
     std::net::{TcpStream, SocketAddr, ToSocketAddrs}
     std::io::{Write, Read, stdout}
 ```
 
-Create a **program** that sends an `HTTP/1.1` request and prints the response.
+Create a **function** with the following signature:
 
-Example:
-
-_Note: You are free to format this exercise as you like, as long as the HTTP/1.1 status code and the Content-Length header are displayed._
-
-```txt
->_ cargo run -- https://github.com/42-Short
-HTTP/1.1 200 OK
-Server: tiny-http (Rust)
-Date: Sat, 04 Feb 2023 12:40:33 GMT
-Content-Length: ...
-...
-<html>
-...
+```rust
+pub fn get<W: std::io::Write>(writer: &mut W, address: &str);
 ```
 
- * The program must send *valid* HTTP/1.1 requests.
+It must send an `HTTP/1.1` request and write the response to `writer`.
+
+Example Usage:
+
+```rust
+fn main() {
+    get(&mut std::io::stdout(), "localhost");
+}
+```
+
+Expected Output:
+```txt
+$ cargo run
+HTTP/1.1 200 OK
+Server: nginx/1.24.0 (Ubuntu)
+Date: Sun, 29 Dec 2024 15:48:11 GMT
+Content-Type: text/html
+Content-Length: 615
+Last-Modified: Wed, 06 Nov 2024 10:04:23 GMT
+Connection: close
+ETag: "672b3f27-267"
+Accept-Ranges: bytes
+
+<!DOCTYPE html>
+<html>
+...
+</html>
+```
+
+ * The function must send *valid* HTTP/1.1 requests.
  * Only the `GET` method is required.
 
-**Note:** you should probably ask the server to `close` the `Connection` instantly to avoid
-having to detect the end of the payload.
+**Note:** you should probably ask the server to `close` the `Connection` instantly to avoid having to detect the end of the payload.
 
 ## Exercise 06: ft_strings
 
@@ -360,20 +407,35 @@ turn-in directory:
     ex06/
 
 files to turn in:
-    src/main.rs  Cargo.toml
+    src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::env::args
     std::fs::read
     std::str::{from_utf8, Utf8Error}
 ```
 
-Create a **program** that reads an arbitrary binary file and prints printable UTF-8 strings it finds.
+Create a **function** with the following signature:
+```rust
+pub fn strings<W: std::io::Write>(writer: &mut W, path: &str, z: bool, m: bool, M: bool);
+```
 
-Example:
+It must read an arbitrary binary file and write printable UTF-8 strings it finds into `writer`.
 
+Example Usage:
+
+```sh
+$ echo 'int main() { return 0; }' > test.c && cc test.c
+```
+
+```rust
+fn main() {
+    strings(&mut std::io::stdout, "./a.out", false, false, false);
+}
+```
+
+Example Output:
 ```txt
->_ cargo run -- ./a.out
+>_ cargo run
 ELF
 >
 М
@@ -389,19 +451,15 @@ ELF
 
 * A *printable UTF-8 string* is only composed of non-control characters.
 
-The program must have the following options:
+The function must have the following options, passed to it as booleans:
 
 * `-z` filters out strings that are not null-terminated.
 * `-m <min>` filters out strings that are strictly smaller than `min`.
 * `-M <max>` filters out strings that are strictly larger than `max`.
 
-Implementation requirements:
-1. Do not panic when interacting with the file system. Handle errors properly.
-2. Use only the allowed symbols listed above.
-3. Implement all specified options.
-4. Ensure correct handling of various binary file types.
+Your function must never panic when interacting with the file system. Handle errors properly.
 
-Test your program with different binary files and option combinations to verify functionality.
+Test your function with different binary files and option combinations to verify functionality.
 
 ## Exercise 07: Pretty Bad Privacy
 
@@ -410,7 +468,7 @@ turn-in directory:
     ex07/
 
 files to turn in:
-    src/main.rs Cargo.toml
+    src/lib.rs Cargo.toml
 
 allowed dependencies:
     rug(v1.19.0)
