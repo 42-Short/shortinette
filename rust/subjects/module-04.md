@@ -159,7 +159,7 @@ turn-in directory:
     ex01/
 
 files to turn in:
-    src/main.rs  Cargo.toml
+    src/lib.rs  Cargo.toml
 
 allowed symbols:
     std::io::{Write, Read, stdin, stdout}
@@ -171,12 +171,24 @@ allowed symbols:
     std::{print, println, eprintln}
 ```
 
-Create a **program** that reads the standard input, and copies it to the standard output, as well as
-to every file specified in command-line arguments.
+Write a **function** that copies `input`, to `writer` and all filenames provided as arguments.
+
+Your function must have the following signature:
+
+```rust
+pub fn tee<R: std::io::Read, W: std::io::Write>(input: R, writer: &mut W, filenames: &[String]);
+```
 
 Example:
 
-```txt
+```rust
+fn main() {
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    tee(std::io::stdin(), &mut std::io::stdout().lock(), &args);
+}
+```
+
+```plaintext
 >_ echo "Hello, World!" | cargo run -- a b c
 Hello, World!
 >_ cat a b c
@@ -185,8 +197,7 @@ Hello, World!
 Hello, World!
 ```
 
-You program must not panic when interacting with the file system. All errors must be handled
-properly. You are free to choose what to do in that case, but you must *not* crash/panic.
+You program must not panic when interacting with the file system. All errors must be handled properly. You are free to choose what to do in that case, but you must *not* crash/panic.
 
 ## Exercise 02: Duh
 
