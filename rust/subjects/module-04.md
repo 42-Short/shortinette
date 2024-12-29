@@ -476,30 +476,21 @@ allowed dependencies:
 
 allowed symbols:
     std::vec::Vec
-    std::env::args
     std::io::{stdin, stdout, stderr, Write, Read}
     std::fs::File
     rand::*
     rug::*
 ```
 
-Write a **program** that behaves in the following way:
+Write a **library** with the 3 following functions:
 
-```sh
-# Generate key pair
->_ cargo run -- gen-keys my-key.pub my-key.priv
-
-# Encrypt a message
->_ << EOF cargo run -- encrypt my-key.pub > encrypted-message
-This is a very secret message.
-EOF
-
-# Decrypt a message
->_ cat encrypted-message | cargo run -- decrypt my-key.priv
-This is a very secret message.
+```rust
+pub fn gen_keys(pub_key_path: &str, priv_key_path: &str);
+pub fn encrypt<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, pub_key_path: &str);
+pub fn decrypt<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, priv_key_path: &str);
 ```
 
-### Key Generation
+### `gen_keys`
 
 In order to generate keys, your program must perform the following steps:
 
@@ -517,10 +508,10 @@ The resulting keys are:
 * Private key: `(D, M)`
 * Public key: `(E, M)`
 
-### Encryption & Decryption
+### `encrypt` and `decrypt`
 
 * Encryption: `encrypt(m) = m^E % M`
-* Encryption: `encrypt(m') = m'^D % M`
+* Decryption: `encrypt(m') = m'^D % M`
 
 For any `m < M`, `decrypt(encrypt(m)) == m` should hold true.
 
