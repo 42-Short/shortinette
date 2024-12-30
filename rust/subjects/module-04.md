@@ -322,10 +322,10 @@ Example Usage:
 
 ```rust
 fn main() {
-    let cli1 = &[String::from("echo"), String::from("a"), String::from("b")];
-    let cli2 = &[String::from("sleep"), String::from("1")];
-    let cli3 = &[String::from("cat"), String::from("Cargo.toml")];
-    let command_lines = vec![cli1, cli2, cli3];
+        let cli1: &[String] = &[String::from("echo"), String::from("a"), String::from("b")];
+        let cli2: &[String] = &[String::from("sleep"), String::from("1")];
+        let cli3: &[String] = &[String::from("cat"), String::from("Cargo.toml")];
+        let command_lines = vec![cli1, cli2, cli3];
 
     multiplexer(&mut std::io::stdout(), &command_lines);
 }
