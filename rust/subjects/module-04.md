@@ -416,7 +416,7 @@ allowed symbols:
 
 Create a **function** with the following signature:
 ```rust
-pub fn strings<W: std::io::Write>(writer: &mut W, path: &str, z: bool, m: bool, M: bool);
+pub fn strings<W: std::io::Write>(writer: &mut W, path: &str, z: bool, min: Option<usize>, max: Option<usize>);
 ```
 
 It must read an arbitrary binary file and write printable UTF-8 strings it finds into `writer`.
@@ -429,7 +429,7 @@ $ echo 'int main() { return 0; }' > test.c && cc test.c
 
 ```rust
 fn main() {
-    strings(&mut std::io::stdout, "./a.out", false, false, false);
+    strings(&mut std::io::stdout, "./a.out", false, None, None);
 }
 ```
 
@@ -451,11 +451,11 @@ ELF
 
 * A *printable UTF-8 string* is only composed of non-control characters.
 
-The function must have the following options, passed to it as booleans:
+The function must have the following options, passed to it as arguments:
 
-* `-z` filters out strings that are not null-terminated.
-* `-m <min>` filters out strings that are strictly smaller than `min`.
-* `-M <max>` filters out strings that are strictly larger than `max`.
+* `z` filters out strings that are not null-terminated.
+* `min` filters out strings that are strictly smaller than `min`.
+* `max` filters out strings that are strictly larger than `max`.
 
 Your function must never panic when interacting with the file system. Handle errors properly.
 
