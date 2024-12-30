@@ -119,7 +119,7 @@ allowed symbols:
     none
 ```
 
-Create `Outcome` and `Maybe` which should mimic `Result` and `Option` so that test compiles and runs
+Create `Outcome` and `Maybe` which should mimic `Result` and `Option` so below test compiles and runs. For this exercise, you are exceptionally (_and obviously_) **not** allowed to use the `Option` and `Result` types.
 
 ```rust
 #[cfg(test)]
