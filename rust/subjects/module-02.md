@@ -132,6 +132,9 @@ fn my_unused_function() {}
 
 * You are **always** allowed to use `Option` and `Result` types (not the `std::io::Result`, _just the plain one_), even when they are not in the allowed symbols!
 
+* You are **always** allowed to use `std::eprintln` for error handling.
+
+
 ### Exercise 00: Bruh
 ```
 turn-in directory:
