@@ -29,7 +29,7 @@ mod tests {
         let mut input = Cursor::new(content.as_bytes());
         let mut output = Vec::new();
 
-        tee(&mut input, &mut output, filenames.clone());
+        tee(&mut input, &mut output, &filenames);
 
         assert_eq!(output, content.as_bytes());
 
@@ -59,7 +59,7 @@ mod tests {
         let mut input = Cursor::new("Don't panic!".as_bytes());
         let mut output = Vec::new();
 
-        tee(&mut input, &mut output, vec![full_path.clone()]);
+        tee(&mut input, &mut output, &[full_path.clone()]);
 
         let _ = fs::remove_dir(&full_path);
     }
@@ -88,7 +88,7 @@ mod tests {
         let mut input = Cursor::new("Don't panic!".as_bytes());
         let mut output = Vec::new();
 
-        tee(&mut input, &mut output, vec![full_path.clone()]);
+        tee(&mut input, &mut output, &[full_path.clone()]);
     }
 
     #[test]
@@ -115,7 +115,7 @@ mod tests {
         let mut input = Cursor::new(content.as_bytes());
         let mut output = Vec::new();
 
-        tee(&mut input, &mut output, vec![full_path.clone()]);
+        tee(&mut input, &mut output, &[full_path.clone()]);
 
         let file_content = fs::read_to_string(&full_path).unwrap();
         assert_eq!(file_content, content);
