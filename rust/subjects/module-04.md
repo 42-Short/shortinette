@@ -226,7 +226,7 @@ Example Usage:
 
 ```rust
 fn main() {
-    let arg: String = std::env::args().nth(1);
+    let arg: String = std::env::args().nth(1).unwrap();
     duh(&mut std::io::stdout(), &arg);
 }
 
