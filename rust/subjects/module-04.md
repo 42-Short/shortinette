@@ -185,7 +185,7 @@ Example:
 ```rust
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    tee(&mut std::io::stdin(), &mut std::io::stdout().lock(), args);
+    tee(&mut std::io::stdin(), &mut std::io::stdout(), &args);
 }
 ```
 
@@ -273,7 +273,7 @@ Example Usage:
 
 ```rust
 fn main() {
-    pipeline(&mut std::io::stdin(), &mut std::io::stdout(), vec![String::from("echo"), String::from("-n")]);
+    pipeline(&mut std::io::stdin(), &mut std::io::stdout(), &[String::from("echo"), String::from("-n")]);
 }
 ```
 Expected Output:
@@ -322,13 +322,12 @@ Example Usage:
 
 ```rust
 fn main() {
-    let command_lines = vec![
-        vec![String::from("echo"), String::from("a"), String::from("b")],
-        vec![String::from("sleep"), String::from("1")],
-        vec![String::from("cat"), String::from("Cargo.toml")],
-    ];
+    let cli1 = &[String::from("echo"), String::from("a"), String::from("b")];
+    let cli2 = &[String::from("sleep"), String::from("1")];
+    let cli3 = &[String::from("cat"), String::from("Cargo.toml")];
+    let command_lines = vec![cli1, cli2, cli3];
 
-    multiplexer(&mut std::io::stdout(), command_lines);
+    multiplexer(&mut std::io::stdout(), &command_lines);
 }
 ```
 
