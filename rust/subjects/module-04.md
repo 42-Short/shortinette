@@ -177,7 +177,7 @@ Write a **function** that copies `input` to `writer` and all filenames provided 
 Your function must have the following signature:
 
 ```rust
-pub fn tee<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, filenames: Vec<String>);
+pub fn tee<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, filenames: &[String]);
 ```
 
 Example:
@@ -263,7 +263,7 @@ allowed symbols:
 Create a **function** with the following signature:
 
 ```rust
-pub fn pipeline<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, args: Vec<String>);
+pub fn pipeline<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, args: &[String]);
 ```
 
 It must spawn a process using the path (`args[0]`, arguments (`args[1..]`)), and input (`input`) passed as arguments,
@@ -307,7 +307,7 @@ allowed symbols:
 Create a **function** with the following signature:
 
 ```rust
-pub fn multiplexer<W: std::io::Write>(writer: &mut W, command_lines: Vec<Vec<String>>);
+pub fn multiplexer<W: std::io::Write>(writer: &mut W, command_lines: &[&[String]]);
 ```
 
 It must start multiple command lines passed as arguments, and write each of them followed by its output to `stdout`, separated by empty lines, to `writer`. 
