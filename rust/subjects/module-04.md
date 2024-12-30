@@ -299,8 +299,7 @@ allowed symbols:
     std::iter::*
     std::process::{Command, Stdio, Child}
     std::vec::Vec
-    std::io::{stdout, Write, Read}
-    std::{write, writeln}
+    std::io::Write
     std::eprintln
 ```
 
