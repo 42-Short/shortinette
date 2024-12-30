@@ -185,7 +185,7 @@ Example:
 ```rust
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    tee(std::io::stdin(), &mut std::io::stdout().lock(), &args);
+    tee(&mut std::io::stdin(), &mut std::io::stdout().lock(), &args);
 }
 ```
 
