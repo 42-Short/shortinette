@@ -21,7 +21,7 @@ mod tests {
 
         assert!(elapsed.as_secs_f64() >= 2.0 && elapsed.as_secs_f64() <= 2.5,
         "Expected execution time ~2 seconds, got {:?} - are you sure the commands are running in parallel?", elapsed);
-    
+
         let output_str = String::from_utf8(output).expect("Failed to parse output as UTF-8.");
 
         assert!(output_str.contains("sleep 1"));
@@ -38,7 +38,7 @@ mod tests {
         let mut output = Vec::new();
 
         if let Err(err) = multiplexer(&mut output, &command_lines) {
-            panic!("call to multiplexer failed with error: {}", err);
+            panic!("Call to multiplexer failed with error: {}", err);
         }
 
         let output_str = String::from_utf8(output).expect("Failed to parse output as UTF-8.");
@@ -46,5 +46,35 @@ mod tests {
         assert!(output_str.contains("echo a b"));
         assert!(output_str.contains("sleep 1"));
         assert!(output_str.contains("cat Cargo.toml"));
+        assert!(output_str.contains("[package]"));
+    }
+
+    #[test]
+    fn non_existing_command() {
+        let cli: &[String] = &[String::from("DONOTPANIC")];
+        let command_lines = vec![cli];
+
+        let mut output = Vec::new();
+
+        if let Err(err) = multiplexer(&mut output, &command_lines) {
+            panic!("Call to multiplexer failed with error: {}", err);
+        }
+    }
+
+    #[test]
+    fn failing_command() {
+        let cli: &[String] = &[String::from("cat"), String::from("idonotexist.txt")];
+        let command_lines = vec![cli];
+
+        let mut output = Vec::new();
+
+        if let Err(err) = multiplexer(&mut output, &command_lines) {
+            panic!("Call to multiplexer failed with error: {}", err);
+        }
+
+        let output_str = String::from_utf8(output).expect("Failed to parse output as UTF-8.");
+        eprintln!("{}", output_str);
+
+        assert!(output_str.contains("cat idonotexist.txt"));
     }
 }
