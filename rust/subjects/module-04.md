@@ -360,7 +360,7 @@ allowed symbols:
 Create a **function** with the following signature:
 
 ```rust
-pub fn get<W: std::io::Write>(writer: &mut W, address: &str) -> Result<(), String>;
+pub fn get<W: std::io::Write>(writer: &mut W, address: &String) -> Result<(), String>;
 ```
 
 It must send an `HTTP/1.1` request and write the response to `writer`.
