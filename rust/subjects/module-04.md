@@ -306,7 +306,7 @@ allowed symbols:
 Create a **function** with the following signature:
 
 ```rust
-pub fn multiplexer<W: std::io::Write>(writer: &mut W, command_lines: &[&[String]]);
+pub fn multiplexer<W: std::io::Write>(writer: &mut W, command_lines: &[&[String]]) -> Result<(), String>;
 ```
 
 It must start multiple command lines passed as arguments, and write each of them followed by its output to `stdout`, separated by empty lines, to `writer`. 
