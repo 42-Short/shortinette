@@ -219,7 +219,7 @@ Create a **function** that computes the total size of a directory or file. Once 
 
 Your function must have the following signature:
 ```rust
-pub fn duh<W: std::io::Write>(writer: &mut W, basedir: &str);
+pub fn duh<W: std::io::Write>(writer: &mut W, basedir: &str) -> Result<(), String>;
 ```
 
 Example Usage:
