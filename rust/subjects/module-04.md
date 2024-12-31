@@ -253,9 +253,8 @@ files to turn in:
     src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::process::Command
-    std::os::unix::process::CommandExt
-    std::io::{Read, stdin}
+    std::process::{Command, Stdio}
+    std::io::{Read, stdin, BufRead, Write}
     std::vec::Vec
     std::iter::*
 ```
@@ -263,7 +262,7 @@ allowed symbols:
 Create a **function** with the following signature:
 
 ```rust
-pub fn pipeline<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, args: &[String]) -> Result<(), String>;
+pub fn pipeline<R: std::io::Read + BufRead, W: std::io::Write>(input: &mut R, writer: &mut W, args: &[String]) -> Result<(), String>;
 ```
 
 It must spawn a process using the path (`args[0]`, arguments (`args[1..]`)), and input (`input`) passed as arguments,
