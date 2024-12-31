@@ -207,8 +207,7 @@ turn-in directory:
     ex02/
 
 files to turn in:
-    src/lib.rs  Cargo.toml
-
+    src/lib.rs  Cargo.toml`
 allowed symbols:
     std::fs::{metadata, Metadata, read_dir, DirEntry, ReadDir}
     std::path::Path
@@ -360,7 +359,7 @@ allowed symbols:
 Create a **function** with the following signature:
 
 ```rust
-pub fn get<W: std::io::Write>(writer: &mut W, address: &String) -> Result<(), String>;
+pub fn get<W: std::io::Write>(writer: &mut W, address: &str) -> Result<(), String>;
 ```
 
 It must send an `HTTP/1.1` request and write the response to `writer`.
