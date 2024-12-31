@@ -354,7 +354,7 @@ files to turn in:
 
 allowed symbols:
     std::net::{TcpStream, SocketAddr, ToSocketAddrs}
-    std::io::{Write, Read, stdout}
+    std::io::{Write, Read}
 ```
 
 Create a **function** with the following signature:
