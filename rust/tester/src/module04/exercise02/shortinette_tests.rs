@@ -4,7 +4,7 @@ mod tests {
     use rand::{distributions::Alphanumeric, Rng};
     use std::{fs, path::Path};
 
-    fn create_test_dir_with_random_sizes(
+    fn create_test_dir(
         base_path: &str,
         num_files: usize,
         max_size: usize,
@@ -50,7 +50,7 @@ mod tests {
         let full_path = format!("/tmp/{filename}");
         let num_files = 10;
         let max_size = 16384;
-        let file_sizes = create_test_dir_with_random_sizes(&full_path, num_files, max_size)
+        let file_sizes = create_test_dir(&full_path, num_files, max_size)
             .expect("Failed to create test directory");
 
         let mut output = Vec::new();
@@ -93,12 +93,13 @@ mod tests {
 
         let num_files = 6;
         let max_size = 8192;
-        let file_sizes = create_test_dir_with_random_sizes(&test_dir, num_files, max_size)
+        let file_sizes = create_test_dir(&test_dir, num_files, max_size)
             .expect("Failed to create test directory");
 
         let mut total_expected_size: u64 = file_sizes.iter().map(|&size| size as u64).sum();
 
-        let depth = (rand::random::<u8>().saturating_add(2)).min(30);
+        // Stack overflow possible in some rare cases with depth >= 200
+        let depth = (rand::random::<u8>().saturating_add(2)).min(150);
         let mut current_path = test_dir.clone();
 
         for _ in 0..depth {
@@ -112,15 +113,15 @@ mod tests {
             current_path = format!("{}/{}", current_path, subdir_name);
 
             let num_files = (rand::random::<u8>().saturating_add(2)).min(10);
-            let file_sizes =
-                create_test_dir_with_random_sizes(&current_path, num_files as usize, max_size)
-                    .expect("Failed to create subdirectory.");
+            let file_sizes = create_test_dir(&current_path, num_files as usize, max_size)
+                .expect("Failed to create subdirectory.");
 
             let subdir_total_size: u64 = file_sizes.iter().map(|&size| size as u64).sum();
 
             total_expected_size += subdir_total_size;
 
             #[cfg(target_os = "macos")]
+            // MacOS directory size depends on the number of files it contains
             let expected_dir_size = 64 + (32 * num_files as u64);
 
             #[cfg(target_os = "linux")]
@@ -130,19 +131,18 @@ mod tests {
         }
 
         let mut output = Vec::new();
+
         duh(&mut output, &test_dir).expect("duh() failed");
 
         let output_str = String::from_utf8(output).expect("Output is not valid UTF-8");
 
-        let expected_size_float = if total_expected_size < 1000 {
-            total_expected_size as f64
-        } else if total_expected_size < 1_000_000 {
-            total_expected_size as f64 / 1_000.0
-        } else if total_expected_size < 1_000_000_000 {
-            total_expected_size as f64 / 1_000_000.0
-        } else {
-            total_expected_size as f64 / 1_000_000_000.0
+        let (expected_size_float, unit) = match total_expected_size {
+            0..1_000 => (total_expected_size as f64, "bytes"),
+            1_000..1_000_000 => (total_expected_size as f64 / 1_000.0, "kilobytes"),
+            1_000_000..1_000_000_000 => (total_expected_size as f64 / 1_000_000.0, "megabytes"),
+            _ => (total_expected_size as f64 / 1_000_000.0, "gigabytes"),
         };
+
         let actual_size_float = output_str
             .trim()
             .split_whitespace()
@@ -151,16 +151,32 @@ mod tests {
             .parse::<f64>()
             .expect("Failed to parse output size");
 
+        assert!(
+            output_str.contains(unit),
+            "Recursion test with depth {} failed - Expected unit: {}, Got: {}",
+            depth,
+            expected_size_float,
+            actual_size_float
+        );
+
         // Float rounding errors make the tests not 100% deterministic, this lazy solution
-        // should fix it according to my empirical study.
+        // should fix it according to my empirical study
         assert!(
             approximately_equal(expected_size_float, actual_size_float, 1.0),
-            "Recursion test with depth {} failed - Expected: {}, Actual: {}",
+            "Recursion test with depth {} failed - Expected size: {}, Got: {}",
             depth,
             expected_size_float,
             actual_size_float
         );
 
         fs::remove_dir_all(&test_dir).expect("Failed to clean up test directory");
+    }
+
+    #[test]
+    fn nonexisting() {
+        let mut output = Vec::new();
+        if let Ok(()) = duh(&mut output, "idonotexist") {
+            panic!("duh did not return Err on non-existing base directory path.")
+        }
     }
 }
