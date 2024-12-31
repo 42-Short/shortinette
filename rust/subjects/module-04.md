@@ -106,7 +106,7 @@ lint to silence warnings about unused variables, functions, etc.
  Tests (when not specifically required by the subject) can use the symbols you want, even if
 they are not specified in the `allowed symbols` section. **However**, tests should **not** introduce **any additional external dependencies** beyond those already required by the subject.
 
-## Exercise 00: Wait thats it?
+## Exercise 00: Wait that's it?
 
 ```txt
 turn-in directories:
