@@ -263,7 +263,7 @@ allowed symbols:
 Create a **function** with the following signature:
 
 ```rust
-pub fn pipeline<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, args: &[String]);
+pub fn pipeline<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, args: &[String]) -> Result<(), String>;
 ```
 
 It must spawn a process using the path (`args[0]`, arguments (`args[1..]`)), and input (`input`) passed as arguments,
@@ -273,7 +273,7 @@ Example Usage:
 
 ```rust
 fn main() {
-    pipeline(&mut std::io::stdin(), &mut std::io::stdout(), &[String::from("echo"), String::from("-n")]) -> Result<(), String>;
+    pipeline(&mut std::io::stdin(), &mut std::io::stdout(), &[String::from("echo"), String::from("-n")]);
 }
 ```
 Expected Output:
