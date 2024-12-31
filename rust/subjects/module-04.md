@@ -215,7 +215,7 @@ allowed symbols:
     std::{print, println, eprintln}
 ```
 
-Create a **function** that computes the total size of a directory or file. Once computed, write the size followed by a newline, and formatted like in the examples below.
+Create a **function** that computes the total size of a directory or file. Once computed, write the size followed by a newline to `writer`, formatted like in the examples below.
 
 Your function must have the following signature:
 ```rust
