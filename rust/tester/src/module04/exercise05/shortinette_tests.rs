@@ -7,17 +7,17 @@ mod tests {
     // Will not add the 42 intra here for obvious reasons.
     // Feel free to add stuff here, but please test it well, some websites use a lot of cookies which lead to a _lot_ of unique
     // values and can make 2 valid answers' similarity scores drop to < 0.5.
-    fn get_random_website() -> String {
+    fn get_random_website() -> &'static str {
         let websites = vec!["google.com", "github.com", "stackoverflow.com"];
 
-        String::from(*websites.choose(&mut rand::thread_rng()).unwrap())
+        websites.choose(&mut rand::thread_rng()).unwrap()
     }
 
     fn sample_implementation<W: std::io::Write>(
         writer: &mut W,
-        address: &String,
+        address: &str,
     ) -> Result<(), String> {
-        let (addr, loc) = address.split_once("/").unwrap_or((address.as_str(), ""));
+        let (addr, loc) = address.split_once("/").unwrap_or((address, ""));
 
         let mut stream = match TcpStream::connect((addr, 80)) {
             Ok(str) => str,
@@ -118,7 +118,7 @@ mod tests {
         if let Err(err) = get(&mut student_writer, &website) {
             panic!("Student implementation errorred: {}", err);
         }
-        if let Err(err) = sample_implementation(&mut master_writer, &website) {
+        if let Err(err) = sample_implementation(&mut master_writer, website) {
             panic!("Master implementation errorred: {}", err);
         }
 
