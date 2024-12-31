@@ -273,7 +273,7 @@ Example Usage:
 
 ```rust
 fn main() {
-    pipeline(&mut std::io::stdin(), &mut std::io::stdout(), &[String::from("echo"), String::from("-n")]);
+    pipeline(&mut std::io::stdin(), &mut std::io::stdout(), &[String::from("echo"), String::from("-n")]) -> Result<(), String>;
 }
 ```
 Expected Output:
@@ -361,7 +361,7 @@ allowed symbols:
 Create a **function** with the following signature:
 
 ```rust
-pub fn get<W: std::io::Write>(writer: &mut W, address: &str);
+pub fn get<W: std::io::Write>(writer: &mut W, address: &str) -> Result<(), String>;
 ```
 
 It must send an `HTTP/1.1` request and write the response to `writer`.
@@ -414,7 +414,7 @@ allowed symbols:
 
 Create a **function** with the following signature:
 ```rust
-pub fn strings<W: std::io::Write>(writer: &mut W, path: &str, z: bool, min: Option<usize>, max: Option<usize>);
+pub fn strings<W: std::io::Write>(writer: &mut W, path: &str, z: bool, min: Option<usize>, max: Option<usize>) -> Result<(), String>;
 ```
 
 It must read an arbitrary binary file and write printable UTF-8 strings it finds into `writer`.
@@ -483,9 +483,9 @@ allowed symbols:
 Write a **library** with the 3 following functions:
 
 ```rust
-pub fn gen_keys(pub_key_path: &str, priv_key_path: &str);
-pub fn encrypt<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, pub_key_path: &str);
-pub fn decrypt<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, priv_key_path: &str);
+pub fn gen_keys(pub_key_path: &str, priv_key_path: &str)  -> Result<(), String>;
+pub fn encrypt<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, pub_key_path: &str) -> Result<(), String>;
+pub fn decrypt<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, priv_key_path: &str) -> Result<(), String>;
 ```
 
 ### `gen_keys`
