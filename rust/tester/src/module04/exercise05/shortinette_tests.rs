@@ -4,6 +4,40 @@ mod tests {
 
     use super::*;
 
+    // Calculates the similarity between two strings (0 => no similarity, 1 => same string).
+    fn levenshtein_distance(a: &str, b: &str) -> f32 {
+        let len_a = a.chars().count();
+        let len_b = b.chars().count();
+
+        let mut matrix: Vec<Vec<usize>> = vec![vec![0; len_b + 1]; len_a + 1];
+
+        for idx in 0..len_a {
+            matrix[idx][0] = idx;
+        }
+
+        for idx in 0..len_b {
+            matrix[0][idx] = idx;
+        }
+
+        for (row, ca) in a.chars().enumerate() {
+            for (col, cb) in b.chars().enumerate() {
+                let cost = if ca == cb { 0 } else { 1 };
+
+                matrix[row + 1][col + 1] = [
+                    matrix[row][col + 1] + 1,
+                    matrix[row + 1][col] + 1,
+                    matrix[row][col] + cost,
+                ]
+                .iter()
+                .min()
+                .unwrap()
+                .clone();
+            }
+        }
+
+        ((len_a.max(len_b) as f32 - matrix[len_a][len_b] as f32) / len_a.max(len_b) as f32) as f32
+    }
+
     // Will not add the 42 intra here for obvious reasons.
     // Feel free to add stuff here, but please test it well, some websites use a lot of cookies which lead to a _lot_ of unique
     // values and can make 2 valid answers' similarity scores drop to < 0.5.
@@ -127,21 +161,8 @@ mod tests {
         let master_output_str =
             String::from_utf8(master_writer).expect("Could not parse UTF-8 from master output");
 
-        let student_output_bytes = student_output_str.as_bytes();
-        let master_output_bytes = master_output_str.as_bytes();
+        let similarity = levenshtein_distance(&student_output_str, &master_output_str);
 
-        let mut match_count = 0;
-
-        for idx in 0..student_output_bytes.len().min(master_output_bytes.len()) {
-            if student_output_bytes[idx] == master_output_bytes[idx] {
-                match_count += 1;
-            }
-        }
-
-        let similarity: f64 = (match_count as f64) / (student_output_bytes.len() as f64);
-
-        // Unique values like session IDs etc. can lead to differing, both valid, outputs. For the list of websites in `get_random_website`, the
-        // score _should_ never drop under 0.95. If it does, feel free to change the required similarity to a more lenient value.
         assert!(similarity > 0.95, "Similarity with sample implementation too low for address `{}`, expected >= 0.95, got: {}", website, similarity);
     }
 }
