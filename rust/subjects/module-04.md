@@ -450,8 +450,8 @@ ELF
 The function must have the following options, passed to it as arguments:
 
 * `z` filters out strings that are not null-terminated.
-* `min` filters out strings that are strictly smaller than `min`.
-* `max` filters out strings that are strictly larger than `max`.
+* `min` filters out strings where `string.len() <= min`.
+* `max` filters out strings where `string.len() >= max`.
 
 Your function must never panic when interacting with the file system. Handle errors properly.
 
