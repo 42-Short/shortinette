@@ -1,5 +1,6 @@
 use std::process;
 
+#[allow(unused)]
 #[derive(Debug, PartialEq, Eq)]
 pub enum TestResult {
     Passed,
