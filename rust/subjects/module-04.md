@@ -445,7 +445,7 @@ ELF
 ...
 ```
 
-* A *printable UTF-8 string* is only composed of non-control characters.
+* A *printable UTF-8 string* is only composed of non-control characters (`TAB` _is_ a control character!).
 
 The function must have the following options, passed to it as arguments:
 
