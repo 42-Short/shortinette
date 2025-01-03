@@ -455,6 +455,8 @@ The function must have the following options, passed to it as arguments:
 
 Your function must never panic when interacting with the file system. Handle errors properly.
 
+Some level of input sanitization will be necessary - a `min` value higher than the `max` value does not make much sense.
+
 Test your function with different binary files and option combinations to verify functionality.
 
 ## Exercise 07: Pretty Bad Privacy
