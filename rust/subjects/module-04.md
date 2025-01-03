@@ -513,7 +513,7 @@ The resulting keys are:
 
 For any `m < M`, `decrypt(encrypt(m)) == m` should hold true.
 
-**You are allowed to panic when passed an invalid key for decryption.**
+**The `rug` crate panics **
 
 ### Key File Format
 
