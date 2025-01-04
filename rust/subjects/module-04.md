@@ -162,14 +162,11 @@ files to turn in:
     src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::io::{Write, Read, stdin, stdout}
-    std::io::{Stdout, StdoutLock, Stdin, StdinLock}
-    std::io::{Error, Result}
+    std::io::{Write, Read}
     std::fs::File 
     std::vec::Vec
     std::string::String
     std::iter::*
-    std::{print, println, eprintln}
 ```
 
 Write a **function** that copies `input` to `writer` and all filenames provided as arguments.
@@ -208,10 +205,11 @@ turn-in directory:
 
 files to turn in:
     src/lib.rs  Cargo.toml`
+
 allowed symbols:
+    std::io::Write
     std::fs::{metadata, Metadata, read_dir, DirEntry, ReadDir}
     std::path::Path
-    std::{print, println, eprintln}
 ```
 
 Create a **function** that computes the total size of a directory or file. Once computed, write the size followed by a newline to `writer`, formatted like in the examples below.
@@ -253,7 +251,7 @@ files to turn in:
 
 allowed symbols:
     std::process::{Command, Stdio}
-    std::io::{Read, stdin, BufRead, Write}
+    std::io::{Read, BufRead, Write}
     std::vec::Vec
     std::iter::*
 ```
@@ -298,7 +296,6 @@ allowed symbols:
     std::process::{Command, Stdio, Child}
     std::vec::Vec
     std::io::Write
-    std::eprintln
 ```
 
 Create a **function** with the following signature:
@@ -352,8 +349,8 @@ files to turn in:
     src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::net::{TcpStream, SocketAddr, ToSocketAddrs}
-    std::io::{Write, Read}
+    std::net::TcpStream
+    std::io::Write
 ```
 
 Create a **function** with the following signature:
