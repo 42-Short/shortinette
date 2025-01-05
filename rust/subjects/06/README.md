@@ -212,8 +212,7 @@ unsafe fn ft_strlen(s: *const u8) -> usize;
 unsafe fn ft_strcpy(dst: *mut u8, src: *const u8);
 ```
 
-- `ft_swap` must swaps any two values of any type. Maybe `T` can be copied; maybe not. Maybe it has
-  a default value. Maybe not.
+- `ft_swap` must swap any two values of any type. Maybe `T` can be copied; maybe not. Maybe it has a default value. Maybe not.
 - `ft_strlen` must count the number of non-null bytes, starting at `s`. You must write an
   appropriate "# Safety" section in the documentation of that function to educate about its users
   about its correct usage.
@@ -231,13 +230,13 @@ assert_eq!(a, "Goodby, World!");
 assert_eq!(b, "Hello, World!");
 
 let s = b"Hello, World!\0";
-// SAFETY:
+// # Safety
 //  /* ... */
 let len = unsafe { ft_strlen(s.as_ptr()) };
 assert_eq!(len, 13);
 
 let mut dst = [0u8; 14];
-// SAFETY:
+// # Safety
 //  /* ... */
 unsafe { ft_strcpy(dst.as_mut_ptr(), s.as_ptr()) };
 assert_eq!(&dst, b"Hello, World!\0");
