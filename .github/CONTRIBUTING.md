@@ -48,12 +48,3 @@ If your changes affect the project documentation (e.g. new features, changes to 
 
 ### Coding Style
 We use the Golang [default formatter](https://github.com/golang/vscode-go) with default configuration. Please also be careful to write small, single-purpose functions. This will keep the code easy to read and maintain.
-
-### Get in touch!
-We have a Discord server to facilitate communication between contributors.
-
-Click [here](https://discord.gg/FSBbTg8R) to join.
-
-### Conclusion
-
-Thank you for considering contributing to our student council's official website! We look forward to your contributions and appreciate your efforts. If you have any questions, feel free to reach out to us on Discord or via GitHub issues.

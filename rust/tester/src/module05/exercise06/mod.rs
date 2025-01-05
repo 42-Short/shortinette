@@ -9,4 +9,8 @@ impl Testable for Exercise06 {
     fn path(&self) -> path::PathBuf {
         repository_path().join("ex00")
     }
+
+    fn cargo_test_mod(&self) -> &'static str {
+        include_str!("./shortinette_tests.rs")
+    }
 }

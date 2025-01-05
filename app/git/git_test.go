@@ -17,6 +17,7 @@ var (
 	orga         string
 	token        string
 	templateRepo string
+	basePath     string
 )
 
 func TestMain(m *testing.M) {
@@ -25,6 +26,7 @@ func TestMain(m *testing.M) {
 	orga = os.Getenv("ORGA_GITHUB")
 	token = os.Getenv("TOKEN_GITHUB")
 	templateRepo = os.Getenv("TEMPLATE_REPO")
+	basePath = os.Getenv("BASE_PATH")
 	code := m.Run()
 	os.Exit(code)
 }
@@ -39,7 +41,7 @@ func cleanup(t *testing.T, gh *GithubService, repoName string) {
 }
 
 func TestNewRepoNonExistingOrga(t *testing.T) {
-	gh := NewGithubService(token, "thisorgadoesnoteist")
+	gh := NewGithubService(token, "thisorgadoesnoteist", basePath)
 	repoName := uuid.New().String()
 
 	defer cleanup(t, gh, repoName)
@@ -50,7 +52,7 @@ func TestNewRepoNonExistingOrga(t *testing.T) {
 }
 
 func TestNewRepoMissinTemplateRepoEnvironmentVariable(t *testing.T) {
-	gh := NewGithubService(token, orga)
+	gh := NewGithubService(token, orga, basePath)
 	repoName := uuid.New().String()
 
 	if err := gh.NewRepo("", repoName, true, "this should not be created"); err == nil {
@@ -59,7 +61,7 @@ func TestNewRepoMissinTemplateRepoEnvironmentVariable(t *testing.T) {
 }
 
 func TestNewRepoNonExistingTemplate(t *testing.T) {
-	gh := NewGithubService(token, orga)
+	gh := NewGithubService(token, orga, basePath)
 	expectedRepoName := uuid.New().String()
 
 	if err := gh.NewRepo("thistemplatedoesnotexist", expectedRepoName, true, "expectedDescription"); err == nil {
@@ -68,7 +70,7 @@ func TestNewRepoNonExistingTemplate(t *testing.T) {
 }
 
 func TestNewRepoStandardFunctionality(t *testing.T) {
-	gh := NewGithubService(token, orga)
+	gh := NewGithubService(token, orga, basePath)
 	expectedRepoName := uuid.New().String()
 	expectedPrivate := true
 	expectedDescription := "description"
@@ -98,7 +100,7 @@ func TestNewRepoStandardFunctionality(t *testing.T) {
 }
 
 func TestNewRepoAlreadyExisting(t *testing.T) {
-	gh := NewGithubService(token, orga)
+	gh := NewGithubService(token, orga, basePath)
 	expectedRepoName := uuid.New().String()
 	expectedPrivate := true
 	expectedDescription := "description"
@@ -116,7 +118,7 @@ func TestNewRepoAlreadyExisting(t *testing.T) {
 }
 
 func TestAddCollaboratorNonExistingUser(t *testing.T) {
-	gh := NewGithubService(token, orga)
+	gh := NewGithubService(token, orga, basePath)
 	repoName := uuid.New().String()
 
 	if err := gh.NewRepo(templateRepo, repoName, true, "idc"); err != nil {
@@ -132,7 +134,7 @@ func TestAddCollaboratorNonExistingUser(t *testing.T) {
 }
 
 func TestAddCollaboratorNonExistingPermission(t *testing.T) {
-	gh := NewGithubService(token, orga)
+	gh := NewGithubService(token, orga, basePath)
 	repoName := uuid.New().String()
 
 	if err := gh.NewRepo(templateRepo, repoName, true, "idc"); err != nil {
@@ -148,7 +150,7 @@ func TestAddCollaboratorNonExistingPermission(t *testing.T) {
 }
 
 func TestUploadFilesNonExistingFiles(t *testing.T) {
-	gh := NewGithubService(token, orga)
+	gh := NewGithubService(token, orga, basePath)
 	repoName := uuid.New().String()
 
 	if err := gh.NewRepo(templateRepo, repoName, true, "this will be deleted soon_GITHUB"); err != nil {
@@ -164,7 +166,7 @@ func TestUploadFilesNonExistingFiles(t *testing.T) {
 }
 
 func TestUploadFilesNormalFunctionality(t *testing.T) {
-	gh := NewGithubService(token, orga)
+	gh := NewGithubService(token, orga, basePath)
 	repoName := uuid.New().String()
 
 	if err := gh.NewRepo(templateRepo, repoName, true, "this will be deleted soon_GITHUB"); err != nil {
@@ -200,7 +202,7 @@ func TestUploadFilesNormalFunctionality(t *testing.T) {
 }
 
 func TestUploadFilesNonExistingBranch(t *testing.T) {
-	gh := NewGithubService(token, orga)
+	gh := NewGithubService(token, orga, basePath)
 	repoName := uuid.New().String()
 
 	if err := gh.NewRepo(templateRepo, repoName, true, "this will be deleted soon_GITHUB"); err != nil {
@@ -216,7 +218,7 @@ func TestUploadFilesNonExistingBranch(t *testing.T) {
 }
 
 func TestUploadFilesNonDefaultBranch(t *testing.T) {
-	gh := NewGithubService(token, orga)
+	gh := NewGithubService(token, orga, basePath)
 	repoName := uuid.New().String()
 
 	if err := gh.NewRepo(templateRepo, repoName, true, "this will be deleted soon_GITHUB"); err != nil {
@@ -252,7 +254,7 @@ func TestUploadFilesNonDefaultBranch(t *testing.T) {
 }
 
 func TestNewReleaseNormalFunctionality(t *testing.T) {
-	gh := NewGithubService(token, orga)
+	gh := NewGithubService(token, orga, basePath)
 	expectedRepoName := uuid.New().String()
 	expectedTagName := "tag"
 	expectedReleaseName := "release"
@@ -292,7 +294,7 @@ func TestNewReleaseNormalFunctionality(t *testing.T) {
 }
 
 func TestNewReleaseAlreadyExisting(t *testing.T) {
-	gh := NewGithubService(token, orga)
+	gh := NewGithubService(token, orga, basePath)
 	expectedRepoName := uuid.New().String()
 
 	if err := gh.NewRepo(templateRepo, expectedRepoName, true, "this will be deleted soon_GITHUB"); err != nil {
@@ -316,7 +318,7 @@ func TestNewReleaseAlreadyExisting(t *testing.T) {
 }
 
 func TestNewReleaseNonExistingrepo(t *testing.T) {
-	gh := NewGithubService(token, orga)
+	gh := NewGithubService(token, orga, basePath)
 	repoName := uuid.New().String()
 
 	if err := gh.NewRepo(templateRepo, repoName, true, "idc"); err != nil {
@@ -341,8 +343,12 @@ func TestDoesAccountExistExisting(t *testing.T) {
 	assert.Equal(t, found, true, "DoesAccountExist returned false on a valid user")
 }
 
-func TesDoesAccountExistOrga(t *testing.T) {
-	found, err := DoesAccountExist("github")
-	require.Error(t, err)
-	assert.Equal(t, found, true, "DoesAccountExist returned true on an organisation")
+func TestNewTemplateRepo(t *testing.T) {
+	gh := NewGithubService(token, orga, basePath)
+
+	if err := gh.CreateModuleTemplate(0); err != nil {
+		t.Fatalf("NewTemplateRepo failed on a standard use case: %v", err)
+	}
+
+	defer cleanup(t, gh, "module-00-template")
 }

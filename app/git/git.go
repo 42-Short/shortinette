@@ -5,6 +5,7 @@ package git
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -17,16 +18,18 @@ import (
 )
 
 type GithubService struct {
-	Client *github.Client
-	Orga   string
-	Token  string
+	Client   *github.Client
+	Orga     string
+	Token    string
+	BasePath string
 }
 
-func NewGithubService(authToken string, orga string) *GithubService {
+func NewGithubService(authToken string, orga string, basePath string) *GithubService {
 	return &GithubService{
-		Client: github.NewClient(nil).WithAuthToken(authToken),
-		Orga:   orga,
-		Token:  authToken,
+		Client:   github.NewClient(nil).WithAuthToken(authToken),
+		Orga:     orga,
+		Token:    authToken,
+		BasePath: basePath,
 	}
 }
 
@@ -48,7 +51,7 @@ func (gh *GithubService) deleteRepo(name string) (err error) {
 func isRepoAlreadyExists(err error) (exists bool) {
 	if githubErr, ok := err.(*github.ErrorResponse); ok {
 		for _, e := range githubErr.Errors {
-			if strings.Contains(e.Message, "Name already exists on this account") {
+			if strings.Contains(e.Message, "name already exists on this account") {
 				return true
 			}
 		}
@@ -148,16 +151,80 @@ func push(dir string) (err error) {
 	return nil
 }
 
-func copyFiles(target string, files ...string) (err error) {
-	for _, file := range files {
-		data, err := os.ReadFile(file)
+func copyDirectory(src string, dest string) (err error) {
+	err = os.MkdirAll(dest, 0755)
+	if err != nil {
+		return err
+	}
+
+	err = filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return fmt.Errorf("could not copy file '%s' to '%s': %v", file, target, err)
+			return err
 		}
 
-		if err = os.WriteFile(filepath.Join(target, file), data, 0644); err != nil {
-			return fmt.Errorf("could not copy file '%s' to '%s': %v", file, target, err)
+		relativePath, err := filepath.Rel(src, path)
+		if err != nil {
+			return err
 		}
+
+		destPath := filepath.Join(dest, relativePath)
+
+		if info.IsDir() {
+			return os.MkdirAll(destPath, info.Mode())
+		}
+
+		return copyFile(path, destPath)
+	})
+
+	return err
+}
+
+func copyFile(src string, dest string) (err error) {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	destFile, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+	defer destFile.Close()
+
+	_, err = io.Copy(destFile, srcFile)
+	if err != nil {
+		return err
+	}
+
+	srcInfo, err := os.Stat(src)
+	if err == nil {
+		err = os.Chmod(dest, srcInfo.Mode())
+	}
+
+	return err
+}
+
+func copyFiles(target string, files ...string) (err error) {
+	for _, file := range files {
+
+		info, err := os.Stat(file)
+		if err != nil {
+			return fmt.Errorf("could not stat '%s': %v", file, err)
+		}
+
+		if info.IsDir() {
+			err = copyDirectory(file, filepath.Join(target, filepath.Base(file)))
+			if err != nil {
+				return fmt.Errorf("could not copy directory '%s': %v", file, err)
+			}
+		} else {
+			err = copyFile(file, filepath.Join(target, filepath.Base(file)))
+			if err != nil {
+				return fmt.Errorf("could not copy file '%s' to '%s': %v", file, target, err)
+			}
+		}
+
 	}
 	return nil
 }
@@ -267,4 +334,33 @@ func DoesAccountExist(username string) (bool, error) {
 		return false, fmt.Errorf("github API error for username '%s': %v", username, err)
 	}
 	return *user.Type == "User", nil
+}
+
+func (gh *GithubService) CreateModuleTemplate(module int) (err error) {
+	isTemplate := true
+	templateName := fmt.Sprintf("module-0%d-template", module)
+
+	_, response, err := gh.Client.Repositories.Create(context.Background(), gh.Orga, &github.Repository{Name: &templateName, IsTemplate: &isTemplate})
+	if err != nil {
+		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
+			if isRepoAlreadyExists(err) {
+				logger.Info.Printf("repo %s already exists under orga %s, skipping\n", templateName, gh.Orga)
+				return nil
+			}
+		}
+		return fmt.Errorf("could not create repo %s: %v", templateName, err)
+	}
+
+	if err = gh.Clone(templateName); err != nil {
+		return fmt.Errorf("could not clone template repo '%s': %v", templateName, err)
+	}
+
+	subjectPath := filepath.Join(gh.BasePath, "rust", "subjects", fmt.Sprintf("0%d", module), "README.md")
+	devcontainerConfigPath := filepath.Join(gh.BasePath, "rust", ".devcontainer")
+
+	if err = gh.UploadFiles(templateName, fmt.Sprintf("add: devcontainer config + subject for module 0%d", module), "main", false, subjectPath, devcontainerConfigPath); err != nil {
+		return fmt.Errorf("could not upload files: %v", err)
+	}
+
+	return nil
 }
