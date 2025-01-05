@@ -14,7 +14,7 @@ mod tests {
         let mut output = Vec::new();
 
         if let Err(err) = multiplexer(&mut output, &command_lines) {
-            panic!("call to multiplexer failed with error: {}", err);
+            panic!("call to multiplexer failed with error: {}.", err);
         }
 
         let elapsed = start_time.elapsed();
@@ -57,7 +57,7 @@ mod tests {
         let mut output = Vec::new();
 
         if let Err(err) = multiplexer(&mut output, &command_lines) {
-            panic!("Call to multiplexer failed with error: {}", err);
+            panic!("Call to multiplexer failed with error: {}.", err);
         }
     }
 
@@ -69,7 +69,7 @@ mod tests {
         let mut output = Vec::new();
 
         if let Err(err) = multiplexer(&mut output, &command_lines) {
-            panic!("Call to multiplexer failed with error: {}", err);
+            panic!("Call to multiplexer failed with error: {}.", err);
         }
 
         let output_str = String::from_utf8(output).expect("Failed to parse output as UTF-8.");

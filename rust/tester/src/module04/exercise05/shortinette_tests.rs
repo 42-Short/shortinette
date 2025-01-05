@@ -56,7 +56,7 @@ mod tests {
         let mut stream = match TcpStream::connect((addr, 80)) {
             Ok(str) => str,
             Err(e) => {
-                return Err(format!("TcpStream connection failed with error: {}", e));
+                return Err(format!("TcpStream connection failed with error: {}.", e));
             }
         };
 
@@ -70,7 +70,7 @@ mod tests {
             "
         ) {
             Ok(_) => {}
-            Err(e) => return Err(format!("writeln!() to TCP stream failed: {}", e)),
+            Err(e) => return Err(format!("writeln!() to TCP stream failed: {}.", e)),
         };
 
         let mut buf = [0u8; 4096];
@@ -79,7 +79,7 @@ mod tests {
             let count = match stream.read(&mut buf) {
                 Ok(c) => c,
                 Err(e) => {
-                    return Err(format!("Could not read from stream: {}", e));
+                    return Err(format!("Could not read from stream: {}.", e));
                 }
             };
 
@@ -90,7 +90,7 @@ mod tests {
             match writer.write_all(&buf[..count]) {
                 Ok(_) => {}
                 Err(e) => {
-                    return Err(format!("Could not write to writer: {}", e));
+                    return Err(format!("Could not write to writer: {}.", e));
                 }
             }
         }
@@ -103,7 +103,7 @@ mod tests {
         let mut writer = Vec::new();
 
         if let Err(err) = get(&mut writer, &String::from("google.com")) {
-            panic!("Call to get() failed with error: {}", err);
+            panic!("Call to get() failed with error: {}.", err);
         }
 
         let output_str = String::from_utf8(writer).expect("Could not parse UTF-8 from output.");
@@ -118,7 +118,7 @@ mod tests {
         // This is the default location of my (winstonallo) server, which always redirects to some other service.
         // This output will stay the same, if not my poor soul is to blame for the inconvenience.
         if let Err(err) = get(&mut writer, &String::from("arthurbiedcharreton.com")) {
-            panic!("Call to get() failed with error: {}", err);
+            panic!("Call to get() failed with error: {}.", err);
         }
 
         let output_str = String::from_utf8(writer).expect("Could not parse UTF-8 from output.");
@@ -150,19 +150,19 @@ mod tests {
         let mut master_writer = Vec::new();
 
         if let Err(err) = get(&mut student_writer, &website) {
-            panic!("Student implementation errorred: {}", err);
+            panic!("Student implementation errorred: {}.", err);
         }
         if let Err(err) = sample_implementation(&mut master_writer, website) {
-            panic!("Master implementation errorred: {}", err);
+            panic!("Master implementation errorred: {}.", err);
         }
 
         let student_output_str =
-            String::from_utf8(student_writer).expect("Could not parse UTF-8 from student output");
+            String::from_utf8(student_writer).expect("Could not parse UTF-8 from student output.");
         let master_output_str =
-            String::from_utf8(master_writer).expect("Could not parse UTF-8 from master output");
+            String::from_utf8(master_writer).expect("Could not parse UTF-8 from master output.");
 
         let similarity = levenshtein_distance(&student_output_str, &master_output_str);
 
-        assert!(similarity > 0.95, "Similarity with sample implementation too low for address `{}`, expected >= 0.95, got: {}", website, similarity);
+        assert!(similarity > 0.95, "Similarity with sample implementation too low for address `{}`, expected >= 0.95, got: {}.", website, similarity);
     }
 }

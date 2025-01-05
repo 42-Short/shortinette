@@ -54,7 +54,7 @@ mod tests {
 
         let full_path = format!("/tmp/{dirname}");
 
-        fs::create_dir(&full_path).expect("failed to create directory");
+        fs::create_dir(&full_path).expect("Failed to create directory.");
 
         let mut input = Cursor::new("Don't panic!".as_bytes());
         let mut output = Vec::new();
@@ -83,7 +83,7 @@ mod tests {
             .arg("000")
             .arg(&full_path)
             .output()
-            .expect("failed to execute process");
+            .expect("Failed to execute process.");
 
         let mut input = Cursor::new("Don't panic!".as_bytes());
         let mut output = Vec::new();

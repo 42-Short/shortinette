@@ -23,7 +23,7 @@ mod tests {
         let priv_key_path: String = format!("/tmp/{}.priv", priv_key_path);
 
         if let Err(e) = gen_keys(&pub_key_path, &priv_key_path) {
-            panic!("Call to 'gen_keys()' returned an error: {}", e);
+            panic!("Call to 'gen_keys()' returned an error: {}.", e);
         }
 
         (pub_key_path, priv_key_path)

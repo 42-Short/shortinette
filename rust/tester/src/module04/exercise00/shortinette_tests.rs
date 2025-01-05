@@ -15,13 +15,13 @@ mod test {
         let o = outcome();
         match o {
             Outcome::Good(n) => assert_eq!(n, 42),
-            Outcome::Bad(_) => panic!("should be Good"),
+            Outcome::Bad(_) => panic!("Expected: Outcome::Good, got: Outcome::Bad."),
         }
 
         let m = maybe();
         match m {
             Maybe::Definitely(n) => assert_eq!(n, 42),
-            Maybe::No => panic!("should be Definitely"),
+            Maybe::No => panic!("Expected: Maybe::Definitely, got: Maybe::No."),
         }
     }
 }

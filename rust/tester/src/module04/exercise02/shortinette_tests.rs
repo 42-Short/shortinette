@@ -51,12 +51,12 @@ mod tests {
         let num_files = 10;
         let max_size = 16384;
         let file_sizes = create_test_dir(&full_path, num_files, max_size)
-            .expect("Failed to create test directory");
+            .expect("Failed to create test directory.");
 
         let mut output = Vec::new();
-        duh(&mut output, &full_path).expect("Call to duh() failed");
+        duh(&mut output, &full_path).expect("Call to duh() failed.");
 
-        let output_str = String::from_utf8(output).expect("Output is not valid UTF-8");
+        let output_str = String::from_utf8(output).expect("Output is not valid UTF-8.");
 
         let expected_total_size: u64 = file_sizes.iter().map(|&s| s as u64).sum();
 
@@ -75,7 +75,7 @@ mod tests {
 
         assert_eq!(output_str.trim(), expected_size_str);
 
-        fs::remove_dir_all(&full_path).expect("Failed to clean up test directory");
+        fs::remove_dir_all(&full_path).expect("Failed to clean up test directory.");
     }
 
     #[test]
@@ -132,9 +132,9 @@ mod tests {
 
         let mut output = Vec::new();
 
-        duh(&mut output, &test_dir).expect("duh() failed");
+        duh(&mut output, &test_dir).expect("Call to duh() failed.");
 
-        let output_str = String::from_utf8(output).expect("Output is not valid UTF-8");
+        let output_str = String::from_utf8(output).expect("Output is not valid UTF-8.");
 
         let (expected_size_float, unit) = match total_expected_size {
             0..1_000 => (total_expected_size as f64, "bytes"),
@@ -149,11 +149,11 @@ mod tests {
             .next()
             .unwrap()
             .parse::<f64>()
-            .expect("Failed to parse output size");
+            .expect("Failed to parse output size.");
 
         assert!(
             output_str.contains(unit),
-            "Recursion test with depth {} failed - Expected unit: {}, Got: {}",
+            "Recursion test with depth {} failed - Expected unit: {}, Got: {}.",
             depth,
             expected_size_float,
             actual_size_float
@@ -163,13 +163,13 @@ mod tests {
         // should fix it according to my empirical study
         assert!(
             approximately_equal(expected_size_float, actual_size_float, 1.0),
-            "Recursion test with depth {} failed - Expected size: {}, Got: {}",
+            "Recursion test with depth {} failed - Expected size: {}, Got: {}.",
             depth,
             expected_size_float,
             actual_size_float
         );
 
-        fs::remove_dir_all(&test_dir).expect("Failed to clean up test directory");
+        fs::remove_dir_all(&test_dir).expect("Failed to clean up test directory.");
     }
 
     #[test]

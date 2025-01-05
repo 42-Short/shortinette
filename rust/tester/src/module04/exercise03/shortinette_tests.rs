@@ -10,7 +10,7 @@ mod tests {
         let mut writer = Vec::new();
 
         if let Err(err) = pipeline(&mut input, &mut writer, cli) {
-            panic!("pipeline() call failed with error: {}", err)
+            panic!("pipeline() call failed with error: {}.", err)
         }
 
         let output_str = String::from_utf8(writer).expect("Could not parse output as UTF-8.");
@@ -26,7 +26,7 @@ mod tests {
         let mut writer = Vec::new();
 
         if let Err(err) = pipeline(&mut input, &mut writer, cli) {
-            panic!("pipeline() call failed with error: {}", err)
+            panic!("pipeline() call failed with error: {}.", err)
         }
 
         let output_str = String::from_utf8(writer).expect("Could not parse output as UTF-8.");
@@ -45,7 +45,7 @@ mod tests {
         let mut writer = Vec::new();
 
         if let Ok(()) = pipeline(&mut input, &mut writer, cli) {
-            panic!("This command does not exist, why no error???");
+            panic!("Expected Err on a non-existing command.");
         }
     }
 }

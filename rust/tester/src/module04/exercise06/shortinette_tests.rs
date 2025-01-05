@@ -18,7 +18,7 @@ mod tests {
         let filename = format!("/tmp/{}", randname);
 
         if let Err(e) = std::fs::write("/tmp/file.c", b"int main(){return 0;}") {
-            panic!("could not write file.c: {}", e);
+            panic!("Could not write file.c: {}.", e);
         }
 
         if let Err(e) = Command::new("cc")
@@ -41,9 +41,9 @@ mod tests {
             .output()
         {
             Ok(out) => {
-                String::from_utf8(out.stdout).expect("could not parse UTF-8 from strings output")
+                String::from_utf8(out.stdout).expect("Could not parse UTF-8 from strings output.")
             }
-            Err(e) => panic!("could not execute strings: {}", e),
+            Err(e) => panic!("could not execute strings: {}.", e),
         }
     }
 
@@ -93,17 +93,17 @@ mod tests {
         let mut student_output = Vec::new();
 
         if let Err(e) = strings(&mut student_output, &filename, false, None, None) {
-            panic!("strings returned an error on a standard use case: {}", e);
+            panic!("Call to strings() returned an error on a standard use case: {}.", e);
         }
 
         let student_output_str =
-            String::from_utf8(student_output).expect("could not parse UTF-8 from output");
+            String::from_utf8(student_output).expect("Could not parse UTF-8 from output.");
 
         let levenshtein_distance = levenshtein_distance(&master_output_str, &student_output_str);
 
         assert!(
             levenshtein_distance > 0.99,
-            "Similarity with 'strings -n 1 {}' too low (expected >= 0.99), got: {}",
+            "Similarity with 'strings -n 1 {}' too low (expected >= 0.99), got: {}.",
             filename,
             levenshtein_distance
         );
@@ -123,7 +123,7 @@ mod tests {
         let mut student_output = Vec::new();
 
         if let Err(e) = strings(&mut student_output, &filename, false, Some(min_val), None) {
-            panic!("strings returned an error on a standard use case: {}", e);
+            panic!("Call to strings() returned an error on a standard use case: {}.", e);
         }
 
         let student_output_str =
