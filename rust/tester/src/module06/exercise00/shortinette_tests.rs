@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use rand::{distributions::Alphanumeric, random, thread_rng, Rng};
 

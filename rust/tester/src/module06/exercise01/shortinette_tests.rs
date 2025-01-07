@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod test {
+mod tests {
     use rand::random;
 
     use super::*;
@@ -10,14 +10,22 @@ mod test {
 
         let mut nuggets: [GoldNugget; 2] = PhilosopherStone.transmute_iron(iron);
 
-        assert!(nuggets.len() == 2, "Expected 2 nuggets from Iron transmutation, got {}.", nuggets.len());
+        assert!(
+            nuggets.len() == 2,
+            "Expected 2 nuggets from Iron transmutation, got {}.",
+            nuggets.len()
+        );
 
-        let mut expected_nuggets: [GoldNugget; 2] = [(iron >> 16) as GoldNugget, (iron & 0xFFFF) as GoldNugget];
+        let mut expected_nuggets: [GoldNugget; 2] =
+            [(iron >> 16) as GoldNugget, (iron & 0xFFFF) as GoldNugget];
 
         expected_nuggets.sort();
         nuggets.sort();
 
-        assert_eq!(nuggets, expected_nuggets, "Nuggets do not match expected values.");
+        assert_eq!(
+            nuggets, expected_nuggets,
+            "Nuggets do not match expected values."
+        );
     }
 
     #[test]
@@ -26,7 +34,11 @@ mod test {
 
         let mut nuggets: [GoldNugget; 4] = PhilosopherStone.transmute_mercure(mercure);
 
-        assert!(nuggets.len() == 4, "Expected 4 nuggets from Mercure transmutation, got: {}.", nuggets.len());
+        assert!(
+            nuggets.len() == 4,
+            "Expected 4 nuggets from Mercure transmutation, got: {}.",
+            nuggets.len()
+        );
 
         let mut expected_nuggets: [GoldNugget; 4] = [
             (mercure >> 48) as GoldNugget,
@@ -38,7 +50,10 @@ mod test {
         nuggets.sort();
         expected_nuggets.sort();
 
-        assert_eq!(nuggets, expected_nuggets, "Nuggets do not match expected values.");
+        assert_eq!(
+            nuggets, expected_nuggets,
+            "Nuggets do not match expected values."
+        );
     }
 
     #[test]
@@ -47,15 +62,23 @@ mod test {
 
         let nuggets: &Gold = PhilosopherStone.transmute_metal(&iron);
 
-        assert!(nuggets.len() == 2, "Expected 2 nuggets from Iron transmutation, got {}.", nuggets.len());
+        assert!(
+            nuggets.len() == 2,
+            "Expected 2 nuggets from Iron transmutation, got {}.",
+            nuggets.len()
+        );
 
-        let mut expected_nuggets: [GoldNugget; 2] = [(iron >> 16) as GoldNugget, (iron & 0xFFFF) as GoldNugget];
+        let mut expected_nuggets: [GoldNugget; 2] =
+            [(iron >> 16) as GoldNugget, (iron & 0xFFFF) as GoldNugget];
         expected_nuggets.sort();
 
         let mut nuggets_vec = nuggets.to_vec();
         nuggets_vec.sort();
 
-        assert_eq!(nuggets_vec, expected_nuggets, "Nuggets do not match expected values.");
+        assert_eq!(
+            nuggets_vec, expected_nuggets,
+            "Nuggets do not match expected values."
+        );
     }
 
     #[test]
@@ -64,7 +87,11 @@ mod test {
 
         let nuggets: &Gold = PhilosopherStone.transmute_metal(&mercure);
 
-        assert!(nuggets.len() == 4, "Expected 2 nuggets from Iron transmutation, got {}.", nuggets.len());
+        assert!(
+            nuggets.len() == 4,
+            "Expected 2 nuggets from Iron transmutation, got {}.",
+            nuggets.len()
+        );
 
         let mut expected_nuggets: [GoldNugget; 4] = [
             (mercure >> 48) as GoldNugget,
@@ -77,6 +104,9 @@ mod test {
         let mut nuggets_vec = nuggets.to_vec();
         nuggets_vec.sort();
 
-        assert_eq!(nuggets_vec, expected_nuggets, "Nuggets do not match expected values.");
+        assert_eq!(
+            nuggets_vec, expected_nuggets,
+            "Nuggets do not match expected values."
+        );
     }
 }
