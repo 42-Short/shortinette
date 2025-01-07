@@ -1,105 +1,194 @@
+
 #[cfg(test)]
 mod tests {
+    use rand::random;
+
     use super::*;
 
     #[test]
-    fn test_basic() {
-        let mut cell = Cellule::new(42);
+    fn test_new() {
+        let val = random::<i32>();
+        let cell = Cellule::new(val);
 
-        assert_eq!(cell.get(), 42);
-
-        cell.set(100);
-        assert_eq!(cell.get(), 100);
-
-        let old_value = cell.replace(200);
-        assert_eq!(old_value, 100);
-        assert_eq!(cell.get(), 200);
-
-        let value = cell.into_inner();
-        assert_eq!(value, 200);
-    }
-
-    #[test]
-    fn test_set() {
-        let mut cell = Cellule::new(10);
-        assert_eq!(cell.get(), 10);
-
-        cell.set(20);
-        assert_eq!(cell.get(), 20);
+        assert_eq!(
+            cell.get(),
+            val,
+            "Call to cell.get() returned wrong value - expected: {}, got: {}.",
+            val,
+            cell.get()
+        );
     }
 
     #[test]
     fn test_replace() {
-        let mut cell = Cellule::new(5);
-        assert_eq!(cell.get(), 5);
+        let val1 = random::<i32>();
+        let mut cell = Cellule::new(val1);
+        assert_eq!(
+            cell.get(),
+            val1,
+            "Call to cell.get() returned wrong value - expected: {}, got: {}.",
+            val1,
+            cell.get()
+        );
 
-        let old_value = cell.replace(15);
-        assert_eq!(old_value, 5);
-        assert_eq!(cell.get(), 15);
+        let val2 = random::<i32>();
+        let old_val = cell.replace(val2);
 
-        let old_value = cell.replace(30);
-        assert_eq!(old_value, 15);
-        assert_eq!(cell.get(), 30);
+        assert_eq!(
+            old_val, val1,
+            "Call to cell.replace() returned wrong value - expected: {}, got: {}.",
+            val1, old_val
+        );
+        assert_eq!(
+            cell.get(),
+            val2,
+            "Call to cell.get() returned wrong value - expected: {}, got: {}.",
+            val2,
+            cell.get()
+        );
+
+        let val3 = random::<i32>();
+        let old_val = cell.replace(val3);
+
+        assert_eq!(
+            old_val, val2,
+            "Call to cell.replace() returned wrong value - expected: {}, got: {}.",
+            val2, old_val
+        );
+        assert_eq!(
+            cell.get(),
+            val3,
+            "Call to cell.get() returned wrong value - expected: {}, got: {}.",
+            val3,
+            cell.get()
+        );
+    }
+
+    #[test]
+    fn test_set() {
+        let val = random::<i32>();
+        let mut cell = Cellule::new(val);
+        assert_eq!(
+            cell.get(),
+            val,
+            "Call to cell.get() returned wrong value - expected: {}, got: {}",
+            val,
+            cell.get()
+        );
+
+        let val1 = random::<i32>();
+        cell.set(val1);
+        assert_eq!(
+            cell.get(),
+            val1,
+            "Call to cell.get() returned wrong value - expected: {}, got: {}",
+            val1,
+            cell.get()
+        );
     }
 
     #[test]
     fn test_get_mut() {
-        let mut cell = Cellule::new(7);
-        assert_eq!(cell.get(), 7);
+        let val = random::<i32>();
+
+        let mut cell = Cellule::new(val);
+        assert_eq!(
+            cell.get(),
+            val,
+            "Call to cell.get() returned wrong value - expected: {}, got: {}",
+            val,
+            cell.get()
+        );
+
+        let val1 = random::<i32>();
 
         {
             let mut_ref = cell.get_mut();
-            *mut_ref = 14;
+            *mut_ref = val1;
         }
 
-        assert_eq!(cell.get(), 14);
+        assert_eq!(
+            cell.get(),
+            val1,
+            "Call to cell.get() returned wrong value - expected: {}, got: {}",
+            val1,
+            cell.get()
+        );
     }
 
     #[test]
     fn test_into_inner() {
-        let cell = Cellule::new(99);
+        let val = random::<i32>();
+        let cell = Cellule::new(val);
         let value = cell.into_inner();
-        assert_eq!(value, 99);
+        assert_eq!(value, val, "Call to cell.into_inner() returned wrong value - expected: {}, got: {}", val, val);
     }
 
     #[test]
     fn test_multiple_cells() {
-        let mut cell1 = Cellule::new(1);
-        let mut cell2 = Cellule::new(2);
+        let val1 = random::<i32>();
+        let val2 = random::<i32>();
+        let mut cell1 = Cellule::new(val1);
+        let mut cell2 = Cellule::new(val2);
 
-        assert_eq!(cell1.get(), 1);
-        assert_eq!(cell2.get(), 2);
+        assert_eq!(
+            cell1.get(),
+            val1,
+            "Call to cell.get() returned wrong value - expected: {}, got: {}",
+            val1,
+            cell1.get()
+        );
+        assert_eq!(
+            cell2.get(),
+            val2,
+            "Call to cell.get() returned wrong value - expected: {}, got: {}",
+            val2,
+            cell2.get()
+        );
 
-        cell1.set(10);
-        cell2.set(20);
+        cell1.set(val2);
+        cell2.set(val1);
 
-        assert_eq!(cell1.get(), 10);
-        assert_eq!(cell2.get(), 20);
+        assert_eq!(
+            cell1.get(),
+            val2,
+            "Call to cell.get() returned wrong value - expected: {}, got: {}",
+            val2,
+            cell2.get()
+        );
+        assert_eq!(
+            cell2.get(),
+            val1,
+            "Call to cell.get() returned wrong value - expected: {}, got: {}",
+            val1,
+            cell2.get()
+        );
     }
 
     #[test]
     fn test_copy_value() {
-        let cell1 = Cellule::new(5);
+        let val = random::<i32>();
+        let cell1 = Cellule::new(val);
 
         let value = cell1.get();
         let cell2 = Cellule::new(value);
 
-        assert_eq!(cell1.get(), 5);
-        assert_eq!(cell2.get(), 5);
+        assert_eq!(
+            cell1.get(),
+            val,
+            "Call to cell.get() returned wrong value - expected: {}, got: {}",
+            val,
+            cell1.get()
+        );
+        assert_eq!(
+            cell2.get(),
+            val,
+            "Call to cell.get() returned wrong value - expected: {}, got: {}",
+            val,
+            cell2.get()
+        );
 
         let value = cell2.into_inner();
-        assert_eq!(value, 5);
-    }
-
-    #[test]
-    fn test_copy_value_with_set() {
-        let mut cell1 = Cellule::new(12);
-
-        let mut value = cell1.get();
-        value += 10;
-
-        // Set the modified value back into cell1
-        cell1.set(value);
-        assert_eq!(cell1.get(), 22);
+        assert_eq!(value, val, "Call to cell.into_inner() returned wrong value - expected: {}, got: {}", val, value);
     }
 }
