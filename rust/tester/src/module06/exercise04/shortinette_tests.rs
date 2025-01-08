@@ -1,4 +1,3 @@
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -10,7 +9,7 @@ mod tests {
         let s: String = thread_rng()
             .to_owned()
             .sample_iter(&Alphanumeric)
-            .take(random::<u8>().min(10) as usize)
+            .take(random::<u8>().min(20).max(5) as usize)
             .map(char::from)
             .collect();
 
@@ -79,7 +78,7 @@ mod tests {
     #[test]
     fn test_fd_create_success() {
         let file_name = random_file_name();
-        let fd = Fd::create(&file_name).expect("Failed to create file");
+        let fd = Fd::create(&file_name).expect(&format!("Failed to create file {}", file_name.to_str().unwrap()));
         assert!(fd.0 >= 0);
         fd.close().expect("Failed to close file");
 
@@ -91,7 +90,7 @@ mod tests {
     #[test]
     fn test_fd_write_success() {
         let file_name = random_file_name();
-        let fd = Fd::create(&file_name).expect("Failed to create file");
+        let fd = Fd::create(&file_name).expect(&format!("Failed to create file {}", file_name.to_str().unwrap()));
         let data = b"Test data";
         let bytes_written = fd.write(data).expect("Failed to write to file");
         assert_eq!(bytes_written, data.len());
@@ -117,7 +116,7 @@ mod tests {
     #[test]
     fn test_fd_read_success() {
         let file_name = random_file_name();
-        let write_fd = Fd::create(&file_name).expect("Failed to create file");
+        let write_fd = Fd::create(&file_name).expect(&format!("Failed to create file {}", file_name.to_str().unwrap()));
         let data = b"Test data";
         write_fd.write(data).expect("Failed to write to file");
 
@@ -148,7 +147,7 @@ mod tests {
     #[test]
     fn test_fd_close_success() {
         let file_name = random_file_name();
-        let fd = Fd::create(&file_name).expect("Failed to create file");
+        let fd = Fd::create(&file_name).expect(&format!("Failed to create file {}", file_name.to_str().unwrap()));
         assert!(fd.close().is_ok());
 
         unsafe {
@@ -159,7 +158,7 @@ mod tests {
     #[test]
     fn test_file_open_success() {
         let file_name = random_file_name();
-        let _ = Fd::create(&file_name).expect("Failed to create file");
+        let _ = Fd::create(&file_name).expect(&format!("Failed to create file {}", file_name.to_str().unwrap()));
 
         let file = File::open(&file_name).expect("Failed to open file");
         file.0.close().expect("Failed to close file");
@@ -183,7 +182,7 @@ mod tests {
     #[test]
     fn test_file_create_success() {
         let file_name = random_file_name();
-        let file = File::create(&file_name).expect("Failed to create file");
+        let file = File::create(&file_name).expect(&format!("Failed to create file {}", file_name.to_str().unwrap()));
         assert!(file.0 .0 >= 0);
 
         file.0.close().expect("Failed to close file");
@@ -221,7 +220,7 @@ mod tests {
     #[test]
     fn test_file_leak() {
         let file_name = random_file_name();
-        let file = File::create(&file_name).expect("Failed to create file");
+        let file = File::create(&file_name).expect(&format!("Failed to create file {}", file_name.to_str().unwrap()));
         let fd = file.leak();
         assert!(fd.0 >= 0);
 
@@ -234,7 +233,7 @@ mod tests {
     fn test_file_drop() {
         let file_name = random_file_name();
         {
-            let file = File::create(&file_name).expect("Failed to create file");
+            let file = File::create(&file_name).expect(&format!("Failed to create file {}", file_name.to_str().unwrap()));
             let _ = file.write(b"Testing drop").expect("Failed to drop file");
         }
 
