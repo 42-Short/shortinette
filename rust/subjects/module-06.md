@@ -123,7 +123,7 @@ they are not specified in the `allowed symbols` section. **However**, tests shou
 
 * When a type is in the allowed symbols, it is **implied** that its methods and attributes are also allowed to be used (e.g., if `Vec` is allowed, you can use `Vec::push()`).
 
-* You are **always** allowed to use `Option` and `Result` types (not the `std::io::Result`, _just the plain one_), even when they are not in the allowed symbols!
+* You are **always** allowed to use `Option` and `Result` types (either `std::io::Result` or the plain `Result`, up to you and your use case), even when they are not in the allowed symbols!
 
 * You are **always** allowed to use `std::eprintln` for error handling.
 
