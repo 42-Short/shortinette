@@ -524,16 +524,22 @@ files to turn in:
 
 allowed symbols:
     std::alloc::{alloc, dealloc, Layout}
-    std::marker::Copy  std::clone::Clone
+    std::marker::Copy
+    std::clone::Clone
     std::ops::{Deref, DerefMut}
-    std::ptr::*  std::mem::*
+    std::ptr::*  
+    std::mem::*
 ```
 
 It must implement the following inherent methods, as specified in the official documentation:
 
 ```rust
+pub struct Tableau<T> {
+    // Up to you!
+}
+
 impl<T> Tableau<T> {
-    const fn new() -> Self;
+    pub const fn new() -> Self;
 
     fn len(&self) -> usize;
     fn is_empty(&self) -> bool;
@@ -548,11 +554,11 @@ impl<T> Tableau<T> {
 It must be possible to do the following:
 
 ```rust
-let mut a = Vec::new();
-a.push(1); a.push(2); a.push(4);
-let b = a.clone();
+let mut tab0 = Tableau::new();
+tab0.push(1); tab0.push(2); tab0.push(4);
+let tab1 = tab0.clone();
 
-for it in b {
+for it in tab1 {
     println!("{it}");
 }
 // This will print:
@@ -572,8 +578,8 @@ If you're feeling like taking a challenge, you can try to write a macro to const
 automatically:
 
 ```rust
-let v: Tableau<i32> = tableau![1, 2, 4];
-assert_eq!(v, [1, 2, 4]);
+let tab: Tableau<i32> = tableau![1, 2, 4];
+assert_eq!(tab, [1, 2, 4]);
 ```
 
 ## Exercise 06: Foreign User
