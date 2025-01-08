@@ -1,6 +1,6 @@
 
 #[cfg(test)]
-mod shortinette_tests_rust_0605 {
+mod tests {
     use super::*;
 
     #[test]

@@ -648,16 +648,16 @@ Setup your project such that this C library is automatically compiled into a `.a
 when to call `cargo build`. Your Rust library must link against that compiled C library.
 
 ```rust
-enum Error { /* ... */ }
+pub enum Error { /* ... */ }
 
-type Id = /* ... */;
+pub type Id = /* ... */;
 
-struct User { /* ... */ }
+pub struct User { /* ... */ }
 
-struct Database { /* ... */ }
+pub struct Database { /* ... */ }
 
 impl Database {
-    fn new() -> Self;
+    pub fn new() -> Self;
 
     fn create_user(&mut self, name: &CStr) -> Result<Id, Error>;
     fn delete_user(&mut self, id: Id) -> Result<(), Error>;
