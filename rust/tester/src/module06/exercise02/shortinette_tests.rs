@@ -1,5 +1,7 @@
 #[cfg(test)]
 mod tests {
+    use rand::{distributions::Alphanumeric, random, thread_rng, Rng};
+
     use super::*;
 
     #[derive(Clone, Debug, PartialEq)]
@@ -10,42 +12,54 @@ mod tests {
 
     #[test]
     fn new_and_deref() {
-        let point_in_carton = Carton::new(Point { x: 1, y: 2 });
-        assert_eq!(point_in_carton.x, 1);
-        assert_eq!(point_in_carton.y, 2);
+        let x = random::<u32>();
+        let y = random::<u32>();
+        let point_in_carton = Carton::new(Point { x, y });
+        assert_eq!(point_in_carton.x, x);
+        assert_eq!(point_in_carton.y, y);
     }
 
     #[test]
     fn deref_mut() {
-        let mut point_in_carton = Carton::new(Point { x: 1, y: 2 });
-        point_in_carton.x = 10;
-        point_in_carton.y = 20;
-        assert_eq!(point_in_carton.x, 10);
-        assert_eq!(point_in_carton.y, 20);
+        let mut point_in_carton = Carton::new(Point { x: 0, y: 0 });
+        let x = random::<u32>();
+        let y = random::<u32>();
+        point_in_carton.x = x;
+        point_in_carton.y = y;
+        assert_eq!(point_in_carton.x, x);
+        assert_eq!(point_in_carton.y, y);
     }
 
     #[test]
     fn into_inner() {
-        let point_in_carton = Carton::new(Point { x: 3, y: 4 });
+        let x = random::<u32>();
+        let y = random::<u32>();
+        let point_in_carton = Carton::new(Point { x, y });
         let point = point_in_carton.into_inner();
-        assert_eq!(point, Point { x: 3, y: 4 });
+        assert_eq!(point, Point { x, y });
     }
 
     #[test]
     fn clone() {
-        let point_in_carton = Carton::new(Point { x: 5, y: 6 });
+        let x = random::<u32>();
+        let y = random::<u32>();
+        let point_in_carton = Carton::new(Point { x, y });
+
         let mut cloned_point = point_in_carton.clone();
 
-        assert_eq!(cloned_point.x, 5);
-        assert_eq!(cloned_point.y, 6);
+        assert_eq!(cloned_point.x, x);
+        assert_eq!(cloned_point.y, y);
 
-        cloned_point.x = 7;
-        cloned_point.y = 8;
+        let x1 = random::<u32>();
+        let y1 = random::<u32>();
 
-        assert_eq!(point_in_carton.x, 5);
-        assert_eq!(point_in_carton.y, 6);
-        assert_eq!(cloned_point.x, 7);
-        assert_eq!(cloned_point.y, 8);
+        cloned_point.x = x1;
+        cloned_point.y = y1;
+
+        assert_eq!(point_in_carton.x, x);
+        assert_eq!(point_in_carton.y, y);
+        assert_eq!(cloned_point.x, x1, "Does your clone() make deep copies?");
+        assert_eq!(cloned_point.y, y1, "Does your clone() make deep copies?");
     }
 
     #[test]
@@ -65,55 +79,59 @@ mod tests {
             dropped: dropped.clone(),
         };
         {
-            let _carton = Carton::new(drop);
+            let _ = Carton::new(drop);
         }
-        assert!(dropped.get());
+        assert!(
+            dropped.get(),
+            "Does your drop() implementation also drop the Carton's content?"
+        );
     }
 
     #[test]
-    fn carton_of_i32() {
-        let int_in_carton = Carton::new(10);
-        assert_eq!(*int_in_carton, 10);
+    fn i32() {
+        let val = random::<i32>();
+        let int_in_carton = Carton::new(val);
+        assert_eq!(*int_in_carton, val);
     }
 
     #[test]
     fn carton_of_str() {
-        let str_in_carton = Carton::new(String::from("Hello, world!"));
-        assert_eq!(str_in_carton.as_str(), "Hello, world!");
+        let val: String = thread_rng()
+            .to_owned()
+            .sample_iter(&Alphanumeric)
+            .take(random::<u16>() as usize)
+            .map(char::from)
+            .collect();
+
+        let str_in_carton = Carton::new(&val);
+        assert_eq!(*str_in_carton.into_inner(), val);
     }
 
     #[test]
     fn carton_of_vec() {
-        let vec_in_carton = Carton::new(vec![1, 2, 3, 4]);
-        assert_eq!(vec_in_carton.len(), 4);
-        assert_eq!(vec_in_carton[0], 1);
-        assert_eq!(vec_in_carton[3], 4);
+        let val: Vec<u8> = thread_rng()
+            .to_owned()
+            .sample_iter(&Alphanumeric)
+            .take(random::<u16>() as usize)
+            .collect();
+
+        let vec_in_carton = Carton::new(&val);
+
+        assert_eq!(vec_in_carton.len(), val.len());
+        assert_eq!(*vec_in_carton.into_inner(), val);
     }
 
     #[test]
     fn large_carton() {
-        let large_carton = Carton::new(vec![0u8; 1024 * 1024]);
-        assert_eq!(large_carton.len(), 1024 * 1024);
-        assert_eq!(large_carton.iter().all(|&x| x == 0), true);
-    }
+        let val: Vec<u8> = thread_rng()
+            .to_owned()
+            .sample_iter(&Alphanumeric)
+            .take((random::<u16>() as usize).max(256 * 256).min(512 * 512))
+            .collect();
 
-    #[test]
-    fn subject() {
-        #[derive(Clone)]
-        struct Point {
-            x: u32,
-            y: u32,
-        }
-        let point_in_carton = Carton::new(Point { x: 1, y: 2 });
-        assert_eq!(point_in_carton.x, 1);
-        assert_eq!(point_in_carton.y, 2);
+        let large_carton = Carton::new(&val);
 
-        let mut another_point = point_in_carton.clone();
-        another_point.x = 2;
-        another_point.y = 3;
-        assert_eq!(another_point.x, 2);
-        assert_eq!(another_point.y, 3);
-        assert_eq!(point_in_carton.x, 1);
-        assert_eq!(point_in_carton.y, 2);
+        assert_eq!(large_carton.len(), val.len());
+        assert_eq!(*large_carton.into_inner(), val);
     }
 }
