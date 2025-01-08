@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod test {
+mod tests{
     use super::*;
 
     fn outcome() -> Outcome<u32, &'static str> {

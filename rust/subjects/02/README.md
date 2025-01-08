@@ -226,7 +226,7 @@ Create a type, may it be a `struct` or an `enum`. You simply have to name it `My
 You are **not** allowed to use the `impl` keyword!
 ```rust
 #[cfg(test)]
-mod test {
+mod tests{
     use super::*;
 
     #[test]
@@ -312,7 +312,7 @@ Ensure they operate as follows:
 The following test must compile and execute successfully:
 ```rust
 #[cfg(test)]
-mod test {
+mod tests{
     use super::*;
 
     #[test]
