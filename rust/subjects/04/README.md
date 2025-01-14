@@ -115,7 +115,7 @@ fn my_unused_function() {}
  Tests (when not specifically required by the subject) can use the symbols you want, even if
 they are not specified in the `allowed symbols` section. **However**, tests should **not** introduce **any additional external dependencies** beyond those already required by the subject.
 
-* When a type is in the allowed symbols, it is **implied** that its methods and attributes are also allowed to be used (e.g., if `Vec` is allowed, you can use `Vec::push()`).
+* When a type is in the allowed symbols, it is **implied** that its methods and attributes are also allowed to be used, including the attributes of its implemented traits.
 
 * You are **always** allowed to use `Option` and `Result` types (either `std::io::Result` or the plain `Result`, up to you and your use case), even when they are not in the allowed symbols!
 
