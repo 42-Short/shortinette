@@ -98,6 +98,7 @@ fn min(a: &i32, b: &i32) -> &i32;
 
 * Note that you may have to add some *lifetime annotations* to the function in order to make it
 compile.
+* If both numbers are equal, `b` should be returned
 * The `return` keyword is still disallowed.
 
 ## Exercise 02: Don't we all love darkmode?
