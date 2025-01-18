@@ -90,17 +90,15 @@ The monk, rubbing her face, walked back and sat down on one of the benches, mutt
 _The [first Rust Koan](https://users.rust-lang.org/t/rust-koans/2408)._
 
 ## General Rules
+* You **must not** have a `main` present if not specifically requested.
 
-* **Unless specified otherwise**, any exercise you turn in must compile using the `cargo` package manager, either with `cargo run`
-if the subject requires a _program_, or with `cargo test` otherwise. Only dependencies specified
-in the allowed dependencies section are allowed. Only symbols specified in the `allowed symbols`
-section are allowed.
+* Any exercise managed by cargo you turn in must compile _without warnings_ using the `cargo test` command. If not managed by cargo, it must compile _without warnings_ with the `rustc` compiler available on the school's
+machines without additional options.
 
-* Every exercise must be part of a virtual Cargo workspace, a single `workspace.members` table must be declared for the whole module.
+* Only dependencies specified in the allowed dependencies section are allowed.
 
-* Everything must compile _without warnings_ with the `rustc` compiler available on the school's
-machines without additional options.  You are _not_ allowed to use `unsafe` code anywere in your
-code.
+* Every exercise managed by cargo must be part of a virtual Cargo workspace, a single `workspace.members` table must 
+be declared for the whole module.
 
 * If not specified otherwise by the task description, you are generally not authorized to modify lint levels - either using `#[attributes]`,
 `#![global_attributes]` or with command-line arguments. You may optionally allow the `dead_code`
@@ -117,16 +115,15 @@ fn my_unused_function() {}
 
 * For exercises managed with cargo, the command `cargo clippy -- -D warnings` must run with no errors!
 
-* You are _strongly_ encouraged to write extensive tests for the functions and programs you turn in.
- Tests (when not specifically required by the subject) can use the symbols you want, even if
-they are not specified in the `allowed symbols` section. **However**, tests should **not** introduce **any additional external dependencies** beyond those already required by the subject.
+* You are _strongly_ encouraged to write extensive tests for the functions and programs you turn in. Tests can use the symbols you want, even if
+they are not specified in the `allowed symbols` section. **However**, tests should not introduce **any additional external dependencies** beyond
+those already required by the subject.
 
 * When a type is in the allowed symbols, it is **implied** that its methods and attributes are also allowed to be used, including the attributes of its implemented traits.
 
-* You are **always** allowed to use `Option` and `Result` types (either `std::io::Result` or the plain `Result`, up to you and your use case), even when they are not in the allowed symbols!
+* You are **always** allowed to use `Option` and `Result` types (either `std::io::Result` or the plain `Result`, up to you and your use case).
 
 * You are **always** allowed to use `std::eprintln` for error handling.
-
 
 ## Module Rules
 
@@ -134,7 +131,7 @@ In this module, you will take your first steps in writing dangerous code safely.
 If you keep going until the very end, you will learn stuff no sane person should ever have to
 worry about, like cross-compiling languages with **F**oreign **F**unction **I**nterfaces (FFI), or the `#![no_main]` attribute. 
 
-Therefore, you are _allowed_ to use `unsafe` code in this module! However, some rules must be followed.
+Attentive readers will have noticed a missing line in the general rules of this subject. You are _allowed_ to use `unsafe` code in this module! However, some rules must be followed.
 
 1. You must use the `#![forbid(unsafe_op_in_unsafe_fn)]` global attribute.
 
