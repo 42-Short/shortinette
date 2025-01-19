@@ -149,7 +149,7 @@ following test must compile and run:**
 
 ```rust
 #[cfg(test)]
-mod test {
+mod tests{
     use super::*;
 
     #[test]
