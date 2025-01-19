@@ -128,19 +128,19 @@ The name of a color is determined using the following rules, applied in order. T
 
 `Legend: [red, green, blue]`
 
-* **"dark gray"**: Any color whose red, green, and blue components are all between 0 and 128 (inclusive) is "Dark Gray/Black".
+* **"dark gray"**: Any color whose red, green, and blue components are all between 0 and 127 (inclusive) is "Dark Gray/Black".
 
-* **"dark red"**: Any color whose red component is between 128 and 255 (inclusive), and whose green and blue components are both between 0 and 128 (inclusive), is "Dark Red".
+* **"dark red"**: Any color whose red component is between 128 and 255 (inclusive), and whose green and blue components are both between 0 and 127 (inclusive), is "Dark Red".
 
-* **"dark green"**: Any color whose green component is between 128 and 255 (inclusive), and whose red and blue components are both between 0 and 128 (inclusive), is "Dark Green".
+* **"dark green"**: Any color whose green component is between 128 and 255 (inclusive), and whose red and blue components are both between 0 and 127 (inclusive), is "Dark Green".
 
-* **"olive"**: Any color whose red and green components are both between 128 and 255 (inclusive), and whose blue component is between 0 and 128 (inclusive), is "Dark Yellow/Olive".
+* **"olive"**: Any color whose red and green components are both between 128 and 255 (inclusive), and whose blue component is between 0 and 127 (inclusive), is "Dark Yellow/Olive".
 
-* **"dark blue"**: Any color whose blue component is between 128 and 255 (inclusive), and whose red and green components are both between 0 and 128 (inclusive), is "Dark Blue".
+* **"dark blue"**: Any color whose blue component is between 128 and 255 (inclusive), and whose red and green components are both between 0 and 127 (inclusive), is "Dark Blue".
 
-* **"purple"**: Any color whose red and blue components are both between 128 and 255 (inclusive), and whose green component is between 0 and 128 (inclusive), is "Dark Magenta/Purple".
+* **"purple"**: Any color whose red and blue components are both between 128 and 255 (inclusive), and whose green component is between 0 and 127 (inclusive), is "Dark Magenta/Purple".
 
-* **"teal"**: Any color whose green and blue components are both between 128 and 255 (inclusive), and whose red component is between 0 and 128 (inclusive), is "Dark Cyan/Teal".
+* **"teal"**: Any color whose green and blue components are both between 128 and 255 (inclusive), and whose red component is between 0 and 127 (inclusive), is "Dark Cyan/Teal".
 
 * **"light gray"**: Any color whose red, green, and blue components are all between 128 and 255 (inclusive) is "Light Gray/White".
 
@@ -162,7 +162,7 @@ mod test {
             name_of_the_best_color = color_name(&the_best_color);
         }
 
-        assert_eq!(name_of_the_best_color, "dark grey");
+        assert_eq!(name_of_the_best_color, "dark gray");
     }
 }
 ```
