@@ -16,6 +16,8 @@ impl Testable for Exercise07 {
     fn compile(&self) -> Result<Option<path::PathBuf>, crate::result::TestResult> {
         self.ensure_path();
 
+        let source_file = self.path().join("ft_putchar.rs");
+
         let _ = Command::new("rustc")
             .arg("-C")
             .arg("panic=abort")
