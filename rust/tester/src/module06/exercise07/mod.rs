@@ -23,19 +23,21 @@ impl Testable for Exercise07 {
             .arg("link-args=-nostartfiles")
             .arg("-o")
             .arg("ft_putchar")
-            .arg("ft_putchar.rs")
+            .arg(&source_file)
             .output()
-            .expect("Failed to compile ft_putchar.rs.");
+            .expect("Failed to compile ft_putchar.rs");
 
-        Ok(Some(PathBuf::from("ft_putchar.rs")))
+        Ok(Some(PathBuf::from("./ft_putchar")))
     }
 
     fn run_test(&self) -> crate::result::TestResult {
         let executable_path = self.compile().expect("Compilation failed.").unwrap();
 
+        println!("{}", executable_path.to_str().unwrap());
+
         let output = Command::new(executable_path)
             .output()
-            .expect("Failed to execute ft_putchar.");
+            .expect("Failed to execute 'ft_putchar'");
 
         if output.status.code() != Some(42) {
             return TestResult::Failed;
