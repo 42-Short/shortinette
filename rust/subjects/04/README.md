@@ -83,30 +83,44 @@ struct 🦀;
 ```
 
 ## General Rules
+* You **must not** have a `main` present if not specifically requested.
 
-* Any exercise you turn in must compile using the `cargo` package manager, either with `cargo run`
-if the subject requires a _program_, or with `cargo test` otherwise. Only dependencies specified
-in the allowed dependencies section are allowed. Only symbols specified in the `allowed symbols`
-section are allowed.
+* Any exercise managed by cargo you turn in must compile _without warnings_ using the `cargo test` command. If not managed by cargo, it must compile _without warnings_ with the `rustc` compiler available on the school's
+machines without additional options.
 
-* Every exercise must be part of a virtual Cargo workspace, a single `workspace.members` table must
+* Only dependencies specified in the allowed dependencies section are allowed.
+
+* Every exercise managed by cargo must be part of a virtual Cargo workspace, a single `workspace.members` table must 
 be declared for the whole module.
 
-* Everything must compile _without warnings_ with the `rustc` compiler available on the school's
-machines without additional options.  You are _not_ allowed to use `unsafe` code anywere in your
-code.
+* You are _not_ allowed to use the `unsafe` keyword anywere in your code.
 
-* You are generally not authorized to modify lint levels - either using `#[attributes]`,
+* If not specified otherwise by the task description, you are generally not authorized to modify lint levels - either using `#[attributes]`,
 `#![global_attributes]` or with command-line arguments. You may optionally allow the `dead_code`
 lint to silence warnings about unused variables, functions, etc.
 
+```rust
+// Either globally:
+#![allow(dead_code)] 
+
+// Or locally, for a simple item:
+#[allow(dead_code)]
+fn my_unused_function() {}
+```
+
 * For exercises managed with cargo, the command `cargo clippy -- -D warnings` must run with no errors!
 
-* You are _strongly_ encouraged to write extensive tests for the functions and programs you turn in.
- Tests (when not specifically required by the subject) can use the symbols you want, even if
-they are not specified in the `allowed symbols` section. **However**, tests should **not** introduce **any additional external dependencies** beyond those already required by the subject.
+* You are _strongly_ encouraged to write extensive tests for the functions and programs you turn in. Tests can use the symbols you want, even if
+they are not specified in the `allowed symbols` section. **However**, tests should not introduce **any additional external dependencies** beyond
+those already required by the subject.
 
-## Exercise 00: Wait that's it?
+* When a type is in the allowed symbols, it is **implied** that its methods and attributes are also allowed to be used, including the attributes of its implemented traits.
+
+* You are **always** allowed to use `Option` and `Result` types (either `std::io::Result` or the plain `Result`, up to you and your use case).
+
+* You are **always** allowed to use `std::eprintln` for error handling.
+
+## Exercise 00: Wait thats it?
 
 ```txt
 turn-in directories:
@@ -119,7 +133,7 @@ allowed symbols:
     none
 ```
 
-Create `Outcome` and `Maybe` which should mimic `Result` and `Option` so below test compiles and runs. For this exercise, you are exceptionally (_and obviously_) **not** allowed to use the `Option` and `Result` types.
+Create `Outcome` and `Maybe` which should mimic `Result` and `Option` so that test compiles and runs
 
 ```rust
 #[cfg(test)]
@@ -159,34 +173,24 @@ turn-in directory:
     ex01/
 
 files to turn in:
-    src/lib.rs  Cargo.toml
+    src/main.rs  Cargo.toml
 
 allowed symbols:
-    std::io::{Write, Read}
-    std::fs::File 
-    std::vec::Vec
-    std::string::String
+    std::io::{Write, Read, stdin, stdout}
+    std::io::{Stdout, StdoutLock, Stdin, StdinLock}
+    std::io::{Error, Result}
+    std::fs::File  std::env::args
+    std::vec::Vec  std::string::String
     std::iter::*
+    std::{print, println, eprintln}
 ```
 
-Write a **function** that copies `input` to `writer` and all filenames provided as arguments.
-
-Your function must have the following signature:
-
-```rust
-pub fn tee<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, filenames: &[String]);
-```
+Create a **program** that reads the standard input, and copies it to the standard output, as well as
+to every file specified in command-line arguments.
 
 Example:
 
-```rust
-fn main() {
-    let args: Vec<String> = std::env::args().skip(1).collect();
-    tee(&mut std::io::stdin(), &mut std::io::stdout(), &args);
-}
-```
-
-```plaintext
+```txt
 >_ echo "Hello, World!" | cargo run -- a b c
 Hello, World!
 >_ cat a b c
@@ -195,7 +199,8 @@ Hello, World!
 Hello, World!
 ```
 
-You program must not panic when interacting with the file system. All errors must be handled properly. You are free to choose what to do in that case, but you must *not* crash/panic.
+You program must not panic when interacting with the file system. All errors must be handled
+properly. You are free to choose what to do in that case, but you must *not* crash/panic.
 
 ## Exercise 02: Duh
 
@@ -204,41 +209,32 @@ turn-in directory:
     ex02/
 
 files to turn in:
-    src/lib.rs  Cargo.toml`
+    src/main.rs  Cargo.toml
 
 allowed symbols:
-    std::io::Write
     std::fs::{metadata, Metadata, read_dir, DirEntry, ReadDir}
-    std::path::Path
+    std::path::Path  std::io::{Error, Result}
+    std::env::args
+    std::{print, println, eprintln}
 ```
 
-Create a **function** that computes the total size of a directory or file. Once computed, write the size followed by a newline to `writer`, formatted like in the examples below.
+Create a **program** that computes the total size of a directory or file. The program must write the
+aggregated size of directories *in real-time*. As more files are taken in account in the count,
+the total size must be updated in the terminal.
 
-Your function must have the following signature:
-```rust
-pub fn duh<W: std::io::Write>(writer: &mut W, basedir: &str) -> Result<(), String>;
-```
-
-Example Usage:
-
-```rust
-fn main() {
-    let arg: String = std::env::args().nth(1).unwrap();
-    duh(&mut std::io::stdout(), &arg);
-}
-
-// Output:
-// 1.2 gigabytes
+```txt
+>_ cargo run -- ~
+1.2 gigabytes
 ```
 
  * If a size is less than a kilobyte, it is written in bytes. (e.g. 245 bytes)
  * If a size is more than a kilobyte, it is written in kilobytes, with one decimal (e.g. `12.2 kilobytes`).
  * If a size is more than a megabyte, it is written in megabytes, with one decimal (e.g. `100.4 megabytes`).
  * If a size is more than a gigabyte, it is written in gigabytes, with one decimal (e.g. `23.9 gigabytes`).
- * For simplicity, you will assume that a kilobyte is `1000 bytes`, a megabyte is `1000 kilobytes`,
+ * For simplicty's sake, we'll assume that a kilobyte is `1000 bytes`, a megabyte is `1000 kilobytes`,
    etc.
 
-Your function must never panic when interacting with the file system. Errors must be handled properly.
+Your program must not panic when interacting with the file system. Errors must be handled properly.
 
 ## Exercise 03: Pipe-Line
 
@@ -247,40 +243,35 @@ turn-in directory:
     ex03/
 
 files to turn in:
-    src/lib.rs  Cargo.toml
+    src/main.rs  Cargo.toml
 
 allowed symbols:
-    std::process::{Command, Stdio}
-    std::io::{Read, BufRead, Write}
-    std::vec::Vec
+    std::env::args
+    std::process::Command
+    std::os::unix::process::CommandExt
+    std::io::{Read, stdin}
+    std::vec::Vector
     std::iter::*
 ```
 
-Create a **function** with the following signature:
+Create a **program** that takes a path and some arguments as an input, and spawns that process with:
+
+1. The arguments passed in command-line arguments.
+2. Each line of its standard input.
+
+Example:
 
 ```rust
-pub fn pipeline<R: std::io::Read + BufRead, W: std::io::Write>(input: &mut R, writer: &mut W, args: &[String]) -> Result<(), String>;
+>_ << EOF cargo run -- echo -n
+hello
+test
+EOF
+hello test>_
 ```
 
-It must spawn a process using the path (`args[0]`, arguments (`args[1..]`)), and input (`input`) passed as arguments,
-and write its output to `writer`.
+The program invoked the `echo -n hello test` command.
 
-Example Usage:
-
-```rust
-fn main() {
-    pipeline(&mut std::io::stdin(), &mut std::io::stdout(), &[String::from("echo"), String::from("-n")]);
-}
-```
-Expected Output:
-```
-$ echo "Hello, World!" | cargo run
-Hello, World!%
-```
-
-The example invoked the `echo -n "Hello, World!"` command.
-
-Your function must never panic when interacting with the system, you must handle errors properly.
+Your program must not panic when interacting with the system, you must handle errors properly.
 
 ## Exercise 04: Command Multiplexer
 
@@ -289,22 +280,18 @@ turn-in directory:
     ex04/
 
 files to turn in:
-    src/lib.rs  Cargo.toml
+    src/main.rs  Cargo.toml
 
 allowed symbols:
-    std::iter::*
+    std::env::args  std::iter::*
     std::process::{Command, Stdio, Child}
     std::vec::Vec
-    std::io::Write
+    std::io::{stdout, Write, Read}
+    std::{write, writeln}
+    std::eprintln
 ```
 
-Create a **function** with the following signature:
-
-```rust
-pub fn multiplexer<W: std::io::Write>(writer: &mut W, command_lines: &[&[String]]) -> Result<(), String>;
-```
-
-It must start multiple command lines passed as arguments, and write each of them followed by its output to `stdout`, separated by empty lines, to `writer`. 
+Create a **program** that starts multiple commands, and prints each command followed by its output to `stdout`, separated by empty lines. 
 **The different commands' outputs must _not_ be mixed up.**
 
  * Commands must be executed in parallel. You must spawn a process for each command.
@@ -312,31 +299,25 @@ It must start multiple command lines passed as arguments, and write each of them
  * Any error occuring when interacting with the system must be handled properly. Your program must never panic.
  * The output of a child must be displayed entirely as soon as it finishes execution, even when other commands are still in progress.
 
-Example Usage:
+Example:
 
-```rust
-fn main() {
-        let cli1: &[String] = &[String::from("echo"), String::from("a"), String::from("b")];
-        let cli2: &[String] = &[String::from("sleep"), String::from("1")];
-        let cli3: &[String] = &[String::from("cat"), String::from("Cargo.toml")];
-        let command_lines = vec![cli1, cli2, cli3];
-
-    multiplexer(&mut std::io::stdout(), &command_lines);
-}
-```
-
-Expected Output:
 ```txt
->_ cargo run
+>_ cargo run -- echo a b , sleep 1 , echo b , cat Cargo.toml , cat i-dont-exit.txt
+cat i-dont-exit.txt
+
 echo a b
 a b
 
+echo b
+b
+
 cat Cargo.toml
 [package]
-name = "ex04"
+name = "ex03"
 version = "0.1.0"
 
 sleep 1
+
 ```
 
 ## Exercise 05: GET
@@ -346,52 +327,36 @@ turn-in directory:
     ex05/
 
 files to turn in:
-    src/lib.rs  Cargo.toml
+    src/main.rs  Cargo.toml
 
 allowed symbols:
-    std::net::TcpStream
-    std::io::Write
+    std::env::args
+    std::net::{TcpStream, SocketAddr, ToSocketAddrs}
+    std::io::{Write, Read, stdout}
 ```
 
-Create a **function** with the following signature:
+Create a **program** that sends an `HTTP/1.1` request and prints the response.
 
-```rust
-pub fn get<W: std::io::Write>(writer: &mut W, address: &str) -> Result<(), String>;
-```
+Example:
 
-It must send an `HTTP/1.1` request and write the response to `writer`.
+_Note: You are free to format this exercise as you like, as long as the HTTP/1.1 status code and the Content-Length header are displayed._
 
-Example Usage:
-
-```rust
-fn main() {
-    get(&mut std::io::stdout(), "localhost");
-}
-```
-
-Expected Output:
 ```txt
-$ cargo run
+>_ cargo run -- https://github.com/42-Short
 HTTP/1.1 200 OK
-Server: nginx/1.24.0 (Ubuntu)
-Date: Sun, 29 Dec 2024 15:48:11 GMT
-Content-Type: text/html
-Content-Length: 615
-Last-Modified: Wed, 06 Nov 2024 10:04:23 GMT
-Connection: close
-ETag: "672b3f27-267"
-Accept-Ranges: bytes
-
-<!DOCTYPE html>
+Server: tiny-http (Rust)
+Date: Sat, 04 Feb 2023 12:40:33 GMT
+Content-Length: ...
+...
 <html>
 ...
-</html>
 ```
 
- * The function must send *valid* HTTP/1.1 requests.
+ * The program must send *valid* HTTP/1.1 requests.
  * Only the `GET` method is required.
 
-**Note:** you should probably ask the server to `close` the `Connection` instantly to avoid having to detect the end of the payload.
+**Note:** you should probably ask the server to `close` the `Connection` instantly to avoid
+having to detect the end of the payload.
 
 ## Exercise 06: ft_strings
 
@@ -400,35 +365,20 @@ turn-in directory:
     ex06/
 
 files to turn in:
-    src/lib.rs  Cargo.toml
+    src/main.rs  Cargo.toml
 
 allowed symbols:
+    std::env::args
     std::fs::read
     std::str::{from_utf8, Utf8Error}
 ```
 
-Create a **function** with the following signature:
-```rust
-pub fn strings<W: std::io::Write>(writer: &mut W, path: &str, z: bool, min: Option<usize>, max: Option<usize>) -> Result<(), String>;
-```
+Create a **program** that reads an arbitrary binary file and prints printable UTF-8 strings it finds.
 
-It must read an arbitrary binary file and write printable UTF-8 strings it finds into `writer`.
+Example:
 
-Example Usage:
-
-```sh
-$ echo 'int main() { return 0; }' > test.c && cc test.c
-```
-
-```rust
-fn main() {
-    strings(&mut std::io::stdout, "./a.out", false, None, None);
-}
-```
-
-Example Output:
 ```txt
->_ cargo run
+>_ cargo run -- ./a.out
 ELF
 >
 М
@@ -442,19 +392,21 @@ ELF
 ...
 ```
 
-* A *printable UTF-8 string* is only composed of non-control characters (`TAB` _is_ a control character!).
+* A *printable UTF-8 string* is only composed of non-control characters.
 
-The function must have the following options, passed to it as arguments:
+The program must have the following options:
 
-* `z` filters out strings that are not null-terminated.
-* `min` filters out strings where `string.len() <= min`.
-* `max` filters out strings where `string.len() >= max`.
+* `-z` filters out strings that are not null-terminated.
+* `-m <min>` filters out strings that are strictly smaller than `min`.
+* `-M <max>` filters out strings that are strictly larger than `max`.
 
-Your function must never panic when interacting with the file system. Handle errors properly.
+Implementation requirements:
+1. Do not panic when interacting with the file system. Handle errors properly.
+2. Use only the allowed symbols listed above.
+3. Implement all specified options.
+4. Ensure correct handling of various binary file types.
 
-Some level of input sanitization will be necessary - a `min` value higher than the `max` value does not make much sense.
-
-Test your function with different binary files and option combinations to verify functionality.
+Test your program with different binary files and option combinations to verify functionality.
 
 ## Exercise 07: Pretty Bad Privacy
 
@@ -463,7 +415,7 @@ turn-in directory:
     ex07/
 
 files to turn in:
-    src/lib.rs Cargo.toml
+    src/main.rs Cargo.toml
 
 allowed dependencies:
     rug(v1.19.0)
@@ -471,21 +423,30 @@ allowed dependencies:
 
 allowed symbols:
     std::vec::Vec
+    std::env::args
     std::io::{stdin, stdout, stderr, Write, Read}
     std::fs::File
     rand::*
     rug::*
 ```
 
-Write a **library** with the 3 following functions:
+Write a **program** that behaves in the following way:
 
-```rust
-pub fn gen_keys(pub_key_path: &str, priv_key_path: &str)  -> Result<(), String>;
-pub fn encrypt<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, pub_key_path: &str) -> Result<(), String>;
-pub fn decrypt<R: std::io::Read, W: std::io::Write>(input: &mut R, writer: &mut W, priv_key_path: &str) -> Result<(), String>;
+```sh
+# Generate key pair
+>_ cargo run -- gen-keys my-key.pub my-key.priv
+
+# Encrypt a message
+>_ << EOF cargo run -- encrypt my-key.pub > encrypted-message
+This is a very secret message.
+EOF
+
+# Decrypt a message
+>_ cat encrypted-message | cargo run -- decrypt my-key.priv
+This is a very secret message.
 ```
 
-### `gen_keys`
+### Key Generation
 
 In order to generate keys, your program must perform the following steps:
 
@@ -503,14 +464,12 @@ The resulting keys are:
 * Private key: `(D, M)`
 * Public key: `(E, M)`
 
-### `encrypt` and `decrypt`
+### Encryption & Decryption
 
 * Encryption: `encrypt(m) = m^E % M`
-* Decryption: `encrypt(m') = m'^D % M`
+* Encryption: `encrypt(m') = m'^D % M`
 
 For any `m < M`, `decrypt(encrypt(m)) == m` should hold true.
-
-**The `rug` crate panics **
 
 ### Key File Format
 

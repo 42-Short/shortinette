@@ -20,29 +20,42 @@ fn punch_card() {
 *Extracted from `rustc`'s [unit tests](https://github.com/rust-lang/rust/blob/131f0c6df6777800aa884963bdba0739299cd31f/tests/ui/weird-exprs.rs#L126-L134).*
 
 ## General Rules
-* You **must not** have a `main` present if not specifically requested
+* You **must not** have a `main` present if not specifically requested.
 
-* Any exercise you turn in must compile using the `cargo` package manager, either with `cargo run`
-if the subject requires a _program_, or with `cargo test` otherwise. Only dependencies specified
-in the allowed dependencies section are allowed. Only symbols specified in the `allowed symbols`
-section are allowed.
+* Any exercise managed by cargo you turn in must compile _without warnings_ using the `cargo test` command. If not managed by cargo, it must compile _without warnings_ with the `rustc` compiler available on the school's
+machines without additional options.
 
-* Every exercise must be part of a virtual Cargo workspace, a single `workspace.members` table must
+* Only dependencies specified in the allowed dependencies section are allowed.
+
+* Every exercise managed by cargo must be part of a virtual Cargo workspace, a single `workspace.members` table must 
 be declared for the whole module.
 
-* Everything must compile _without warnings_ with the `rustc` compiler available on the school's
-machines without additional options.  You are _not_ allowed to use `unsafe` code anywere in your
-code.
+* You are _not_ allowed to use the `unsafe` keyword anywere in your code.
 
-* You are generally not authorized to modify lint levels - either using `#[attributes]`,
+* If not specified otherwise by the task description, you are generally not authorized to modify lint levels - either using `#[attributes]`,
 `#![global_attributes]` or with command-line arguments. You may optionally allow the `dead_code`
 lint to silence warnings about unused variables, functions, etc.
 
+```rust
+// Either globally:
+#![allow(dead_code)] 
+
+// Or locally, for a simple item:
+#[allow(dead_code)]
+fn my_unused_function() {}
+```
+
 * For exercises managed with cargo, the command `cargo clippy -- -D warnings` must run with no errors!
 
-* You are _strongly_ encouraged to write extensive tests for the functions and programs you turn in.
- Tests (when not specifically required by the subject) can use the symbols you want, even if
-they are not specified in the `allowed symbols` section. **However**, tests should **not** introduce **any additional external dependencies** beyond those already required by the subject.
+* You are _strongly_ encouraged to write extensive tests for the functions and programs you turn in. Tests can use the symbols you want, even if
+they are not specified in the `allowed symbols` section. **However**, tests should not introduce **any additional external dependencies** beyond
+those already required by the subject.
+
+* When a type is in the allowed symbols, it is **implied** that its methods and attributes are also allowed to be used, including the attributes of its implemented traits.
+
+* You are **always** allowed to use `Option` and `Result` types (either `std::io::Result` or the plain `Result`, up to you and your use case).
+
+* You are **always** allowed to use `std::eprintln` for error handling.
 
 ## Exercise 00: Reference me daddy
 

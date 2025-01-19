@@ -91,12 +91,12 @@ impl Cargo {
     }
 
     pub fn add_dependency(&self, name: &str, version: &str) -> Result<(), ()> {
+        let dependency = format!("{}@{}", name, version);
+
         let add_output = process::Command::new("cargo")
             .current_dir(self.dir.path())
             .arg("add")
-            .arg(name)
-            .arg("--version")
-            .arg(version)
+            .arg(dependency)
             .output()
             .expect("Failed to execute cargo add");
 

@@ -63,6 +63,10 @@ pub trait Testable {
             )
             .expect("Failed to add exercise as dependency to test project");
 
+        cargo
+            .add_dependency("rand", "0.8")
+            .expect("Failed to add rand as dependency to test project");
+
         let mut lib_file = fs::File::create(cargo.path().join("src/lib.rs"))
             .expect("Failed to open src/lib.rs of test module");
         lib_file
