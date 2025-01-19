@@ -19,6 +19,7 @@ impl Testable for Exercise07 {
         let _ = Command::new("rustc")
             .arg("-C")
             .arg("panic=abort")
+            .arg("-C")
             .arg("link-args=-nostartfiles")
             .arg("-o")
             .arg("ft_putchar")
@@ -40,7 +41,7 @@ impl Testable for Exercise07 {
             return TestResult::Failed;
         }
 
-        if output.stdout != b"42" {
+        if output.stdout != b"42\n" {
             return TestResult::Failed;
         }
 
