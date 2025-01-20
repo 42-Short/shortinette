@@ -4,7 +4,7 @@
 `shortinette` is meant to be the open-source version of 42 Network's `Moulinette`, allowing anyone, 42 student or not, to organize their own learning events. 
 
 `shortinette` automates assignment management by:
-* Creating and configuring submission repositories on demand, including prefabricated development environments for students to focus on the learning rather than package management.
+* Creating and configuring submission repositories on demand, including prefabricated development environments for students to focus on the learning rather than the painful configuration process of unfamiliar tech.
 * Listening to repository webhook events to trigger automated gradings.
 * Grading student submissions in safe, sandboxed environments.
 
