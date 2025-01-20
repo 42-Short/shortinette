@@ -2,7 +2,8 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS participant (
   intra_login TEXT PRIMARY KEY NOT NULL UNIQUE,
-  github_login TEXT NOT NULL UNIQUE
+  github_login TEXT NOT NULL UNIQUE,
+  current_module_id INTEGER DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS  module(

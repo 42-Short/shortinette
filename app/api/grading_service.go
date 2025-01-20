@@ -3,39 +3,116 @@ package api
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
+	"github.com/42-Short/shortinette/config"
 	"github.com/42-Short/shortinette/data"
+	"github.com/42-Short/shortinette/git"
 	"github.com/42-Short/shortinette/logger"
+	"github.com/42-Short/shortinette/tester"
 )
 
-func updateModuleGradingState(dao *data.DAO[data.Module], module *data.Module) error {
-	module.LastGraded = time.Now()
-	module.WaitTime = time.Duration(1<<module.Attempts) * time.Minute // 1, 2, 4, 8, 16, 32,... //TODO: maybe too much?
-	module.Attempts++
+//todo: sheduler in api for repo creation
 
-	err := dao.Update(context.TODO(), *module)
-	if err != nil {
-		return fmt.Errorf("failed to update module in DB")
+type moduleGrader struct {
+    moduleDao    *data.DAO[data.Module]
+	participantDao *data.DAO[data.Participant]
+    ctx    context.Context
+    config config.Config
+	gitService *git.GithubService
+}
+
+func newModuleGrader(moduleDao *data.DAO[data.Module], participantDao *data.DAO[data.Participant], ctx context.Context, config config.Config) *moduleGrader {
+	return &moduleGrader{
+		moduleDao: moduleDao,
+		participantDao: participantDao,
+		ctx:    ctx,
+		config: config,
+		gitService: git.NewGithubService(config.TokenGithub, config.OrgaGithub, "../"),
 	}
+}
+
+func (mg *moduleGrader) process(intraLogin string, moduleId int) error {
+	module, err := mg.moduleDao.Get(mg.ctx, moduleId, intraLogin)
+	if err != nil {
+		return err
+	}
+	participant, err := mg.participantDao.Get(mg.ctx, module.IntraLogin)
+	if err != nil {
+		return err
+	}
+	
+	result, err := mg.grade(*module, *participant)
+	if err != nil {
+		return err
+	}
+
+	err = mg.updateModuleState(module, *result)
+	if err != nil {
+		return err
+	}
+	err = mg.updateParticipantState(participant, *result)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func processGrading(dao *data.DAO[data.Module], intra_login string, module_id int) {
-	module, err := dao.Get(context.TODO(), module_id, intra_login)
+func (mg moduleGrader) isValidGradingAttempt(module data.Module, participant data.Participant) bool {
+    remainingWaitTime := module.WaitTime - time.Since(module.LastGraded)
+    if remainingWaitTime > 0 {
+		logger.File.Printf("grading attempt too early. Please wait %s before trying again", remainingWaitTime)
+		return false
+    }
+
+	if participant.CurrentModuleId < module.Id {
+		logger.File.Printf("complete the previous module/modules before attempting this one.")
+		return false
+	}
+
+    return true
+}
+
+func (mg *moduleGrader) updateModuleState(module *data.Module, result tester.GradingResult) error {
+	module.LastGraded = time.Now()
+	module.WaitTime = time.Duration(1<<module.Attempts) * time.Minute
+	module.Attempts++
+	module.Score = result.Score
+	return mg.moduleDao.Update(mg.ctx, *module)
+}
+
+func (mg *moduleGrader) updateParticipantState(participant *data.Participant, result tester.GradingResult) error {
+	if(!result.Passed) {
+		return nil
+	}
+	participant.CurrentModuleId++
+	return mg.participantDao.Update(mg.ctx, *participant)
+}
+
+func (mg moduleGrader) grade(module data.Module, participant data.Participant) (*tester.GradingResult, error) {
+	traceFile := filepath.Join("traces", fmt.Sprintf("%s%d_%s.log", module.IntraLogin, module.Id, time.Now().Format("20060102_150405")))
+	logger.InitializeTraceLogger(traceFile)
+	defer os.Remove(traceFile)
+
+	if !mg.isValidGradingAttempt(module, participant) {
+		return nil, fmt.Errorf("invalid grading attempt")
+	}
+
+	result, err := tester.GradeModule(mg.config.Modules[module.Id], fmt.Sprintf("%s%d", module.IntraLogin, module.Id), "../testenv/Dockerfile")
 	if err != nil {
-		logger.Error.Printf("failed to get target module for %s%d: %v", intra_login, module_id, err)
-		return
+		return nil, err
 	}
-	if time.Since(module.LastGraded) < module.WaitTime {
-		logger.Warning.Printf("noticed early grading attempt for %s%d, aborting grading.", intra_login, module_id)
-		return
-	}
-	err = updateModuleGradingState(dao, module)
-	if err != nil {
-		logger.Error.Printf("failed to set grading state for %s%d, aborting grading: %v", intra_login, module_id, err)
-		return
-	}
-	logger.Info.Printf("[STATE] id: %d name: %s waittime: %.2f minutes attempts: %d", module.Id, module.IntraLogin, module.WaitTime.Minutes(), module.Attempts)
-	time.Sleep(time.Second * 3)
+	logger.File.Print(result.Trace)
+	mg.uploadTraces(traceFile, module)
+	return result, nil
+}
+
+func (mg moduleGrader) uploadTraces(traceFile string, module data.Module) {
+	mg.gitService.UploadFiles(fmt.Sprintf("%s%d", module.IntraLogin, module.Id),
+		fmt.Sprintf("chore: automated upload of trace logs for module %d (user: %s)",
+		module.Id, module.IntraLogin), 
+		"traces",true, traceFile)
 }

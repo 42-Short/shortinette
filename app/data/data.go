@@ -16,4 +16,5 @@ type Module struct {
 type Participant struct {
 	IntraLogin  string `db:"intra_login" json:"intra_login" primaryKey:"intra_login"`
 	GitHubLogin string `db:"github_login" json:"github_login"`
+	CurrentModuleId int `db:"current_module_id" json:"current_module_id"`
 }

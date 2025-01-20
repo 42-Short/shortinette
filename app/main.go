@@ -13,7 +13,6 @@ import (
 	"github.com/42-Short/shortinette/db"
 	"github.com/42-Short/shortinette/logger"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 func shutdown(api *api.API, sigCh chan os.Signal) {
@@ -25,12 +24,34 @@ func shutdown(api *api.API, sigCh chan os.Signal) {
 	logger.Error.Fatalf("caught signal: %v", sig)
 }
 
-func run() {
-	err := godotenv.Load()
-	if err != nil {
-		logger.Error.Fatalf("can't load .env file: %v", err)
-	}
+func getMockConfig() *config.Config {
+    ex1, _ := config.NewExercise(
+        "testenv/ex00/test.sh",
+        10,
+        []string{"*.c", "*.h"},
+        "ex00",
+    )
+    ex2, _ := config.NewExercise(
+        "testenv/ex01/test.sh",
+        20,
+        []string{"*.c", "*.h"},
+        "ex01",
+    )
 
+    module, _ := config.NewModule(
+        []config.Exercise{*ex1, *ex2},
+        15,
+    )
+
+    return config.NewConfig(
+        []config.Module{*module, *module},
+        24 * time.Hour,
+        time.Now(),
+    )
+}
+ 
+
+func run() {
 	db, err := db.NewDB(context.Background(), "file::memory:?cache=shared")
 	if err != nil {
 		logger.Error.Fatalf("failed to create db: %v", err)
@@ -50,7 +71,7 @@ func run() {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
-	config := config.NewConfig(nil, nil, 0, time.Now())
+	config := getMockConfig()
 	config.FetchEnvVariables()
 	api := api.NewAPI(config, db, gin.DebugMode)
 	api.SetupRouter()

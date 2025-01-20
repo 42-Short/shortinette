@@ -1,7 +1,6 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -23,9 +22,6 @@ type Config struct {
 	OrgaGithub   string
 	ServerAddr   string
 	ApiToken     string
-
-	//Note: this is just temporary as the participants will get inserted via the api
-	Participants []Participant
 }
 
 // Group of exercises
@@ -43,12 +39,6 @@ type Exercise struct {
 	TurnInDirectory string
 }
 
-// temporary struct to store a single participant
-type Participant struct {
-	IntraLogin     string `json:"intra_login"`
-	GithubUserName string `json:"github_username"`
-}
-
 // Initializes a new Config (group of all configurations)
 //
 // Arguments:
@@ -57,12 +47,11 @@ type Participant struct {
 //   - modules: list of single module
 //   - moduleDuration: duration of each module
 //   - startTime: time on which to start the short
-func NewConfig(participants []Participant, modules []Module, moduleDuration time.Duration, startTime time.Time) (conf *Config) {
+func NewConfig(modules []Module, moduleDuration time.Duration, startTime time.Time) (conf *Config) {
 	for i := range modules {
 		modules[i].StartTime = startTime.Add(time.Duration(i) * moduleDuration)
 	}
 	return &Config{
-		Participants:   participants,
 		Modules:        modules,
 		ModuleDuration: moduleDuration,
 		StartTime:      startTime,
@@ -133,7 +122,7 @@ func NewExercise(executablePath string, score int, allowedFiles []string, turnIn
 }
 
 func (config *Config) FetchEnvVariables() error {
-	err := godotenv.Load("../.env")
+	err := godotenv.Load(".env")
 	if err != nil {
 		logger.Warning.Printf(".env file not found, this is expected in the GitHub Actions environment, this is a problem if you are running this locally\n")
 	}
@@ -156,34 +145,5 @@ func (config *Config) FetchEnvVariables() error {
 	if len(missingEnvVars) > 0 {
 		return fmt.Errorf("missing environment variables: %s", strings.Join(missingEnvVars, ", "))
 	}
-	return nil
-}
-
-// Reads the participants list (json) from participantsConfigPath.
-//
-// Returns a slice of Participant structs containing the GitHub usernames of the participants.
-// Note: this is just temporary as the participants will get inserted via the api.
-//
-//	verifying the participants will only happen in the endpoint as this is only for testing and config
-//	should not include the db package
-func (config *Config) FetchParticipants(participantsConfigPath string) error {
-	data, err := os.ReadFile(participantsConfigPath)
-	if err != nil {
-		return fmt.Errorf("unable to read config file %s: %v", participantsConfigPath, err)
-	}
-
-	if err := json.Unmarshal(data, &config.Participants); err != nil {
-		return fmt.Errorf("unable to parse participants list: %v", err)
-	}
-
-	if len(config.Participants) < 1 {
-		return fmt.Errorf("you need at least one participant")
-	}
-	for _, participant := range config.Participants {
-		if participant.IntraLogin == "" || participant.GithubUserName == "" {
-			return fmt.Errorf("participant information incomplete")
-		}
-	}
-
 	return nil
 }
