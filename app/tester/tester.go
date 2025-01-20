@@ -16,6 +16,7 @@ import (
 
 	"github.com/42-Short/shortinette/config"
 	"github.com/42-Short/shortinette/tester/docker"
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 )
@@ -93,11 +94,19 @@ func allowedFilesCheck(exercise config.Exercise, exerciseDirectory string) error
 	}
 
 	missingFiles := []string{}
-	for _, allowedFile := range exercise.AllowedFiles {
-		if _, exists := submittedFiles[allowedFile]; !exists {
-			missingFiles = append(missingFiles, allowedFile)
-		} else {
-			delete(submittedFiles, allowedFile)
+	for _, allowedFilePattern := range exercise.AllowedFiles {
+		exists := false
+		for submittedFile := range submittedFiles {
+			// Pattern was validated by config checker
+			// Cannot break loop after this, since it could still match other submitted files
+			if doublestar.PathMatchUnvalidated(allowedFilePattern, submittedFile) {
+				exists = true
+				delete(submittedFiles, submittedFile)
+			}
+		}
+
+		if !exists {
+			missingFiles = append(missingFiles, allowedFilePattern)
 		}
 	}
 
@@ -150,21 +159,30 @@ func GradeExercise(exercise *config.Exercise, exerciseID int, exerciseDirectory 
 		return failed(err, exerciseID, exercise)
 	}
 
-	var passed bool
+	passed := false
 	var errorcode int
 
-	if container.ExitCode == 0 {
+	switch container.ExitCode {
+	case 0:
 		errorcode = Passed
 		passed = true
-	} else if container.Timeout {
+	case 1:
+		errorcode = Failed
+	case 2:
 		errorcode = Timeout
-		passed = false
-	} else if container.ExitCode == 137 {
+	case 3:
+		errorcode = CompilationError
+	case 4:
+		errorcode = ForbiddenFunction
+	case 137:
 		errorcode = Cancelled
-		passed = false
-	} else {
+
+	default:
 		errorcode = RuntimeError
-		passed = false
+	}
+
+	if container.Timeout {
+		errorcode = Timeout
 	}
 
 	return Result{
@@ -223,18 +241,27 @@ func getTraceContent(results []Result) string {
 			switch errorcode {
 			case Passed:
 				return "OK"
-			case RuntimeError:
-				return "KO"
-			case InternalError:
-				return "Internal Error"
+			case Cancelled:
+				return "Cancelled"
+			case CompilationError:
+				return "Compilation Error"
 			case EarlyGrading:
 				return "Grading time for module hasn't started yet"
+			case Failed:
+				return "KO"
+			case ForbiddenFunction:
+				return "Forbidden Function"
+			case InternalError:
+				return "Internal Error"
 			case InvalidFiles:
 				return "Invalid Files"
 			case NothingTurnedIn:
 				return "Nothing turned in"
+			case RuntimeError:
+				return "KO"
 			case Timeout:
 				return "Timeout"
+
 			default:
 				return "Unknown error"
 			}

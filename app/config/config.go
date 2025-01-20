@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/42-Short/shortinette/logger"
+	"github.com/bmatcuk/doublestar/v4"
 	"github.com/joho/godotenv"
 )
 
@@ -106,6 +107,13 @@ func NewExercise(executablePath string, score int, allowedFiles []string, turnIn
 	if allowedFiles == nil || len(allowedFiles) < 1 {
 		return nil, fmt.Errorf("at least one allowed file required")
 	}
+
+	for _, globPattern := range allowedFiles {
+		if !doublestar.ValidatePattern(globPattern) {
+			return nil, fmt.Errorf("allowedFiles contains an invalid glob pattern: %s", globPattern)
+		}
+	}
+
 	if score < 0 {
 		return nil, fmt.Errorf("score cannot be negative")
 	}

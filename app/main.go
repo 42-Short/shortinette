@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -64,5 +63,4 @@ func run() {
 
 func main() {
 	run()
-	fmt.Printf("Hello World\n")
 }

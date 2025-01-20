@@ -1,0 +1,24 @@
+{
+    "name": "kfs",
+    "runArgs": [
+        "--name",
+        "dev-kfs"
+    ],
+    "dockerFile": "Dockerfile",
+    "mounts": [
+        "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached",
+        "source=${localEnv:HOME}/.gitconfig,target=/root/.gitconfig,type=bind,consistency=cached"
+    ],
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/bash"
+            },
+            "extensions": [
+                "rust-lang.rust-analyzer",
+                "tamasfe.even-better-toml"
+            ]
+        }
+    },
+    "workspaceFolder": "/workspaces/kfs"
+}
