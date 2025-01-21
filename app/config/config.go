@@ -49,12 +49,15 @@ type Exercise struct {
 //   - moduleDuration: duration of each module
 //   - startTime: time on which to start the short
 func NewConfig(modules []Module, moduleDuration time.Duration, startTime time.Time, executablePath string) (conf *Config) {
-	for i := range modules {
-		modules[i].StartTime = startTime.Add(time.Duration(i) * moduleDuration)
-		for j := range modules[i].Exercises {
-			modules[i].Exercises[j].ExecutablePath = executablePath
+
+	for modIdx := range modules {
+		modules[modIdx].StartTime = startTime.Add(time.Duration(modIdx) * moduleDuration)
+
+		for exIdx := range modules[modIdx].Exercises {
+			modules[exIdx].Exercises[exIdx].ExecutablePath = executablePath
 		}
 	}
+
 	return &Config{
 		Modules:        modules,
 		ModuleDuration: moduleDuration,
@@ -72,13 +75,16 @@ func NewModule(exercises []Exercise, minimumScore int) (mod *Module, err error) 
 	if exercises == nil || len(exercises) < 1 {
 		return nil, fmt.Errorf("you need at least one exercise to initialize a module")
 	}
+
 	totalScore := 0
 	for _, ex := range exercises {
 		totalScore += ex.Score
 	}
+
 	if totalScore < minimumScore {
 		return nil, fmt.Errorf("the total score of all exercises (%d) adds up to less than expected minimum score (%d)", totalScore, minimumScore)
 	}
+
 	if minimumScore < 0 {
 		return nil, fmt.Errorf("minimumScore cannot be negative")
 	}
@@ -128,7 +134,7 @@ func NewExercise(executablePath string, score int, allowedFiles []string, turnIn
 func (config *Config) FetchEnvVariables() error {
 	err := godotenv.Load(".env")
 	if err != nil {
-		logger.Warning.Printf(".env file not found, this is expected in the GitHub Actions environment, this is a problem if you are running this locally\n")
+		logger.Warning.Println(".env file not found, this is expected in the GitHub Actions environment, this is a problem if you are running this locally")
 	}
 	requiredEnvVars := map[string]*string{
 		"TEMPLATE_REPO": &config.TemplateRepo,
