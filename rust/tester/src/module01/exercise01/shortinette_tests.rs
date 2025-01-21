@@ -10,7 +10,7 @@ mod shortinette_tests_0101 {
         let a = rng.gen_range(1..=100);
         let b = a + 1;
 
-        assert_eq!(min(&a, &b), &a);
+        assert_eq!(min(&a, &b), &a, "Failed for ({}, {})", a, b);
     }
 
     #[test]
@@ -20,7 +20,7 @@ mod shortinette_tests_0101 {
         let a = rng.gen_range(1..=100);
         let b = a - 1;
 
-        assert_eq!(min(&a, &b), &b);
+        assert_eq!(min(&a, &b), &b, "Failed for ({}, {})", a, b);
     }
 
     #[test]
@@ -30,7 +30,7 @@ mod shortinette_tests_0101 {
         let a = rng.gen_range(1..=100);
         let b = a;
 
-        assert!(std::ptr::eq(min(&a, &b), &b));
+        assert!(std::ptr::eq(min(&a, &b), &b), "Failed for ({}, {})", a, b);
     }
 
     #[test]
@@ -42,7 +42,7 @@ mod shortinette_tests_0101 {
 
         let expected = if b <= a { &b } else { &a };
 
-        assert_eq!(min(&a, &b), expected);
+        assert_eq!(min(&a, &b), expected, "Failed for ({}, {})", a, b);
     }
 
     #[test]
@@ -58,7 +58,7 @@ mod shortinette_tests_0101 {
 
         let expected = if b <= a { &b } else { &a };
 
-        assert_eq!(min(&a, &b), &a);
+        assert_eq!(min(&a, &b), expected, "Failed for ({}, {})", a, b);
     }
 
     #[test]
@@ -72,6 +72,8 @@ mod shortinette_tests_0101 {
             std::mem::swap(&mut a, &mut b);
         }
 
-        assert_eq!(min(&a, &b), &a);
+        let expected = if b <= a { &b } else { &a };
+
+        assert_eq!(min(&a, &b), expected, "Failed for ({}, {})", a, b);
     }
 }

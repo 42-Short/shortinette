@@ -10,14 +10,14 @@ mod shortinette_tests_0100 {
         let a: i32 = rng.gen_range(1..=100);
         let b: i32 = rng.gen_range(1..=100);
 
-        assert_eq!(add(&a, b), a + b);
+        assert_eq!(add(&a, b), a + b, "Failed for ({}, {})", a, b);
     }
 
     #[test]
     fn test_add_2() {
         let a = i32::MAX;
 
-        assert_eq!(add(&a, 0), i32::MAX);
+        assert_eq!(add(&a, 0), i32::MAX, "Failed for ({}, {})", a, 0);
     }
 
     #[test]
@@ -27,7 +27,7 @@ mod shortinette_tests_0100 {
         let a = i32::MAX;
         let b = rng.gen_range(i32::MIN..0);
 
-        assert_eq!(add(&a, b), a + b);
+        assert_eq!(add(&a, b), a + b, "Failed for ({}, {})", a, b);
     }
 
     #[test]
@@ -37,7 +37,7 @@ mod shortinette_tests_0100 {
         let a = rng.gen_range(i32::MIN..0);
         let b = i32::MAX;
 
-        assert_eq!(add(&a, b), a + b);
+        assert_eq!(add(&a, b), a + b, "Failed for ({}, {})", a, b);
     }
 
     #[test]
@@ -50,7 +50,7 @@ mod shortinette_tests_0100 {
         let expected = a + b;
         add_assign(&mut a, b);
 
-        assert_eq!(a, expected);
+        assert_eq!(a, expected, "Failed for ({}, {})", a, b);
     }
 
     #[test]
@@ -58,7 +58,7 @@ mod shortinette_tests_0100 {
         let mut a = i32::MAX;
 
         add_assign(&mut a, 0);
-        assert_eq!(a, i32::MAX);
+        assert_eq!(a, i32::MAX, "Failed for ({}, {})", a, 0);
     }
 
     #[test]
@@ -71,7 +71,7 @@ mod shortinette_tests_0100 {
         let expected = a + b;
         add_assign(&mut a, b);
 
-        assert_eq!(a, expected);
+        assert_eq!(a, expected, "Failed for ({}, {})", a, b);
     }
 
     #[test]
@@ -84,6 +84,6 @@ mod shortinette_tests_0100 {
         let expected = a + b;
         add_assign(&mut a, b);
 
-        assert_eq!(a, expected);
+        assert_eq!(a, expected, "Failed for ({}, {})", a, b);
     }
 }
