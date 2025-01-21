@@ -80,7 +80,7 @@ func TestGradeExerciseOk(t *testing.T) {
 		}
 
 		exercise := config.Exercise{
-			ExecutablePath:  "executables/testexecutable.sh",
+			// ExecutablePath:  "executables/testexecutable.sh",
 			AllowedFiles:    []string{"test.rs"},
 			TurnInDirectory: "test",
 		}
@@ -109,7 +109,7 @@ func TestGradeExerciseFail(t *testing.T) {
 		}
 
 		exercise := config.Exercise{
-			ExecutablePath:  "executables/testexecutable_fail.sh",
+			// ExecutablePath:  "executables/testexecutable_fail.sh",
 			AllowedFiles:    []string{"test/test.rs"},
 			TurnInDirectory: "test",
 		}
@@ -137,7 +137,7 @@ func TestGradeExerciseNoPermission(t *testing.T) {
 			t.Fatalf("unable to create test/test.rs file")
 		}
 		exercise := config.Exercise{
-			ExecutablePath:  "executables/testexecutable_noperm.sh",
+			// ExecutablePath:  "executables/testexecutable_noperm.sh",
 			AllowedFiles:    []string{"test/test.rs"},
 			TurnInDirectory: "test",
 		}
@@ -170,19 +170,19 @@ func TestGradeModulePartlyFail(t *testing.T) {
 
 		exercises := make([]config.Exercise, 3)
 		exercises[0] = config.Exercise{
-			ExecutablePath:  "executables/slow_executable.sh",
+			// ExecutablePath:  "executables/slow_executable.sh",
 			Score:           10,
 			AllowedFiles:    []string{"test.rs"},
 			TurnInDirectory: "ex00",
 		}
 		exercises[1] = config.Exercise{
-			ExecutablePath:  "executables/testexecutable_fail.sh",
+			// ExecutablePath:  "executables/testexecutable_fail.sh",
 			Score:           10,
 			AllowedFiles:    []string{"test.rs"},
 			TurnInDirectory: "ex00",
 		}
 		exercises[2] = config.Exercise{
-			ExecutablePath:  "executables/testexecutable.sh",
+			// ExecutablePath:  "executables/testexecutable.sh",
 			Score:           10,
 			AllowedFiles:    []string{"test.rs"},
 			TurnInDirectory: "ex00",
@@ -226,19 +226,19 @@ func TestGradeModuleFullPoints(t *testing.T) {
 
 		exercises := make([]config.Exercise, 3)
 		exercises[0] = config.Exercise{
-			ExecutablePath:  "executables/slow_executable.sh",
+			// ExecutablePath:  "executables/slow_executable.sh",
 			Score:           10,
 			AllowedFiles:    []string{"test.rs"},
 			TurnInDirectory: "ex00",
 		}
 		exercises[1] = config.Exercise{
-			ExecutablePath:  "executables/testexecutable.sh",
+			// ExecutablePath:  "executables/testexecutable.sh",
 			Score:           10,
 			AllowedFiles:    []string{"test.rs"},
 			TurnInDirectory: "ex00",
 		}
 		exercises[2] = config.Exercise{
-			ExecutablePath:  "executables/testexecutable.sh",
+			// ExecutablePath:  "executables/testexecutable.sh",
 			Score:           10,
 			AllowedFiles:    []string{"test.rs"},
 			TurnInDirectory: "ex00",
@@ -283,7 +283,7 @@ func TestGradeModuleMissingFile(t *testing.T) {
 
 		exercises := make([]config.Exercise, 1)
 		exercises[0] = config.Exercise{
-			ExecutablePath:  "executables/testexecutable.sh",
+			// ExecutablePath:  "executables/testexecutable.sh",
 			Score:           10,
 			AllowedFiles:    []string{"test.rs", "test2.rs"},
 			TurnInDirectory: "ex00",
@@ -331,7 +331,7 @@ func TestGradeModuleAdditionalFiles(t *testing.T) {
 
 		exercises := make([]config.Exercise, 1)
 		exercises[0] = config.Exercise{
-			ExecutablePath:  "executables/testexecutable.sh",
+			// ExecutablePath:  "executables/testexecutable.sh",
 			Score:           10,
 			AllowedFiles:    []string{},
 			TurnInDirectory: "ex00",
@@ -371,7 +371,7 @@ func TestGradeModuleNothingTurnedIn(t *testing.T) {
 
 		exercises := make([]config.Exercise, 1)
 		exercises[0] = config.Exercise{
-			ExecutablePath:  "executables/testexecutable.sh",
+			// ExecutablePath:  "executables/testexecutable.sh",
 			Score:           10,
 			AllowedFiles:    []string{},
 			TurnInDirectory: "ex00",
@@ -415,7 +415,7 @@ func TestGradeModuleContainerStopped(t *testing.T) {
 
 		exercises := make([]config.Exercise, 1)
 		exercises[0] = config.Exercise{
-			ExecutablePath:  "executables/slow_executable.sh",
+			// ExecutablePath:  "executables/slow_executable.sh",
 			Score:           10,
 			AllowedFiles:    []string{"test.rs"},
 			TurnInDirectory: "ex00",

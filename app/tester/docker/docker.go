@@ -75,10 +75,10 @@ func PullImage(dockerClient *client.Client, dockerImage string) error {
 	return nil
 }
 
-func ContainerCreate(dockerClient *client.Client, command []string, image string, name string) (*Container, error) {
+func ContainerCreate(dockerClient *client.Client, image string, name string, env []string) (*Container, error) {
 	containerConfig := container.Config{
 		Image: image,
-		Cmd:   command,
+		Env: env,
 	}
 
 	hostConfig := container.HostConfig{}
@@ -164,9 +164,9 @@ func createTarArchive(exercise config.Exercise, exerciseDirectory string) (io.Re
 		return nil, err
 	}
 
-	if err := addExecutableToArchive(exercise.ExecutablePath, tarWriter); err != nil {
-		return nil, err
-	}
+	// if err := addExecutableToArchive(exercise.ExecutablePath, tarWriter); err != nil {
+	// 	return nil, err
+	// }
 
 	if err := tarWriter.Close(); err != nil {
 		return nil, err

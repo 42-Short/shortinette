@@ -25,30 +25,29 @@ func shutdown(api *api.API, sigCh chan os.Signal) {
 }
 
 func getMockConfig() *config.Config {
-    ex1, _ := config.NewExercise(
-        10,
-        []string{"*.c", "*.h"},
-        "ex00",
-    )
-    ex2, _ := config.NewExercise(
-        20,
-        []string{"*.c", "*.h"},
-        "ex01",
-    )
+	ex1, _ := config.NewExercise(
+		10,
+		[]string{"*.c", "*.h"},
+		"ex00",
+	)
+	ex2, _ := config.NewExercise(
+		20,
+		[]string{"*.c", "*.h"},
+		"ex01",
+	)
 
-    module, _ := config.NewModule(
-        []config.Exercise{*ex1, *ex2},
-        15,
-    )
+	module, _ := config.NewModule(
+		[]config.Exercise{*ex1, *ex2},
+		15,
+	)
 
-    return config.NewConfig(
-        []config.Module{*module, *module},
-        24 * time.Hour,
-        time.Now(),
+	return config.NewConfig(
+		[]config.Module{*module, *module},
+		24*time.Hour,
+		time.Now(),
 		"app/testenv/test.sh",
-    )
+	)
 }
- 
 
 func run() {
 	db, err := db.NewDB(context.Background(), "file::memory:?cache=shared")
@@ -71,12 +70,11 @@ func run() {
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
 	config := getMockConfig()
-	
-	
+
 	if err := config.FetchEnvVariables(); err != nil {
 		logger.Error.Fatalf("could not fetch environment variables: %v", err)
 	}
-	
+
 	api := api.NewAPI(config, db, gin.DebugMode)
 	api.SetupRouter()
 	go shutdown(api, sigCh)

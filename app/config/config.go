@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -17,7 +16,7 @@ type Config struct {
 	Modules        []Module
 	ModuleDuration time.Duration
 	StartTime      time.Time
-	ExecutablePath string
+	DockerImage    string
 
 	TemplateRepo string
 	TokenGithub  string
@@ -29,6 +28,7 @@ type Config struct {
 
 // Group of exercises
 type Module struct {
+	ID           int
 	Exercises    []Exercise
 	MinimumScore int
 	StartTime    time.Time // Set for each Module in NewShort based on the short's start time and the module duration
@@ -36,7 +36,8 @@ type Module struct {
 
 // Single exercise
 type Exercise struct {
-	ExecutablePath  string
+	ID              int
+	DockerImage     string
 	Score           int
 	AllowedFiles    []string
 	TurnInDirectory string
@@ -50,10 +51,16 @@ type Exercise struct {
 //   - modules: list of single module
 //   - moduleDuration: duration of each module
 //   - startTime: time on which to start the short
-func NewConfig(modules []Module, moduleDuration time.Duration, startTime time.Time, executablePath string) (conf *Config) {
+func NewConfig(modules []Module, moduleDuration time.Duration, startTime time.Time, dockerImage string) (conf *Config) {
 
 	for modIdx := range modules {
 		modules[modIdx].StartTime = startTime.Add(time.Duration(modIdx) * moduleDuration)
+		modules[modIdx].ID = modIdx
+
+		for exIdx := range modules[modIdx].Exercises {
+			modules[modIdx].Exercises[exIdx].DockerImage = dockerImage
+			modules[modIdx].Exercises[exIdx].ID = exIdx
+		}
 	}
 
 	return &Config{
@@ -126,7 +133,7 @@ func NewExercise(score int, allowedFiles []string, turnInDirectory string) (ex *
 }
 
 func (config *Config) FetchEnvVariables() error {
-	err := godotenv.Load("../.env")
+	err := godotenv.Load(".env", "../.env")
 	if err != nil {
 		logger.Warning.Println(".env file not found, this is expected in the GitHub Actions environment, this is a problem if you are running this locally")
 	}
@@ -149,13 +156,6 @@ func (config *Config) FetchEnvVariables() error {
 
 	if len(missingEnvVars) > 0 {
 		return fmt.Errorf("missing environment variables: %s", strings.Join(missingEnvVars, ", "))
-	}
-
-	for modIdx := range config.Modules {
-
-		for exIdx := range config.Modules[modIdx].Exercises {
-			config.Modules[exIdx].Exercises[exIdx].ExecutablePath = filepath.Join(config.BasePath, config.ExecutablePath)
-		}
 	}
 
 	return nil

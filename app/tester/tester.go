@@ -134,29 +134,29 @@ func allowedFilesCheck(exercise config.Exercise, exerciseDirectory string) error
 	return nil
 }
 
-func GradeExercise(exercise *config.Exercise, exerciseID int, exerciseDirectory string, dockerImage string) Result {
+func GradeExercise(exercise *config.Exercise, module *config.Module, exerciseDirectory string) Result {
 	if err := allowedFilesCheck(*exercise, exerciseDirectory); err != nil {
-		return failed(err, exerciseID, exercise)
+		return failed(err, exercise.ID, exercise)
 	}
 
 	dockerClient, err := docker.NewClient()
 	if err != nil {
-		return failed(fmt.Errorf("error connecting to docker socket: %s", err), exerciseID, exercise)
+		return failed(fmt.Errorf("error connecting to docker socket: %s", err), exercise.ID, exercise)
 	}
 
-	container, err := docker.ContainerCreate(dockerClient, []string{filepath.Join("/root", filepath.Base(exercise.ExecutablePath))}, dockerImage, fmt.Sprintf("shortinette-grade-%d-%s", exerciseID, exerciseDirectory))
+	container, err := docker.ContainerCreate(dockerClient, exercise.DockerImage, fmt.Sprintf("shortinette-grade-%d-%s", exercise.ID, exerciseDirectory), []string{fmt.Sprintf("MODULE=0%d", module.ID), fmt.Sprintf("EXERCISE=0%d", exercise.ID)})
 	if err != nil {
-		return failed(fmt.Errorf("error creating Docker container: %s", err), exerciseID, exercise)
+		return failed(fmt.Errorf("error creating Docker container: %s", err), exercise.ID, exercise)
 	}
 	defer container.Kill() //nolint:errcheck
 
 	if err := container.CopyFilesToContainer(*exercise, exerciseDirectory); err != nil {
-		return failed(fmt.Errorf("error copying files into container: %s", err), exerciseID, exercise)
+		return failed(fmt.Errorf("error copying files into container: %s", err), exercise.ID, exercise)
 	}
 
 	// Hard cap at 5 minutes just in case the test executable doesn't handle endless loops correctly
 	if err := container.Exec(5 * time.Minute); err != nil {
-		return failed(err, exerciseID, exercise)
+		return failed(err, exercise.ID, exercise)
 	}
 
 	passed := false
@@ -188,25 +188,25 @@ func GradeExercise(exercise *config.Exercise, exerciseID int, exerciseDirectory 
 	return Result{
 		Passed:     passed,
 		Score:      exercise.Score,
-		ExerciseID: exerciseID,
+		ExerciseID: exercise.ID,
 		ErrorCode:  errorcode,
 		output:     container.Logs,
 	}
 }
 
-func checkTestExecutable(executable string) error {
-	infos, err := os.Stat(executable)
-	if err != nil {
-		return fmt.Errorf("error getting infos of test executable: '%s'", err)
-	}
+// func checkTestExecutable(executable string) error {
+// 	infos, err := os.Stat(executable)
+// 	if err != nil {
+// 		return fmt.Errorf("error getting infos of test executable: '%s'", err)
+// 	}
 
-	mode := infos.Mode()
-	if mode.IsDir() || mode.Perm()&0111 == 0 {
-		return fmt.Errorf("test executable '%s' isn't an executable file", executable)
-	}
+// 	mode := infos.Mode()
+// 	if mode.IsDir() || mode.Perm()&0111 == 0 {
+// 		return fmt.Errorf("test executable '%s' isn't an executable file", executable)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func sortResults(module config.Module, resultsChan chan Result) []Result {
 	results := make([]Result, len(module.Exercises))
@@ -298,11 +298,11 @@ func GradeModule(module config.Module, folder string, dockerImage string) (*Grad
 		return nil, TestingError(EarlyGrading, fmt.Sprintf("start time for repo '%s' not reached yet", folder))
 	}
 
-	for _, exercise := range module.Exercises {
-		if err := checkTestExecutable(exercise.ExecutablePath); err != nil {
-			return nil, err
-		}
-	}
+	// for _, exercise := range module.Exercises {
+	// 	if err := checkTestExecutable(exercise.ExecutablePath); err != nil {
+	// 		return nil, err
+	// 	}
+	// }
 
 	var wg sync.WaitGroup
 	resultsChan := make(chan Result, len(module.Exercises))
@@ -310,7 +310,7 @@ func GradeModule(module config.Module, folder string, dockerImage string) (*Grad
 		wg.Add(1)
 		go func(e *config.Exercise, exerciseID int) {
 			defer wg.Done()
-			result := GradeExercise(e, i, path.Join(folder, exercise.TurnInDirectory), dockerImage)
+			result := GradeExercise(e, &module, path.Join(folder, exercise.TurnInDirectory))
 			resultsChan <- result
 		}(&exercise, i)
 	}
