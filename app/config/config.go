@@ -16,6 +16,7 @@ type Config struct {
 	Modules        []Module
 	ModuleDuration time.Duration
 	StartTime      time.Time
+	ExecutablePath string
 
 	TemplateRepo string
 	TokenGithub  string
@@ -47,9 +48,12 @@ type Exercise struct {
 //   - modules: list of single module
 //   - moduleDuration: duration of each module
 //   - startTime: time on which to start the short
-func NewConfig(modules []Module, moduleDuration time.Duration, startTime time.Time) (conf *Config) {
+func NewConfig(modules []Module, moduleDuration time.Duration, startTime time.Time, executablePath string) (conf *Config) {
 	for i := range modules {
 		modules[i].StartTime = startTime.Add(time.Duration(i) * moduleDuration)
+		for j := range modules[i].Exercises {
+			modules[i].Exercises[j].ExecutablePath = executablePath
+		}
 	}
 	return &Config{
 		Modules:        modules,

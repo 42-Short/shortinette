@@ -47,6 +47,7 @@ func getMockConfig() *config.Config {
         []config.Module{*module, *module},
         24 * time.Hour,
         time.Now(),
+		"",
     )
 }
  

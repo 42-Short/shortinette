@@ -61,7 +61,7 @@ func newDummyConfig() (*config.Config, error) {
 			MinimumScore: 60,
 		},
 	}
-	config := config.NewConfig(nil, modules, time.Duration(24)*time.Hour, time.Now())
+	config := config.NewConfig(modules, time.Duration(24)*time.Hour, time.Now(), "")
 	err := config.FetchEnvVariables()
 	return config, err
 }

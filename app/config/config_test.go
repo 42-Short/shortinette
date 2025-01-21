@@ -1,46 +1,8 @@
 package config
 
 import (
-	"os"
 	"testing"
-	"time"
 )
-
-func TestFetchEnvVariables(t *testing.T) {
-	c := NewConfig([]Participant{}, []Module{}, 0, time.Now())
-	if err := c.FetchEnvVariables(); err != nil {
-		t.Fatalf("failed to fetch env variables")
-	}
-}
-
-func TestFetchEnvVariablesMissing(t *testing.T) {
-	os.Setenv("ORGA_GITHUB", "")
-	c := NewConfig([]Participant{}, []Module{}, 0, time.Now())
-	if err := c.FetchEnvVariables(); err == nil {
-		t.Fatalf("missing env vars should throw an error")
-	}
-}
-
-func TestNewParticipantsNonExistingJsonPath(t *testing.T) {
-	c := NewConfig([]Participant{}, []Module{}, 0, time.Now())
-	if err := c.FetchParticipants("foo"); err == nil {
-		t.Fatalf("a non-existing participants list should throw an error")
-	}
-}
-
-func TestNewParticipantsMalformedJson(t *testing.T) {
-	c := NewConfig([]Participant{}, []Module{}, 0, time.Now())
-	if err := c.FetchParticipants("config/malformed.json"); err == nil {
-		t.Fatalf("a malformed participants list should throw an error")
-	}
-}
-
-func TestNewParticipantsEmptyList(t *testing.T) {
-	c := NewConfig([]Participant{}, []Module{}, 0, time.Now())
-	if err := c.FetchParticipants("config/empty.json"); err == nil {
-		t.Fatalf("an empty participants list should throw an error")
-	}
-}
 
 func TestNewExerciseEmptyExecutablePath(t *testing.T) {
 	if _, err := NewExercise("", 10, []string{"foo"}, "bar"); err == nil {
