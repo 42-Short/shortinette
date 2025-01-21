@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -23,6 +24,7 @@ type Config struct {
 	OrgaGithub   string
 	ServerAddr   string
 	ApiToken     string
+	BasePath     string
 }
 
 // Group of exercises
@@ -123,6 +125,11 @@ func NewExercise(executablePath string, score int, allowedFiles []string, turnIn
 		return nil, fmt.Errorf("turnInDirectory cannot be empty")
 	}
 
+	executablePath, err = filepath.Abs(executablePath)
+	if err != nil {
+		return nil, fmt.Errorf("could not get absolute path for %s: %v", executablePath, err)
+	}
+
 	return &Exercise{
 		ExecutablePath:  executablePath,
 		Score:           score,
@@ -142,6 +149,7 @@ func (config *Config) FetchEnvVariables() error {
 		"ORGA_GITHUB":   &config.OrgaGithub,
 		"API_TOKEN":     &config.ApiToken,
 		"SERVER_ADDR":   &config.ServerAddr,
+		"BASE_PATH":     &config.BasePath,
 	}
 
 	missingEnvVars := make([]string, 0, len(requiredEnvVars))
