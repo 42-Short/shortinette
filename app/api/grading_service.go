@@ -95,7 +95,7 @@ func (mg *moduleGrader) updateParticipantState(participant *data.Participant, re
 func (mg moduleGrader) grade(module data.Module, participant data.Participant) (*tester.GradingResult, error) {
 	traceFile := filepath.Join("traces", fmt.Sprintf("%s%d_%s.log", module.IntraLogin, module.Id, time.Now().Format("20060102_150405")))
 	if err := logger.InitializeTraceLogger(traceFile); err != nil {
-		logger.Warning.Printf("trace logger could not be initialized: %v", err)
+		return nil, fmt.Errorf("trace logger could not be initialized: %v", err)
 	}
 
 	defer os.Remove(traceFile)

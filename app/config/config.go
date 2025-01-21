@@ -133,8 +133,9 @@ func NewExercise(score int, allowedFiles []string, turnInDirectory string) (ex *
 }
 
 func (config *Config) FetchEnvVariables() error {
-	err := godotenv.Load(".env", "../.env")
-	if err != nil {
+	err1 := godotenv.Load("../.env")
+	err2 := godotenv.Load("../.env")
+	if err1 != nil && err2 != nil {
 		logger.Warning.Println(".env file not found, this is expected in the GitHub Actions environment, this is a problem if you are running this locally")
 	}
 	requiredEnvVars := map[string]*string{
