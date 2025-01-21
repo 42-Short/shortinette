@@ -54,10 +54,6 @@ func NewConfig(modules []Module, moduleDuration time.Duration, startTime time.Ti
 
 	for modIdx := range modules {
 		modules[modIdx].StartTime = startTime.Add(time.Duration(modIdx) * moduleDuration)
-
-		for exIdx := range modules[modIdx].Exercises {
-			modules[exIdx].Exercises[exIdx].ExecutablePath = executablePath
-		}
 	}
 
 	return &Config{
@@ -125,11 +121,6 @@ func NewExercise(executablePath string, score int, allowedFiles []string, turnIn
 		return nil, fmt.Errorf("turnInDirectory cannot be empty")
 	}
 
-	executablePath, err = filepath.Abs(executablePath)
-	if err != nil {
-		return nil, fmt.Errorf("could not get absolute path for %s: %v", executablePath, err)
-	}
-
 	return &Exercise{
 		ExecutablePath:  executablePath,
 		Score:           score,
@@ -163,5 +154,13 @@ func (config *Config) FetchEnvVariables() error {
 	if len(missingEnvVars) > 0 {
 		return fmt.Errorf("missing environment variables: %s", strings.Join(missingEnvVars, ", "))
 	}
+
+	for modIdx := range config.Modules {
+
+		for exIdx := range config.Modules[modIdx].Exercises {
+			config.Modules[exIdx].Exercises[exIdx].ExecutablePath = filepath.Join(config.BasePath, config.ExecutablePath)
+		}
+	}
+
 	return nil
 }
