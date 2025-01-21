@@ -194,20 +194,6 @@ func GradeExercise(exercise *config.Exercise, module *config.Module, exerciseDir
 	}
 }
 
-// func checkTestExecutable(executable string) error {
-// 	infos, err := os.Stat(executable)
-// 	if err != nil {
-// 		return fmt.Errorf("error getting infos of test executable: '%s'", err)
-// 	}
-
-// 	mode := infos.Mode()
-// 	if mode.IsDir() || mode.Perm()&0111 == 0 {
-// 		return fmt.Errorf("test executable '%s' isn't an executable file", executable)
-// 	}
-
-// 	return nil
-// }
-
 func sortResults(module config.Module, resultsChan chan Result) []Result {
 	results := make([]Result, len(module.Exercises))
 
@@ -297,12 +283,6 @@ func GradeModule(module config.Module, folder string, dockerImage string) (*Grad
 	if time.Now().Before(module.StartTime) {
 		return nil, TestingError(EarlyGrading, fmt.Sprintf("start time for repo '%s' not reached yet", folder))
 	}
-
-	// for _, exercise := range module.Exercises {
-	// 	if err := checkTestExecutable(exercise.ExecutablePath); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
 
 	var wg sync.WaitGroup
 	resultsChan := make(chan Result, len(module.Exercises))
