@@ -90,8 +90,6 @@ machines without additional options.
 
 * Only dependencies specified in the allowed dependencies section are allowed.
 
-* Every exercise managed by cargo must be part of a virtual Cargo workspace, a single `workspace.members` table must 
-be declared for the whole module.
 
 * You are _not_ allowed to use the `unsafe` keyword anywere in your code.
 
