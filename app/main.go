@@ -73,7 +73,12 @@ func run() {
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 
 	config := getMockConfig()
-	config.FetchEnvVariables()
+	
+	
+	if err := config.FetchEnvVariables(); err != nil {
+		logger.Error.Fatalf("could not fetch environment variables: %v", err)
+	}
+	
 	api := api.NewAPI(config, db, gin.DebugMode)
 	api.SetupRouter()
 	go shutdown(api, sigCh)
