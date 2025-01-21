@@ -26,13 +26,11 @@ func shutdown(api *api.API, sigCh chan os.Signal) {
 
 func getMockConfig() *config.Config {
     ex1, _ := config.NewExercise(
-        "testenv/ex00/test.sh",
         10,
         []string{"*.c", "*.h"},
         "ex00",
     )
     ex2, _ := config.NewExercise(
-        "testenv/ex01/test.sh",
         20,
         []string{"*.c", "*.h"},
         "ex01",
@@ -47,7 +45,7 @@ func getMockConfig() *config.Config {
         []config.Module{*module, *module},
         24 * time.Hour,
         time.Now(),
-		"",
+		"app/testenv/test.sh",
     )
 }
  

@@ -44,7 +44,7 @@ func shutdown(sigCh chan os.Signal, errCh chan error) {
 }
 
 func newDummyExercises() config.Exercise {
-	ex, _ := config.NewExercise("foo", 10, []string{"foo.c", "bar.c"}, "foo")
+	ex, _ := config.NewExercise(10, []string{"foo.c", "bar.c"}, "foo")
 	return *ex
 }
 

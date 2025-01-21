@@ -51,7 +51,7 @@ func (gh *GithubService) deleteRepo(name string) (err error) {
 func isRepoAlreadyExists(err error) (exists bool) {
 	if githubErr, ok := err.(*github.ErrorResponse); ok {
 		for _, e := range githubErr.Errors {
-			if strings.Contains(e.Message, "name already exists on this account") {
+			if strings.Contains(strings.ToLower(e.Message), "name already exists on this account") {
 				return true
 			}
 		}

@@ -100,7 +100,7 @@ func NewModule(exercises []Exercise, minimumScore int) (mod *Module, err error) 
 //   - score: score given when passing this exercise
 //   - allowedFiles: files allowed to be found in this exercise's directory
 //   - the repository's in which the exercise files are expected to be found
-func NewExercise(executablePath string, score int, allowedFiles []string, turnInDirectory string) (ex *Exercise, err error) {
+func NewExercise(score int, allowedFiles []string, turnInDirectory string) (ex *Exercise, err error) {
 	if allowedFiles == nil || len(allowedFiles) < 1 {
 		return nil, fmt.Errorf("at least one allowed file required")
 	}
@@ -114,15 +114,11 @@ func NewExercise(executablePath string, score int, allowedFiles []string, turnIn
 	if score < 0 {
 		return nil, fmt.Errorf("score cannot be negative")
 	}
-	if len(executablePath) < 1 {
-		return nil, fmt.Errorf("executablePath cannot be empty")
-	}
 	if len(turnInDirectory) < 1 {
 		return nil, fmt.Errorf("turnInDirectory cannot be empty")
 	}
 
 	return &Exercise{
-		ExecutablePath:  executablePath,
 		Score:           score,
 		AllowedFiles:    allowedFiles,
 		TurnInDirectory: turnInDirectory,
