@@ -78,7 +78,7 @@ func PullImage(dockerClient *client.Client, dockerImage string) error {
 func ContainerCreate(dockerClient *client.Client, image string, name string, env []string) (*Container, error) {
 	containerConfig := container.Config{
 		Image: image,
-		Env: env,
+		Env:   env,
 	}
 
 	hostConfig := container.HostConfig{}
@@ -98,33 +98,33 @@ func ContainerCreate(dockerClient *client.Client, image string, name string, env
 	return &container, nil
 }
 
-func addExecutableToArchive(path string, tarWriter *tar.Writer) error {
-	executableInfo, err := os.Stat(path)
-	if err != nil {
-		return err
-	}
+// func addExecutableToArchive(path string, tarWriter *tar.Writer) error {
+// 	executableInfo, err := os.Stat(path)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	executableHeader, err := tar.FileInfoHeader(executableInfo, executableInfo.Name())
-	if err != nil {
-		return err
-	}
-	executableHeader.Name = filepath.Base(executableHeader.Name)
+// 	executableHeader, err := tar.FileInfoHeader(executableInfo, executableInfo.Name())
+// 	if err != nil {
+// 		return err
+// 	}
+// 	executableHeader.Name = filepath.Base(executableHeader.Name)
 
-	if err := tarWriter.WriteHeader(executableHeader); err != nil {
-		return err
-	}
+// 	if err := tarWriter.WriteHeader(executableHeader); err != nil {
+// 		return err
+// 	}
 
-	executableData, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer executableData.Close()
-	if _, err := io.Copy(tarWriter, executableData); err != nil {
-		return err
-	}
+// 	executableData, err := os.Open(path)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer executableData.Close()
+// 	if _, err := io.Copy(tarWriter, executableData); err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func createTarArchive(exercise config.Exercise, exerciseDirectory string) (io.Reader, error) {
 	var buf bytes.Buffer
