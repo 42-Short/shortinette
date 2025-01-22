@@ -31,8 +31,6 @@ type gitHubWebhookPayload struct {
 
 func launchShort(participantDao *dao.DAO[dao.Participant], config config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// To future me: the next 3 lines are bullshit to shut the linter up, DO NOT try to
-		// read into them.
 		participants, err := participantDao.GetAll(context.Background())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not fetch participants: %v", err)})
