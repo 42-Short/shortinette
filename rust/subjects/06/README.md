@@ -97,8 +97,6 @@ machines without additional options.
 
 * Only dependencies specified in the allowed dependencies section are allowed.
 
-* Every exercise managed by cargo must be part of a virtual Cargo workspace, a single `workspace.members` table must 
-be declared for the whole module.
 
 * If not specified otherwise by the task description, you are generally not authorized to modify lint levels - either using `#[attributes]`,
 `#![global_attributes]` or with command-line arguments. You may optionally allow the `dead_code`
