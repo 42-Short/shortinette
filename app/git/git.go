@@ -96,7 +96,7 @@ func (gh *GithubService) AddCollaborator(repoName string, collaboratorName strin
 // Does nothing if the directory is cloned already.
 func (gh *GithubService) Clone(name string) (err error) {
 	if _, err := os.Stat(name); !os.IsNotExist(err) {
-		logger.Info.Printf("'%s' seems to cloned already, returning\n", name)
+		logger.Info.Printf("'%s' seems to be cloned already, returning\n", name)
 		return nil
 	}
 
@@ -336,31 +336,36 @@ func DoesAccountExist(username string) (bool, error) {
 	return *user.Type == "User", nil
 }
 
-func (gh *GithubService) CreateModuleTemplate(module int) (err error) {
+func (gh *GithubService) CreateModuleTemplate(module int) (templateName string, err error) {
 	isTemplate := true
-	templateName := fmt.Sprintf("module-0%d-template", module)
+	templateName = fmt.Sprintf("module-0%d-template", module)
 
 	_, response, err := gh.Client.Repositories.Create(context.Background(), gh.Orga, &github.Repository{Name: &templateName, IsTemplate: &isTemplate})
 	if err != nil {
 		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
 			if isRepoAlreadyExists(err) {
 				logger.Info.Printf("repo %s already exists under orga %s, skipping\n", templateName, gh.Orga)
-				return nil
+				return templateName, nil
 			}
 		}
-		return fmt.Errorf("could not create repo %s: %v", templateName, err)
+		return "", fmt.Errorf("could not create repo %s: %v", templateName, err)
 	}
 
 	if err = gh.Clone(templateName); err != nil {
-		return fmt.Errorf("could not clone template repo '%s': %v", templateName, err)
+		return "", fmt.Errorf("could not clone template repo '%s': %v", templateName, err)
 	}
+	defer func() {
+		if err := os.RemoveAll(templateName); err != nil {
+			logger.Warning.Printf("could not clean up directory '%s'", templateName)
+		}
+	}()
 
 	subjectPath := filepath.Join(gh.BasePath, "rust", "subjects", fmt.Sprintf("0%d", module), "README.md")
 	devcontainerConfigPath := filepath.Join(gh.BasePath, "rust", ".devcontainer")
 
 	if err = gh.UploadFiles(templateName, fmt.Sprintf("add: devcontainer config + subject for module 0%d", module), "main", false, subjectPath, devcontainerConfigPath); err != nil {
-		return fmt.Errorf("could not upload files: %v", err)
+		return "", fmt.Errorf("could not upload files: %v", err)
 	}
 
-	return nil
+	return templateName, nil
 }

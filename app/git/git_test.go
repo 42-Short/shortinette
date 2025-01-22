@@ -346,7 +346,7 @@ func TestDoesAccountExistExisting(t *testing.T) {
 func TestNewTemplateRepo(t *testing.T) {
 	gh := NewGithubService(token, orga, basePath)
 
-	if err := gh.CreateModuleTemplate(0); err != nil {
+	if _, err := gh.CreateModuleTemplate(0); err != nil {
 		t.Fatalf("NewTemplateRepo failed on a standard use case: %v", err)
 	}
 

@@ -12,10 +12,6 @@ studentcode/
 internal/
 test/
 
-# PACKAGES
-
-node_modules
-
 # LOGS
 
 traces/
@@ -34,3 +30,7 @@ data/
 # Generated Files
 
 target/
+
+# Links
+
+app/rust
