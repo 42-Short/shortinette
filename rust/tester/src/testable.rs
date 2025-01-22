@@ -67,6 +67,10 @@ pub trait Testable {
             .add_dependency("rand", "0.8")
             .expect("Failed to add rand as dependency to test project");
 
+        cargo 
+            .add_dependency("libc", "0.2.169")
+            .expect("Failed to add libc as dependency to test project");
+
         let mut lib_file = fs::File::create(cargo.path().join("src/lib.rs"))
             .expect("Failed to open src/lib.rs of test module");
         lib_file
