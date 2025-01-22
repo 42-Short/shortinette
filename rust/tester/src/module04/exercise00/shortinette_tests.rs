@@ -1,6 +1,6 @@
 #[cfg(test)]
-mod tests{
-    use super::*;
+shortinette_tests{
+    use ex00::*;
 
     fn outcome() -> Outcome<u32, &'static str> {
         Outcome::Good(42)

@@ -1,9 +1,9 @@
 
 #[cfg(test)]
-mod tests {
+mod shortinette_tests {
     use rand::random;
 
-    use super::*;
+    use ex03::*;
 
     #[test]
     fn test_new() {

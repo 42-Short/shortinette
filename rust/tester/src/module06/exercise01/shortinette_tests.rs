@@ -1,8 +1,8 @@
 #[cfg(test)]
-mod tests {
+mod shortinette_tests {
     use rand::random;
 
-    use super::*;
+    use ex01::*;
 
     #[test]
     fn transmute_iron() {

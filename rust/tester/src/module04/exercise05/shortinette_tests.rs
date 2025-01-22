@@ -1,8 +1,8 @@
 #[cfg(test)]
-mod tests {
+mod shortinette_tests {
     use rand::seq::SliceRandom;
 
-    use super::*;
+    use ex05::*;
 
     // Calculates the similarity between two strings (0 => no similarity, 1 => same string).
     fn levenshtein_distance(a: &str, b: &str) -> f32 {

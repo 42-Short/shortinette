@@ -1,9 +1,9 @@
 #[cfg(test)]
-mod tests {
+mod shortinette_tests {
     use rand::{distributions::Alphanumeric, thread_rng, Rng};
 
-    use super::*;
-    use std::ffi::CString;
+    use ex06::*;
+    use std::ffi::{CString, CStr};
 
     #[test]
     fn test_create_database() {

@@ -1,8 +1,8 @@
 #[cfg(test)]
-mod tests {
+mod shortinette_tests {
     use rand::{distributions::Alphanumeric, random, thread_rng, Rng};
 
-    use super::*;
+    use ex05::*;
 
     fn rand_string() -> String {
         thread_rng()

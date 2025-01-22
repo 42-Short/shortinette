@@ -1,6 +1,6 @@
 #[cfg(test)]
-mod tests {
-    use super::*;
+mod shortinette_tests {
+    use ex04::*;
     use libc;
     use rand::{distributions::Alphanumeric, random, thread_rng, Rng};
     use std::ffi::CString;

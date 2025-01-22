@@ -1,6 +1,6 @@
 #[cfg(test)]
-mod tests {
-    use super::*;
+mod shortinette_tests {
+    use ex02::*;
     use rand::{distributions::Alphanumeric, Rng};
     use std::{fs, path::Path};
 
