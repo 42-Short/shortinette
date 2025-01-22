@@ -18,6 +18,10 @@ type Config struct {
 	StartTime      time.Time
 	DockerImage    string
 
+	// Directory containing the subjects and devcontainer config for the Short.
+	// Must be mounted into shortinette's container in compose.yml.
+	ShortDataPath string
+
 	TemplateRepo string
 	TokenGithub  string
 	OrgaGithub   string
@@ -47,11 +51,13 @@ type Exercise struct {
 //
 // Arguments:
 //
-//   - participants: list of single participant
-//   - modules: list of single module
+//   - modules: list of single modules
 //   - moduleDuration: duration of each module
 //   - startTime: time on which to start the short
-func NewConfig(modules []Module, moduleDuration time.Duration, startTime time.Time, dockerImage string) (conf *Config) {
+//   - dockerImage: name of the Docker image which is to be used as a sandbox for submission grading
+//   - shortDataPath: path containing the subjects & devcontainer configs, either absolute or relative
+//     to '/app'
+func NewConfig(modules []Module, moduleDuration time.Duration, startTime time.Time, dockerImage string, shortDataPath string) (conf *Config) {
 
 	for modIdx := range modules {
 		modules[modIdx].StartTime = startTime.Add(time.Duration(modIdx) * moduleDuration)
@@ -67,6 +73,7 @@ func NewConfig(modules []Module, moduleDuration time.Duration, startTime time.Ti
 		Modules:        modules,
 		ModuleDuration: moduleDuration,
 		StartTime:      startTime,
+		ShortDataPath:  shortDataPath,
 	}
 }
 

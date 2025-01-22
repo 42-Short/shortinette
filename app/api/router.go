@@ -29,4 +29,5 @@ func (api *API) SetupRouter() {
 	group.DELETE("/modules/:id/:intra_login", deleteItemHandler(moduleDAO))
 	group.DELETE("/participants/:intra_login", deleteItemHandler(participantDAO))
 
+	group.POST("/launch", launchShort(participantDAO, *api.config))
 }

@@ -45,6 +45,7 @@ func getMockConfig() *config.Config {
 		24*time.Hour,
 		time.Now(),
 		"app/testenv/test.sh",
+		"./rust",
 	)
 }
 
