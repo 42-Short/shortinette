@@ -144,7 +144,10 @@ func GradeExercise(exercise *config.Exercise, module *config.Module, exerciseDir
 		return failed(fmt.Errorf("error connecting to docker socket: %s", err), exercise.ID, exercise)
 	}
 
-	container, err := docker.ContainerCreate(dockerClient, exercise.DockerImage, fmt.Sprintf("shortinette-grade-%d-%s", exercise.ID, exerciseDirectory), []string{fmt.Sprintf("MODULE=0%d", module.ID), fmt.Sprintf("EXERCISE=0%d", exercise.ID)})
+	env := []string{fmt.Sprintf("MODULE=0%d", module.ID), fmt.Sprintf("EXERCISE=0%d", exercise.ID)}
+	containerName := fmt.Sprintf("shortinette-grade-%d-%s", exercise.ID, exerciseDirectory)
+
+	container, err := docker.ContainerCreate(dockerClient, exercise.DockerImage, containerName, env)
 	if err != nil {
 		return failed(fmt.Errorf("error creating Docker container: %s", err), exercise.ID, exercise)
 	}
