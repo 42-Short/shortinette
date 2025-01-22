@@ -9,6 +9,6 @@ services:
       - BASE_PATH=${PWD}
     volumes:
       - "./rust:/app/rust"
-      - "./data:/app/data"
+      - "./app/data:/app/data"
     profiles:
       - rust
