@@ -9,7 +9,6 @@ import (
 
 	"github.com/42-Short/shortinette/api"
 	"github.com/42-Short/shortinette/config"
-	"github.com/42-Short/shortinette/dao"
 	"github.com/42-Short/shortinette/db"
 	"github.com/42-Short/shortinette/logger"
 	"github.com/gin-gonic/gin"
@@ -50,7 +49,7 @@ func getMockConfig() *config.Config {
 }
 
 func run() {
-	db, err := db.NewDB(context.Background(), "file::memory:?cache=shared")
+	db, err := db.NewDB(context.Background(), "./data/shortinette.db")
 	if err != nil {
 		logger.Error.Fatalf("failed to create db: %v", err)
 	}
@@ -61,10 +60,10 @@ func run() {
 		logger.Error.Fatalf("failed to initialize db: %v", err)
 	}
 
-	_, err = dao.SeedDB(db)
-	if err != nil {
-		logger.Error.Fatalf("failed to seed DB: %v", err)
-	}
+	// _, err = dao.SeedDB(db)
+	// if err != nil {
+	// 	logger.Error.Fatalf("failed to seed DB: %v", err)
+	// }
 
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
