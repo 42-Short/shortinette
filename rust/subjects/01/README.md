@@ -27,8 +27,6 @@ machines without additional options.
 
 * Only dependencies specified in the allowed dependencies section are allowed.
 
-* Every exercise managed by cargo must be part of a virtual Cargo workspace, a single `workspace.members` table must 
-be declared for the whole module.
 
 * You are _not_ allowed to use the `unsafe` keyword anywere in your code.
 
@@ -70,8 +68,8 @@ files to turn-in:
 Create two **functions**. Both must add two integers together.
 
 ```rust
-fn add(a: &i32, b: i32) -> i32;
-fn add_assign(a: &mut i32, b: i32);
+pub fn add(a: &i32, b: i32) -> i32;
+pub fn add_assign(a: &mut i32, b: i32);
 ```
 
 * `add` must return the result of the operation.
@@ -93,11 +91,12 @@ allowed symbols:
 Write a **function** that returns the smallest value among two numbers.
 
 ```rust
-fn min(a: &i32, b: &i32) -> &i32;
+pub fn min(a: &i32, b: &i32) -> &i32;
 ```
 
 * Note that you may have to add some *lifetime annotations* to the function in order to make it
 compile.
+* If both numbers are equal, `b` should be returned
 * The `return` keyword is still disallowed.
 
 ## Exercise 02: Don't we all love darkmode?
@@ -116,7 +115,7 @@ allowed symbols:
 Create a **function** that maps three color components to a name.
 
 ```rust
-const fn color_name(color: &[u8; 3]) -> &str;
+pub const fn color_name(color: &[u8; 3]) -> &str;
 ```
 The `if` keyword is **_not_** allowed!
 
@@ -127,19 +126,19 @@ The name of a color is determined using the following rules, applied in order. T
 
 `Legend: [red, green, blue]`
 
-* **"dark gray"**: Any color whose red, green, and blue components are all between 0 and 128 (inclusive) is "Dark Gray/Black".
+* **"dark gray"**: Any color whose red, green, and blue components are all between 0 and 127 (inclusive) is "Dark Gray/Black".
 
-* **"dark red"**: Any color whose red component is between 128 and 255 (inclusive), and whose green and blue components are both between 0 and 128 (inclusive), is "Dark Red".
+* **"dark red"**: Any color whose red component is between 128 and 255 (inclusive), and whose green and blue components are both between 0 and 127 (inclusive), is "Dark Red".
 
-* **"dark green"**: Any color whose green component is between 128 and 255 (inclusive), and whose red and blue components are both between 0 and 128 (inclusive), is "Dark Green".
+* **"dark green"**: Any color whose green component is between 128 and 255 (inclusive), and whose red and blue components are both between 0 and 127 (inclusive), is "Dark Green".
 
-* **"olive"**: Any color whose red and green components are both between 128 and 255 (inclusive), and whose blue component is between 0 and 128 (inclusive), is "Dark Yellow/Olive".
+* **"olive"**: Any color whose red and green components are both between 128 and 255 (inclusive), and whose blue component is between 0 and 127 (inclusive), is "Dark Yellow/Olive".
 
-* **"dark blue"**: Any color whose blue component is between 128 and 255 (inclusive), and whose red and green components are both between 0 and 128 (inclusive), is "Dark Blue".
+* **"dark blue"**: Any color whose blue component is between 128 and 255 (inclusive), and whose red and green components are both between 0 and 127 (inclusive), is "Dark Blue".
 
-* **"purple"**: Any color whose red and blue components are both between 128 and 255 (inclusive), and whose green component is between 0 and 128 (inclusive), is "Dark Magenta/Purple".
+* **"purple"**: Any color whose red and blue components are both between 128 and 255 (inclusive), and whose green component is between 0 and 127 (inclusive), is "Dark Magenta/Purple".
 
-* **"teal"**: Any color whose green and blue components are both between 128 and 255 (inclusive), and whose red component is between 0 and 128 (inclusive), is "Dark Cyan/Teal".
+* **"teal"**: Any color whose green and blue components are both between 128 and 255 (inclusive), and whose red component is between 0 and 127 (inclusive), is "Dark Cyan/Teal".
 
 * **"light gray"**: Any color whose red, green, and blue components are all between 128 and 255 (inclusive) is "Light Gray/White".
 
@@ -161,7 +160,7 @@ mod test {
             name_of_the_best_color = color_name(&the_best_color);
         }
 
-        assert_eq!(name_of_the_best_color, "dark grey");
+        assert_eq!(name_of_the_best_color, "dark gray");
     }
 }
 ```
@@ -183,7 +182,7 @@ allowed symbols:
 Write a **function** that returns the first occurrence of `needle` in `haystack`.
 
 ```rust
-fn largest_group(haystack: &[u32], needle: &[u32]) -> &[u32];
+pub fn first_group(haystack: &[u32], needle: &[u32]) -> &[u32];
 ```
 
 * Note that you will need to add **lifetime annotations** to the function signature to ensure correct borrowing. The borrow checker must enforce that the resulting slice is borrowed from `haystack`, not from `needle`.
@@ -192,10 +191,10 @@ fn largest_group(haystack: &[u32], needle: &[u32]) -> &[u32];
 Example:
 
 ```rust
-assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[1, 3]), &[1, 3]);
-assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[5]), &[5]);
-assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[6, 9]), &[]);
-assert_eq!(largest_group(&[1, 3, 4, 3, 5, 5, 4], &[4, 3]), &[4, 3]);
+assert_eq!(first_group(&[1, 3, 4, 3, 5, 5, 4], &[1, 3]), &[1, 3]);
+assert_eq!(first_group(&[1, 3, 4, 3, 5, 5, 4], &[5]), &[5]);
+assert_eq!(first_group(&[1, 3, 4, 3, 5, 5, 4], &[6, 9]), &[]);
+assert_eq!(first_group(&[1, 3, 4, 3, 5, 5, 4], &[4, 3]), &[4, 3]);
 ```
 This test must compile and run:
 ```rust
@@ -208,7 +207,7 @@ fn test_lifetimes() {
     {
         let needle = [2, 3];
         // The result should be a valid slice of haystack after needle has expired
-        result = largest_group(&haystack, &needle);
+        result = first_group(&haystack, &needle);
     }
     
     assert_eq!(result, &[2, 3]);
@@ -234,7 +233,7 @@ Write a function that sorts a list of boxes in such a way that each box can be "
 
 The function signature should look like this:
 ```rust
-fn sort_boxes(boxes: &mut [[u32; 2]]);
+pub fn sort_boxes(boxes: &mut [[u32; 2]]);
 ```
 
 The sorting should follow these criteria:
@@ -268,7 +267,7 @@ allowed symbols:
 Write a **function** that removes all repeated elements of a list, preserving its initial ordering.
 
 ```rust
-fn deduplicate(list: &mut Vec<i32>);
+pub fn deduplicate(list: &mut Vec<i32>);
 ```
 
 Example:
@@ -300,7 +299,7 @@ Write a **function** that adds two numbers together. The numbers are given as a 
 digits and may be arbitrarily large.
 
 ```rust
-fn big_add(a: &[u8], b: &[u8]) -> Vec<u8>;
+pub fn big_add(a: &[u8], b: &[u8]) -> Vec<u8>;
 ```
 
 * `a` and `b` must only contain digits (`b'0'` to `b'9'` included). If anything else is found, the
@@ -331,10 +330,10 @@ allowed symbols:
 Leonardo has `n` tasks, which he needs to prioritize. He organized them into a vector of tasks. One task is defined as follows:
 
 ```rust
-struct Task{
-    start_time: u32,
-    end_time: u32,
-    cookies: u32,
+pub struct Task{
+    pub start_time: u32,
+    pub end_time: u32,
+    pub cookies: u32,
 }
 ```
 
@@ -347,7 +346,7 @@ Unfortunately, he sucks at multitasking. Write a **function** which returns the 
 Your function must have this signature:
 
 ```rust
-fn time_manager(tasks: &mut Vec<Task>) -> u32
+pub fn time_manager(tasks: &mut Vec<Task>) -> u32
 ```
 
 **Constraints**
