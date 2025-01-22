@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/42-Short/shortinette/config"
-	"github.com/42-Short/shortinette/data"
+	"github.com/42-Short/shortinette/dao"
 	"github.com/42-Short/shortinette/logger"
 	"github.com/gin-gonic/gin"
 )
@@ -28,7 +28,7 @@ type gitHubWebhookPayload struct {
 	} `json:"head_commit"`
 }
 
-func githubWebhookHandler(moduleDao *data.DAO[data.Module], participantDao *data.DAO[data.Participant], config config.Config) gin.HandlerFunc {
+func githubWebhookHandler(moduleDao *dao.DAO[dao.Module], participantDao *dao.DAO[dao.Participant], config config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var payload gitHubWebhookPayload
 
@@ -45,7 +45,7 @@ func githubWebhookHandler(moduleDao *data.DAO[data.Module], participantDao *data
 	}
 }
 
-func gradingHandler(moduleDao *data.DAO[data.Module], participantDao *data.DAO[data.Participant], config config.Config) gin.HandlerFunc {
+func gradingHandler(moduleDao *dao.DAO[dao.Module], participantDao *dao.DAO[dao.Participant], config config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
@@ -68,7 +68,7 @@ func gradingHandler(moduleDao *data.DAO[data.Module], participantDao *data.DAO[d
 	}
 }
 
-func insertItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
+func insertItemHandler[T any](dao *dao.DAO[T]) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var item T
 		err := c.ShouldBindJSON(&item)
@@ -90,7 +90,7 @@ func insertItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	}
 }
 
-func updateItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
+func updateItemHandler[T any](dao *dao.DAO[T]) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var item T
 
@@ -111,7 +111,7 @@ func updateItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	}
 }
 
-func getAllItemsHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
+func getAllItemsHandler[T any](dao *dao.DAO[T]) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
@@ -129,7 +129,7 @@ func getAllItemsHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	}
 }
 
-func getItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
+func getItemHandler[T any](dao *dao.DAO[T]) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
@@ -144,7 +144,7 @@ func getItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
 	}
 }
 
-func deleteItemHandler[T any](dao *data.DAO[T]) gin.HandlerFunc {
+func deleteItemHandler[T any](dao *dao.DAO[T]) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
@@ -168,7 +168,7 @@ func collectArgs(params gin.Params) []any {
 	return args
 }
 
-func processGithubPayload(payload gitHubWebhookPayload, moduleDao *data.DAO[data.Module], participantDao *data.DAO[data.Participant], config config.Config) error {
+func processGithubPayload(payload gitHubWebhookPayload, moduleDao *dao.DAO[dao.Module], participantDao *dao.DAO[dao.Participant], config config.Config) error {
 	if payload.Ref != "refs/heads/main" || payload.Pusher.Name == os.Getenv("GITHUB_ADMIN") {
 		return nil
 	}

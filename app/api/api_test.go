@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/42-Short/shortinette/config"
-	"github.com/42-Short/shortinette/data"
+	"github.com/42-Short/shortinette/dao"
 	"github.com/42-Short/shortinette/db"
 	"github.com/42-Short/shortinette/logger"
 )
@@ -84,7 +84,7 @@ func TestMain(m *testing.M) {
 		logger.Error.Fatalf("failed to initialize db: %v", err)
 	}
 
-	_, err = data.SeedDB(db)
+	_, err = dao.SeedDB(db)
 	if err != nil {
 		logger.Error.Fatalf("failed to seed DB: %v", err)
 	}
@@ -138,19 +138,19 @@ func TestGrademe(t *testing.T) {
 }
 
 func TestPostParticipant(t *testing.T) {
-	testPost(t, data.NewDummyParticipant(42), "/shortinette/v1/participants")
+	testPost(t, dao.NewDummyParticipant(42), "/shortinette/v1/participants")
 }
 
 func TestPostModule(t *testing.T) {
-	testPost(t, data.NewDummyModule(42, "dummy_participant5"), "/shortinette/v1/modules")
+	testPost(t, dao.NewDummyModule(42, "dummy_participant5"), "/shortinette/v1/modules")
 }
 
 func TestGetAllParticipants(t *testing.T) {
-	testGetAll[data.Participant](t, "/shortinette/v1/participants")
+	testGetAll[dao.Participant](t, "/shortinette/v1/participants")
 }
 
 func TestGetAllModules(t *testing.T) {
-	testGetAll[data.Module](t, "/shortinette/v1/modules")
+	testGetAll[dao.Module](t, "/shortinette/v1/modules")
 }
 
 func TestGetModule(t *testing.T) {
@@ -159,18 +159,18 @@ func TestGetModule(t *testing.T) {
 		moduleID   = 0
 	)
 	url := fmt.Sprintf("/shortinette/v1/modules/%d/%s", moduleID, intraLogin)
-	testGet[data.Module](t, url, moduleID, intraLogin)
+	testGet[dao.Module](t, url, moduleID, intraLogin)
 }
 
 func TestGetParticipant(t *testing.T) {
 	const intraLogin = "dummy_participant5"
 	url := fmt.Sprintf("/shortinette/v1/participants/%s", intraLogin)
-	testGet[data.Participant](t, url, intraLogin)
+	testGet[dao.Participant](t, url, intraLogin)
 }
 
 func TestPutParticipant(t *testing.T) {
 	const intraLogin = "dummy_participant5"
-	testPut[data.Participant](t, "/shortinette/v1/participants", intraLogin)
+	testPut[dao.Participant](t, "/shortinette/v1/participants", intraLogin)
 }
 
 func TestPutModule(t *testing.T) {
@@ -178,13 +178,13 @@ func TestPutModule(t *testing.T) {
 		intraLogin = "dummy_participant5"
 		moduleID   = 0
 	)
-	testPut[data.Module](t, "/shortinette/v1/modules", moduleID, intraLogin)
+	testPut[dao.Module](t, "/shortinette/v1/modules", moduleID, intraLogin)
 }
 
 func TestDeleteParticipant(t *testing.T) {
 	const intraLogin = "dummy_participant5"
 	url := fmt.Sprintf("/shortinette/v1/participants/%s", intraLogin)
-	testDelete[data.Participant](t, url, intraLogin)
+	testDelete[dao.Participant](t, url, intraLogin)
 }
 
 func TestDeleteModule(t *testing.T) {
@@ -193,7 +193,7 @@ func TestDeleteModule(t *testing.T) {
 		moduleID   = 0
 	)
 	url := fmt.Sprintf("/shortinette/v1/modules/%d/%s", moduleID, intraLogin)
-	testDelete[data.Module](t, url, intraLogin)
+	testDelete[dao.Module](t, url, intraLogin)
 }
 
 func TestUnauthorized(t *testing.T) {
@@ -216,7 +216,7 @@ func testPost(t *testing.T, item any, url string) {
 func testPut[T any](t *testing.T, url string, args ...any) {
 	t.Helper()
 
-	dao := data.NewDAO[T](api.DB)
+	dao := dao.NewDAO[T](api.DB)
 	item, err := dao.Get(context.Background(), args...)
 	require.NoError(t, err)
 
@@ -237,7 +237,7 @@ func testGetAll[T any](t *testing.T, url string) {
 	err := json.Unmarshal(response.Body.Bytes(), &actualItems)
 	require.NoError(t, err, "failed to unmarshal item")
 
-	dao := data.NewDAO[T](api.DB)
+	dao := dao.NewDAO[T](api.DB)
 	expectedItems, err := dao.GetAll(context.Background())
 	require.NoError(t, err)
 
@@ -254,7 +254,7 @@ func testGet[T any](t *testing.T, url string, args ...any) {
 	err := json.Unmarshal(response.Body.Bytes(), &actualItem)
 	require.NoError(t, err, "failed to unmarshal module")
 
-	dao := data.NewDAO[T](api.DB)
+	dao := dao.NewDAO[T](api.DB)
 	expectedItem, err := dao.Get(context.Background(), args...)
 	require.NoError(t, err)
 
@@ -268,7 +268,7 @@ func testDelete[T any](t *testing.T, url string, args ...any) {
 	response := serveRequest(t, "DELETE", url, nil, apiToken)
 	assert.Equal(t, http.StatusOK, response.Code, response.Body)
 
-	dao := data.NewDAO[T](api.DB)
+	dao := dao.NewDAO[T](api.DB)
 	_, err := dao.Get(context.Background(), args...)
 	require.Error(t, err)
 }

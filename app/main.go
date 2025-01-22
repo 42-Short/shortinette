@@ -9,7 +9,7 @@ import (
 
 	"github.com/42-Short/shortinette/api"
 	"github.com/42-Short/shortinette/config"
-	"github.com/42-Short/shortinette/data"
+	"github.com/42-Short/shortinette/dao"
 	"github.com/42-Short/shortinette/db"
 	"github.com/42-Short/shortinette/logger"
 	"github.com/gin-gonic/gin"
@@ -61,7 +61,7 @@ func run() {
 		logger.Error.Fatalf("failed to initialize db: %v", err)
 	}
 
-	_, err = data.SeedDB(db)
+	_, err = dao.SeedDB(db)
 	if err != nil {
 		logger.Error.Fatalf("failed to seed DB: %v", err)
 	}

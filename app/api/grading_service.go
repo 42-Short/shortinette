@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/42-Short/shortinette/config"
-	"github.com/42-Short/shortinette/data"
+	"github.com/42-Short/shortinette/dao"
 	"github.com/42-Short/shortinette/git"
 	"github.com/42-Short/shortinette/logger"
 	"github.com/42-Short/shortinette/tester"
@@ -17,14 +17,14 @@ import (
 //todo: sheduler in api for repo creation
 
 type moduleGrader struct {
-	moduleDao      *data.DAO[data.Module]
-	participantDao *data.DAO[data.Participant]
+	moduleDao      *dao.DAO[dao.Module]
+	participantDao *dao.DAO[dao.Participant]
 	ctx            context.Context
 	config         config.Config
 	gitService     *git.GithubService
 }
 
-func newModuleGrader(moduleDao *data.DAO[data.Module], participantDao *data.DAO[data.Participant], ctx context.Context, config config.Config) *moduleGrader {
+func newModuleGrader(moduleDao *dao.DAO[dao.Module], participantDao *dao.DAO[dao.Participant], ctx context.Context, config config.Config) *moduleGrader {
 	return &moduleGrader{
 		moduleDao:      moduleDao,
 		participantDao: participantDao,
@@ -61,7 +61,7 @@ func (mg *moduleGrader) process(intraLogin string, moduleId int) error {
 	return nil
 }
 
-func (mg moduleGrader) isValidGradingAttempt(module data.Module, participant data.Participant) bool {
+func (mg moduleGrader) isValidGradingAttempt(module dao.Module, participant dao.Participant) bool {
 	remainingWaitTime := module.WaitTime - time.Since(module.LastGraded)
 	if remainingWaitTime > 0 {
 		logger.File.Printf("grading attempt too early. Please wait %s before trying again", remainingWaitTime)
@@ -76,7 +76,7 @@ func (mg moduleGrader) isValidGradingAttempt(module data.Module, participant dat
 	return true
 }
 
-func (mg *moduleGrader) updateModuleState(module *data.Module, result tester.GradingResult) error {
+func (mg *moduleGrader) updateModuleState(module *dao.Module, result tester.GradingResult) error {
 	module.LastGraded = time.Now()
 	module.WaitTime = time.Duration(1<<module.Attempts) * time.Minute
 	module.Attempts++
@@ -84,7 +84,7 @@ func (mg *moduleGrader) updateModuleState(module *data.Module, result tester.Gra
 	return mg.moduleDao.Update(mg.ctx, *module)
 }
 
-func (mg *moduleGrader) updateParticipantState(participant *data.Participant, result tester.GradingResult) error {
+func (mg *moduleGrader) updateParticipantState(participant *dao.Participant, result tester.GradingResult) error {
 	if !result.Passed {
 		return nil
 	}
@@ -92,7 +92,7 @@ func (mg *moduleGrader) updateParticipantState(participant *data.Participant, re
 	return mg.participantDao.Update(mg.ctx, *participant)
 }
 
-func (mg moduleGrader) grade(module data.Module, participant data.Participant) (*tester.GradingResult, error) {
+func (mg moduleGrader) grade(module dao.Module, participant dao.Participant) (*tester.GradingResult, error) {
 	traceFile := filepath.Join("traces", fmt.Sprintf("%s%d_%s.log", module.IntraLogin, module.Id, time.Now().Format("20060102_150405")))
 	if err := logger.InitializeTraceLogger(traceFile); err != nil {
 		return nil, fmt.Errorf("trace logger could not be initialized: %v", err)
@@ -113,7 +113,7 @@ func (mg moduleGrader) grade(module data.Module, participant data.Participant) (
 	return result, nil
 }
 
-func (mg moduleGrader) uploadTraces(traceFile string, module data.Module) {
+func (mg moduleGrader) uploadTraces(traceFile string, module dao.Module) {
 	if err := mg.gitService.UploadFiles(fmt.Sprintf("%s%d", module.IntraLogin, module.Id),
 		fmt.Sprintf("chore: automated upload of trace logs for module %d (user: %s)",
 			module.Id, module.IntraLogin),

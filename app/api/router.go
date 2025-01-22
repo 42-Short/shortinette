@@ -1,15 +1,15 @@
 package api
 
 import (
-	"github.com/42-Short/shortinette/data"
+	"github.com/42-Short/shortinette/dao"
 )
 
 func (api *API) SetupRouter() {
 	group := api.Engine.Group("/shortinette/v1")
 	group.Use(tokenAuthMiddleware(api.config.ApiToken))
 
-	moduleDAO := data.NewDAO[data.Module](api.DB)
-	participantDAO := data.NewDAO[data.Participant](api.DB)
+	moduleDAO := dao.NewDAO[dao.Module](api.DB)
+	participantDAO := dao.NewDAO[dao.Participant](api.DB)
 
 	group.POST("/webhook/grademe", githubWebhookHandler(moduleDAO, participantDAO, *api.config))
 	group.Any("/modules/:id/:intra_login/grademe", gradingHandler(moduleDAO, participantDAO, *api.config))
