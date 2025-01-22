@@ -48,7 +48,9 @@ func (sh *Short) launchModule(moduleNumber int) (err error) {
 func (sh *Short) Launch() (err error) {
 	logger.Info.Println("launching Short now!")
 
-	sh.launchModule(00)
+	if err := sh.launchModule(00); err != nil {
+		return fmt.Errorf("could not launch first module: %v", err)
+	}
 
 	return nil
 }
