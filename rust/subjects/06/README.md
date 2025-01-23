@@ -218,13 +218,12 @@ allowed symbols:
 Let's start simple.
 
 ```rust
-fn ft_swap<T>(a: &mut T, b: &mut T);
-unsafe fn ft_strlen(s: *const u8) -> usize;
-unsafe fn ft_strcpy(dst: *mut u8, src: *const u8);
+pub fn ft_swap<T>(a: &mut T, b: &mut T);
+pub unsafe fn ft_strlen(s: *const u8) -> usize;
+pub unsafe fn ft_strcpy(dst: *mut u8, src: *const u8);
 ```
 
-- `ft_swap` must swaps any two values of any type. Maybe `T` can be copied; maybe not. Maybe it has
-  a default value. Maybe not.
+- `ft_swap` must swap any two values of any type. Maybe `T` can be copied; maybe not. Maybe it has a default value. Maybe not.
 - `ft_strlen` must count the number of non-null bytes, starting at `s`. You must write an
   appropriate "# Safety" section in the documentation of that function to educate about its users
   about its correct usage.
@@ -242,13 +241,13 @@ assert_eq!(a, "Goodby, World!");
 assert_eq!(b, "Hello, World!");
 
 let s = b"Hello, World!\0";
-// SAFETY:
+// # Safety
 //  /* ... */
 let len = unsafe { ft_strlen(s.as_ptr()) };
 assert_eq!(len, 13);
 
 let mut dst = [0u8; 14];
-// SAFETY:
+// # Safety
 //  /* ... */
 unsafe { ft_strcpy(dst.as_mut_ptr(), s.as_ptr()) };
 assert_eq!(&dst, b"Hello, World!\0");
@@ -269,12 +268,12 @@ allowed symbols:
 ```
 
 ```rust
-type GoldNugget = u16;
+pub type GoldNugget = u16;
 
-type Iron = u32;
-type Mercure = u64;
+pub type Iron = u32;
+pub type Mercure = u64;
 
-struct PhilosopherStone;
+pub struct PhilosopherStone;
 
 impl PhilosopherStone {
     fn transmute_iron(self, iron: Iron) -> [GoldNugget; 2];
@@ -303,7 +302,7 @@ assert_eq!(
 Let's generalize a bit.
 
 ```rust
-type Gold = [GoldNugget];
+pub type Gold = [GoldNugget];
 
 unsafe trait Metal {}
 ```
@@ -339,19 +338,21 @@ files to turn in:
     src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::alloc::{alloc, dealloc, Layout, handle_alloc_error}
+    std::alloc::{alloc, dealloc, handle_alloc_error, Layout}
     std::ops::{Deref, DerefMut}
-    std::clone::Clone
-    std::marker::PhantomData
-    std::ptr::{NonNull, drop_in_place}
+    std::ptr::NonNull
 ```
 
 Create a type named `Carton<T>`, which must manage an allocation of a single `T` on the heap.
 
 ```rust
+pub struct Carton<T> {
+    data: NonNull<T>,
+}
+
 impl<T> Carton<T> {
     fn new(value: T) -> Self;
-    fn into_inner(this: Self) -> T;
+    fn into_inner(self) -> T;
 }
 ```
 
@@ -401,8 +402,12 @@ You must implement the following inherent methods, as specified in the official 
 `Cell<T>`.
 
 ```rust
+pub struct Cellule<T> {
+    cell: UnsafeCell<T>,
+}
+
 impl<T> Cellule<T> {
-    const fn new(value: T) -> Self;
+    pub const fn new(value: T) -> Self;
 
     fn set(&self, value: T);
     fn replace(&self, value: T) -> T;
@@ -434,7 +439,7 @@ allowed dependencies:
 allowed symbols:
     std::copy::Copy  std::clone::Clone
     std::str::from_utf8_unchecked
-    libc::__errno_location
+    libc::{__errno_location, c_int}
     libc::strerror
     libc::{write, read, open, close}
     cstr::cstr
@@ -446,10 +451,10 @@ allowed symbols:
 Create an `Errno` type, responsible for managing errors coming from C code.
 
 ```rust
-struct Errno(libc::c_int);
+pub struct Errno(libc::c_int);
 
 impl Errno {
-    fn last() -> Self;
+    pub fn last() -> Self;
     fn make_last(self);
     fn description(self) -> &'static str;
 }
@@ -474,15 +479,15 @@ assert_eq!(desc, "");
 With a robust way to handle errors, we can no start for real.
 
 ```rust
-struct Fd(libc::c_int);
+pub struct Fd(libc::c_int);
 
 impl Fd {
     const STDIN: Self = /* ... */;
     const STDOUT: Self = /* ... */;
     const STDERR: Self = /* ... */;
 
-    fn open(file: &CStr) -> Result<Self, Errno>;
-    fn create(file: &CStr) -> Result<Self, Errno>;
+    pub fn open(file: &CStr) -> Result<Self, Errno>;
+    pub fn create(file: &CStr) -> Result<Self, Errno>;
     fn write(self, data: &[u8]) -> Result<usize, Errno>;
     fn read(self, buffer: &mut [u8]) -> Result<usize, Errno>;
     fn close(self) -> Result<(), Errno>;
@@ -500,11 +505,11 @@ impl Fd {
 That's cool, and all. But we can do better!
 
 ```rust
-struct File(Fd);
+pub struct File(Fd);
 
 impl File {
-    fn open(file: &CStr) -> Result<Self, Errno>;
-    fn create(file: &CStr) -> Result<Self, Errno>;
+    pub fn open(file: &CStr) -> Result<Self, Errno>;
+    pub fn create(file: &CStr) -> Result<Self, Errno>;
     fn write(&self, data: &[u8]) -> Result<usize, Errno>;
     fn read(&self, buffer: &mut [u8]) -> Result<usize, Errno>;
     fn leak(self) -> Fd;
@@ -530,16 +535,22 @@ files to turn in:
 
 allowed symbols:
     std::alloc::{alloc, dealloc, Layout}
-    std::marker::Copy  std::clone::Clone
+    std::marker::Copy
+    std::clone::Clone
     std::ops::{Deref, DerefMut}
-    std::ptr::*  std::mem::*
+    std::ptr::*  
+    std::mem::*
 ```
 
 It must implement the following inherent methods, as specified in the official documentation:
 
 ```rust
+pub struct Tableau<T> {
+    // Up to you!
+}
+
 impl<T> Tableau<T> {
-    const fn new() -> Self;
+    pub const fn new() -> Self;
 
     fn len(&self) -> usize;
     fn is_empty(&self) -> bool;
@@ -554,11 +565,11 @@ impl<T> Tableau<T> {
 It must be possible to do the following:
 
 ```rust
-let mut a = Vec::new();
-a.push(1); a.push(2); a.push(4);
-let b = a.clone();
+let mut tab0 = Tableau::new();
+tab0.push(1); tab0.push(2); tab0.push(4);
+let tab1 = tab0.clone();
 
-for it in b {
+for it in tab1 {
     println!("{it}");
 }
 // This will print:
@@ -578,8 +589,8 @@ If you're feeling like taking a challenge, you can try to write a macro to const
 automatically:
 
 ```rust
-let v: Tableau<i32> = tableau![1, 2, 4];
-assert_eq!(v, [1, 2, 4]);
+let tab: Tableau<i32> = tableau![1, 2, 4];
+assert_eq!(tab, [1, 2, 4]);
 ```
 
 ## Exercise 06: Foreign User
@@ -648,16 +659,16 @@ Setup your project such that this C library is automatically compiled into a `.a
 when to call `cargo build`. Your Rust library must link against that compiled C library.
 
 ```rust
-enum Error { /* ... */ }
+pub enum Error { /* ... */ }
 
-type Id = /* ... */;
+pub type Id = /* ... */;
 
-struct User { /* ... */ }
+pub struct User { /* ... */ }
 
-struct Database { /* ... */ }
+pub struct Database { /* ... */ }
 
 impl Database {
-    fn new() -> Self;
+    pub fn new() -> Self;
 
     fn create_user(&mut self, name: &CStr) -> Result<Id, Error>;
     fn delete_user(&mut self, id: Id) -> Result<(), Error>;
