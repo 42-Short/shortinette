@@ -1,5 +1,5 @@
 #[cfg(test)]
-shortinette_tests{
+mod shortinette_tests{
     use ex00::*;
 
     fn outcome() -> Outcome<u32, &'static str> {
