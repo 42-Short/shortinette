@@ -84,6 +84,8 @@ func (gh *GithubService) AddCollaborator(repoName string, collaboratorName strin
 		Permission: permission,
 	}
 
+	logger.Info.Printf("adding collaborator %s to repo %s\n", collaboratorName, repoName)
+
 	if _, _, err = gh.Client.Repositories.AddCollaborator(context.Background(), gh.Orga, repoName, collaboratorName, options); err != nil {
 		return fmt.Errorf("could not add collaborator %s to repo %s: %v", collaboratorName, repoName, err)
 	}
