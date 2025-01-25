@@ -42,7 +42,7 @@ impl Testable for Exercise07 {
             .expect("Failed to execute 'ft_putchar'");
 
         if output.status.code() != Some(42) {
-            eprintln(
+            eprintln!(
                 "Incorrect exit code, expected: 42, got: {}",
                 output.status.code().unwrap(),
             );
@@ -50,9 +50,9 @@ impl Testable for Exercise07 {
         }
 
         if output.stdout != b"42\n" {
-            eprintln(
+            eprintln!(
                 "Incorrect output, expected: '42\\n', got: '{}'",
-                output.stdout,
+                String::from_utf8_lossy(&output.stdout),
             );
             return TestResult::Failed;
         }
