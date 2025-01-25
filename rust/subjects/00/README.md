@@ -84,7 +84,7 @@ Create a `min` **function** that takes two integers, and returns the smaller one
 The function must be prototyped like this:
 
 ```rust
-fn min(a: i32, b: i32) -> i32;
+pub fn min(a: i32, b: i32) -> i32;
 ```
 
 Oh, I almost forgot. The `return` keyword is forbidden in this exercise! Good luck with that ~
@@ -108,9 +108,9 @@ cannot use the same loop kind twice.
 The functions must be prototyped as follows:
 
 ```rust
-fn yes() -> !;
-fn collatz(start: u32);
-fn print_bytes(s: &str);
+pub fn yes() -> !;
+pub fn collatz(start: u32);
+pub fn print_bytes(s: &str);
 ```
 
 The `yes` function must print the message `y`, followed by a line feed. It must do it
@@ -305,8 +305,8 @@ day of year 1 (it was a monday) until today.
 To complete this task, you must write the following function:
 
 ```rust
-fn is_leap_year(year: u32) -> bool;
-fn num_days_in_month(year: u32, month: u32) -> u32;
+pub fn is_leap_year(year: u32) -> bool;
+pub fn num_days_in_month(year: u32, month: u32) -> u32;
 ```
 
 * `is_leap_year` must determine whether a given year is a leap year or not.
