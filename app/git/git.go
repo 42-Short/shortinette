@@ -62,7 +62,8 @@ func isRepoAlreadyExists(err error) (exists bool) {
 // Creates a new repository `name` under the GitHub organisation.
 // If `private` is true, the repository's visibility will be private.
 func (gh *GithubService) NewRepo(templateRepoName string, name string, private bool, description string) (err error) {
-	createdRepo, response, err := gh.Client.Repositories.CreateFromTemplate(context.Background(), gh.Orga, templateRepoName, &github.TemplateRepoRequest{Name: &name, Private: &private, Owner: &gh.Orga, Description: &description})
+	includeAllBranches := true
+	createdRepo, response, err := gh.Client.Repositories.CreateFromTemplate(context.Background(), gh.Orga, templateRepoName, &github.TemplateRepoRequest{Name: &name, Private: &private, Owner: &gh.Orga, Description: &description, IncludeAllBranches: &includeAllBranches})
 	if err != nil {
 		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
 			if isRepoAlreadyExists(err) {
@@ -74,6 +75,19 @@ func (gh *GithubService) NewRepo(templateRepoName string, name string, private b
 	}
 
 	logger.Info.Printf("repo created: %s at URL: %s\n", *createdRepo.Name, *createdRepo.HTMLURL)
+
+	// if err := gh.Clone(name); err != nil {
+	// 	logger.Error.Printf("could not clone '%s': %v - 'traces' branch not created", name, err)
+	// 	return nil
+	// } else {
+	// 	if err := gh.UploadFiles(name, "Create 'traces' branch", "traces", true); err != nil {
+	// 		logger.Error.Printf("could not create 'traces' branch on repo '%s': %v", name, err)
+	// 		return nil
+	// 	}
+	// }
+
+	// logger.Info.Printf("branch 'traces' successfully created on repo '%s'", name)
+
 	return nil
 }
 
@@ -104,7 +118,6 @@ func (gh *GithubService) Clone(name string) (err error) {
 
 	cloneURL := fmt.Sprintf("https://%s@github.com/%s/%s.git", gh.Token, gh.Orga, name)
 
-	// `--depth=1` because we do not care about the commit history
 	cmd := exec.Command("git", "clone", cloneURL)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -262,6 +275,16 @@ func checkout(dir string, to string, createBranch bool) (err error) {
 	return nil
 }
 
+func (gh *GithubService) NewBranch(repoName string, branch string) (err error) {
+	if err := gh.Clone(repoName); err != nil {
+		return fmt.Errorf("could not create branch '%s' on repo '%s': %v", branch, repoName, err)
+	}
+	if err := checkout(repoName, branch, true); err != nil {
+		return fmt.Errorf("could not create branch '%s' on repo '%s': %v", branch, repoName, err)
+	}
+	return nil
+}
+
 // Copies `files` into `repoName` and pushes them to the branch `branchName` on the remote.
 //
 // If `createBranch` is set to true, a new branch will be created.
@@ -271,6 +294,12 @@ func (gh *GithubService) UploadFiles(repoName string, commitMessage string, bran
 	if err := gh.Clone(repoName); err != nil {
 		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
 	}
+
+	defer func() {
+		if err := os.RemoveAll(repoName); err != nil {
+			logger.Error.Printf("could not tear down repo '%s': %v", repoName, err)
+		}
+	}()
 
 	if err = checkout(repoName, branch, createBranch); err != nil {
 		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
@@ -367,6 +396,10 @@ func (gh *GithubService) CreateModuleTemplate(module int) (templateName string, 
 
 	if err = gh.UploadFiles(templateName, fmt.Sprintf("add: devcontainer config + subject for module 0%d", module), "main", false, subjectPath, devcontainerConfigPath); err != nil {
 		return "", fmt.Errorf("could not upload files: %v", err)
+	}
+
+	if err = gh.NewBranch(templateName, "traces"); err != nil {
+		return "", fmt.Errorf("could not create 'traces' branch: %v", err)
 	}
 
 	return templateName, nil
