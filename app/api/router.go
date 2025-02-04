@@ -11,7 +11,7 @@ func (api *API) SetupRouter() {
 	moduleDAO := dao.NewDAO[dao.Module](api.DB)
 	participantDAO := dao.NewDAO[dao.Participant](api.DB)
 
-	group.POST("/webhook/grademe", githubWebhookHandler(moduleDAO, participantDAO, *api.config))
+	api.Engine.POST("/shortinette/webhook/grademe", githubAuthMiddleware(api.config.ApiToken), githubWebhookHandler(moduleDAO, participantDAO, *api.config))
 	group.Any("/modules/:id/:intra_login/grademe", gradingHandler(moduleDAO, participantDAO, *api.config))
 
 	group.POST("/modules", insertItemHandler(moduleDAO))

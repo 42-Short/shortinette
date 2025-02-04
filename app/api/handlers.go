@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/42-Short/shortinette/config"
@@ -14,6 +13,7 @@ import (
 	"github.com/42-Short/shortinette/logger"
 	"github.com/42-Short/shortinette/short"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 type gitHubWebhookPayload struct {
@@ -48,21 +48,23 @@ func launchShort(participantDao *dao.DAO[dao.Participant], config config.Config)
 
 func githubWebhookHandler(moduleDao *dao.DAO[dao.Module], participantDao *dao.DAO[dao.Participant], config config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var payload gitHubWebhookPayload
+		fmt.Printf("Content-Length: %d; Content-Type: %s\n", c.Request.ContentLength, c.ContentType())
 
-		err := c.ShouldBindJSON(&payload)
+		var payload gitHubWebhookPayload
+		if err := c.ShouldBindBodyWith(&payload, binding.JSON); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("failed to bind JSON: %v", err)})
+			return
+		}
+
+		err := processGithubPayload(payload, moduleDao, participantDao, config)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		err = processGithubPayload(payload, moduleDao, participantDao, config)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		}
+
 		c.JSON(http.StatusProcessing, payload)
 	}
 }
-
 func gradingHandler(moduleDao *dao.DAO[dao.Module], participantDao *dao.DAO[dao.Participant], config config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -190,7 +192,8 @@ func processGithubPayload(payload gitHubWebhookPayload, moduleDao *dao.DAO[dao.M
 	if payload.Ref != "refs/heads/main" || payload.Pusher.Name == os.Getenv("GITHUB_ADMIN") {
 		return nil
 	}
-	if strings.ToLower(payload.Commit.Message) != "grademe" {
+
+	if payload.Commit.Message != "grademe" {
 		return nil
 	}
 
