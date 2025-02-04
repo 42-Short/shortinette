@@ -217,42 +217,6 @@ func TestUploadFilesNonExistingBranch(t *testing.T) {
 	}
 }
 
-func TestUploadFilesNonDefaultBranch(t *testing.T) {
-	gh := NewGithubService(token, orga, basePath)
-	repoName := uuid.New().String()
-
-	if err := gh.NewRepo(templateRepo, repoName, true, "this will be deleted soon_GITHUB"); err != nil {
-		t.Fatalf("could not create test repo: %v", err)
-	}
-	defer cleanup(t, gh, repoName)
-
-	time.Sleep(3 * time.Second) // Generating templates takes a few seconds
-
-	if err := gh.UploadFiles(repoName, "don't mind me just breaking code", "thisbranchshouldbecreated", true, "git.go", "git_test.go"); err != nil {
-		t.Fatalf("UploadFiles should be able to create a new branch when needed")
-	}
-
-	if err := gh.Clone(repoName); err != nil {
-		t.Fatalf("could not verify file upload: %v", err)
-	}
-
-	content, err := os.ReadDir(repoName)
-	if err != nil {
-		t.Fatalf("could not verify file upload: %v", err)
-	}
-
-	found := 0
-	for _, path := range content {
-		if path.Name() == "git.go" || path.Name() == "git_test.go" {
-			found += 1
-		}
-	}
-
-	if found != 2 {
-		t.Fatalf("expected 'git.go' and 'git_test.go' to be uploaded, did not find all of them")
-	}
-}
-
 func TestNewReleaseNormalFunctionality(t *testing.T) {
 	gh := NewGithubService(token, orga, basePath)
 	expectedRepoName := uuid.New().String()

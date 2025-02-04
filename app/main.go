@@ -34,9 +34,14 @@ func getMockConfig() *config.Config {
 		[]string{"*.c", "*.h"},
 		"ex01",
 	)
+	ex3, _ := config.NewExercise(
+		20,
+		[]string{"*.c", "*.h"},
+		"ex02",
+	)
 
 	module, _ := config.NewModule(
-		[]config.Exercise{*ex1, *ex2},
+		[]config.Exercise{*ex1, *ex2, *ex3},
 		15,
 	)
 
@@ -44,7 +49,7 @@ func getMockConfig() *config.Config {
 		[]config.Module{*module, *module},
 		24*time.Hour,
 		time.Now(),
-		"app/testenv/test.sh",
+		"42short/rust",
 		"./rust",
 	)
 }

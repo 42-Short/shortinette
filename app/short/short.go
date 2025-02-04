@@ -60,7 +60,9 @@ func (sh *Short) launchModule(moduleNumber int) (err error) {
 			return fmt.Errorf("could not give %s write access to %s: %v", participant.GitHubLogin, repoName, err)
 		}
 
-		moduleDAO.Insert(context.Background(), module)
+		if err := moduleDAO.Insert(context.Background(), module); err != nil {
+			return fmt.Errorf("could not insert data into module table: %v", err)
+		}
 	}
 
 	return nil
