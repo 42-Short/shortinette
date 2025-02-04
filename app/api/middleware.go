@@ -5,7 +5,6 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -30,7 +29,7 @@ func githubAuthMiddleware(accessToken string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		fmt.Println(signature)
+
 		mac := hmac.New(sha256.New, []byte(accessToken))
 		mac.Write(body)
 		expectedSignature := "sha256=" + hex.EncodeToString(mac.Sum(nil))

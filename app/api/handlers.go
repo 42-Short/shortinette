@@ -62,7 +62,7 @@ func githubWebhookHandler(moduleDao *dao.DAO[dao.Module], participantDao *dao.DA
 			return
 		}
 
-		c.JSON(http.StatusProcessing, payload)
+		c.JSON(http.StatusOK, payload)
 	}
 }
 func gradingHandler(moduleDao *dao.DAO[dao.Module], participantDao *dao.DAO[dao.Participant], config config.Config) gin.HandlerFunc {
@@ -200,7 +200,8 @@ func processGithubPayload(payload gitHubWebhookPayload, moduleDao *dao.DAO[dao.M
 	if len(payload.Repository.Name) < len(payload.Pusher.Name) {
 		return fmt.Errorf("invalid Repository name: %s", payload.Repository.Name)
 	}
-	moduleId, err := strconv.Atoi(payload.Repository.Name[len(payload.Pusher.Name):])
+
+	moduleId, err := strconv.Atoi(payload.Repository.Name[len(payload.Repository.Name)-2:])
 	if err != nil {
 		return fmt.Errorf("invalid Repository name: %s", payload.Repository.Name)
 	}
@@ -210,7 +211,7 @@ func processGithubPayload(payload gitHubWebhookPayload, moduleDao *dao.DAO[dao.M
 	go func() {
 		err := mg.process(payload.Pusher.Name, moduleId)
 		if err != nil {
-			logger.Error.Printf("grading failed for %s%d: %v", payload.Pusher.Name, moduleId, err)
+			logger.Error.Printf("grading failed for %s-%02d: %v", payload.Pusher.Name, moduleId, err)
 		}
 	}()
 	return nil
