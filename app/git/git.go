@@ -105,7 +105,7 @@ func (gh *GithubService) Clone(name string) (err error) {
 	cloneURL := fmt.Sprintf("https://%s@github.com/%s/%s.git", gh.Token, gh.Orga, name)
 
 	// `--depth=1` because we do not care about the commit history
-	cmd := exec.Command("git", "clone", cloneURL, "--depth=1")
+	cmd := exec.Command("git", "clone", cloneURL)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
@@ -247,7 +247,7 @@ func checkout(dir string, to string, createBranch bool) (err error) {
 	cmd.Dir = dir
 	err = cmd.Run()
 	if err != nil {
-		return fmt.Errorf("git checkout %s: %v", to, err)
+		return fmt.Errorf("git checkout %s: %s", to, err)
 	}
 
 	cmd = exec.Command("git", "push", "--set-upstream", "origin", to)
@@ -256,7 +256,7 @@ func checkout(dir string, to string, createBranch bool) (err error) {
 	cmd.Dir = dir
 	err = cmd.Run()
 	if err != nil {
-		return fmt.Errorf("git --set-upstream origin %s: %v", to, err)
+		return fmt.Errorf("git push --set-upstream origin %s: %v", to, err)
 	}
 
 	return nil

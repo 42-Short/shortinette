@@ -46,7 +46,7 @@ func (sh *Short) launchModule(moduleNumber int) (err error) {
 			Attempts:   0,
 			Score:      0,
 			LastGraded: time.Now(),
-			WaitTime:   15,
+			WaitTime:   0,
 		}
 
 		repoName := fmt.Sprintf("%s-%02d", participant.IntraLogin, moduleNumber)

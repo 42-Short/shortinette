@@ -78,7 +78,8 @@ func (mg moduleGrader) isValidGradingAttempt(module dao.Module, participant dao.
 
 func (mg *moduleGrader) updateModuleState(module *dao.Module, result tester.GradingResult) error {
 	module.LastGraded = time.Now()
-	module.WaitTime = time.Duration(1<<module.Attempts) * time.Minute
+	module.WaitTime = 0
+	// module.WaitTime = time.Duration(1<<module.Attempts) * time.Minute
 	module.Attempts++
 	module.Score = result.Score
 	return mg.moduleDao.Update(mg.ctx, *module)
@@ -104,7 +105,18 @@ func (mg moduleGrader) grade(module dao.Module, participant dao.Participant) (*t
 		return nil, fmt.Errorf("invalid grading attempt")
 	}
 
-	result, err := tester.GradeModule(mg.config.Modules[module.Id], fmt.Sprintf("%s%d", module.IntraLogin, module.Id), "../testenv/Dockerfile")
+	repoName := fmt.Sprintf("%s-%02d", module.IntraLogin, module.Id)
+	if err := mg.gitService.Clone(repoName); err != nil {
+		return nil, fmt.Errorf("could not clone repo '%s': %v", repoName, err)
+	}
+
+	defer func() {
+		if err := os.RemoveAll(repoName); err != nil {
+			logger.Error.Printf("could not tear down cloned repo: %v", err)
+		}
+	}()
+
+	result, err := tester.GradeModule(mg.config.Modules[module.Id], repoName, "../testenv/Dockerfile")
 	if err != nil {
 		return nil, err
 	}
@@ -114,10 +126,10 @@ func (mg moduleGrader) grade(module dao.Module, participant dao.Participant) (*t
 }
 
 func (mg moduleGrader) uploadTraces(traceFile string, module dao.Module) {
-	if err := mg.gitService.UploadFiles(fmt.Sprintf("%s%d", module.IntraLogin, module.Id),
-		fmt.Sprintf("chore: automated upload of trace logs for module %d (user: %s)",
-			module.Id, module.IntraLogin),
-		"traces", true, traceFile); err != nil {
+	commitMessage := fmt.Sprintf("chore: automated upload of trace logs for module %d (user: %s)", module.Id, module.IntraLogin)
+	repoName := fmt.Sprintf("%s-%02d", module.IntraLogin, module.Id)
+
+	if err := mg.gitService.UploadFiles(repoName, commitMessage, "traces", false, traceFile); err != nil {
 		logger.Error.Printf("could not upload traces for user %s, module %d: %v", module.IntraLogin, module.Id, err)
 	}
 }

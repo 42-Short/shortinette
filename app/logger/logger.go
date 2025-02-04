@@ -35,11 +35,23 @@ func GetNewTraceFile(repoID int) string {
 //
 // Returns an error if the trace file cannot be created or opened.
 func InitializeTraceLogger(filePath string) (err error) {
+	info, err := os.Stat("./traces")
+	if err != nil {
+		if os.IsNotExist(err) {
+			if err := os.MkdirAll("./traces", os.FileMode(0755)); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	} else if !info.IsDir() {
+		return fmt.Errorf("./traces exists but is not a directory")
+	}
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 	if err != nil {
 		return err
 	}
-	File = log.New(file, "", log.Ldate|log.Ltime)
+	File = log.New(file, "", 0)
 	originalWriter := File.Writer()
 	File.SetOutput(&syncWriter{file: file, writer: originalWriter})
 	return nil
