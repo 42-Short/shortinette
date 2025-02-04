@@ -134,7 +134,7 @@ Create `Outcome` and `Maybe` which should mimic `Result` and `Option` so that te
 
 ```rust
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     fn outcome() -> Outcome<u32, &'static str> {

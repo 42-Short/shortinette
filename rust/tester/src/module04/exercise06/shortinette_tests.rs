@@ -1,10 +1,10 @@
 #[cfg(test)]
-mod tests {
+mod shortinette_tests {
     use std::process::Command;
 
     use rand::{distributions::Alphanumeric, Rng};
 
-    use super::*;
+    use ex06::*;
 
     fn create_binary() -> String {
         let rng = rand::thread_rng();
@@ -93,7 +93,10 @@ mod tests {
         let mut student_output = Vec::new();
 
         if let Err(e) = strings(&mut student_output, &filename, false, None, None) {
-            panic!("Call to strings() returned an error on a standard use case: {}.", e);
+            panic!(
+                "Call to strings() returned an error on a standard use case: {}.",
+                e
+            );
         }
 
         let student_output_str =
@@ -123,7 +126,10 @@ mod tests {
         let mut student_output = Vec::new();
 
         if let Err(e) = strings(&mut student_output, &filename, false, Some(min_val), None) {
-            panic!("Call to strings() returned an error on a standard use case: {}.", e);
+            panic!(
+                "Call to strings() returned an error on a standard use case: {}.",
+                e
+            );
         }
 
         let student_output_str =

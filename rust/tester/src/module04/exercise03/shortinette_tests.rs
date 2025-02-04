@@ -1,6 +1,6 @@
 #[cfg(test)]
-mod tests {
-    use super::*;
+mod shortinette_tests {
+    use ex03::*;
 
     #[test]
     fn basic() {

@@ -1,10 +1,10 @@
 #[cfg(test)]
-mod tests {
+mod shortinette_tests {
     use std::process::Command;
 
     use rand::distributions::Alphanumeric;
 
-    use super::*;
+    use ex07::*;
 
     fn generate_random_keys() -> (String, String) {
         let pub_key_path: String = rand::thread_rng()
