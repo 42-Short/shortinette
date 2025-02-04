@@ -209,7 +209,7 @@ func processGithubPayload(payload gitHubWebhookPayload, moduleDao *dao.DAO[dao.M
 	logger.Info.Printf("push event on %s identified as submission.", payload.Repository.Name)
 	mg := newModuleGrader(moduleDao, participantDao, context.TODO(), config)
 	go func() {
-		err := mg.process(payload.Pusher.Name, moduleId)
+		err := mg.process(payload.Repository.Name[:len(payload.Repository.Name)-3], moduleId)
 		if err != nil {
 			logger.Error.Printf("grading failed for %s-%02d: %v", payload.Pusher.Name, moduleId, err)
 		}

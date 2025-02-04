@@ -68,7 +68,9 @@ func (dao *DAO[T]) GetAll(ctx context.Context) ([]T, error) {
 // Retrieves a single record by the primary keys from the table.
 func (dao *DAO[T]) Get(ctx context.Context, args ...any) (*T, error) {
 	query := buildSelectQuery(dao.md.tableName, dao.md.primaryKeys)
+	fmt.Println(query)
 	var retrievedData T
+	fmt.Println(retrievedData)
 	err := dao.DB.Conn.GetContext(ctx, &retrievedData, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get data from table %s: %v", dao.md.tableName, err)

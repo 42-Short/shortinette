@@ -1,11 +1,13 @@
 package short
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	"github.com/42-Short/shortinette/config"
 	"github.com/42-Short/shortinette/dao"
+	"github.com/42-Short/shortinette/db"
 	"github.com/42-Short/shortinette/git"
 	"github.com/42-Short/shortinette/logger"
 )
@@ -30,7 +32,23 @@ func (sh *Short) launchModule(moduleNumber int) (err error) {
 		return fmt.Errorf("could not create template for module %02d: %v", moduleNumber, err)
 	}
 
+	db, err := db.NewDB(context.Background(), "./data/shortinette.db")
+	if err != nil {
+		return fmt.Errorf("could not open database at ./data/shortinette.db: %v", err)
+	}
+
+	moduleDAO := dao.NewDAO[dao.Module](db)
+
 	for _, participant := range sh.Participants {
+		module := dao.Module{
+			Id:         moduleNumber,
+			IntraLogin: participant.IntraLogin,
+			Attempts:   0,
+			Score:      0,
+			LastGraded: time.Now(),
+			WaitTime:   15,
+		}
+
 		repoName := fmt.Sprintf("%s-%02d", participant.IntraLogin, moduleNumber)
 		description := fmt.Sprintf("Commit on the main branch with 'grademe' as a commit message to get graded. Minimum passing grade: %d", sh.Config.Modules[moduleNumber].MinimumScore)
 
@@ -41,6 +59,8 @@ func (sh *Short) launchModule(moduleNumber int) (err error) {
 		if err := sh.GitHubClient.AddCollaborator(repoName, participant.GitHubLogin, "write"); err != nil {
 			return fmt.Errorf("could not give %s write access to %s: %v", participant.GitHubLogin, repoName, err)
 		}
+
+		moduleDAO.Insert(context.Background(), module)
 	}
 
 	return nil
