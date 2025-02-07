@@ -71,6 +71,14 @@ pub trait Testable {
             .add_dependency("libc", "0.2.169")
             .expect("Failed to add libc as dependency to test project");
 
+        cargo
+            .add_dependency("chrono", "0.4")
+            .expect("Failed to add chrono as dependency to test project");
+
+        cargo
+            .add_dependency("similar-asserts", "1.6")
+            .expect("Failed to add similar-asserts as dependency to test project");
+
         let mut lib_file = fs::File::create(cargo.path().join("src/lib.rs"))
             .expect("Failed to open src/lib.rs of test module");
         lib_file
