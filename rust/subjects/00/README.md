@@ -293,16 +293,21 @@ turn-in directory:
     ex05/
 
 files to turn in:
-    src/main.rs  Cargo.toml
+    src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::{assert, assert_eq, assert_ne}  std::panic  std::{print, println}
+    std::{assert, assert_eq, assert_ne}  std::panic  std::{write, writeln}
 ```
 
-Write a **program** which prints every Friday that falls on the 13th of the month, since the first
-day of year 1 (it was a monday) until today.
+Write a **function** which writes every Friday that falls on the 13th of the month, since the
+first day of year 1 (it was a monday) until (and including) the year passed as an argument.
+The output must be written into the writer W.
 
-To complete this task, you must write the following function:
+```rust
+pub fn friday_the_13th<W: std::io::Write>(writer: &mut W, year: u32);
+```
+
+To complete this task, you must also write the following functions:
 
 ```rust
 pub fn is_leap_year(year: u32) -> bool;
@@ -312,7 +317,15 @@ pub fn num_days_in_month(year: u32, month: u32) -> u32;
 * `is_leap_year` must determine whether a given year is a leap year or not.
 * `num_days_in_month` must compute how many days a given month of a given year has.
 
-Example:
+Example on how to call your `friday_the_13th` function in a `main.rs` file:
+
+```rust
+use ex05::friday_the_13th;
+
+fn main() {
+    friday_the_13th(&mut std::io::stdout(), 2025);
+}
+```
 
 ```
 >_ cargo run
@@ -327,6 +340,8 @@ Friday, May 13, 5
 Friday, January 13, 6
 Friday, October 13, 6
 ...
+Friday, December 13, 2024
+Friday, June 13, 2025
 ```
 
 You must add tests to your Cargo project to verify that `is_leap_year` and `num_days_in_month` both
@@ -339,7 +354,7 @@ work as expected. Specifically, you must show that:
 * February has 29 days on leap years, but 28 on common years.
 * Other months have the correct number of days on both leap and common years.
 * Passing an invalid month to `num_days_in_month` must make the function panic.
-* Passing an year `0` to `is_leap_year` must make the function panic.
+* Passing an year `0` to either of these three functions must make the function panic.
 
 It must be possible to run those tests using `cargo test`.
 
