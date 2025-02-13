@@ -293,39 +293,29 @@ turn-in directory:
     ex05/
 
 files to turn in:
-    src/lib.rs  Cargo.toml
+    src/main.rs src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::{assert, assert_eq, assert_ne}  std::panic  std::{write, writeln}
+    std::{assert, assert_eq, assert_ne}  std::panic  std::{write, writeln}  std::io::stdout
 ```
 
-Write a **function** which writes every Friday that falls on the 13th of the month, since the
-first day of year 1 (it was a monday) until (and including) the year passed as an argument.
-The output must be written into the writer W.
-
-```rust
-pub fn friday_the_13th<W: std::io::Write>(writer: &mut W, year: u32);
-```
+Write a **program** which prints every Friday that falls on the 13th of the month, since the
+first day of year 1 (it was a monday) until (and including) the year 2025.
 
 To complete this task, you must also write the following functions:
 
 ```rust
+pub fn friday_the_13th<W: std::io::Write>(writer: &mut W, year: u32);
 pub fn is_leap_year(year: u32) -> bool;
 pub fn num_days_in_month(year: u32, month: u32) -> u32;
 ```
 
+* `friday_the_13th` writes every Friday that falls on the 13th of the month
+since year 1 until the year given as an argument into the writer W
 * `is_leap_year` must determine whether a given year is a leap year or not.
 * `num_days_in_month` must compute how many days a given month of a given year has.
 
-Example on how to call your `friday_the_13th` function in a `main.rs` file:
-
-```rust
-use ex05::friday_the_13th;
-
-fn main() {
-    friday_the_13th(&mut std::io::stdout(), 2025);
-}
-```
+These three functions must be part of the `src/lib.rs` file.rs.
 
 ```
 >_ cargo run
