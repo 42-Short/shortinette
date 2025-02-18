@@ -84,7 +84,7 @@ Create a `min` **function** that takes two integers, and returns the smaller one
 The function must be prototyped like this:
 
 ```rust
-fn min(a: i32, b: i32) -> i32;
+pub fn min(a: i32, b: i32) -> i32;
 ```
 
 Oh, I almost forgot. The `return` keyword is forbidden in this exercise! Good luck with that ~
@@ -108,9 +108,9 @@ cannot use the same loop kind twice.
 The functions must be prototyped as follows:
 
 ```rust
-fn yes() -> !;
-fn collatz(start: u32);
-fn print_bytes(s: &str);
+pub fn yes() -> !;
+pub fn collatz(start: u32);
+pub fn print_bytes(s: &str);
 ```
 
 The `yes` function must print the message `y`, followed by a line feed. It must do it
@@ -293,26 +293,29 @@ turn-in directory:
     ex05/
 
 files to turn in:
-    src/main.rs  Cargo.toml
+    src/main.rs src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::{assert, assert_eq, assert_ne}  std::panic  std::{print, println}
+    std::{assert, assert_eq, assert_ne}  std::panic  std::{write, writeln}  std::io::stdout
 ```
 
-Write a **program** which prints every Friday that falls on the 13th of the month, since the first
-day of year 1 (it was a monday) until today.
+Write a **program** which prints every Friday that falls on the 13th of the month, since the
+first day of year 1 (it was a monday) until (and including) the year 2025.
 
-To complete this task, you must write the following function:
+To complete this task, you must also write the following functions:
 
 ```rust
-fn is_leap_year(year: u32) -> bool;
-fn num_days_in_month(year: u32, month: u32) -> u32;
+pub fn friday_the_13th<W: std::io::Write>(writer: &mut W, year: u32);
+pub fn is_leap_year(year: u32) -> bool;
+pub fn num_days_in_month(year: u32, month: u32) -> u32;
 ```
 
+* `friday_the_13th` writes every Friday that falls on the 13th of the month
+since year 1 until the year given as an argument into the writer W
 * `is_leap_year` must determine whether a given year is a leap year or not.
 * `num_days_in_month` must compute how many days a given month of a given year has.
 
-Example:
+These three functions must be part of the `src/lib.rs` file.rs.
 
 ```
 >_ cargo run
@@ -327,6 +330,8 @@ Friday, May 13, 5
 Friday, January 13, 6
 Friday, October 13, 6
 ...
+Friday, December 13, 2024
+Friday, June 13, 2025
 ```
 
 You must add tests to your Cargo project to verify that `is_leap_year` and `num_days_in_month` both
@@ -339,7 +344,7 @@ work as expected. Specifically, you must show that:
 * February has 29 days on leap years, but 28 on common years.
 * Other months have the correct number of days on both leap and common years.
 * Passing an invalid month to `num_days_in_month` must make the function panic.
-* Passing an year `0` to `is_leap_year` must make the function panic.
+* Passing an year `0` to either of these three functions must make the function panic.
 
 It must be possible to run those tests using `cargo test`.
 

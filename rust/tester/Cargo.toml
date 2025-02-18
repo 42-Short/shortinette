@@ -5,8 +5,11 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.94"
+chrono = "0.4.39"
 fs_extra = "1.3.0"
 rand = "0.8.5"
 serde = { version = "1.0.215", features = ["derive"] }
 serde_json = "1.0.133"
+similar-asserts = "1.6.1"
 tempfile = "3.14.0"
+toml = "0.8.19"
