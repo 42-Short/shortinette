@@ -16,7 +16,6 @@ machines without additional options.
 
 * Only dependencies specified in the allowed dependencies section are allowed.
 
-
 * You are _not_ allowed to use the `unsafe` keyword anywere in your code.
 
 * If not specified otherwise by the task description, you are generally not authorized to modify lint levels - either using `#[attributes]`,

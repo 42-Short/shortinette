@@ -51,7 +51,7 @@ func (gh *GithubService) deleteRepo(name string) (err error) {
 func isRepoAlreadyExists(err error) (exists bool) {
 	if githubErr, ok := err.(*github.ErrorResponse); ok {
 		for _, e := range githubErr.Errors {
-			if strings.Contains(e.Message, "name already exists on this account") {
+			if strings.Contains(strings.ToLower(e.Message), "name already exists on this account") {
 				return true
 			}
 		}
@@ -62,7 +62,8 @@ func isRepoAlreadyExists(err error) (exists bool) {
 // Creates a new repository `name` under the GitHub organisation.
 // If `private` is true, the repository's visibility will be private.
 func (gh *GithubService) NewRepo(templateRepoName string, name string, private bool, description string) (err error) {
-	createdRepo, response, err := gh.Client.Repositories.CreateFromTemplate(context.Background(), gh.Orga, templateRepoName, &github.TemplateRepoRequest{Name: &name, Private: &private, Owner: &gh.Orga, Description: &description})
+	includeAllBranches := true
+	createdRepo, response, err := gh.Client.Repositories.CreateFromTemplate(context.Background(), gh.Orga, templateRepoName, &github.TemplateRepoRequest{Name: &name, Private: &private, Owner: &gh.Orga, Description: &description, IncludeAllBranches: &includeAllBranches})
 	if err != nil {
 		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
 			if isRepoAlreadyExists(err) {
@@ -74,6 +75,19 @@ func (gh *GithubService) NewRepo(templateRepoName string, name string, private b
 	}
 
 	logger.Info.Printf("repo created: %s at URL: %s\n", *createdRepo.Name, *createdRepo.HTMLURL)
+
+	// if err := gh.Clone(name); err != nil {
+	// 	logger.Error.Printf("could not clone '%s': %v - 'traces' branch not created", name, err)
+	// 	return nil
+	// } else {
+	// 	if err := gh.UploadFiles(name, "Create 'traces' branch", "traces", true); err != nil {
+	// 		logger.Error.Printf("could not create 'traces' branch on repo '%s': %v", name, err)
+	// 		return nil
+	// 	}
+	// }
+
+	// logger.Info.Printf("branch 'traces' successfully created on repo '%s'", name)
+
 	return nil
 }
 
@@ -83,6 +97,8 @@ func (gh *GithubService) AddCollaborator(repoName string, collaboratorName strin
 	options := &github.RepositoryAddCollaboratorOptions{
 		Permission: permission,
 	}
+
+	logger.Info.Printf("adding collaborator %s to repo %s\n", collaboratorName, repoName)
 
 	if _, _, err = gh.Client.Repositories.AddCollaborator(context.Background(), gh.Orga, repoName, collaboratorName, options); err != nil {
 		return fmt.Errorf("could not add collaborator %s to repo %s: %v", collaboratorName, repoName, err)
@@ -96,14 +112,13 @@ func (gh *GithubService) AddCollaborator(repoName string, collaboratorName strin
 // Does nothing if the directory is cloned already.
 func (gh *GithubService) Clone(name string) (err error) {
 	if _, err := os.Stat(name); !os.IsNotExist(err) {
-		logger.Info.Printf("'%s' seems to cloned already, returning\n", name)
+		logger.Info.Printf("'%s' seems to be cloned already, returning\n", name)
 		return nil
 	}
 
 	cloneURL := fmt.Sprintf("https://%s@github.com/%s/%s.git", gh.Token, gh.Orga, name)
 
-	// `--depth=1` because we do not care about the commit history
-	cmd := exec.Command("git", "clone", cloneURL, "--depth=1")
+	cmd := exec.Command("git", "clone", cloneURL)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
@@ -245,7 +260,7 @@ func checkout(dir string, to string, createBranch bool) (err error) {
 	cmd.Dir = dir
 	err = cmd.Run()
 	if err != nil {
-		return fmt.Errorf("git checkout %s: %v", to, err)
+		return fmt.Errorf("git checkout %s: %s", to, err)
 	}
 
 	cmd = exec.Command("git", "push", "--set-upstream", "origin", to)
@@ -254,9 +269,19 @@ func checkout(dir string, to string, createBranch bool) (err error) {
 	cmd.Dir = dir
 	err = cmd.Run()
 	if err != nil {
-		return fmt.Errorf("git --set-upstream origin %s: %v", to, err)
+		return fmt.Errorf("git push --set-upstream origin %s: %v", to, err)
 	}
 
+	return nil
+}
+
+func (gh *GithubService) NewBranch(repoName string, branch string) (err error) {
+	if err := gh.Clone(repoName); err != nil {
+		return fmt.Errorf("could not create branch '%s' on repo '%s': %v", branch, repoName, err)
+	}
+	if err := checkout(repoName, branch, true); err != nil {
+		return fmt.Errorf("could not create branch '%s' on repo '%s': %v", branch, repoName, err)
+	}
 	return nil
 }
 
@@ -269,6 +294,12 @@ func (gh *GithubService) UploadFiles(repoName string, commitMessage string, bran
 	if err := gh.Clone(repoName); err != nil {
 		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
 	}
+
+	defer func() {
+		if err := os.RemoveAll(repoName); err != nil {
+			logger.Error.Printf("could not tear down repo '%s': %v", repoName, err)
+		}
+	}()
 
 	if err = checkout(repoName, branch, createBranch); err != nil {
 		return fmt.Errorf("could not upload files to '%s': %v", repoName, err)
@@ -336,31 +367,40 @@ func DoesAccountExist(username string) (bool, error) {
 	return *user.Type == "User", nil
 }
 
-func (gh *GithubService) CreateModuleTemplate(module int) (err error) {
+func (gh *GithubService) CreateModuleTemplate(module int) (templateName string, err error) {
 	isTemplate := true
-	templateName := fmt.Sprintf("module-0%d-template", module)
+	templateName = fmt.Sprintf("module-0%d-template", module)
 
 	_, response, err := gh.Client.Repositories.Create(context.Background(), gh.Orga, &github.Repository{Name: &templateName, IsTemplate: &isTemplate})
 	if err != nil {
 		if response != nil && response.StatusCode == http.StatusUnprocessableEntity {
 			if isRepoAlreadyExists(err) {
 				logger.Info.Printf("repo %s already exists under orga %s, skipping\n", templateName, gh.Orga)
-				return nil
+				return templateName, nil
 			}
 		}
-		return fmt.Errorf("could not create repo %s: %v", templateName, err)
+		return "", fmt.Errorf("could not create repo %s: %v", templateName, err)
 	}
 
 	if err = gh.Clone(templateName); err != nil {
-		return fmt.Errorf("could not clone template repo '%s': %v", templateName, err)
+		return "", fmt.Errorf("could not clone template repo '%s': %v", templateName, err)
 	}
+	defer func() {
+		if err := os.RemoveAll(templateName); err != nil {
+			logger.Warning.Printf("could not clean up directory '%s'", templateName)
+		}
+	}()
 
 	subjectPath := filepath.Join(gh.BasePath, "rust", "subjects", fmt.Sprintf("0%d", module), "README.md")
 	devcontainerConfigPath := filepath.Join(gh.BasePath, "rust", ".devcontainer")
 
 	if err = gh.UploadFiles(templateName, fmt.Sprintf("add: devcontainer config + subject for module 0%d", module), "main", false, subjectPath, devcontainerConfigPath); err != nil {
-		return fmt.Errorf("could not upload files: %v", err)
+		return "", fmt.Errorf("could not upload files: %v", err)
 	}
 
-	return nil
+	if err = gh.NewBranch(templateName, "traces"); err != nil {
+		return "", fmt.Errorf("could not create 'traces' branch: %v", err)
+	}
+
+	return templateName, nil
 }

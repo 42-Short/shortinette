@@ -75,10 +75,10 @@ func PullImage(dockerClient *client.Client, dockerImage string) error {
 	return nil
 }
 
-func ContainerCreate(dockerClient *client.Client, command []string, image string, name string) (*Container, error) {
+func ContainerCreate(dockerClient *client.Client, image string, name string, env []string) (*Container, error) {
 	containerConfig := container.Config{
 		Image: image,
-		Cmd:   command,
+		Env:   env,
 	}
 
 	hostConfig := container.HostConfig{}
@@ -98,33 +98,33 @@ func ContainerCreate(dockerClient *client.Client, command []string, image string
 	return &container, nil
 }
 
-func addExecutableToArchive(path string, tarWriter *tar.Writer) error {
-	executableInfo, err := os.Stat(path)
-	if err != nil {
-		return err
-	}
+// func addExecutableToArchive(path string, tarWriter *tar.Writer) error {
+// 	executableInfo, err := os.Stat(path)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	executableHeader, err := tar.FileInfoHeader(executableInfo, executableInfo.Name())
-	if err != nil {
-		return err
-	}
-	executableHeader.Name = filepath.Base(executableHeader.Name)
+// 	executableHeader, err := tar.FileInfoHeader(executableInfo, executableInfo.Name())
+// 	if err != nil {
+// 		return err
+// 	}
+// 	executableHeader.Name = filepath.Base(executableHeader.Name)
 
-	if err := tarWriter.WriteHeader(executableHeader); err != nil {
-		return err
-	}
+// 	if err := tarWriter.WriteHeader(executableHeader); err != nil {
+// 		return err
+// 	}
 
-	executableData, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer executableData.Close()
-	if _, err := io.Copy(tarWriter, executableData); err != nil {
-		return err
-	}
+// 	executableData, err := os.Open(path)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer executableData.Close()
+// 	if _, err := io.Copy(tarWriter, executableData); err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func createTarArchive(exercise config.Exercise, exerciseDirectory string) (io.Reader, error) {
 	var buf bytes.Buffer
@@ -164,9 +164,9 @@ func createTarArchive(exercise config.Exercise, exerciseDirectory string) (io.Re
 		return nil, err
 	}
 
-	if err := addExecutableToArchive(exercise.ExecutablePath, tarWriter); err != nil {
-		return nil, err
-	}
+	// if err := addExecutableToArchive(exercise.ExecutablePath, tarWriter); err != nil {
+	// 	return nil, err
+	// }
 
 	if err := tarWriter.Close(); err != nil {
 		return nil, err

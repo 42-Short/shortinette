@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 
 	"github.com/42-Short/shortinette/logger"
@@ -19,6 +20,10 @@ type DB struct {
 
 // Creates a new database connection using the provided DSN.
 func NewDB(ctx context.Context, dsn string) (*DB, error) {
+	if err := os.MkdirAll(filepath.Dir(dsn), os.FileMode(0755)); err != nil {
+		return nil, fmt.Errorf("could not create directory '%s' for sqlite database: %v", filepath.Dir(dsn), err)
+	}
+
 	db, err := sqlx.Open("sqlite3", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open DB with DSN '%s': %v", dsn, err)
@@ -27,7 +32,7 @@ func NewDB(ctx context.Context, dsn string) (*DB, error) {
 	err = db.PingContext(ctx)
 	if err != nil {
 		db.Close()
-		return nil, fmt.Errorf("Cant ping DB: %v", err)
+		return nil, fmt.Errorf("can not ping DB: %v", err)
 	}
 
 	logger.Info.Println("Database successfully created.")
@@ -38,7 +43,7 @@ func NewDB(ctx context.Context, dsn string) (*DB, error) {
 func (db *DB) Initialize(schemaPath string) error {
 	data, err := os.ReadFile(schemaPath)
 	if err != nil {
-		return fmt.Errorf("Error reading sql file: %v", err)
+		return fmt.Errorf("error reading schema '%s': %v", schemaPath, err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
@@ -46,7 +51,7 @@ func (db *DB) Initialize(schemaPath string) error {
 
 	_, err = db.Conn.ExecContext(ctx, string(data))
 	if err != nil {
-		return fmt.Errorf("Error creating Module schema: %v", err)
+		return fmt.Errorf("error creating Module schema: %v", err)
 	}
 
 	logger.Info.Println("Schema Tables successfully created.")

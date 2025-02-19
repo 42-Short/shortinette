@@ -12,10 +12,6 @@ studentcode/
 internal/
 test/
 
-# PACKAGES
-
-node_modules
-
 # LOGS
 
 traces/
@@ -27,9 +23,14 @@ traces/
 # DATABASE
 
 sqlite3/
+data/
 
 .vscode
 
 # Generated Files
 
 target/
+
+# Links
+
+app/rust

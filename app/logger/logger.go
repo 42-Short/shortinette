@@ -23,10 +23,10 @@ var (
 //   - repoID: the unique identifier for the repository
 //
 // Returns a string representing the file path for the new trace file.
-func GetNewTraceFile(repoID string) string {
+func GetNewTraceFile(repoID int) string {
 	t := time.Now()
 	formattedTime := t.Format("20060102_150405")
-	return fmt.Sprintf("traces/%s-%s.log", repoID, formattedTime)
+	return fmt.Sprintf("traces/module%d-%s.log", repoID, formattedTime)
 }
 
 // InitializeTraceLogger sets up the File logger to write to the specified trace file.
@@ -35,11 +35,23 @@ func GetNewTraceFile(repoID string) string {
 //
 // Returns an error if the trace file cannot be created or opened.
 func InitializeTraceLogger(filePath string) (err error) {
+	info, err := os.Stat("./traces")
+	if err != nil {
+		if os.IsNotExist(err) {
+			if err := os.MkdirAll("./traces", os.FileMode(0755)); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	} else if !info.IsDir() {
+		return fmt.Errorf("./traces exists but is not a directory")
+	}
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 	if err != nil {
 		return err
 	}
-	File = log.New(file, "", log.Ldate|log.Ltime)
+	File = log.New(file, "", 0)
 	originalWriter := File.Writer()
 	File.SetOutput(&syncWriter{file: file, writer: originalWriter})
 	return nil
