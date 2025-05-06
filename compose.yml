@@ -7,6 +7,13 @@ services:
       dockerfile: Dockerfile
     environment:
       - BASE_PATH=${PWD}
+      - ORGA_GITHUB=${ORGA_GITHUB}
+      - TOKEN_GITHUB=${TOKEN_GITHUB}
+      - API_TOKEN=${API_TOKEN}
+      - SERVER_ADDR=${SERVER_ADDR}
+      - TEMPLATE_REPO=${TEMPLATE_REPO}
+    ports:
+      - "1234:1234"
     volumes:
       - "./rust:/app/rust"
       - "./app/data:/app/data"
