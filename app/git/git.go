@@ -391,14 +391,16 @@ func (gh *GithubService) CreateModuleTemplate(module int) (templateName string, 
 		}
 	}()
 
-	subjectPath := filepath.Join(gh.BasePath, "rust", "subjects", fmt.Sprintf("0%d", module), "README.md")
-	devcontainerConfigPath := filepath.Join(gh.BasePath, "rust", ".devcontainer")
+	subjectPath := filepath.Join("rust", "subjects", fmt.Sprintf("0%d", module), "README.md")
+	devcontainerConfigPath := filepath.Join("rust", ".devcontainer")
 
 	if err = gh.UploadFiles(templateName, fmt.Sprintf("add: devcontainer config + subject for module 0%d", module), "main", false, subjectPath, devcontainerConfigPath); err != nil {
+		_ = gh.deleteRepo(templateName)
 		return "", fmt.Errorf("could not upload files: %v", err)
 	}
 
 	if err = gh.NewBranch(templateName, "traces"); err != nil {
+		_ = gh.deleteRepo(templateName)
 		return "", fmt.Errorf("could not create 'traces' branch: %v", err)
 	}
 
