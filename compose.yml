@@ -20,5 +20,6 @@ services:
     volumes:
       - "./rust:/app/rust"
       - "./app/data:/app/data"
+      - "/var/run/docker.sock:/var/run/docker.sock"
     profiles:
       - rust
