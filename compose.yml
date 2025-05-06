@@ -5,6 +5,9 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile
+      args:  
+        EMAIL_GITHUB: ${EMAIL_GITHUB}
+        NAME_GITHUB: ${NAME_GITHUB}
     environment:
       - BASE_PATH=${PWD}
       - ORGA_GITHUB=${ORGA_GITHUB}
