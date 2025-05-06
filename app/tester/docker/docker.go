@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/42-Short/shortinette/config"
+	"github.com/42-Short/shortinette/logger"
 	"github.com/distribution/reference"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
@@ -129,6 +130,10 @@ func ContainerCreate(dockerClient *client.Client, image string, name string, env
 func createTarArchive(exercise config.Exercise, exerciseDirectory string) (io.Reader, error) {
 	var buf bytes.Buffer
 	tarWriter := tar.NewWriter(&buf)
+
+	// Extract just the last directory name from the path
+	targetDir := filepath.Base(exerciseDirectory) // This will extract "ex00" from "abied-ch/ex00"
+
 	err := filepath.Walk(exerciseDirectory, func(file string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -139,7 +144,10 @@ func createTarArchive(exercise config.Exercise, exerciseDirectory string) (io.Re
 			return err
 		}
 
-		header.Name = filepath.ToSlash(file[len(exerciseDirectory):])
+		// Prepend the target directory name to the relative path
+		relPath := file[len(exerciseDirectory):]
+		header.Name = filepath.ToSlash(filepath.Join(targetDir, relPath))
+
 		if err := tarWriter.WriteHeader(header); err != nil {
 			return err
 		}
@@ -164,10 +172,6 @@ func createTarArchive(exercise config.Exercise, exerciseDirectory string) (io.Re
 		return nil, err
 	}
 
-	// if err := addExecutableToArchive(exercise.ExecutablePath, tarWriter); err != nil {
-	// 	return nil, err
-	// }
-
 	if err := tarWriter.Close(); err != nil {
 		return nil, err
 	}
@@ -181,7 +185,8 @@ func (c *Container) CopyFilesToContainer(exercise config.Exercise, exerciseDirec
 	}
 
 	ctx := context.Background()
-	if err := c.DockerClient.CopyToContainer(ctx, c.ID, "/root", tar, container.CopyToContainerOptions{}); err != nil {
+	logger.Info.Printf("copying exercise data to /app/%s in grading container\n", exerciseDirectory)
+	if err := c.DockerClient.CopyToContainer(ctx, c.ID, "/app", tar, container.CopyToContainerOptions{}); err != nil {
 		return err
 	}
 
