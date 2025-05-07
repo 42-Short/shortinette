@@ -69,7 +69,7 @@ impl Testable for Exercise00 {
             return Err(TestResult::CompilationError);
         }
 
-        let path = path::PathBuf::from("hello");
+        let path = path::PathBuf::from("./hello");
 
         Ok(Some(path))
     }
