@@ -54,7 +54,7 @@ func githubWebhookHandler(moduleDao *dao.DAO[dao.Module], participantDao *dao.DA
 			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("failed to bind JSON: %v", err)})
 			return
 		}
-		logger.Info.Printf("got webhook payload from %s for module %s", payload.Pusher.Name, payload.Repository.Name[:len(payload.Repository.Name)-3])
+		logger.Info.Printf("got webhook payload from %s on repo %s", payload.Pusher.Name, payload.Repository.Name)
 
 		err := processGithubPayload(payload, moduleDao, participantDao, config)
 		if err != nil {
