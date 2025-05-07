@@ -65,13 +65,59 @@ func getMockConfig() *config.Config {
 		"ex02",
 	)
 
-	module, _ := config.NewModule(
+	module0, _ := config.NewModule(
+		[]config.Exercise{*ex0, *ex1, *ex2, *ex3, *ex4, *ex5, *ex6, *ex7},
+		15,
+	)
+
+	ex0, _ = config.NewExercise(
+		10,
+		[]string{"src/lib.rs", "Cargo.toml"},
+		"ex00",
+	)
+	ex1, _ = config.NewExercise(
+		10,
+		[]string{"src/lib.rs", "Cargo.toml"},
+		"ex01",
+	)
+	ex2, _ = config.NewExercise(
+		10,
+		[]string{"src/lib.rs", "Cargo.toml"},
+		"ex02",
+	)
+	ex3, _ = config.NewExercise(
+		10,
+		[]string{"src/lib.rs", "Cargo.toml"},
+		"ex03",
+	)
+	ex4, _ = config.NewExercise(
+		10,
+		[]string{"src/lib.rs", "Cargo.toml"},
+		"ex04",
+	)
+	ex5, _ = config.NewExercise(
+		15,
+		[]string{"src/lib.rs", "Cargo.toml"},
+		"ex05",
+	)
+	ex6, _ = config.NewExercise(
+		15,
+		[]string{"src/lib.rs", "Cargo.toml"},
+		"ex06",
+	)
+	ex7, _ = config.NewExercise(
+		20,
+		[]string{"src/lib.rs", "Cargo.toml"},
+		"ex02",
+	)
+
+	module1, _ := config.NewModule(
 		[]config.Exercise{*ex0, *ex1, *ex2, *ex3, *ex4, *ex5, *ex6, *ex7},
 		15,
 	)
 
 	return config.NewConfig(
-		[]config.Module{*module, *module},
+		[]config.Module{*module0, *module1},
 		24*time.Hour,
 		time.Now(),
 		"42short/rust",
