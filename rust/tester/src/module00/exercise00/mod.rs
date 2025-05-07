@@ -3,7 +3,7 @@ use std::{
     process::{self},
 };
 
-use crate::{repository_path, result::TestResult, testable::Testable};
+use crate::{result::TestResult, testable::Testable};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Exercise00;
