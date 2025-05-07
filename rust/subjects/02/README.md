@@ -308,12 +308,13 @@ Implement these functions
 impl Player {
     pub fn buy(&mut self, item: Item) -> Result<(), BuyError>;
     pub fn sell(&mut self) -> Result<(), SellError>;
+}
 ```
 Ensure they operate as follows:
 
-`buy`: Verify that the player has sufficient coins and can store the item. If either condition is unmet, return the appropriate error.
+`buy` verifies that the player has sufficient coins and can store the item. If either condition is unmet, return the appropriate error.
 
-`sell`: Confirm that the player possesses an item and can store the received coins without his pocket `overflowing`. If either condition is unmet, return the relevant error.
+`sell` confirms that the player possesses an item and can store the received coins without his pocket `overflowing`. If either condition is unmet, return the relevant error.
 
 *Note: You don’t need to handle cases where both errors might apply simultaneously, as this will not be tested.*
 
