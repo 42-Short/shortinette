@@ -237,7 +237,7 @@ allowed symbols:
 Create a Cargo project.
 
 * Its name must be "module00-ex04"
-* It must use Rust edition 2021
+* It must use Rust edition 2024
 * Its author must be you.
 * Its description must be "my answer to the fifth exercise of the first module of 42's Rust Piscine"
 * It must not be possible to publish the package, even when using `cargo publish`.
