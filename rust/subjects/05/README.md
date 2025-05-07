@@ -140,7 +140,7 @@ impl Unique {
 }
 ```
 
-* There can be no two `Unique` instance with the same identifier (`u8`).
+* There can be no two `Unique` instances with the same identifier (`u8`).
 * `new` must create a new, unique instance of `Unique`.
 * `id` must return the unique id of the instance of `Unique`.
 * It must be possible to `Clone` a `Unique`, and the created `Unique` must still be unique.
@@ -193,7 +193,8 @@ files to turn in:
 allowed symbols:
     std::thread_local
     std::cell::Cell
-    std::marker::Copy  std::clone::Clone
+    std::marker::Copy
+    std::clone::Clone
 ```
 
 Create an `Error` enum with the following variants:

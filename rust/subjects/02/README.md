@@ -155,14 +155,15 @@ struct NestedStruct {
     data: std::collections::HashMap<String, Option<Box<i32>>>,
 }
 ```
-implement this function so that `free` frees everything in the struct
+
+Implement the `free` method so that the following code does not compile:
 ```rust
 impl ComplexStruct {
-    pub fn free(...); // ... stands for any kind and number of parameters passed to the function
+    pub fn free(&mut self) {
+        // Your implementation
+    }
 }
-```
-so that this doesn't compile - **don't add this `main` to your submission**
-```rust
+
 pub fn main() {
     let bruh: ComplexStruct = ComplexStruct {
         name: "hey".to_string(),
@@ -176,10 +177,15 @@ pub fn main() {
             data: std::collections::HashMap::new(),
         }),
     };
-    bruh.free(); // If you remove this it should compile
+
+    bruh.free();
+    
     println!("{}", bruh.name); 
 }
 ```
+
+Note that the code should be able to compile when removing the call to `bruh.free()`!
+
 ## Exercise 01: A Point In Space
 
 ```txt
@@ -218,23 +224,26 @@ impl Point {
 }
 ```
 
-## Exercise 02: Dry Boilerplates
+## Exercise 02: Derive
 
 ```txt
 turn-in directory:
-    ex03/
+    ex02/
 
 files to turn in:
     src/main.rs  Cargo.toml
 
 allowed symbols:
-    std::clone::Clone  std::cmp::{PartialOrd, PartialEq}
-    std::default::Default  std::fmt::Debug
+    std::clone::Clone
+    std::cmp::{PartialOrd, PartialEq}
+    std::default::Default
+    std::fmt::Debug
 ```
 
 Create a type, may it be a `struct` or an `enum`. You simply have to name it `MyType`.
 
 You are **not** allowed to use the `impl` keyword!
+
 ```rust
 #[cfg(test)]
 mod tests{
@@ -273,7 +282,8 @@ files to turn in:
     src/lib.rs  Cargo.toml
 ``` 
 
-You will have these type definitions (don't worry about the #[...] for now)
+Define the following types:
+
 ```rust
 #[derive(PartialEq, Debug)]
 enum BuyError {
@@ -316,7 +326,7 @@ Ensure they operate as follows:
 
 `sell` confirms that the player possesses an item and can store the received coins without his pocket `overflowing`. If either condition is unmet, return the relevant error.
 
-*Note: You don’t need to handle cases where both errors might apply simultaneously, as this will not be tested.*
+If both errors might apply simultaneously, returning any of them will do.
 
 The following test must compile and execute successfully:
 ```rust
@@ -417,9 +427,9 @@ allowed symbols:
     ftkit::ARGS
     std::option::Option
     std::fmt::Debug
-    str::{strip_prefix, trim_start, char_indices, split_at, is_empty}
-    char::is_whitespace
     std::{println, eprintln}
+    str::*
+    char::*
 ```
 
 Create a simple token parser. It must be able to take an input string, and turn it into a list
@@ -471,7 +481,7 @@ fn main() {
             }
             let mut arg_str: &str = &arg;
             while let Some(token) = next_token(&mut arg_str) {
-                println!("{:?}", token); // Debug output of tokens
+                println!("{:?}", token);
             }
         }
         None => eprintln!("error: exactly one argument expected"),
@@ -596,10 +606,12 @@ allowed dependencies:
 allowed symbols:
     ftkit::ARGS ftkit::random_number
     std::{println, print}
-    std::thread::sleep  std::time::Duration
+    std::thread::sleep
+    std::time::Duration
     std::vec::Vec::{new, push}
     std::result::Result
-    std::marker::Copy  std::clone::Clone
+    std::marker::Copy
+    std::clone::Clone
     std::cmp::PartialEq
 ```
 

@@ -106,7 +106,8 @@ files to turn in:
     src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::cmp::PartialOrd  std::{assert*}
+    std::cmp::PartialOrd
+    std::{assert*}
     std::marker::Sized
 ```
 
@@ -136,7 +137,8 @@ files to turn in:
     src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::fmt::Debug  std::println
+    std::fmt::Debug
+    std::println
 ```
 
 Define the following trait:
@@ -170,16 +172,17 @@ files to turn in:
     src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::iter::Iterator, core::iter::traits::collect::FromIterator<..>
+    std::iter::Iterator
+    core::iter::traits::collect::FromIterator<..>
 ```
 
-Define the following struct
+Define the following struct:
 ```rust
 pub struct Collatz {
     value: u32,
 }
 ```
-and implement the `Iterator` and `FromIterator` trait so that this test compiles and runs.
+Implement the `Iterator` and `FromIterator` trait so that this test compiles and runs.
 ```rust
 #[cfg(test)]
 mod tests {
@@ -191,12 +194,12 @@ mod tests {
         let c_res = vec![5, 16, 8, 4, 2, 1];
         assert_eq!(c.count(), 6);
 
-        c = Collatz { value: 10 }; // Reset Collatz since the init value was consumed
+        c = Collatz { value: 10 };
         for (i, v) in c.enumerate() {
             assert_eq!(c_res[i], v);
         }
 
-        c = Collatz { value: 10 }; // Reset Collatz since the init value was consumed
+        c = Collatz { value: 10 };
         assert_eq!(c.collect::<Vec<u32>>(), c_res);
     }
 }
@@ -212,10 +215,13 @@ files to turn in:
     src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::str::FromStr  std::fmt::{Display, Debug, Formatter}
-    str::as_bytes  std::result::Result  std::{write, println}
-    u8::is_ascii_digit
+    std::str::FromStr
+    std::fmt::{Display, Debug, Formatter}
+    str::as_bytes
+    std::result::Result
+    std::{write, println}
     std::iter::*
+    u8::is_ascii_digit
 ```
 
 Create a type named `Time` responsible for storing, well, a time.
@@ -233,7 +239,7 @@ pub enum TimeParseError {
 }
 ```
 
-Implement the right traits such that the provided `test` function compiles.
+Implement the required traits for `Time` such that the following test compiles.
 
 ```rust
 #[cfg(test)]
@@ -258,7 +264,7 @@ mod tests {
 }
 ```
 
-## Exercise 05: Quick Math
+## Exercise 05: Quick Maths
 
 ```txt
 turn-in directory:
@@ -268,11 +274,13 @@ files to turn in:
     src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::cmp::{PartialEq, Eq}  std::fmt::Debug
-    std::ops::{Add, Sub, AddAssign, SubAssign}
-    std::ops::{Mul, MullAssign, Div, DivAssign}
-    std::{assert*} std::marker::Copy
-    std::clone::Clone  f32::sqrt f64::sqrt
+    std::cmp::{PartialEq, Eq}
+    std::fmt::Debug
+    std::ops::{Mul, MullAssign, Div, DivAssign, Add, AddAssign, Sub, SubAssign}
+    std::{assert*}
+    std::marker::Copy
+    std::clone::Clone 
+    *::sqrt
 ```
 
 ```rust
@@ -334,7 +342,7 @@ files to turn in:
     src/lib.rs  Cargo.toml
 
 allowed symbols:
-    std::boxed::Box  std::option::Option
+    std::boxed::Box
     std::panic
 ```
 
@@ -426,10 +434,13 @@ files to turn in:
     src/lib.rs  Cargo.toml
 
 allowed symbols:
-    str::{split, to_string, lines}  std::result::Result
-    std::vec::Vec  std::string::String  std::write
+    str::{split, to_string, lines}
+    std::vec::Vec
+    std::string::String
+    std::write
     std::fmt::{Debug, Display, Formatter, Write}
-    std::cmp::PartialEq  std::marker::Sized
+    std::cmp::PartialEq
+    std::marker::Sized
 ```
 
 Let's create a generic CSV Encoder & Decoder. A CSV file is defined like this:
@@ -460,7 +471,7 @@ is an `EncodingError`!
 * Implement the `Field` trait for `Option<T>` as long as `T` implements `Field` too. The empty
 string maps to `None`, while a non-empty string maps to the `Field` implementation of `T`.
 * Implement the `Field` trait for *every possible integer type*. Because this is long, repetitive
-and borring, write a *macro* to do it for you.
+and boring, write a *macro* to do it for you.
 
 ```rust
 // ez

@@ -130,7 +130,7 @@ allowed symbols:
     none
 ```
 
-Create `Outcome` and `Maybe` which should mimic `Result` and `Option` so below test compiles and runs. For this exercise, you are exceptionally (_and obviously_) **not** allowed to use the `Option` and `Result` types.
+Create the `Outcome` and `Maybe` types, which should mimic `Result` and `Option` such that below test compiles and runs. For this exercise, you are exceptionally (_and obviously_) **not** allowed to use the `Option` and `Result` types.
 
 ```rust
 #[cfg(test)]
@@ -251,7 +251,7 @@ fn main() {
 
 Your function must never panic when interacting with the file system. Errors must be handled properly.
 
-## Exercise 03: Pipe-Line
+## Exercise 03: Pipeline
 
 ```txt
 turn-in directory:

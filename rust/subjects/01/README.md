@@ -54,7 +54,7 @@ those already required by the subject.
 
 * You are **always** allowed to use `std::eprintln` for error handling.
 
-## Exercise 00: Reference me daddy
+## Exercise 00: Reference me Daddy
 
 ```txt
 turn-in directory:
@@ -329,7 +329,7 @@ allowed symbols:
 Leonardo has `n` tasks, which he needs to prioritize. He organized them into a vector of tasks. One task is defined as follows:
 
 ```rust
-pub struct Task{
+pub struct Task {
     pub start_time: u32,
     pub end_time: u32,
     pub cookies: u32,
@@ -350,14 +350,14 @@ pub fn time_manager(tasks: &mut Vec<Task>) -> u32
 
 **Constraints**
 
-_note_: If Leonardo chooses a task ending at time `t`, he will be able to start another task that starts at time `t` right away.
+If Leonardo chooses a task ending at time `t`, he will be able to start another task that starts at time `t` right away.
 
-You do not need to perform any input checks. You _may_ assume the following: 
+You _may_ assume the following: 
 * `task[i].start_time < task[i].end_time`
 * `task[i].start_time >= 0`
 * `task[i].end_time >= 1`
 
-What you _may not_ assume is our tester not having a timeout ಠ_ಠ, so **_don't be a brute_**.
+You _may not_ assume that our tester does not have a timeout, **_don't be a brute_**.
 
 ---
 **License Notice:**
