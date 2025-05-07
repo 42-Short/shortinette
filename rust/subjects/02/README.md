@@ -271,9 +271,6 @@ turn-in directory:
 
 files to turn in:
     src/lib.rs  Cargo.toml
-
-allowed symbols
-    TO_BE_DONE
 ``` 
 
 You will have these type definitions (don't worry about the #[...] for now)
@@ -345,13 +342,69 @@ mod tests{
 }
 ```
 
-## Exercise 04: TO_BE_DONE iterator implemenation
+## Exercise 04: Swipe Left
+
+```txt
+turn-in directory:
+    ex04/
+
+files to turn in:
+    src/lib.rs
+
+allowed dependencies:
+    none
+
+allowed symbols:
+    std::iter::Iterator
+    std::default::Default
+```
+
+Define the following struct:
+
+```rust
+struct Fibonacci {
+    // Add whatever data you need here
+}
+```
+
+Your `Fibonacci` struct must:
+1. Be instantiable by calling `Fibonacci::default()`
+2. Be iterable, always returning the next number in the Fibonacci sequence **up until (including) its 42nd element** ($F_{41}$ with 0-based indexing)
+
+To be precise, the following test must pass:
+```rust
+#[test]
+fn fib() {
+    let len = Fibonacci::default()
+    .take(1000000)
+    .collect::<Vec<u32>>()
+    .len();
+
+    assert_eq!(len, 42)
+}
+```
+
+The following code must compile and output the sequence's first 5 values:
+```rust
+fn fibonacci() {
+    let fib = Fibonacci::default();
+
+    for f in fib.take(5) {
+        println!("{f}");
+    }
+}
+```
+
+Definition of the Fibonacci sequence:
+
+$F_0 = 0, F_1 = 1, F_n = (F_{n - 1} + F_{n - 2})$
+
 
 ## Exercise 05: Lexical Analysis
 
 ```txt
 turn-in directory:
-    ex06/
+    ex05/
 
 files to turn in:
     src/main.rs src/lib.rs  Cargo.toml
