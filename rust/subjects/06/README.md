@@ -203,16 +203,12 @@ To summarize:
 
 ## Exercise 00: Libft
 
-```txt
-turn-in directory:
-    ex00/
-
-files to turn in:
-    src/lib.rs  Cargo.toml
-```
-Allowed Symbols:
 ```rust
+// allowed symbols
 use std::ptr::{write, read, add};
+
+const turn_in_directory = "ex00/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Let's start simple.
