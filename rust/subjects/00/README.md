@@ -119,12 +119,11 @@ y
 
 The `collatz` function must execute the following algorithm...
 
-* Let *n* be any natural number.
-* If *n* is even, then *n* becomes *n*/2
-* If *n* is odd, then *n* becomes 3*n* + 1
+* Let $n$ be any natural number.
+* If $n$ is even, then $n$ becomes $\frac{n}{2}$
+* If $n$ is odd, then $n$ becomes $3n + 1$
 
-...until *n* equals 1. On each iteration, *n* must be displayed on the standard output, followed
-by a line feed.
+...until $n$ equals 1. On each iteration, $n$ must be displayed on the standard output, followed by a line feed.
 Make sure to prevent timeouts!
 
 ```txt
@@ -285,8 +284,7 @@ const turn_in_directory = "ex05/";
 const files_to_turn_in = ["src/main.rs", "src/lib.rs", "Cargo.toml"];
 ```
 
-Write a **program** which prints every Friday that falls on the 13th of the month, since the
-first day of year 1 (it was a monday) until (and including) the year 2025.
+Write a **program** which prints every Friday that falls on the 13th of the month, since the first day of year 1 (it was a monday) until (including) the year 2025.
 
 To complete this task, you must also write the following functions:
 
@@ -301,7 +299,7 @@ since year 1 until the year given as an argument into the writer W
 * `is_leap_year` must determine whether a given year is a leap year or not.
 * `num_days_in_month` must compute how many days a given month of a given year has.
 
-These three functions must be part of the `src/lib.rs` file.rs.
+These three functions must be part of the `src/lib.rs` file.
 
 ```
 >_ cargo run
