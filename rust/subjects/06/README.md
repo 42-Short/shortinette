@@ -261,6 +261,9 @@ files to turn in:
 Allowed Symbols:
 ```rust
 use std::{slice::from_raw_parts, mem::transmute};
+
+const turn_in_directory = "ex01/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 ```rust
@@ -325,18 +328,16 @@ assert_eq!(
 ```
 
 ## Exercise 02: Carton
+```rust
+// allowed symbols
+use std::{
+    ptr::NonNull
+    ops::{Deref, DerefMut},
+    alloc::{alloc, dealloc, handle_alloc_error, Layout},
+};
 
-```txt
-turn-in directory:
-    ex02/
-
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::alloc::{alloc, dealloc, handle_alloc_error, Layout}
-    std::ops::{Deref, DerefMut}
-    std::ptr::NonNull
+const turn_in_directory = "ex02/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Create a type named `Carton<T>`, which must manage an allocation of a single `T` on the heap.
@@ -379,17 +380,18 @@ assert_eq!(point_in_carton.y, 2);
 
 ## Exercise 03: `Cellule<T>`
 
-```txt
-turn-in directory:
-    ex03/
+```rust
+// allowed symbols
+use std::{
+    clone::Clone,
+    marker::Copy,
+    cell::UnsafeCell,
+    ptr::*,
+    mem::*,
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::clone::Clone  std::marker::Copy
-    std::cell::UnsafeCell
-    std::ptr::*  std::mem::*
+const turn_in_directory = "ex03/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Let's re-create our own `Cell<T>` named `Cellule<T>`.
@@ -422,29 +424,24 @@ You must write tests for the functions you've written.
 
 ## Exercise 04: RAII
 
-```txt
-turn-in directory:
-    ex04/
+```rust
+// allowed symbols
+use std::ptr::{
+    copy::Copy,
+    clone::Clone,
+    libc::{__errno_location, c_int, strerror, write, read, open, close},
+    cstr::cstr,
+    cmp::{PartialEq, Eq, PartialOrd, Ord},
+    fmt::{Debug, Display},
+    mem::forget,
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed dependencies:
-    libc  cstr
-
-allowed symbols:
-    std::copy::Copy  std::clone::Clone
-    std::str::from_utf8_unchecked
-    libc::{__errno_location, c_int}
-    libc::strerror
-    libc::{write, read, open, close}
-    cstr::cstr
-    std::cmp::{PartialEq, Eq, PartialOrd, Ord}
-    std::fmt::{Debug, Display}
-    std::mem::forget;
+const allowed_dependencies = ["libc", "cstr"];
+const turn_in_directory = "ex04/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
-Create an `Errno` type, responsible for managing errors coming from C code.
+Create an `Errno` type.
 
 ```rust
 pub struct Errno(libc::c_int);
@@ -522,20 +519,19 @@ When a `File` is dropped, it must automatically close its file descriptor.
 
 ## Exercise 05: Tableau
 
-```txt
-turn-in directory:
-    ex05/
+```rust
+// allowed symbols
+use std::{
+    alloc::{alloc, dealloc, Layout},
+    marker::Copy,
+    clone::Clone,
+    ops::{Deref, DerefMut},
+    ptr::*,
+    mem::*,
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::alloc::{alloc, dealloc, Layout}
-    std::marker::Copy
-    std::clone::Clone
-    std::ops::{Deref, DerefMut}
-    std::ptr::*  
-    std::mem::*
+const turn_in_directory = "ex05/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 It must implement the following inherent methods, as specified in the official documentation:
@@ -591,17 +587,15 @@ assert_eq!(tab, [1, 2, 4]);
 
 ## Exercise 06: Foreign User
 
-```txt
-turn-in directory:
-    ex06/
+```rust
+// allowed symbols
+use std::{
+    mem::MaybeUninit,
+    ffi::{CStr, c_int, c_char},
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml  build.rs  awesome.c
-
-allowed symbols:
-    std::mem::MaybeUninit
-    std::ffi::CStr
-    std::ffi::{c_int, c_char}
+const turn_in_directory = "ex06/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml", "build.rs", "awesome.c"];
 ```
 
 However sad may it be, Rust is not the only programming language in existence.
@@ -681,15 +675,12 @@ When a `Database` goes out of scope, it must automatically call `delete_database
 
 ## Exercise 07: Bare Metal
 
-```txt
-turn-in directory:
-    ex07/
+```rust
+// allowed symbols
+use core::arch::asm;
 
-files to turn in:
-    ft_putchar.rs
-
-allowed symbols:
-    core::arch::asm
+const turn_in_directory = "ex07/";
+const files_to_turn_in = ["ft_putchar.rs"];
 ```
 
 What better way to finish this great journey but by writing your very first `C` function?
