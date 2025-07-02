@@ -219,21 +219,21 @@ pub unsafe fn ft_strlen(s: *const u8) -> usize;
 pub unsafe fn ft_strcpy(dst: *mut u8, src: *const u8);
 ```
 
-- `ft_swap` must swap any two values of any type. Maybe `T` can be copied; maybe not. Maybe it has a default value. Maybe not.
+- `ft_swap` must swap any two values of any type. Maybe `T` can be copied, maybe not. Maybe it has a default value. Maybe not.
 - `ft_strlen` must count the number of non-null bytes, starting at `s`. You must write an
-  appropriate "# Safety" section in the documentation of that function to educate about its users
+  appropriate `# Safety` section in the documentation of that function to educate about its users
   about its correct usage.
 - `ft_strcpy` must copy the null-terminated string at `src` into `dst`. Just like `ft_strlen`, you
-  must _precisely_ describe the requirements of your function within a "# Safety" section in its
+  must _precisely_ describe the requirements of your function within a `# Safety` section in its
   documentation.
 
 Example:
 
 ```rust
 let mut a = String::from("Hello, World!");
-let mut b = String::from("Goodby, World!");
+let mut b = String::from("Goodbye, World!");
 ft_swap(&mut a, &mut b);
-assert_eq!(a, "Goodby, World!");
+assert_eq!(a, "Goodbye, World!");
 assert_eq!(b, "Hello, World!");
 
 let s = b"Hello, World!\0";
@@ -251,15 +251,8 @@ assert_eq!(&dst, b"Hello, World!\0");
 
 ## Exercise 01: Philospher's Stone
 
-```txt
-turn-in directory:
-    ex01/
-
-files to turn in:
-    src/lib.rs  Cargo.toml
-```
-Allowed Symbols:
 ```rust
+// allowed symbols
 use std::{slice::from_raw_parts, mem::transmute};
 
 const turn_in_directory = "ex01/";
@@ -281,14 +274,14 @@ impl PhilosopherStone {
 ```
 
 - The `transmute_iron` function must convert the given `Iron` into a bunch of `GoldNugget`s. The
-  bit-pattern of the original iron _must be preserved_; ignoring byte-order.
+  bit-pattern of the original iron _must be preserved_, ignoring byte-order.
 - The `transmute_mercure` function must convert the given `Mercure` into a bunch of `GoldNugget`s.
-  The bit-pattern of the original mercure _must be preserved_; ignoring byte-order.
+  The bit-pattern of the original mercure _must be preserved_, ignoring byte-order.
 
 Example:
 
 ```rust
-// On a LITTLE-ENDIAN machine! On big-endian machines, the result will be different.
+// On a LITTLE-ENDIAN machine!
 let iron = 0x12345678;
 assert_eq!(PhilosopherStone.transmute_iron(iron), [0x5678, 0x1234]);
 let mercure = 0x0123456789ABCDEF;
@@ -340,7 +333,7 @@ const turn_in_directory = "ex02/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
-Create a type named `Carton<T>`, which must manage an allocation of a single `T` on the heap.
+Create a type named `Carton<T>`, which must manage a heap allocation of a single `T`.
 
 ```rust
 pub struct Carton<T> {
@@ -356,8 +349,7 @@ impl<T> Carton<T> {
 - You must make sure that `Carton<T>` has the correct _variance_ over `T`.
 - You must make sure that the _drop checker_ makes the correct assumptions about the lifetime of
   a `T` owned by a `Carton<T>`.
-- You must make sure that `Carton<T>` properly manages the memory it owns. When memory is allocated,
-  it must be deallocated later!
+- You must make sure that `Carton<T>` properly manages the memory it owns. Allocated memory must be freed later! [`cargo-valgrind`](https://crates.io/crates/cargo-valgrind) can help you track unfreed memory.
 
 Example:
 
@@ -396,8 +388,8 @@ const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 
 Let's re-create our own `Cell<T>` named `Cellule<T>`.
 
-You must implement the following inherent methods, as specified in the official documentation of
-`Cell<T>`.
+You must implement the following inherent methods, as specified in the official documentation for
+[`Cell<T>`](https://doc.rust-lang.org/std/cell/#cellt).
 
 ```rust
 pub struct Cellule<T> {
@@ -419,8 +411,6 @@ impl<T> Cellule<T> {
 
 Note that you may need to add trait bounds to some of the above methods to ensure their safety,
 and once again, be extra careful of the _variance_ of your type.
-
-You must write tests for the functions you've written.
 
 ## Exercise 04: RAII
 
@@ -455,8 +445,8 @@ impl Errno {
 
 - `last` must return the **calling thread**'s last `errno`.
 - `make_last` must make an `Errno` the calling thread's last `errno`.
-- `description` must return a textual description of the error. Don't try to enumate _every_
-  possible error! Use a function of `libc` to do it for you.
+- `description` must return a description of the error. Don't try to enumerate _every_
+  possible error! I'm sure a function from `libc` can do it for you.
 
 Example:
 
@@ -465,11 +455,10 @@ Errno(12).make_last();
 assert_eq!(Errno::last(), Errno(12));
 
 let desc = format!("{}", Errno(1));
-// TODO: find what is the description of `Errno(1)`.
-assert_eq!(desc, "");
+assert_eq!(desc, "Operation not permitted");
 ```
 
-With a robust way to handle errors, we can no start for real.
+With a robust way to handle errors, we can now start for real:
 
 ```rust
 pub struct Fd(libc::c_int);
@@ -490,12 +479,12 @@ impl Fd {
 - `open` must open a new file descriptor for reading (only).
 - `create` must open a new file descriptor for writing (only). If the file already exists, it must
   be truncated.
-- `write` must write some of the data referenced by `data` to the file descriptor.
-- `read` must read some data from the file descriptor into `buffer`.
+- `write` must write the data referenced to by `data` to the file descriptor.
+- `read` must read data from the file descriptor into `buffer`.
 - `close` must attempt to close the file descriptor.
 - In any case, errors must be handled properly.
 
-That's cool, and all. But we can do better!
+That's cool, and all, but let's add one more layer!
 
 ```rust
 pub struct File(Fd);
@@ -534,7 +523,7 @@ const turn_in_directory = "ex05/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
-It must implement the following inherent methods, as specified in the official documentation:
+It must implement the following inherent methods, as specified in the official documentation for [`Vec`](https://doc.rust-lang.org/std/vec/struct.Vec.html):
 
 ```rust
 pub struct Tableau<T> {
@@ -569,7 +558,7 @@ for it in tab1 {
 // 2
 // 4
 
-let c: &[i32] = &*a;
+let c: &[i32] = &*tab0;
 assert_eq!(c, [1, 2, 4]);
 ```
 
@@ -598,7 +587,7 @@ const turn_in_directory = "ex06/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml", "build.rs", "awesome.c"];
 ```
 
-However sad may it be, Rust is not the only programming language in existence.
+However sad it may be, Rust is not the only programming language in existence.
 
 Let's create a simple C library.
 
@@ -629,24 +618,23 @@ void delete_database(t_database *database);
 
 e_result create_user(t_database *database, char const *name, t_id *result);
 e_result delete_user(t_database *database, t_id id);
-e_result get_user(t_database const *database, t_id id, t_user const **result);
+e_result get_user(t_database const *database, t_id id, t_user const *result);
 ```
 
-- `create_database` must initialize the passed `t_database` instance.
-- `delete_database` must destroy the passed `t_database` instance, freeing the memory that was
-  allocated.
-- `create_user` must insert a new `t_user` instance in the database.
+- `create_database` must initialize the `t_database` instance.
+- `delete_database` must destroy the `t_database` instance, freeing any allocated memory.
+- `create_user` must insert a new `t_user` instance into the database.
 - `delete_user` must remove a `t_user` from the database.
-- `get_user` must write a pointer to the user with the provided ID, if any.
+- `get_user` must store a pointer to the user with the provided ID into `result`.
 
 In any case, on success, `ERR_SUCCESS` is returned. When a memory error occurs, `ERR_MEMORY` is
 returned. When no more IDs can be allocated, `ERR_NO_MORE_IDS` is returned. When a given ID is
 invalid, `ERR_UNKNOWN_ID` is returned.
 
-You now have an awesome C library, but it's sad that you cannot use it in Rust...
+You now have an awesome C library, but you unfortunately cannot use it in Rust...
 
-Setup your project such that this C library is automatically compiled into a `.a` static library
-when to call `cargo build`. Your Rust library must link against that compiled C library.
+Set up your project, such that this C library is automatically compiled into a `.a` static library
+when you call `cargo build`. Your Rust library must link against that compiled C library.
 
 ```rust
 pub enum Error { /* ... */ }
@@ -683,7 +671,7 @@ const turn_in_directory = "ex07/";
 const files_to_turn_in = ["ft_putchar.rs"];
 ```
 
-What better way to finish this great journey but by writing your very first `C` function?
+What better way to finish this great journey than by writing your very first `C` function?
 
 ```rust
 fn ft_putchar(c: u8);
@@ -691,13 +679,13 @@ fn ft_exit(code: u8) -> !;
 ```
 
 - You must use the `#![no_std]` and `#![no_main]` global attributes.
-- If you want to make sure nothing gets into your sacred namespace, you can optioanlly add the
+- If you want to make sure nothing gets into your sacred namespace, you can optionally add the
   `#![no_implicit_prelude]` global attribute.
 - `ft_putchar` must print the specified character to the standard output of the program.
 - `ft_exit` must exit the process with the specified exit code.
-- Create a **program** that calls `ft_putchar` trice. Once with '4', once with '2', and once with
-  `\n`.
-- Up to you to find out how to make this compile! (Hint: it's not cargo :)).
+- Create a **program** that calls `ft_putchar` three times. Once with `'4'`, once with `'2'`, and once with
+  `'\n'`.
+- Up to you to find out how to compile this! (Hint: it's not cargo).
 
 Example:
 
