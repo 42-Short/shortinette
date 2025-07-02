@@ -45,17 +45,15 @@ those already required by the subject.
 
 ## Exercise 00: Hello, World!
 
-```txt
-turn-in directory:
-    ex00/
+```rust
+// allowed symbols
+use std::println;
 
-files to turn in:
-    hello.rs
-
-allowed symbols:
-    std::println
+const turn_in_directory = "ex00/";
+const files_to_turn_in = ["hello.rs"];
 ```
-This exercise will be compiled and run with `rustc ex00/hello.rs && ./hello` not with `cargo run`
+
+This exercise will be compiled and run with `rustc ex00/hello.rs && ./hello`.
 
 Create a **program** that prints the string `Hello, World!`, followed by a line feed.
 
@@ -67,20 +65,16 @@ Hello, World!
 
 ## Exercise 01: Point Of No Return
 
-```txt
-turn-in directory:
-    ex01/
+```rust
+// no allowed symbols
 
-files to turn in:
-    min.rs
-
-allowed symbols:
-    none
+const turn_in_directory = "ex01/";
+const files_to_turn_in = ["min.rs"];
 ```
 
 Create a `min` **function** that takes two integers, and returns the smaller one.
 
-The function must be prototyped like this:
+The function must be prototyped like follows:
 
 ```rust
 pub fn min(a: i32, b: i32) -> i32;
@@ -90,15 +84,12 @@ Oh, I almost forgot. The `return` keyword is forbidden in this exercise! Good lu
 
 ## Exercise 02: yyyyyyyyyyyyyy
 
-```txt
-turn-in directory:
-    ex02/
+```rust
+// allowed symbols
+use std::println;
 
-files to turn in:
-    yes.rs  collatz.rs  print_bytes.rs
-
-allowed symbols:
-    std::println  str::bytes
+const turn_in_directory = "ex02/";
+const files_to_turn_in = ["yes.rs", "collatz.rs", "print_bytes.rs"];
 ```
 
 Create three **functions**. Each function must use one kind of loop supported by Rust, and you
@@ -171,15 +162,12 @@ Output:
 ```
 ## Exercise 03: FizzBuzz
 
-```txt
-turn-in directory:
-    ex03/
+```rust
+// allowed symbols
+use std::println;
 
-files to turn in:
-    fizzbuzz.rs
-
-allowed symbols:
-    std::println
+const turn_in_directory = "ex03/";
+const files_to_turn_in = ["fizzbuzz.rs"];
 ```
 
 Create a **program** that plays the popular (and loved!) game "fizz buzz" from 1 to 100.
@@ -219,19 +207,16 @@ fizz
 buzz
 ...
 ```
-The only allowed keywords for this exercise are **_one_** `for` loop and **_one_** `match` statement!
+You are only allowed to use **_one_** `for` loop and **_one_** `match` statement, no other keywords!
 
 ## Exercise 04: Shipping With Cargo
 
-```txt
-turn-in directory:
-    ex04/
+```rust
+// allowed symbols
+use std::println;
 
-files to turn in:
-    src/main.rs  src/overflow.rs  src/other.rs  Cargo.toml
-
-allowed symbols:
-    std::println
+const turn_in_directory = "ex04/";
+const files_to_turn_in = ["src/main.rs", "src/overflow.rs", "src/other.rs", "Cargo.toml"];
 ```
 
 Create a Cargo project.
@@ -283,19 +268,21 @@ thread 'main' panicked at 'attempt to add with overflow', src/overflow.rs:3:5
 255u8 + 1u8 == 0
 ```
 
-* **You are allowed to modify lint levels for completing this exercise! Up to you to figure out which :)**
+* **You are allowed to modify lint levels for completing this exercise! Up to you to figure out which.**
 
 ## Exercise 05: Friday The 13th
 
-```txt
-turn-in directory:
-    ex05/
+```rust
+// allowed symbols
+use std::{
+    {assert, assert_eq, assert_ne},
+    panic,
+    {write, writeln},
+    io::stdout,
+};
 
-files to turn in:
-    src/main.rs src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::{assert, assert_eq, assert_ne}  std::panic  std::{write, writeln}  std::io::stdout
+const turn_in_directory = "ex05/";
+const files_to_turn_in = ["src/main.rs", "src/lib.rs", "Cargo.toml"];
 ```
 
 Write a **program** which prints every Friday that falls on the 13th of the month, since the
@@ -349,20 +336,18 @@ It must be possible to run those tests using `cargo test`.
 
 ## Exercise 06: Guessing Game
 
-```txt
-turn-in directory:
-    ex06/
+```rust
+// allowed symbols
+use std::{
+    println,
+    cmp::Ordering,
+};
+use i32::cmp;
+use ftkit::{read_number, random_number};
 
-files to turn in:
-    src/main.rs  Cargo.toml
-
-allowed dependencies;
-    ftkit
-
-allowed symbols:
-    ftkit::read_number  ftkit::random_number
-    i32::cmp  std::cmp::Ordering
-    std::println
+const allowed_dependencies = ["ftkit"];
+const turn_in_directory = "ex06/";
+const files_to_turn_in = ["src/main.rs", "Cargo.toml"];
 ```
 
 Create a guessing game **program**, where the player has to guess the correct number.
@@ -382,19 +367,16 @@ You can't use the `<`, `>`, `<=`, `>=` and `==` operators!
 
 ## Exercise 07: String Pattern Compare
 
-```txt
-turn-in directory:
-    ex07/
+```rust
+// allowed symbols
+use std::{
+    {assert, assert_eq},
+};
+use ftkit::ARGS;
 
-files to turn in:
-    src/lib.rs  src/main.rs  Cargo.toml
-
-allowed dependencies:
-    ftkit
-
-allowed symbols:
-    std::{assert, assert_eq}  <[u8]>::{len, is_empty}
-    str::as_bytes  ftkit::ARGS
+const allowed_dependencies = "ftkit";
+const turn_in_directory = "ex07/";
+const files_to_turn_in = ["src/main.rs", "src/overflow.rs", "src/other.rs", "Cargo.toml"];
 ```
 
 Create a **library** that exposes the function `strpcmp`.

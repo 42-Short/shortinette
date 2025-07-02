@@ -419,12 +419,12 @@ and once again, be extra careful of the _variance_ of your type.
 use std::ptr::{
     copy::Copy,
     clone::Clone,
-    libc::{__errno_location, c_int, strerror, write, read, open, close},
-    cstr::cstr,
     cmp::{PartialEq, Eq, PartialOrd, Ord},
     fmt::{Debug, Display},
     mem::forget,
 };
+use libc::{__errno_location, c_int, strerror, write, read, open, close};
+use cstr::cstr;
 
 const allowed_dependencies = ["libc", "cstr"];
 const turn_in_directory = "ex04/";
