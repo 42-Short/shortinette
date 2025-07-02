@@ -209,9 +209,10 @@ turn-in directory:
 
 files to turn in:
     src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::ptr::{write, read, add}
+```
+Allowed Symbols:
+```rust
+use std::ptr::{write, read, add};
 ```
 
 Let's start simple.
@@ -260,10 +261,10 @@ turn-in directory:
 
 files to turn in:
     src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::slice::from_raw_parts
-    std::mem::transmute
+```
+Allowed Symbols:
+```rust
+use std::{slice::from_raw_parts, mem::transmute};
 ```
 
 ```rust
