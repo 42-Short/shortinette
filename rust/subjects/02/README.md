@@ -131,13 +131,13 @@ those already required by the subject.
 * You are **always** allowed to use `std::eprintln` for error handling.
 
 ### Exercise 00: Bruh
-```
-turn-in directory:
-    ex00/
+```rust
+// no allowed symbols
 
-files to turn in:
-    src/lib.rs  Cargo.toml
+const turn_in_directory = "ex00/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
+
 Given this struct
 ```rust
 struct ComplexStruct {
@@ -156,7 +156,7 @@ struct NestedStruct {
 }
 ```
 
-Implement the `free` method so that the following code does not compile:
+Implement the `free` method, such that the following code does *not* compile:
 ```rust
 impl ComplexStruct {
     pub fn free(&mut self) {
@@ -184,19 +184,13 @@ pub fn main() {
 }
 ```
 
-Note that the code should be able to compile when removing the call to `bruh.free()`!
+Note that removing the call to `bruh.free()` should allow the code to compile successfully!
 
 ## Exercise 01: A Point In Space
-
-```txt
-turn-in directory:
-    ex01/
-
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    f32::sqrt
+```rust
+// allowed symbols
+const turn_in_directory = "ex01/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Defines the following type:
@@ -226,18 +220,17 @@ impl Point {
 
 ## Exercise 02: Derive
 
-```txt
-turn-in directory:
-    ex02/
+```rust
+// allowed symbols
+use std::{
+    clone::Clone,
+    cmp::{PartialOrd, PartialEq},
+    default::default,
+    fmt::Debug,
+};
 
-files to turn in:
-    src/main.rs  Cargo.toml
-
-allowed symbols:
-    std::clone::Clone
-    std::cmp::{PartialOrd, PartialEq}
-    std::default::Default
-    std::fmt::Debug
+const turn_in_directory = "ex00/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Create a type, may it be a `struct` or an `enum`. You simply have to name it `MyType`.
@@ -274,26 +267,23 @@ Copy the above `test` function and make it compile.
 
 ## Exercise 03 Money money money
 
+```rust
+const turn_in_directory = "ex03/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
-turn-in directory:
-    ex03/
-
-files to turn in:
-    src/lib.rs  Cargo.toml
-``` 
 
 Define the following types:
 
 ```rust
 #[derive(PartialEq, Debug)]
 enum BuyError {
-    Broke,
-    TooLoaded,
+    NotEnoughCoins,
+    TooManyItems,
 }
 #[derive(PartialEq, Debug)]
 enum SellError {
-    TooRich,
-    NotLoaded,
+    TooManyCoins,
+    NoItemToSell,
 }
 
 #[repr(u8)]
@@ -322,11 +312,19 @@ impl Player {
 ```
 Ensure they operate as follows:
 
-`buy` verifies that the player has sufficient coins and can store the item. If either condition is unmet, return the appropriate error.
+`buy` verifies that:
+1. The player has enough coins
+2. The player has enough room to store the item.
 
-`sell` confirms that the player possesses an item and can store the received coins without his pocket `overflowing`. If either condition is unmet, return the relevant error.
+If either condition is unmet, return the appropriate error.
 
-If both errors might apply simultaneously, returning any of them will do.
+`sell` verifies that:
+1. The player has an item to sell
+2. The player can store the received coins without his pocket `overflowing`
+
+If either condition is unmet, return the appropriate error.
+
+If both errors apply simultaneously, return any of them.
 
 The following test must compile and execute successfully:
 ```rust
@@ -339,35 +337,31 @@ mod tests{
         let mut player = Player { coins: 0, item: None};
 
 
-        assert_eq!(player.buy(Item::HealthPotion), Err(BuyError::Broke));
+        assert_eq!(player.buy(Item::HealthPotion), Err(BuyError::NotEnoughCoins));
         player.coins = 250;
         assert_eq!(player.buy(Item::Ring), Ok(()));
-        assert_eq!(player.buy(Item::UpgradeStone), Err(BuyError::TooLoaded));
+        assert_eq!(player.buy(Item::UpgradeStone), Err(BuyError::TooManyItems));
 
         player.coins = 242;
-        assert_eq!(player.sell(), Err(SellError::TooRich));
+        assert_eq!(player.sell(), Err(SellError::TooManyCoins));
         player.coins = 0;
-        assert_eq!(player.sell(),Ok(()));
-        assert_eq!(player.sell(), Err(SellError::NotLoaded));
+        assert_eq!(player.sell(), Ok(()));
+        assert_eq!(player.sell(), Err(SellError::NoItemToSell));
     }
 }
 ```
 
 ## Exercise 04: Swipe Left
 
-```txt
-turn-in directory:
-    ex04/
+```rust
+// allowed symbols
+use std::{
+    iter::Iterator,
+    default::Default,
+};
 
-files to turn in:
-    src/lib.rs
-
-allowed dependencies:
-    none
-
-allowed symbols:
-    std::iter::Iterator
-    std::default::Default
+const turn_in_directory = "ex04/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Define the following struct:
@@ -413,23 +407,17 @@ $F_0 = 0, F_1 = 1, F_n = (F_{n - 1} + F_{n - 2})$
 
 ## Exercise 05: Lexical Analysis
 
-```txt
-turn-in directory:
-    ex05/
+```rust
+// allowed symbols
+use ftkit::ARGS;
+use std::{
+    fmt::Debug,
+    println,
+};
 
-files to turn in:
-    src/main.rs src/lib.rs  Cargo.toml
-
-allowed dependencies:
-    ftkit
-
-allowed symbols:
-    ftkit::ARGS
-    std::option::Option
-    std::fmt::Debug
-    std::{println, eprintln}
-    str::*
-    char::*
+const allowed_dependencies = ["ftkit"];
+const turn_in_directory = "ex05/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Create a simple token parser. It must be able to take an input string, and turn it into a list
@@ -504,19 +492,17 @@ Word("file.txt")
 
 ## Exercise 06: Inventory Management
 
-```txt
-turn-in directory:
-    ex05/
+```rust
+// allowed symbols
+use std::{
+    collections::HashMap,
+    fmt::Debug,
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::vec::Vec
-    std::string::String
-    std::collections::HashMap::*
-    std::fmt::Debug
+const turn_in_directory = "ex05/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
+
 Create an inventory management system for a shop. Define the following types:
 ```rust
 #[derive(Debug, Clone)]
@@ -546,7 +532,7 @@ impl Inventory {
 * `add_item`: Adds a new item to the inventory. If an item with the same name already exists, return an error.
 * `remove_item`: Removes an item from the inventory by name. If the item doesn't exist, return an error.
 * `update_quantity`: Updates the quantity of an existing item. If the item doesn't exist, return an error.
-* `get_item`: Returns a reference to an item by name, or None if it doesn't exist.
+* `get_item`: Returns a reference to an item by name, or `None` if it doesn't exist.
 * `list_items`: Returns a vector of references to all items in the inventory.
 * `total_value`: Calculates and returns the total value of all items in the inventory (price * quantity for each item).
 
@@ -556,7 +542,7 @@ trait Discountable {
     fn apply_discount(&mut self, percentage: f32);
 }
 ```
-Implement this trait for `Item` so that it reduces the price of the item by the given percentage. Invalid percentage values (`< 0 || > 100`) are considered **undefined behavior**. You are free to handle them as you please.
+Implement this trait for `Item`, such that it reduces the price of the item by the given percentage. Invalid percentage values (`< 0 || > 100`) are considered **undefined behavior**. You are free to handle them as you please.
 
 Your implementation should work with the following test function:
 ```rust
@@ -593,26 +579,22 @@ mod tests {
 
 ## Exercise 07: The Game Of Life
 
-```txt
-turn-in directory:
-    ex07/
+```rust
+// allowed symbols
+use std::{
+    println,
+    print,
+    thread::sleep,
+    time::Duration,
+    vec::Vec,
+    marker::Copy,
+    clone::Clone,
+    cmp::PartialEq,
+};
 
-files to turn in:
-    src/main.rs  Cargo.toml
-
-allowed dependencies:
-    ftkit
-
-allowed symbols:
-    ftkit::ARGS ftkit::random_number
-    std::{println, print}
-    std::thread::sleep
-    std::time::Duration
-    std::vec::Vec::{new, push}
-    std::result::Result
-    std::marker::Copy
-    std::clone::Clone
-    std::cmp::PartialEq
+const allowed_dependencies = ["ftkit"];
+const turn_in_directory = "ex07/";
+const files_to_turn_in = ["src/main.rs", "Cargo.toml"];
 ```
 
 Create a **program** that plays [Conway's Game Of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life).
@@ -667,8 +649,7 @@ clear a previously displayed board. Try not to clear the whole terminal! Just th
 
 **Hint:** you might want to look at *ANSI Escape Codes* if you don't know where to start!
 
-* Finally, write a **main** function that uses above function to simulate the game of life. At each
-simulation step, the previous board must be replaced by the one in the terminal.
+* Finally, write a **main** function that uses above function to simulate the game of life. At each simulation step, the previous board must be replaced by the one in the terminal.
 
 Example:
 
