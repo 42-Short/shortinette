@@ -14,7 +14,7 @@ import (
 	"github.com/42-Short/shortinette/tester"
 )
 
-//todo: sheduler in api for repo creation
+//todo: scheduler in api for repo creation
 
 type moduleGrader struct {
 	moduleDao      *dao.DAO[dao.Module]

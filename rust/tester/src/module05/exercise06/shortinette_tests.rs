@@ -50,7 +50,7 @@ mod shortinette_tests {
                 .expect("Failed to execute command")
         }
 
-        // TODO: This creates a side effect which could interfear with other tests
+        // TODO: This creates a side effect which could interfere with other tests
         // Maybe should instead create a directory in /tmp
         fn compile() {
             let mut path = PathBuf::new();

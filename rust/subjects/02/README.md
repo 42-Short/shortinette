@@ -62,7 +62,7 @@ said you were a gardener; are you tasked to instruct new students, or to cook me
 "With classes, such is expressed by your class at design-time. As such, there can never be any
 confusion! To change behaviours is to change the design of the system!"
 
-"Facinating," said Farbold, nodding. The neophyte turned back to her work.
+"Fascinating," said Farbold, nodding. The neophyte turned back to her work.
 
 "I must admit I am having trouble finding how to express this concept in a way that the temple will
 approve of, but I am su--" the neophyte was interrupted when one of the smaller white rocks struck
@@ -103,7 +103,7 @@ machines without additional options.
 
 * Only dependencies specified in the allowed dependencies section are allowed.
 
-* You are _not_ allowed to use the `unsafe` keyword anywere in your code.
+* You are _not_ allowed to use the `unsafe` keyword anywhere in your code.
 
 * If not specified otherwise by the task description, you are generally not authorized to modify lint levels - either using `#[attributes]`,
 `#![global_attributes]` or with command-line arguments. You may optionally allow the `dead_code`
@@ -655,7 +655,7 @@ impl Board {
 
 * `is_alive` must return whether the cell is alive or not.
 * `is_dead` must return whether the cell is dead or not.
-* `new` must generate a random board of size (`width` by `height`), with approximatly
+* `new` must generate a random board of size (`width` by `height`), with approximately
 `percentage`% live cells in it.
 * `from_args` must parse the command-line arguments passed to the application and use them to
 create a `Board` instance. Errors are communicated through the `ParseError` enumeration.

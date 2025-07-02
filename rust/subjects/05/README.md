@@ -23,7 +23,7 @@ machines without additional options.
 
 * Only dependencies specified in the allowed dependencies section are allowed.
 
-* You are _not_ allowed to use the `unsafe` keyword anywere in your code.
+* You are _not_ allowed to use the `unsafe` keyword anywhere in your code.
 
 * If not specified otherwise by the task description, you are generally not authorized to modify lint levels - either using `#[attributes]`,
 `#![global_attributes]` or with command-line arguments. You may optionally allow the `dead_code`
@@ -115,7 +115,7 @@ mod tests {
 }
 ```
 
-## Exercise 01: Atomical
+## Exercise 01: Atomic
 
 ```txt
 turn-in directory:
@@ -365,7 +365,7 @@ pi: 3.1413
 duration: 722ms
 ```
 
-Even for as little as a million points, the aglorithm is already pretty slow. Try to speed it up a
+Even for as little as a million points, the algorithm is already pretty slow. Try to speed it up a
 little using the [`rayon`](https://crates.io/crates/rayon) crate.
 
 ```txt

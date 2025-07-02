@@ -53,7 +53,7 @@ mod shortinette_tests {
                 .expect("Failed to execute command")
         }
 
-        // TODO: This creates a side effect which could interfear with other tests
+        // TODO: This creates a side effect which could interfere with other tests
         // Maybe should instead create a directory in /tmp
         fn compile() {
             let mut path = PathBuf::new();
@@ -212,7 +212,7 @@ mod shortinette_tests {
     }
 
     #[test]
-    fn no_buffer_sinlge_letter() {
+    fn no_buffer_single_letter() {
         let mut out = Vec::new();
         let mut logger = Logger::new(0, &mut out);
 
@@ -221,7 +221,7 @@ mod shortinette_tests {
     }
 
     #[test]
-    fn no_buffer_sinle_word() {
+    fn no_buffer_single_word() {
         let mut out = Vec::new();
         let mut logger = Logger::new(0, &mut out);
 

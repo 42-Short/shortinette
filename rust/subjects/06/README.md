@@ -163,11 +163,11 @@ unsafe fn get_unchecked(slice: &[u32], index: usize) -> u32 {
 ///
 /// # Safety
 ///
-/// Implementators of this trait must allow the "all-zeros" bit pattern.
+/// Implementers of this trait must allow the "all-zeros" bit pattern.
 unsafe trait Zeroable {
     fn zeroed() -> Self {
         // SAFETY:
-        //  Implementators of the `Zeroable` trait can be initialized
+        //  Implementers of the `Zeroable` trait can be initialized
         //  with the "all-zeros" bit pattern, ensuring that calling
         //  this function won't produce an invalid value.
         unsafe { std::mem::zeroed() }
@@ -249,7 +249,7 @@ unsafe { ft_strcpy(dst.as_mut_ptr(), s.as_ptr()) };
 assert_eq!(&dst, b"Hello, World!\0");
 ```
 
-## Exercise 01: Philospher's Stone
+## Exercise 01: Philosopher's Stone
 
 ```rust
 // allowed symbols

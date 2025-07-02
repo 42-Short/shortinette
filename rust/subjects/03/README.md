@@ -46,7 +46,7 @@ machines without additional options.
 
 * Only dependencies specified in the allowed dependencies section are allowed.
 
-* You are _not_ allowed to use the `unsafe` keyword anywere in your code.
+* You are _not_ allowed to use the `unsafe` keyword anywhere in your code.
 
 * If not specified otherwise by the task description, you are generally not authorized to modify lint levels - either using `#[attributes]`,
 `#![global_attributes]` or with command-line arguments. You may optionally allow the `dead_code`
@@ -149,7 +149,7 @@ pub trait FortyTwo {
 }
 ```
 
-* The `forty_two` associated function must return an instance of the implementator that represents
+* The `forty_two` associated function must return an instance of the implementer that represents
 the number 42 in some way.
 
 Implement this trait for some common types, at least `u32` and `String`.

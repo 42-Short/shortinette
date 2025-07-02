@@ -16,6 +16,13 @@ fn punch_card() {
     println!("{rust:?}");
 }
 ```
+```rust
+// allowed symbols
+use ;
+
+const turn_in_directory = "ex0/";
+const files_to_turn_in = [];
+```
 
 *Extracted from `rustc`'s [unit tests](https://github.com/rust-lang/rust/blob/131f0c6df6777800aa884963bdba0739299cd31f/tests/ui/weird-exprs.rs#L126-L134).*
 
@@ -27,7 +34,7 @@ machines without additional options.
 
 * Only dependencies specified in the allowed dependencies section are allowed.
 
-* You are _not_ allowed to use the `unsafe` keyword anywere in your code.
+* You are _not_ allowed to use the `unsafe` keyword anywhere in your code.
 
 * If not specified otherwise by the task description, you are generally not authorized to modify lint levels - either using `#[attributes]`,
 `#![global_attributes]` or with command-line arguments. You may optionally allow the `dead_code`

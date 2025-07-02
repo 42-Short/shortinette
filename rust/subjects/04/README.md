@@ -90,7 +90,7 @@ machines without additional options.
 
 * Only dependencies specified in the allowed dependencies section are allowed.
 
-* You are _not_ allowed to use the `unsafe` keyword anywere in your code.
+* You are _not_ allowed to use the `unsafe` keyword anywhere in your code.
 
 * If not specified otherwise by the task description, you are generally not authorized to modify lint levels - either using `#[attributes]`,
 `#![global_attributes]` or with command-line arguments. You may optionally allow the `dead_code`
@@ -320,7 +320,7 @@ It must start multiple command lines passed as arguments, and write each of them
 
  * Commands must be executed in parallel. You must spawn a process for each command.
  * The standard error must be ignored.
- * Any error occuring when interacting with the system must be handled properly. Your program must never panic.
+ * Any error occurring when interacting with the system must be handled properly. Your program must never panic.
  * The output of a child must be displayed entirely as soon as it finishes execution, even when other commands are still in progress.
 
 Example Usage:
