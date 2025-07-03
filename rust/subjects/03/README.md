@@ -46,7 +46,7 @@ machines without additional options.
 
 * Only dependencies specified in the allowed dependencies section are allowed.
 
-* You are _not_ allowed to use the `unsafe` keyword anywere in your code.
+* You are _not_ allowed to use the `unsafe` keyword anywhere in your code.
 
 * If not specified otherwise by the task description, you are generally not authorized to modify lint levels - either using `#[attributes]`,
 `#![global_attributes]` or with command-line arguments. You may optionally allow the `dead_code`
@@ -67,26 +67,24 @@ fn my_unused_function() {}
 they are not specified in the `allowed symbols` section. **However**, tests should not introduce **any additional external dependencies** beyond
 those already required by the subject.
 
-* When a type is in the allowed symbols, it is **implied** that its methods and attributes are also allowed to be used, including the attributes of its implemented traits.
+* All primitive types, i.e the ones you are able to use without importing them, are allowed.
 
-* You are **always** allowed to use `Option` and `Result` types (either `std::io::Result` or the plain `Result`, up to you and your use case).
+* A type being allowed implies that its methods and attributes are allowed to be used as well, including the attributes of its implemented traits.
 
 * You are **always** allowed to use `std::eprintln` for error handling.
 
+* These rules may be overridden by specific exercises.
+
 ## Exercise 00: `choose`
 
-```txt
-turn-in directory:
-    ex00/
+```rust
+// allowed symbols
+use ftkit::random_number;
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed dependencies:
-    ftkit
-
-allowed symbols:
-    <[T]>::{len, is_empty}  ftkit::random_number
+const allowed_dependencies = ["ftkit"];
+const allowed_dependencies = [""];
+const turn_in_directory = "ex00/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Create a **function** that randomly chooses a value among an input slice. If the provided list is
@@ -97,17 +95,16 @@ pub fn choose<T>(values: &[T]) -> Option<&T>;
 ```
 
 ## Exercise 01: Point Of No Return (v3)
+```rust
+// allowed symbols
+use std::{
+    cmp::PartialOrd,
+    std::marker::Sized,
+};
 
-```txt
-turn-in directory:
-    ex01/
-
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::cmp::PartialOrd  std::{assert*}
-    std::marker::Sized
+const allowed_dependencies = [""];
+const turn_in_directory = "ex01/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Again? Yes. Another `min` function! But I promise, this one's the last one.
@@ -128,15 +125,16 @@ Still not allowed to use `return`!
 
 ## Exercise 02: 42
 
-```txt
-turn-in directory:
-    ex02/
+```rust
+// allowed symbols
+use std::{
+    fmt::Debug,
+    println,
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::fmt::Debug  std::println
+const allowed_dependencies = [""];
+const turn_in_directory = "ex02/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Define the following trait:
@@ -147,8 +145,7 @@ pub trait FortyTwo {
 }
 ```
 
-* The `forty_two` associated function must return an instance of the implementator that represents
-the number 42 in some way.
+* The `forty_two` associated function must return an instance of the implementer that represents the number 42 in some way.
 
 Implement this trait for some common types, at least `u32` and `String`.
 
@@ -156,30 +153,34 @@ Implement this trait for some common types, at least `u32` and `String`.
 pub fn print_forty_two<T: Debug + FortyTwo>();
 ```
 
-* The `print_forty_two` function must create an instance of `T` using the `FortyTwo` trait, and then
-print it to the standard output using its `Debug` implementation.
+* The `print_forty_two` function must create an instance of `T` using the `FortyTwo` trait, and then print it to the standard output using its `Debug` implementation.
 
 Create a `test` function that showcase this function being called for at least two distinct types.
 
 ## Exercise 03: Hello again Mr. Collatz
-```txt
-turn-in directory:
-    ex03/
+```rust
+// allowed symbols
+use std::{
+    iter::{
+        Iterator,
+        traits::collect::FromIterator,
+    }
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::iter::Iterator, core::iter::traits::collect::FromIterator<..>
+const allowed_dependencies = [""];
+const turn_in_directory = "ex03/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
-Define the following struct
+Define the following struct:
 ```rust
 pub struct Collatz {
     value: u32,
 }
 ```
-and implement the `Iterator` and `FromIterator` trait so that this test compiles and runs.
+
+Implement the `Iterator` and `FromIterator` trait, such that this test compiles and runs.
+
 ```rust
 #[cfg(test)]
 mod tests {
@@ -191,12 +192,12 @@ mod tests {
         let c_res = vec![5, 16, 8, 4, 2, 1];
         assert_eq!(c.count(), 6);
 
-        c = Collatz { value: 10 }; // Reset Collatz since the init value was consumed
+        c = Collatz { value: 10 };
         for (i, v) in c.enumerate() {
             assert_eq!(c_res[i], v);
         }
 
-        c = Collatz { value: 10 }; // Reset Collatz since the init value was consumed
+        c = Collatz { value: 10 };
         assert_eq!(c.collect::<Vec<u32>>(), c_res);
     }
 }
@@ -204,18 +205,19 @@ mod tests {
 
 ## Exercise 04: What Time Is It?
 
-```txt
-turn-in directory:
-    ex04/
+```rust
+// allowed symbols
+use std::{
+    fmt::{Display, Debug, Formatter},
+    write,
+    println,
+    iter::*,
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::str::FromStr  std::fmt::{Display, Debug, Formatter}
-    str::as_bytes  std::result::Result  std::{write, println}
-    u8::is_ascii_digit
-    std::iter::*
+const allowed_dependencies = [""];
+const allowed_dependencies = [""];
+const turn_in_directory = "ex04/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Create a type named `Time` responsible for storing, well, a time.
@@ -233,7 +235,7 @@ pub enum TimeParseError {
 }
 ```
 
-Implement the right traits such that the provided `test` function compiles.
+Implement the required traits for `Time`, such that the following test compiles.
 
 ```rust
 #[cfg(test)]
@@ -258,21 +260,22 @@ mod tests {
 }
 ```
 
-## Exercise 05: Quick Math
+## Exercise 05: Quick Maths
 
-```txt
-turn-in directory:
-    ex05/
+```rust
+// allowed symbols
+use std::{
+    fmt::Debug,
+    ops::{
+        Mul, MulAssign, Div, DivAssign, Add, AddAssign, Sub, SubAssign,
+    },
+    marker::Copy,
+    clone::Clone,
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::cmp::{PartialEq, Eq}  std::fmt::Debug
-    std::ops::{Add, Sub, AddAssign, SubAssign}
-    std::ops::{Mul, MullAssign, Div, DivAssign}
-    std::{assert*} std::marker::Copy
-    std::clone::Clone  f32::sqrt f64::sqrt
+const allowed_dependencies = [""];
+const turn_in_directory = "ex05/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 ```rust
@@ -287,15 +290,10 @@ impl<T> Vector<T> {
 ```
 
 * The `new` function must create a new `Vector<T>` with the specified components.
-* Overload the `+`, `-`, `+=` and `-=` operators for `Vector<T>`, for any `T` that itself has
-support for those operators.
-* Overload the `*`, `*=`, `/` and `/=` operators for `Vector<T>`, for any `T` that itself has support
-for those operators. The second operand of those operations *must not* be `Vector<T>`, but `T`
-itself, meaning that you must be able to compute `Vector::new(1, 2) * 3` but not
-`Vector::new(1, 2) * Vector::new(2, 3)`. You can require `T: Copy` when needed.
+* Overload the `+`, `-`, `+=` and `-=` operators for `Vector<T>`, for any `T` that itself has support for those operators.
+* Overload the `*`, `*=`, `/` and `/=` operators for `Vector<T>`, for any `T` that itself has support for those operators. The second operand of those operations *must not* be `Vector<T>`, but `T` itself, meaning that you must be able to compute `Vector::new(1, 2) * 3` but not `Vector::new(1, 2) * Vector::new(2, 3)`. You can require `T: Copy` when needed.
 * Overload the `==` and `!=` operators for any `T` that supports them.
-* Implement specifically for both `Vector<f32>` and `Vector<f64>` a `length` function that computes
-its length. The length of a vector can be computed using this formula: `‖(x, y)‖ = sqrt(x² + y²)`.
+* Implement specifically for both `Vector<f32>` and `Vector<f64>` a `length` function that computes its length. The length of a vector can be computed using this formula: $|(x,y)| = \sqrt{(x^2 + y^2)}$.
 
 The following tests must compile and run properly:
 
@@ -326,30 +324,28 @@ mod tests {
 
 ## Exercise 06: A Singly-Linked List
 
-```txt
-turn-in directory:
-    ex06/
+```rust
+// allowed symbols
+use std::{
+    boxed::Box,
+    panic,
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::boxed::Box  std::option::Option
-    std::panic
+const allowed_dependencies = [""];
+const turn_in_directory = "ex06/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 * Create a linked list type named `List<T>` defined as follows.
 
+_Please note that the struct attributes are `pub` due to tester requirements, normally you would leave them private!_
 ```rust
 pub struct Node<T> {
-    // Normally you would not make this pub, but the tester needs it.
     pub value: T,
-    // Normally you would not make this pub, but the tester needs it.
     pub next: Option<Box<Node<T>>>,
 }
 
 pub struct List<T> {
-    // Normally you would not make this pub, but the tester needs it.
     pub head: Option<Box<Node<T>>>
 }
 
@@ -418,18 +414,18 @@ mod tests {
 
 ## Exercise 07: Comma-Separated Values
 
-```txt
-turn-in directory:
-    ex07/
+```rust
+// allowed symbols
+use std::{
+    write,
+    fmt::{Debug, Display, Formatter, Write},
+    cmp::PartialEq,
+    marker::Sized
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    str::{split, to_string, lines}  std::result::Result
-    std::vec::Vec  std::string::String  std::write
-    std::fmt::{Debug, Display, Formatter, Write}
-    std::cmp::PartialEq  std::marker::Sized
+const allowed_dependencies = [""];
+const turn_in_directory = "ex07/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Let's create a generic CSV Encoder & Decoder. A CSV file is defined like this:
@@ -460,7 +456,7 @@ is an `EncodingError`!
 * Implement the `Field` trait for `Option<T>` as long as `T` implements `Field` too. The empty
 string maps to `None`, while a non-empty string maps to the `Field` implementation of `T`.
 * Implement the `Field` trait for *every possible integer type*. Because this is long, repetitive
-and borring, write a *macro* to do it for you.
+and boring, write a *macro* to do it for you.
 
 ```rust
 // ez
@@ -551,9 +547,7 @@ mod tests {
 
 ```
 
-You might have noticed that implementing the `Record` trait is *very* repetitive. As a bonus (a
-bonus to the bonus if you will), you can create an `impl_record!` macro to implement it in a single
-line:
+You might have noticed that implementing the `Record` trait is *very* repetitive. As a bonus (a bonus to the bonus, if you will), you can create an `impl_record!` macro to implement it in a single line:
 
 ```rust
 struct MyType {

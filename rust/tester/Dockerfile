@@ -1,6 +1,6 @@
-FROM rust:1.83-bullseye
+FROM rust:1.86-slim-bookworm
 
-RUN apt-get update && apt-get install -y valgrind strace
+RUN apt-get update && apt-get install -y valgrind strace m4 build-essential && rm -rf /var/lib/apt/lists
 
 RUN groupadd -r shortinette && useradd -r -g shortinette -m shortinette
 USER shortinette

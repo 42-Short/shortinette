@@ -50,7 +50,7 @@ mod shortinette_tests {
                 .expect("Failed to execute command")
         }
 
-        // TODO: This creates a side effect which could interfear with other tests
+        // TODO: This creates a side effect which could interfere with other tests
         // Maybe should instead create a directory in /tmp
         fn compile() {
             let mut path = PathBuf::new();
@@ -215,7 +215,7 @@ mod shortinette_tests {
             .cmd()
             .arg("1000000")
             .output_with_timeout(time::Duration::from_secs(1))
-            .expect("Failed to calculate pi. Is your progam too slow?");
+            .expect("Failed to calculate pi. Is your program too slow?");
 
         let out = String::from_utf8_lossy(&output.stdout);
         let pi = out
@@ -240,7 +240,7 @@ mod shortinette_tests {
             .arg("1000000000")
             // Normally it should be even under 2 seconds
             .output_with_timeout(time::Duration::from_secs(5))
-            .expect("Failed to calculate pi. Is your progam too slow?");
+            .expect("Failed to calculate pi. Is your program too slow?");
 
         // Practically it is impossible for it to be under 800 millis on normal pcs
         if now.elapsed() < time::Duration::from_millis(800) {

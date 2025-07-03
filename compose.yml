@@ -5,10 +5,21 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile
+      args:  
+        EMAIL_GITHUB: ${EMAIL_GITHUB}
+        NAME_GITHUB: ${NAME_GITHUB}
     environment:
       - BASE_PATH=${PWD}
+      - ORGA_GITHUB=${ORGA_GITHUB}
+      - TOKEN_GITHUB=${TOKEN_GITHUB}
+      - API_TOKEN=${API_TOKEN}
+      - SERVER_ADDR=${SERVER_ADDR}
+      - TEMPLATE_REPO=${TEMPLATE_REPO}
+    ports:
+      - "1234:1234"
     volumes:
       - "./rust:/app/rust"
       - "./app/data:/app/data"
+      - "/var/run/docker.sock:/var/run/docker.sock"
     profiles:
       - rust

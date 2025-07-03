@@ -16,7 +16,7 @@ machines without additional options.
 
 * Only dependencies specified in the allowed dependencies section are allowed.
 
-* You are _not_ allowed to use the `unsafe` keyword anywere in your code.
+* You are _not_ allowed to use the `unsafe` keyword anywhere in your code.
 
 * If not specified otherwise by the task description, you are generally not authorized to modify lint levels - either using `#[attributes]`,
 `#![global_attributes]` or with command-line arguments. You may optionally allow the `dead_code`
@@ -37,28 +37,28 @@ fn my_unused_function() {}
 they are not specified in the `allowed symbols` section. **However**, tests should not introduce **any additional external dependencies** beyond
 those already required by the subject.
 
-* When a type is in the allowed symbols, it is **implied** that its methods and attributes are also allowed to be used, including the attributes of its implemented traits.
+* All primitive types, i.e the ones you are able to use without importing them, are allowed.
 
-* You are **always** allowed to use `Option` and `Result` types (either `std::io::Result` or the plain `Result`, up to you and your use case).
+* A type being allowed implies that its methods and attributes are allowed to be used as well, including the attributes of its implemented traits.
 
 * You are **always** allowed to use `std::eprintln` for error handling.
 
+* These rules may be overridden by specific exercises.
+
 ## Exercise 00: Hello, World!
 
-```txt
-turn-in directory:
-    ex00/
+```rust
+// allowed symbols
+use std::println;
 
-files to turn in:
-    hello.rs
-
-allowed symbols:
-    std::println
+const allowed_dependencies = [""];
+const turn_in_directory = "ex00/";
+const files_to_turn_in = ["hello.rs"];
 ```
-This exercise will be compiled and run with `rustc ex00/hello.rs && ./hello` not with `cargo run`
+
+This exercise will be compiled and run with `rustc ex00/hello.rs && ./hello`.
 
 Create a **program** that prints the string `Hello, World!`, followed by a line feed.
-
 
 ```txt
 >_ ./hello
@@ -67,38 +67,33 @@ Hello, World!
 
 ## Exercise 01: Point Of No Return
 
-```txt
-turn-in directory:
-    ex01/
+```rust
+// no allowed symbols
 
-files to turn in:
-    min.rs
-
-allowed symbols:
-    none
+const allowed_dependencies = [""];
+const turn_in_directory = "ex01/";
+const files_to_turn_in = ["min.rs"];
 ```
 
 Create a `min` **function** that takes two integers, and returns the smaller one.
 
-The function must be prototyped like this:
+The function must be prototyped like follows:
 
 ```rust
 pub fn min(a: i32, b: i32) -> i32;
 ```
 
-Oh, I almost forgot. The `return` keyword is forbidden in this exercise! Good luck with that ~
+Oh, I almost forgot. The `return` keyword is forbidden in this exercise! Good luck with that.
 
 ## Exercise 02: yyyyyyyyyyyyyy
 
-```txt
-turn-in directory:
-    ex02/
+```rust
+// allowed symbols
+use std::println;
 
-files to turn in:
-    yes.rs  collatz.rs  print_bytes.rs
-
-allowed symbols:
-    std::println  str::bytes
+const allowed_dependencies = [""];
+const turn_in_directory = "ex02/";
+const files_to_turn_in = ["yes.rs", "collatz.rs", "print_bytes.rs"];
 ```
 
 Create three **functions**. Each function must use one kind of loop supported by Rust, and you
@@ -128,12 +123,11 @@ y
 
 The `collatz` function must execute the following algorithm...
 
-* Let *n* be any natural number.
-* If *n* is even, then *n* becomes *n*/2
-* If *n* is odd, then *n* becomes 3*n* + 1
+* Let $n$ be any natural number.
+* If $n$ is even, then $n$ becomes $\frac{n}{2}$
+* If $n$ is odd, then $n$ becomes $3n + 1$
 
-...until *n* equals 1. On each iteration, *n* must be displayed on the standard output, followed
-by a line feed.
+...until $n$ equals 1. On each iteration, $n$ must be displayed on the standard output, followed by a line feed.
 Make sure to prevent timeouts!
 
 ```txt
@@ -171,15 +165,13 @@ Output:
 ```
 ## Exercise 03: FizzBuzz
 
-```txt
-turn-in directory:
-    ex03/
+```rust
+// allowed symbols
+use std::println;
 
-files to turn in:
-    fizzbuzz.rs
-
-allowed symbols:
-    std::println
+const allowed_dependencies = [""];
+const turn_in_directory = "ex03/";
+const files_to_turn_in = ["fizzbuzz.rs"];
 ```
 
 Create a **program** that plays the popular (and loved!) game "fizz buzz" from 1 to 100.
@@ -219,25 +211,23 @@ fizz
 buzz
 ...
 ```
-The only allowed keywords for this exercise are **_one_** `for` loop and **_one_** `match` statement!
+You are only allowed to use **_one_** `for` loop and **_one_** `match` statement, no other keywords!
 
 ## Exercise 04: Shipping With Cargo
 
-```txt
-turn-in directory:
-    ex04/
+```rust
+// allowed symbols
+use std::println;
 
-files to turn in:
-    src/main.rs  src/overflow.rs  src/other.rs  Cargo.toml
-
-allowed symbols:
-    std::println
+const allowed_dependencies = [""];
+const turn_in_directory = "ex04/";
+const files_to_turn_in = ["src/main.rs", "src/overflow.rs", "src/other.rs", "Cargo.toml"];
 ```
 
 Create a Cargo project.
 
 * Its name must be "module00-ex04"
-* It must use Rust edition 2021
+* It must use Rust edition 2024
 * Its author must be you.
 * Its description must be "my answer to the fifth exercise of the first module of 42's Rust Piscine"
 * It must not be possible to publish the package, even when using `cargo publish`.
@@ -283,23 +273,25 @@ thread 'main' panicked at 'attempt to add with overflow', src/overflow.rs:3:5
 255u8 + 1u8 == 0
 ```
 
-* **You are allowed to modify lint levels for completing this exercise! Up to you to figure out which :)**
+* **You are allowed to modify lint levels for completing this exercise! Up to you to figure out which.**
 
 ## Exercise 05: Friday The 13th
 
-```txt
-turn-in directory:
-    ex05/
+```rust
+// allowed symbols
+use std::{
+    {assert, assert_eq, assert_ne},
+    panic,
+    {write, writeln},
+    io::stdout,
+};
 
-files to turn in:
-    src/main.rs src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::{assert, assert_eq, assert_ne}  std::panic  std::{write, writeln}  std::io::stdout
+const allowed_dependencies = [""];
+const turn_in_directory = "ex05/";
+const files_to_turn_in = ["src/main.rs", "src/lib.rs", "Cargo.toml"];
 ```
 
-Write a **program** which prints every Friday that falls on the 13th of the month, since the
-first day of year 1 (it was a monday) until (and including) the year 2025.
+Write a **program** which prints every Friday that falls on the 13th of the month, since the first day of year 1 (it was a monday) until (including) the year 2025.
 
 To complete this task, you must also write the following functions:
 
@@ -314,7 +306,7 @@ since year 1 until the year given as an argument into the writer W
 * `is_leap_year` must determine whether a given year is a leap year or not.
 * `num_days_in_month` must compute how many days a given month of a given year has.
 
-These three functions must be part of the `src/lib.rs` file.rs.
+These three functions must be part of the `src/lib.rs` file.
 
 ```
 >_ cargo run
@@ -349,20 +341,19 @@ It must be possible to run those tests using `cargo test`.
 
 ## Exercise 06: Guessing Game
 
-```txt
-turn-in directory:
-    ex06/
+```rust
+// allowed symbols
+use std::{
+    println,
+    cmp::Ordering,
+};
+use i32::cmp;
+use ftkit::{read_number, random_number};
 
-files to turn in:
-    src/main.rs  Cargo.toml
-
-allowed dependencies;
-    ftkit
-
-allowed symbols:
-    ftkit::read_number  ftkit::random_number
-    i32::cmp  std::cmp::Ordering
-    std::println
+const allowed_dependencies = ["ftkit"];
+const allowed_dependencies = [""];
+const turn_in_directory = "ex06/";
+const files_to_turn_in = ["src/main.rs", "Cargo.toml"];
 ```
 
 Create a guessing game **program**, where the player has to guess the correct number.
@@ -382,19 +373,17 @@ You can't use the `<`, `>`, `<=`, `>=` and `==` operators!
 
 ## Exercise 07: String Pattern Compare
 
-```txt
-turn-in directory:
-    ex07/
+```rust
+// allowed symbols
+use std::{
+    {assert, assert_eq},
+};
+use ftkit::ARGS;
 
-files to turn in:
-    src/lib.rs  src/main.rs  Cargo.toml
-
-allowed dependencies:
-    ftkit
-
-allowed symbols:
-    std::{assert, assert_eq}  <[u8]>::{len, is_empty}
-    str::as_bytes  ftkit::ARGS
+const allowed_dependencies = "ftkit";
+const allowed_dependencies = [""];
+const turn_in_directory = "ex07/";
+const files_to_turn_in = ["src/main.rs", "src/overflow.rs", "src/other.rs", "Cargo.toml"];
 ```
 
 Create a **library** that exposes the function `strpcmp`.

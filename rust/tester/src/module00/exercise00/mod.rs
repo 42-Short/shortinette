@@ -3,14 +3,14 @@ use std::{
     process::{self},
 };
 
-use crate::{repository_path, result::TestResult, testable::Testable};
+use crate::{result::TestResult, testable::Testable};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Exercise00;
 
 impl Testable for Exercise00 {
     fn path(&self) -> path::PathBuf {
-        repository_path().join("ex00")
+        path::PathBuf::from("ex00")
     }
 
     fn run_test(&self) -> TestResult {
@@ -24,8 +24,8 @@ impl Testable for Exercise00 {
 
         let output = match process::Command::new(&path).output() {
             Ok(output) => output,
-            Err(_) => {
-                eprintln!("Failed to execute ./hello");
+            Err(e) => {
+                eprintln!("Failed to execute ./hello: {e}");
                 return TestResult::CompilationError;
             }
         };
@@ -60,16 +60,16 @@ impl Testable for Exercise00 {
         let source_file = self.path().join("hello.rs");
 
         let output = process::Command::new("rustc")
-            .current_dir(self.path())
             .arg(&source_file)
             .output()
             .expect("Failed to compile hello.rs");
 
         if !output.status.success() {
+            println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
             return Err(TestResult::CompilationError);
         }
 
-        let path = self.path().join("hello");
+        let path = path::PathBuf::from("./hello");
 
         Ok(Some(path))
     }

@@ -62,7 +62,7 @@ said you were a gardener; are you tasked to instruct new students, or to cook me
 "With classes, such is expressed by your class at design-time. As such, there can never be any
 confusion! To change behaviours is to change the design of the system!"
 
-"Facinating," said Farbold, nodding. The neophyte turned back to her work.
+"Fascinating," said Farbold, nodding. The neophyte turned back to her work.
 
 "I must admit I am having trouble finding how to express this concept in a way that the temple will
 approve of, but I am su--" the neophyte was interrupted when one of the smaller white rocks struck
@@ -103,7 +103,7 @@ machines without additional options.
 
 * Only dependencies specified in the allowed dependencies section are allowed.
 
-* You are _not_ allowed to use the `unsafe` keyword anywere in your code.
+* You are _not_ allowed to use the `unsafe` keyword anywhere in your code.
 
 * If not specified otherwise by the task description, you are generally not authorized to modify lint levels - either using `#[attributes]`,
 `#![global_attributes]` or with command-line arguments. You may optionally allow the `dead_code`
@@ -124,20 +124,23 @@ fn my_unused_function() {}x
 they are not specified in the `allowed symbols` section. **However**, tests should not introduce **any additional external dependencies** beyond
 those already required by the subject.
 
-* When a type is in the allowed symbols, it is **implied** that its methods and attributes are also allowed to be used, including the attributes of its implemented traits.
+* All primitive types, i.e the ones you are able to use without importing them, are allowed.
 
-* You are **always** allowed to use `Option` and `Result` types (either `std::io::Result` or the plain `Result`, up to you and your use case).
+* A type being allowed implies that its methods and attributes are allowed to be used as well, including the attributes of its implemented traits.
 
 * You are **always** allowed to use `std::eprintln` for error handling.
 
-### Exercise 00: Bruh
-```
-turn-in directory:
-    ex00/
+* These rules may be overridden by specific exercises.
 
-files to turn in:
-    src/lib.rs  Cargo.toml
+### Exercise 00: Bruh
+```rust
+// no allowed symbols
+
+const allowed_dependencies = [""];
+const turn_in_directory = "ex00/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
+
 Given this struct
 ```rust
 struct ComplexStruct {
@@ -155,14 +158,15 @@ struct NestedStruct {
     data: std::collections::HashMap<String, Option<Box<i32>>>,
 }
 ```
-implement this function so that `free` frees everything in the struct
+
+Implement the `free` method, such that the following code does *not* compile:
 ```rust
 impl ComplexStruct {
-    pub fn free(...); // ... stands for any kind and number of parameters passed to the function
+    pub fn free(&mut self) {
+        // Your implementation
+    }
 }
-```
-so that this doesn't compile - **don't add this `main` to your submission**
-```rust
+
 pub fn main() {
     let bruh: ComplexStruct = ComplexStruct {
         name: "hey".to_string(),
@@ -176,21 +180,21 @@ pub fn main() {
             data: std::collections::HashMap::new(),
         }),
     };
-    bruh.free(); // If you remove this it should compile
+
+    bruh.free();
+    
     println!("{}", bruh.name); 
 }
 ```
+
+Note that removing the call to `bruh.free()` should allow the code to compile successfully!
+
 ## Exercise 01: A Point In Space
-
-```txt
-turn-in directory:
-    ex01/
-
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    f32::sqrt
+```rust
+// allowed symbols
+const allowed_dependencies = [""];
+const turn_in_directory = "ex01/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Defines the following type:
@@ -218,23 +222,26 @@ impl Point {
 }
 ```
 
-## Exercise 02: Dry Boilerplates
+## Exercise 02: Derive
 
-```txt
-turn-in directory:
-    ex03/
+```rust
+// allowed symbols
+use std::{
+    clone::Clone,
+    cmp::{PartialOrd, PartialEq},
+    default::default,
+    fmt::Debug,
+};
 
-files to turn in:
-    src/main.rs  Cargo.toml
-
-allowed symbols:
-    std::clone::Clone  std::cmp::{PartialOrd, PartialEq}
-    std::default::Default  std::fmt::Debug
+const allowed_dependencies = [""];
+const turn_in_directory = "ex00/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Create a type, may it be a `struct` or an `enum`. You simply have to name it `MyType`.
 
 You are **not** allowed to use the `impl` keyword!
+
 ```rust
 #[cfg(test)]
 mod tests{
@@ -265,28 +272,24 @@ Copy the above `test` function and make it compile.
 
 ## Exercise 03 Money money money
 
+```rust
+const allowed_dependencies = [""];
+const turn_in_directory = "ex03/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
-turn-in directory:
-    ex03/
 
-files to turn in:
-    src/lib.rs  Cargo.toml
+Define the following types:
 
-allowed symbols
-    TO_BE_DONE
-``` 
-
-You will have these type definitions (don't worry about the #[...] for now)
 ```rust
 #[derive(PartialEq, Debug)]
 enum BuyError {
-    Broke,
-    TooLoaded,
+    NotEnoughCoins,
+    TooManyItems,
 }
 #[derive(PartialEq, Debug)]
 enum SellError {
-    TooRich,
-    NotLoaded,
+    TooManyCoins,
+    NoItemToSell,
 }
 
 #[repr(u8)]
@@ -311,14 +314,23 @@ Implement these functions
 impl Player {
     pub fn buy(&mut self, item: Item) -> Result<(), BuyError>;
     pub fn sell(&mut self) -> Result<(), SellError>;
+}
 ```
 Ensure they operate as follows:
 
-`buy`: Verify that the player has sufficient coins and can store the item. If either condition is unmet, return the appropriate error.
+`buy` verifies that:
+1. The player has enough coins
+2. The player has enough room to store the item.
 
-`sell`: Confirm that the player possesses an item and can store the received coins without his pocket `overflowing`. If either condition is unmet, return the relevant error.
+If either condition is unmet, return the appropriate error.
 
-*Note: You don’t need to handle cases where both errors might apply simultaneously, as this will not be tested.*
+`sell` verifies that:
+1. The player has an item to sell
+2. The player can store the received coins without his pocket `overflowing`
+
+If either condition is unmet, return the appropriate error.
+
+If both errors apply simultaneously, return any of them.
 
 The following test must compile and execute successfully:
 ```rust
@@ -331,41 +343,89 @@ mod tests{
         let mut player = Player { coins: 0, item: None};
 
 
-        assert_eq!(player.buy(Item::HealthPotion), Err(BuyError::Broke));
+        assert_eq!(player.buy(Item::HealthPotion), Err(BuyError::NotEnoughCoins));
         player.coins = 250;
         assert_eq!(player.buy(Item::Ring), Ok(()));
-        assert_eq!(player.buy(Item::UpgradeStone), Err(BuyError::TooLoaded));
+        assert_eq!(player.buy(Item::UpgradeStone), Err(BuyError::TooManyItems));
 
         player.coins = 242;
-        assert_eq!(player.sell(), Err(SellError::TooRich));
+        assert_eq!(player.sell(), Err(SellError::TooManyCoins));
         player.coins = 0;
-        assert_eq!(player.sell(),Ok(()));
-        assert_eq!(player.sell(), Err(SellError::NotLoaded));
+        assert_eq!(player.sell(), Ok(()));
+        assert_eq!(player.sell(), Err(SellError::NoItemToSell));
     }
 }
 ```
 
-## Exercise 04: TO_BE_DONE iterator implemenation
+## Exercise 04: Swipe Left
+
+```rust
+// allowed symbols
+use std::{
+    iter::Iterator,
+    default::Default,
+};
+
+const allowed_dependencies = [""];
+const turn_in_directory = "ex04/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
+```
+
+Define the following struct:
+
+```rust
+struct Fibonacci {
+    // Add whatever data you need here
+}
+```
+
+Your `Fibonacci` struct must:
+1. Be instantiable by calling `Fibonacci::default()`
+2. Be iterable, always returning the next number in the Fibonacci sequence **up until (including) its 42nd element** ($F_{41}$ with 0-based indexing)
+
+To be precise, the following test must pass:
+```rust
+#[test]
+fn fib() {
+    let len = Fibonacci::default()
+    .take(1000000)
+    .collect::<Vec<u32>>()
+    .len();
+
+    assert_eq!(len, 42)
+}
+```
+
+The following code must compile and output the sequence's first 5 values:
+```rust
+fn fibonacci() {
+    let fib = Fibonacci::default();
+
+    for f in fib.take(5) {
+        println!("{f}");
+    }
+}
+```
+
+Definition of the Fibonacci sequence:
+
+$F_0 = 0, F_1 = 1, F_n = (F_{n - 1} + F_{n - 2})$
+
 
 ## Exercise 05: Lexical Analysis
 
-```txt
-turn-in directory:
-    ex06/
+```rust
+// allowed symbols
+use ftkit::ARGS;
+use std::{
+    fmt::Debug,
+    println,
+};
 
-files to turn in:
-    src/main.rs src/lib.rs  Cargo.toml
-
-allowed dependencies:
-    ftkit
-
-allowed symbols:
-    ftkit::ARGS
-    std::option::Option
-    std::fmt::Debug
-    str::{strip_prefix, trim_start, char_indices, split_at, is_empty}
-    char::is_whitespace
-    std::{println, eprintln}
+const allowed_dependencies = ["ftkit"];
+const allowed_dependencies = [""];
+const turn_in_directory = "ex05/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Create a simple token parser. It must be able to take an input string, and turn it into a list
@@ -417,7 +477,7 @@ fn main() {
             }
             let mut arg_str: &str = &arg;
             while let Some(token) = next_token(&mut arg_str) {
-                println!("{:?}", token); // Debug output of tokens
+                println!("{:?}", token);
             }
         }
         None => eprintln!("error: exactly one argument expected"),
@@ -440,19 +500,18 @@ Word("file.txt")
 
 ## Exercise 06: Inventory Management
 
-```txt
-turn-in directory:
-    ex05/
+```rust
+// allowed symbols
+use std::{
+    collections::HashMap,
+    fmt::Debug,
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::vec::Vec
-    std::string::String
-    std::collections::HashMap::*
-    std::fmt::Debug
+const allowed_dependencies = [""];
+const turn_in_directory = "ex05/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
+
 Create an inventory management system for a shop. Define the following types:
 ```rust
 #[derive(Debug, Clone)]
@@ -482,7 +541,7 @@ impl Inventory {
 * `add_item`: Adds a new item to the inventory. If an item with the same name already exists, return an error.
 * `remove_item`: Removes an item from the inventory by name. If the item doesn't exist, return an error.
 * `update_quantity`: Updates the quantity of an existing item. If the item doesn't exist, return an error.
-* `get_item`: Returns a reference to an item by name, or None if it doesn't exist.
+* `get_item`: Returns a reference to an item by name, or `None` if it doesn't exist.
 * `list_items`: Returns a vector of references to all items in the inventory.
 * `total_value`: Calculates and returns the total value of all items in the inventory (price * quantity for each item).
 
@@ -492,7 +551,7 @@ trait Discountable {
     fn apply_discount(&mut self, percentage: f32);
 }
 ```
-Implement this trait for `Item` so that it reduces the price of the item by the given percentage. Invalid percentage values (`< 0 || > 100`) are considered **undefined behavior**. You are free to handle them as you please.
+Implement this trait for `Item`, such that it reduces the price of the item by the given percentage. Invalid percentage values (`< 0 || > 100`) are considered **undefined behavior**. You are free to handle them as you please.
 
 Your implementation should work with the following test function:
 ```rust
@@ -529,24 +588,23 @@ mod tests {
 
 ## Exercise 07: The Game Of Life
 
-```txt
-turn-in directory:
-    ex07/
+```rust
+// allowed symbols
+use std::{
+    println,
+    print,
+    thread::sleep,
+    time::Duration,
+    vec::Vec,
+    marker::Copy,
+    clone::Clone,
+    cmp::PartialEq,
+};
 
-files to turn in:
-    src/main.rs  Cargo.toml
-
-allowed dependencies:
-    ftkit
-
-allowed symbols:
-    ftkit::ARGS ftkit::random_number
-    std::{println, print}
-    std::thread::sleep  std::time::Duration
-    std::vec::Vec::{new, push}
-    std::result::Result
-    std::marker::Copy  std::clone::Clone
-    std::cmp::PartialEq
+const allowed_dependencies = ["ftkit"];
+const allowed_dependencies = [""];
+const turn_in_directory = "ex07/";
+const files_to_turn_in = ["src/main.rs", "Cargo.toml"];
 ```
 
 Create a **program** that plays [Conway's Game Of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life).
@@ -589,7 +647,7 @@ impl Board {
 
 * `is_alive` must return whether the cell is alive or not.
 * `is_dead` must return whether the cell is dead or not.
-* `new` must generate a random board of size (`width` by `height`), with approximatly
+* `new` must generate a random board of size (`width` by `height`), with approximately
 `percentage`% live cells in it.
 * `from_args` must parse the command-line arguments passed to the application and use them to
 create a `Board` instance. Errors are communicated through the `ParseError` enumeration.
@@ -601,8 +659,7 @@ clear a previously displayed board. Try not to clear the whole terminal! Just th
 
 **Hint:** you might want to look at *ANSI Escape Codes* if you don't know where to start!
 
-* Finally, write a **main** function that uses above function to simulate the game of life. At each
-simulation step, the previous board must be replaced by the one in the terminal.
+* Finally, write a **main** function that uses above function to simulate the game of life. At each simulation step, the previous board must be replaced by the one in the terminal.
 
 Example:
 

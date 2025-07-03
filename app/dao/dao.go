@@ -164,9 +164,9 @@ func buildConditions(fields []string) []string {
 
 func getOrExtractMetadata[T any]() metadata {
 	var dummy T
-	typ := reflect.TypeOf(dummy)
+	dummyType := reflect.TypeOf(dummy)
 
-	cached, ok := metadataCache.Load(typ)
+	cached, ok := metadataCache.Load(dummyType)
 	if ok {
 		return cached.(metadata)
 	}
@@ -186,7 +186,7 @@ func getOrExtractMetadata[T any]() metadata {
 		primaryKeys: primaryKeys,
 		tableName:   tableName,
 	}
-	metadataCache.Store(typ, md)
+	metadataCache.Store(dummyType, md)
 	return md
 }
 

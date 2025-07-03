@@ -24,29 +24,100 @@ func shutdown(api *api.API, sigCh chan os.Signal) {
 }
 
 func getMockConfig() *config.Config {
-	ex1, _ := config.NewExercise(
+	ex0, _ := config.NewExercise(
 		10,
-		[]string{"*.c", "*.h"},
+		[]string{"hello.rs"},
 		"ex00",
 	)
-	ex2, _ := config.NewExercise(
-		20,
-		[]string{"*.c", "*.h"},
+	ex1, _ := config.NewExercise(
+		10,
+		[]string{"min.rs"},
 		"ex01",
 	)
+	ex2, _ := config.NewExercise(
+		10,
+		[]string{"yes.rs", "collatz.rs", "print_bytes.rs"},
+		"ex02",
+	)
 	ex3, _ := config.NewExercise(
+		10,
+		[]string{"fizzbuzz.rs"},
+		"ex03",
+	)
+	ex4, _ := config.NewExercise(
+		10,
+		[]string{"src/main.rs", "src/overflow.rs", "src/other.rs", "Cargo.toml"},
+		"ex04",
+	)
+	ex5, _ := config.NewExercise(
+		15,
+		[]string{"src/main.rs", "src/lib.rs", "Cargo.toml"},
+		"ex05",
+	)
+	ex6, _ := config.NewExercise(
+		15,
+		[]string{"src/main.rs", "Cargo.toml"},
+		"ex06",
+	)
+	ex7, _ := config.NewExercise(
 		20,
-		[]string{"*.c", "*.h"},
+		[]string{"src/lib.rs", "src/main.rs", "Cargo.toml"},
 		"ex02",
 	)
 
-	module, _ := config.NewModule(
-		[]config.Exercise{*ex1, *ex2, *ex3},
+	module0, _ := config.NewModule(
+		[]config.Exercise{*ex0, *ex1, *ex2, *ex3, *ex4, *ex5, *ex6, *ex7},
+		15,
+	)
+
+	ex0, _ = config.NewExercise(
+		10,
+		[]string{"src/lib.rs", "Cargo.toml"},
+		"ex00",
+	)
+	ex1, _ = config.NewExercise(
+		10,
+		[]string{"src/lib.rs", "Cargo.toml"},
+		"ex01",
+	)
+	ex2, _ = config.NewExercise(
+		10,
+		[]string{"src/lib.rs", "Cargo.toml"},
+		"ex02",
+	)
+	ex3, _ = config.NewExercise(
+		10,
+		[]string{"src/lib.rs", "Cargo.toml"},
+		"ex03",
+	)
+	ex4, _ = config.NewExercise(
+		10,
+		[]string{"src/lib.rs", "Cargo.toml"},
+		"ex04",
+	)
+	ex5, _ = config.NewExercise(
+		15,
+		[]string{"src/lib.rs", "Cargo.toml"},
+		"ex05",
+	)
+	ex6, _ = config.NewExercise(
+		15,
+		[]string{"src/lib.rs", "Cargo.toml"},
+		"ex06",
+	)
+	ex7, _ = config.NewExercise(
+		20,
+		[]string{"src/lib.rs", "Cargo.toml"},
+		"ex02",
+	)
+
+	module1, _ := config.NewModule(
+		[]config.Exercise{*ex0, *ex1, *ex2, *ex3, *ex4, *ex5, *ex6, *ex7},
 		15,
 	)
 
 	return config.NewConfig(
-		[]config.Module{*module, *module},
+		[]config.Module{*module0, *module1},
 		24*time.Hour,
 		time.Now(),
 		"42short/rust",
@@ -65,11 +136,6 @@ func run() {
 	if err != nil {
 		logger.Error.Fatalf("failed to initialize db: %v", err)
 	}
-
-	// _, err = dao.SeedDB(db)
-	// if err != nil {
-	// 	logger.Error.Fatalf("failed to seed DB: %v", err)
-	// }
 
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)

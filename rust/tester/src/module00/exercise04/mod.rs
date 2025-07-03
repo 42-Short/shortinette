@@ -59,9 +59,9 @@ fn check_cargo_toml(path: &PathBuf) -> bool {
     if cargotoml
         .package
         .edition
-        .is_none_or(|value| value != "2021")
+        .is_none_or(|value| value != "2024")
     {
-        eprintln!("Edition is not set to 2021");
+        eprintln!("Edition is not set to 2024");
         return false;
     }
 

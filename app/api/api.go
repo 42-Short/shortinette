@@ -55,7 +55,7 @@ func (api *API) Shutdown() error {
 
 	err := api.Server.Shutdown(ctx)
 	if err != nil {
-		return fmt.Errorf("faild to shut down Server with addr: %s: %v", api.Addr, err)
+		return fmt.Errorf("failed to shut down Server with addr: %s: %v", api.Addr, err)
 	}
 	logger.Info.Printf("Server with addr: `%s` has  gracefully shut down.\n", api.Addr)
 	return nil

@@ -16,6 +16,14 @@ fn punch_card() {
     println!("{rust:?}");
 }
 ```
+```rust
+// allowed symbols
+use ;
+
+const allowed_dependencies = [""];
+const turn_in_directory = "ex0/";
+const files_to_turn_in = [];
+```
 
 *Extracted from `rustc`'s [unit tests](https://github.com/rust-lang/rust/blob/131f0c6df6777800aa884963bdba0739299cd31f/tests/ui/weird-exprs.rs#L126-L134).*
 
@@ -27,7 +35,7 @@ machines without additional options.
 
 * Only dependencies specified in the allowed dependencies section are allowed.
 
-* You are _not_ allowed to use the `unsafe` keyword anywere in your code.
+* You are _not_ allowed to use the `unsafe` keyword anywhere in your code.
 
 * If not specified otherwise by the task description, you are generally not authorized to modify lint levels - either using `#[attributes]`,
 `#![global_attributes]` or with command-line arguments. You may optionally allow the `dead_code`
@@ -48,13 +56,15 @@ fn my_unused_function() {}
 they are not specified in the `allowed symbols` section. **However**, tests should not introduce **any additional external dependencies** beyond
 those already required by the subject.
 
-* When a type is in the allowed symbols, it is **implied** that its methods and attributes are also allowed to be used, including the attributes of its implemented traits.
+* All primitive types, i.e the ones you are able to use without importing them, are allowed.
 
-* You are **always** allowed to use `Option` and `Result` types (either `std::io::Result` or the plain `Result`, up to you and your use case).
+* A type being allowed implies that its methods and attributes are allowed to be used as well, including the attributes of its implemented traits.
 
 * You are **always** allowed to use `std::eprintln` for error handling.
 
-## Exercise 00: Reference me daddy
+* These rules may be overridden by specific exercises.
+
+## Exercise 00: Reference me Daddy
 
 ```txt
 turn-in directory:
@@ -329,7 +339,7 @@ allowed symbols:
 Leonardo has `n` tasks, which he needs to prioritize. He organized them into a vector of tasks. One task is defined as follows:
 
 ```rust
-pub struct Task{
+pub struct Task {
     pub start_time: u32,
     pub end_time: u32,
     pub cookies: u32,
@@ -350,14 +360,14 @@ pub fn time_manager(tasks: &mut Vec<Task>) -> u32
 
 **Constraints**
 
-_note_: If Leonardo chooses a task ending at time `t`, he will be able to start another task that starts at time `t` right away.
+If Leonardo chooses a task ending at time `t`, he will be able to start another task that starts at time `t` right away.
 
-You do not need to perform any input checks. You _may_ assume the following: 
+You _may_ assume the following: 
 * `task[i].start_time < task[i].end_time`
 * `task[i].start_time >= 0`
 * `task[i].end_time >= 1`
 
-What you _may not_ assume is our tester not having a timeout ಠ_ಠ, so **_don't be a brute_**.
+You _may not_ assume that our tester does not have a timeout, **_don't be a brute_**.
 
 ---
 **License Notice:**

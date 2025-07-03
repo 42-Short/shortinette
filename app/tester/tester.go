@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/42-Short/shortinette/config"
+	"github.com/42-Short/shortinette/logger"
 	"github.com/42-Short/shortinette/tester/docker"
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/docker/docker/api/types/container"
@@ -146,26 +147,44 @@ func GradeExercise(exercise *config.Exercise, module *config.Module, exerciseDir
 
 	env := []string{fmt.Sprintf("MODULE=0%d", module.ID), fmt.Sprintf("EXERCISE=0%d", exercise.ID)}
 	containerName := fmt.Sprintf("shortinette-grade-%d-%s", exercise.ID, exerciseDirectory)
+	if removeErr := dockerClient.ContainerRemove(context.Background(), containerName, container.RemoveOptions{
+		Force: true,
+	}); removeErr != nil {
+		logger.Warning.Printf("error removing container %s: %s", containerName, removeErr)
+	}
 
-	container, err := docker.ContainerCreate(dockerClient, exercise.DockerImage, containerName, env)
+	cont, err := docker.ContainerCreate(dockerClient, exercise.DockerImage, containerName, env)
 	if err != nil {
 		return failed(fmt.Errorf("error creating Docker container: %s", err), exercise.ID, exercise)
 	}
-	defer container.Kill() //nolint:errcheck
+	defer func() {
+		if killErr := cont.Kill(); killErr != nil {
+			logger.Warning.Printf("error killing container %s: %s", cont.ID, killErr)
+		}
 
-	if err := container.CopyFilesToContainer(*exercise, exerciseDirectory); err != nil {
+		ctx := context.Background()
+
+		removeOptions := container.RemoveOptions{
+			Force: true,
+		}
+		if removeErr := dockerClient.ContainerRemove(ctx, cont.ID, removeOptions); removeErr != nil {
+			logger.Warning.Printf("error removing container %s: %s", cont.ID, removeErr)
+		}
+	}()
+
+	if err := cont.CopyFilesToContainer(*exercise, exerciseDirectory); err != nil {
 		return failed(fmt.Errorf("error copying files into container: %s", err), exercise.ID, exercise)
 	}
 
 	// Hard cap at 5 minutes just in case the test executable doesn't handle endless loops correctly
-	if err := container.Exec(5 * time.Minute); err != nil {
+	if err := cont.Exec(5 * time.Minute); err != nil {
 		return failed(err, exercise.ID, exercise)
 	}
 
 	passed := false
 	var errorcode int
 
-	switch container.ExitCode {
+	switch cont.ExitCode {
 	case 0:
 		errorcode = Passed
 		passed = true
@@ -184,7 +203,7 @@ func GradeExercise(exercise *config.Exercise, module *config.Module, exerciseDir
 		errorcode = RuntimeError
 	}
 
-	if container.Timeout {
+	if cont.Timeout {
 		errorcode = Timeout
 	}
 
@@ -193,7 +212,7 @@ func GradeExercise(exercise *config.Exercise, module *config.Module, exerciseDir
 		Score:      exercise.Score,
 		ExerciseID: exercise.ID,
 		ErrorCode:  errorcode,
-		output:     container.Logs,
+		output:     cont.Logs,
 	}
 }
 

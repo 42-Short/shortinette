@@ -51,7 +51,7 @@ func TestNewRepoNonExistingOrga(t *testing.T) {
 	}
 }
 
-func TestNewRepoMissinTemplateRepoEnvironmentVariable(t *testing.T) {
+func TestNewRepoMissingTemplateRepoEnvironmentVariable(t *testing.T) {
 	gh := NewGithubService(token, orga, basePath)
 	repoName := uuid.New().String()
 
@@ -113,7 +113,7 @@ func TestNewRepoAlreadyExisting(t *testing.T) {
 	time.Sleep(3 * time.Second) // Generating templates takes a few seconds
 
 	if err := gh.NewRepo(templateRepo, expectedRepoName, expectedPrivate, expectedDescription); err != nil {
-		t.Fatalf("NewRepo should not error on already exsiting repos: %v", err)
+		t.Fatalf("NewRepo should not error on already existing repos: %v", err)
 	}
 }
 

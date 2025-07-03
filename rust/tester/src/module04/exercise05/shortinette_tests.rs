@@ -150,10 +150,10 @@ mod shortinette_tests {
         let mut master_writer = Vec::new();
 
         if let Err(err) = get(&mut student_writer, &website) {
-            panic!("Student implementation errorred: {}.", err);
+            panic!("Student implementation errored: {}.", err);
         }
         if let Err(err) = sample_implementation(&mut master_writer, website) {
-            panic!("Master implementation errorred: {}.", err);
+            panic!("Master implementation errored: {}.", err);
         }
 
         let student_output_str =

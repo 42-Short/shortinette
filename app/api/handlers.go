@@ -48,13 +48,13 @@ func launchShort(participantDao *dao.DAO[dao.Participant], config config.Config)
 
 func githubWebhookHandler(moduleDao *dao.DAO[dao.Module], participantDao *dao.DAO[dao.Participant], config config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		fmt.Printf("Content-Length: %d; Content-Type: %s\n", c.Request.ContentLength, c.ContentType())
 
 		var payload gitHubWebhookPayload
 		if err := c.ShouldBindBodyWith(&payload, binding.JSON); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("failed to bind JSON: %v", err)})
 			return
 		}
+		logger.Info.Printf("got webhook payload from %s on repo %s", payload.Pusher.Name, payload.Repository.Name)
 
 		err := processGithubPayload(payload, moduleDao, participantDao, config)
 		if err != nil {
@@ -190,19 +190,23 @@ func collectArgs(params gin.Params) []any {
 
 func processGithubPayload(payload gitHubWebhookPayload, moduleDao *dao.DAO[dao.Module], participantDao *dao.DAO[dao.Participant], config config.Config) error {
 	if payload.Ref != "refs/heads/main" || payload.Pusher.Name == os.Getenv("GITHUB_ADMIN") {
+		logger.Info.Printf("invalid payload (not on main), payload.Ref: %s\n", payload.Ref)
 		return nil
 	}
 
 	if payload.Commit.Message != "grademe" {
+		logger.Info.Printf("invalid payload (commit msg not grademe)\n")
 		return nil
 	}
 
 	if len(payload.Repository.Name) < len(payload.Pusher.Name) {
+		logger.Info.Printf("invalid payload (weird repo name)\n")
 		return fmt.Errorf("invalid Repository name: %s", payload.Repository.Name)
 	}
 
 	moduleId, err := strconv.Atoi(payload.Repository.Name[len(payload.Repository.Name)-2:])
 	if err != nil {
+		logger.Info.Printf("invalid payload (broken repo name, no int in the end)\n")
 		return fmt.Errorf("invalid Repository name: %s", payload.Repository.Name)
 	}
 

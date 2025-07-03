@@ -3,6 +3,7 @@ package short
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/42-Short/shortinette/config"
@@ -12,10 +13,17 @@ import (
 	"github.com/42-Short/shortinette/logger"
 )
 
+var (
+	globalMu        sync.Mutex
+	globalIsRunning bool
+)
+
 type Short struct {
 	Participants []dao.Participant
 	Config       config.Config
 	GitHubClient git.GithubService
+
+	stopChan chan struct{}
 }
 
 func NewShort(participants []dao.Participant, config config.Config) (sh Short) {
@@ -23,6 +31,7 @@ func NewShort(participants []dao.Participant, config config.Config) (sh Short) {
 		Participants: participants,
 		Config:       config,
 		GitHubClient: *git.NewGithubService(config.TokenGithub, config.OrgaGithub, config.BasePath),
+		stopChan:     make(chan struct{}),
 	}
 }
 
@@ -80,8 +89,17 @@ func (sh *Short) getCurrentModuleIdx() (moduleIdx int) {
 
 func (sh *Short) schedule() {
 	for time.Now().Before(sh.Config.StartTime) {
+		logger.Info.Printf("short starting in %f seconds, sleeping", time.Until(sh.Config.StartTime).Seconds())
+		select {
+		case <-sh.stopChan:
+			logger.Info.Println("short scheduling stopped")
+			return
+		case <-time.After(time.Until(sh.Config.StartTime)):
+			break
+		}
 		time.Sleep(time.Until(sh.Config.StartTime))
 	}
+	logger.Info.Println("launching Short now!")
 
 	currentModuleIdx := sh.getCurrentModuleIdx()
 	if currentModuleIdx == -1 {
@@ -116,9 +134,22 @@ func (sh *Short) schedule() {
 }
 
 func (sh *Short) Launch() (err error) {
-	logger.Info.Println("launching Short now!")
+	globalMu.Lock()
+	if globalIsRunning {
+		globalMu.Unlock()
+		return fmt.Errorf("short scheduler is already running")
+	}
+	globalIsRunning = true
+	globalMu.Unlock()
 
-	go sh.schedule()
+	go func() {
+		defer func() {
+			globalMu.Lock()
+			globalIsRunning = false
+			globalMu.Unlock()
+		}()
+		sh.schedule()
+	}()
 
 	return nil
 }
