@@ -82,6 +82,7 @@ those already required by the subject.
 use ftkit::random_number;
 
 const allowed_dependencies = ["ftkit"];
+const allowed_dependencies = [""];
 const turn_in_directory = "ex00/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -101,6 +102,7 @@ use std::{
     std::marker::Sized,
 };
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex01/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -130,6 +132,7 @@ use std::{
     println,
 };
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex02/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -164,6 +167,7 @@ use std::{
     }
 };
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex03/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -204,31 +208,16 @@ mod tests {
 ```rust
 // allowed symbols
 use std::{
-    str::*,
     fmt::{Display, Debug, Formatter},
     write,
     println,
+    iter::*,
 };
 
 const allowed_dependencies = [""];
-const turn_in_directory = "ex0/";
+const allowed_dependencies = [""];
+const turn_in_directory = "ex04/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
-```
-```txt
-turn-in directory:
-    ex04/
-
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::str::FromStr
-    std::fmt::{Display, Debug, Formatter}
-    str::as_bytes
-    std::result::Result
-    std::{write, println}
-    std::iter::*
-    u8::is_ascii_digit
 ```
 
 Create a type named `Time` responsible for storing, well, a time.
@@ -246,7 +235,7 @@ pub enum TimeParseError {
 }
 ```
 
-Implement the required traits for `Time` such that the following test compiles.
+Implement the required traits for `Time`, such that the following test compiles.
 
 ```rust
 #[cfg(test)]
@@ -273,21 +262,20 @@ mod tests {
 
 ## Exercise 05: Quick Maths
 
-```txt
-turn-in directory:
-    ex05/
+```rust
+// allowed symbols
+use std::{
+    fmt::Debug,
+    ops::{
+        Mul, MulAssign, Div, DivAssign, Add, AddAssign, Sub, SubAssign,
+    },
+    marker::Copy,
+    clone::Clone,
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::cmp::{PartialEq, Eq}
-    std::fmt::Debug
-    std::ops::{Mul, MullAssign, Div, DivAssign, Add, AddAssign, Sub, SubAssign}
-    std::{assert*}
-    std::marker::Copy
-    std::clone::Clone 
-    *::sqrt
+const allowed_dependencies = [""];
+const turn_in_directory = "ex05/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 ```rust
@@ -302,15 +290,10 @@ impl<T> Vector<T> {
 ```
 
 * The `new` function must create a new `Vector<T>` with the specified components.
-* Overload the `+`, `-`, `+=` and `-=` operators for `Vector<T>`, for any `T` that itself has
-support for those operators.
-* Overload the `*`, `*=`, `/` and `/=` operators for `Vector<T>`, for any `T` that itself has support
-for those operators. The second operand of those operations *must not* be `Vector<T>`, but `T`
-itself, meaning that you must be able to compute `Vector::new(1, 2) * 3` but not
-`Vector::new(1, 2) * Vector::new(2, 3)`. You can require `T: Copy` when needed.
+* Overload the `+`, `-`, `+=` and `-=` operators for `Vector<T>`, for any `T` that itself has support for those operators.
+* Overload the `*`, `*=`, `/` and `/=` operators for `Vector<T>`, for any `T` that itself has support for those operators. The second operand of those operations *must not* be `Vector<T>`, but `T` itself, meaning that you must be able to compute `Vector::new(1, 2) * 3` but not `Vector::new(1, 2) * Vector::new(2, 3)`. You can require `T: Copy` when needed.
 * Overload the `==` and `!=` operators for any `T` that supports them.
-* Implement specifically for both `Vector<f32>` and `Vector<f64>` a `length` function that computes
-its length. The length of a vector can be computed using this formula: `‖(x, y)‖ = sqrt(x² + y²)`.
+* Implement specifically for both `Vector<f32>` and `Vector<f64>` a `length` function that computes its length. The length of a vector can be computed using this formula: $|(x,y)| = \sqrt{(x^2 + y^2)}$.
 
 The following tests must compile and run properly:
 
@@ -341,30 +324,28 @@ mod tests {
 
 ## Exercise 06: A Singly-Linked List
 
-```txt
-turn-in directory:
-    ex06/
+```rust
+// allowed symbols
+use std::{
+    boxed::Box,
+    panic,
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::boxed::Box
-    std::panic
+const allowed_dependencies = [""];
+const turn_in_directory = "ex06/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 * Create a linked list type named `List<T>` defined as follows.
 
+_Please note that the struct attributes are `pub` due to tester requirements, normally you would leave them private!_
 ```rust
 pub struct Node<T> {
-    // Normally you would not make this pub, but the tester needs it.
     pub value: T,
-    // Normally you would not make this pub, but the tester needs it.
     pub next: Option<Box<Node<T>>>,
 }
 
 pub struct List<T> {
-    // Normally you would not make this pub, but the tester needs it.
     pub head: Option<Box<Node<T>>>
 }
 
@@ -433,21 +414,18 @@ mod tests {
 
 ## Exercise 07: Comma-Separated Values
 
-```txt
-turn-in directory:
-    ex07/
+```rust
+// allowed symbols
+use std::{
+    write,
+    fmt::{Debug, Display, Formatter, Write},
+    cmp::PartialEq,
+    marker::Sized
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    str::{split, to_string, lines}
-    std::vec::Vec
-    std::string::String
-    std::write
-    std::fmt::{Debug, Display, Formatter, Write}
-    std::cmp::PartialEq
-    std::marker::Sized
+const allowed_dependencies = [""];
+const turn_in_directory = "ex07/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Let's create a generic CSV Encoder & Decoder. A CSV file is defined like this:
@@ -569,9 +547,7 @@ mod tests {
 
 ```
 
-You might have noticed that implementing the `Record` trait is *very* repetitive. As a bonus (a
-bonus to the bonus if you will), you can create an `impl_record!` macro to implement it in a single
-line:
+You might have noticed that implementing the `Record` trait is *very* repetitive. As a bonus (a bonus to the bonus, if you will), you can create an `impl_record!` macro to implement it in a single line:
 
 ```rust
 struct MyType {
