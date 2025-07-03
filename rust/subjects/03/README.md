@@ -67,26 +67,23 @@ fn my_unused_function() {}
 they are not specified in the `allowed symbols` section. **However**, tests should not introduce **any additional external dependencies** beyond
 those already required by the subject.
 
-* When a type is in the allowed symbols, it is **implied** that its methods and attributes are also allowed to be used, including the attributes of its implemented traits.
+* All primitive types, i.e the ones you are able to use without importing them, are allowed.
 
-* You are **always** allowed to use `Option` and `Result` types (either `std::io::Result` or the plain `Result`, up to you and your use case).
+* A type being allowed implies that its methods and attributes are allowed to be used as well, including the attributes of its implemented traits.
+
+
 
 * You are **always** allowed to use `std::eprintln` for error handling.
 
 ## Exercise 00: `choose`
 
-```txt
-turn-in directory:
-    ex00/
+```rust
+// allowed symbols
+use ftkit::random_number;
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed dependencies:
-    ftkit
-
-allowed symbols:
-    <[T]>::{len, is_empty}  ftkit::random_number
+const allowed_dependencies = ["ftkit"];
+const turn_in_directory = "ex00/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Create a **function** that randomly chooses a value among an input slice. If the provided list is
@@ -97,18 +94,15 @@ pub fn choose<T>(values: &[T]) -> Option<&T>;
 ```
 
 ## Exercise 01: Point Of No Return (v3)
+```rust
+// allowed symbols
+use std::{
+    cmp::PartialOrd,
+    std::marker::Sized,
+};
 
-```txt
-turn-in directory:
-    ex01/
-
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::cmp::PartialOrd
-    std::{assert*}
-    std::marker::Sized
+const turn_in_directory = "ex01/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Again? Yes. Another `min` function! But I promise, this one's the last one.
@@ -129,16 +123,15 @@ Still not allowed to use `return`!
 
 ## Exercise 02: 42
 
-```txt
-turn-in directory:
-    ex02/
+```rust
+// allowed symbols
+use std::{
+    fmt::Debug,
+    println,
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::fmt::Debug
-    std::println
+const turn_in_directory = "ex02/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Define the following trait:
@@ -149,8 +142,7 @@ pub trait FortyTwo {
 }
 ```
 
-* The `forty_two` associated function must return an instance of the implementer that represents
-the number 42 in some way.
+* The `forty_two` associated function must return an instance of the implementer that represents the number 42 in some way.
 
 Implement this trait for some common types, at least `u32` and `String`.
 
@@ -158,22 +150,22 @@ Implement this trait for some common types, at least `u32` and `String`.
 pub fn print_forty_two<T: Debug + FortyTwo>();
 ```
 
-* The `print_forty_two` function must create an instance of `T` using the `FortyTwo` trait, and then
-print it to the standard output using its `Debug` implementation.
+* The `print_forty_two` function must create an instance of `T` using the `FortyTwo` trait, and then print it to the standard output using its `Debug` implementation.
 
 Create a `test` function that showcase this function being called for at least two distinct types.
 
 ## Exercise 03: Hello again Mr. Collatz
-```txt
-turn-in directory:
-    ex03/
+```rust
+// allowed symbols
+use std::{
+    iter::{
+        Iterator,
+        traits::collect::FromIterator,
+    }
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::iter::Iterator
-    core::iter::traits::collect::FromIterator<..>
+const turn_in_directory = "ex03/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Define the following struct:
@@ -182,7 +174,9 @@ pub struct Collatz {
     value: u32,
 }
 ```
-Implement the `Iterator` and `FromIterator` trait so that this test compiles and runs.
+
+Implement the `Iterator` and `FromIterator` trait, such that this test compiles and runs.
+
 ```rust
 #[cfg(test)]
 mod tests {
@@ -207,6 +201,19 @@ mod tests {
 
 ## Exercise 04: What Time Is It?
 
+```rust
+// allowed symbols
+use std::{
+    str::*,
+    fmt::{Display, Debug, Formatter},
+    write,
+    println,
+};
+
+const allowed_dependencies = [""];
+const turn_in_directory = "ex0/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
+```
 ```txt
 turn-in directory:
     ex04/

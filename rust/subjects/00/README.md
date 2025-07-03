@@ -37,9 +37,9 @@ fn my_unused_function() {}
 they are not specified in the `allowed symbols` section. **However**, tests should not introduce **any additional external dependencies** beyond
 those already required by the subject.
 
-* When a type is in the allowed symbols, it is **implied** that its methods and attributes are also allowed to be used, including the attributes of its implemented traits.
+* All primitive types, i.e the ones you are able to use without importing them, are allowed.
 
-* You are **always** allowed to use `Option` and `Result` types (either `std::io::Result` or the plain `Result`, up to you and your use case).
+* A type being allowed implies that its methods and attributes are allowed to be used as well, including the attributes of its implemented traits.
 
 * You are **always** allowed to use `std::eprintln` for error handling.
 
@@ -56,7 +56,6 @@ const files_to_turn_in = ["hello.rs"];
 This exercise will be compiled and run with `rustc ex00/hello.rs && ./hello`.
 
 Create a **program** that prints the string `Hello, World!`, followed by a line feed.
-
 
 ```txt
 >_ ./hello
