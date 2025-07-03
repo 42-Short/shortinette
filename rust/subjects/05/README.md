@@ -54,15 +54,13 @@ those already required by the subject.
 
 ## Exercise 00: Cellular
 
-```txt
-turn-in directory:
-    ex00/
+```rust
+// allowed symbols
+use std::cell::Cell;
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::cell::Cell
+const allowed_dependencies = [""];
+const turn_in_directory = "ex00/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Write a **function** with the following prototype:
@@ -119,15 +117,13 @@ mod tests {
 
 ## Exercise 01: Atomic
 
-```txt
-turn-in directory:
-    ex01/
+```rust
+// allowed symbols
+use std::sync::atomic::{AtomicU8, Ordering};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::sync::atomic::{AtomicU8, Ordering}
+const allowed_dependencies = [""];
+const turn_in_directory = "ex01/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Create a type named `Unique`.
@@ -147,7 +143,7 @@ impl Unique {
 * `id` must return the unique id of the instance of `Unique`.
 * It must be possible to `Clone` a `Unique`, and the created `Unique` must still be unique.
 * Trying to create a `Unique` when no more identifiers are available causes the function to return `None`.
-* Since `Unique` uses an `u8` it is only possible to create up to `255` instances of `Unique`. Think about why this is the case.
+* Since `Unique` uses a `u8`, it is only possible to create up to `255` instances of `Unique`. Think about why this is the case.
 
 Example:
 
@@ -185,18 +181,18 @@ What atomic memory ordering did you use? Why?
 
 ## Exercise 02: Last Error
 
-```txt
-turn-in directory:
-    ex02/
+```rust
+// allowed symbols
+use std::{
+    thread_local,
+    cell::Cell,
+    marker::Copy,
+    clone::Clone,
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::thread_local
-    std::cell::Cell
-    std::marker::Copy
-    std::clone::Clone
+const allowed_dependencies = [""];
+const turn_in_directory = "ex02/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Create an `Error` enum with the following variants:
@@ -216,28 +212,24 @@ impl Error {
 }
 ```
 
- * `last` must return the calling thread's last `Error` instance. If `make_last` has never been
-   called before, `Error::Success` is returned.
+ * `last` must return the calling thread's last `Error` instance. If `make_last` has never been called before, `Error::Success` is returned.
  * `make_last` must set the calling thread's last `Error` instance.
 
 ## Exercise 03: A Philosopher's Tiny Brain
 
-```txt
-turn-in directory:
-    ex03/
+```rust
+// allowed symbols
+use std::{
+    sync::Arc,
+    sync::mpsc::{sync_channel, SyncSender, Receiver},
+    thread::{spawn, sleep},
+    time::Duration,
+};
+use ftkit::ARGS;
 
-files to turn in:
-    src/main.rs  Cargo.toml
-
-allowed symbols:
-    std::sync::Arc
-    std::sync::mpsc::{sync_channel, SyncSender, Receiver}
-    std::thread::{spawn, sleep}
-    std::time::Duration
-    ftkit::Args
-
-allowed dependencies:
-    ftkit
+const allowed_dependencies = ["ftkit"];
+const turn_in_directory = "ex03/";
+const files_to_turn_in = ["src/main.rs", "Cargo.toml"];
 ```
 
 Create a **program** that works in the following way:
@@ -267,22 +259,21 @@ the philosopher is thinking about b
 * The program runs until it receives `EOF`.
 * The size of the philosopher's brain is provided as a command-line argument.
 * The nature of `sync_channel` makes it possible for the philosopher to think about a single topic even if the brain size is `0`. Think about it.
-* Read the example very careful.
+* Read the example very carefully.
 
 ## Exercise 04: Logger
 
-```txt
-turn-in directory:
-    ex04/
+```rust
+// allowed symbols
+use std::{
+    sync::{Arc, Mutex},
+    thread:spawn,
+    io::Write,
+};
 
-files to turn in:
-    src/main.rs  Cargo.toml
-
-allowed symbols:
-    std::sync::{Arc,Mutex}
-    std::thread::spawn
-    std::io::Write
-    std::vec::Vec::into_boxed_slice
+const allowed_dependencies = [""];
+const turn_in_directory = "ex04/";
+const files_to_turn_in = ["src/main.rs", "Cargo.toml"];
 ```
 
 Create a `Logger` type.
@@ -302,8 +293,7 @@ impl<W> Logger<W> {
 
  * `new` must create a new `Logger` with a buffer of size `threshold` and the given `W` instance.
 
-In order to avoid performing too many `write` system calls, you should first write the messages
-to an internal `buffer`, and THEN, write everything to the given writer.
+In order to avoid performing too many `write` system calls, you should first write the messages to an internal `buffer`, and THEN, write everything to the given writer.
 
 ```rust
 impl<W: io::Write> Logger<W> {
@@ -312,13 +302,10 @@ impl<W: io::Write> Logger<W> {
 }
 ```
 
- * `log` must try to write `message` to its internal buffer. When the buffer is full, everything
-   must be sent to the specified `io::Write` implementation. After that the buffer is cleared for
-   new data to be added. A `\n` is automatically added at the end of the message.
+ * `log` must try to write `message` to its internal buffer. When the buffer is full, everything must be sent to the specified `io::Write` implementation. After that the buffer is cleared for new data to be added. A `\n` is automatically added at the end of the message.
  * `flush` must properly send the content of the buffer and clears it.
 
-Create a `main` function spawning 10 threads. Each thread must try to write to the standard output
-using the same `Logger<Stdout>` 10 times.
+Create a `main` function spawning 10 threads. Each thread must try to write to the standard output using the same `Logger<Stdout>` 10 times.
 
 ```txt
 >_ cargo run
@@ -332,34 +319,27 @@ hello 1 from thread 1!
 
  * A message from any given thread must not appear within the message of another thread.
 
-
-
 ## Exercise 05: PI * Rayon * Rayon
 
-```txt
-turn-in directory:
-    ex05/
+```rust
+// allowed symbols
+use std::{
+    iter::*,
+    println,
+    env::args,
+    time::Instant,
+};
 
-files to turn in:
-    src/main.rs  Cargo.toml
-
-allowed dependencies:
-    rand
-    rayon
-
-allowed symbols:
-    std::iter::* rayon::prelude::*
-    std::println  std::env::args
-    std::time::Instant
+const allowed_dependencies = ["rand", "rayon"];
+const turn_in_directory = "ex05/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
-To finish with this module, let's look at some popular third-party crates!
+Let's look at some popular third-party crates!
 
-First, let's create a single threaded **program** that uses [monte carlo's method](https://en.wikipedia.org/wiki/Monte_Carlo_method#Overview)
-to compute PI. The program takes a single argument: the number of points to sample.
+First, let's create a single threaded **program** that uses [Monte Carlo's method](https://en.wikipedia.org/wiki/Monte_Carlo_method#Overview) to compute PI. The program takes a single argument: the number of points to sample.
 
-Try to write this algorithm without a `for` loop. Instead, rely on chained iterators. This will
-make it easier for you in the second part of the exercise.
+Try to write this algorithm without a `for` loop. Instead, rely on chained iterators. This will make it easier for you in the second part of the exercise.
 
 ```txt
 >_ RUSTFLAGS="-C opt-level=3 -C target-cpu=native" cargo run -- 1000000
@@ -367,8 +347,7 @@ pi: 3.1413
 duration: 722ms
 ```
 
-Even for as little as a million points, the algorithm is already pretty slow. Try to speed it up a
-little using the [`rayon`](https://crates.io/crates/rayon) crate.
+Even for as little as a million points, the algorithm is already pretty slow. Try to speed it up a little using the [`rayon`](https://crates.io/crates/rayon) crate.
 
 ```txt
 >_ RUSTFLAGS="-C opt-level=3 -C target-cpu=native" cargo run -- 1000000
@@ -378,33 +357,29 @@ duration: 147ms
 
 ## Exercise 06: 404 Not Found
 
-```txt
-turn-in directory:
-    ex06/
+```rust
+// allowed symbols
+use std::{
+    thread::{spawn, JoinHandle},
+    sync::{Arc, RwLock, mpsc::{Sender, Receiver, channel}},
+    net::{TcpListener, SockerAddr},
+};
 
-files to turn in:
-    src/main.rs  Cargo.toml
-
-allowed symbols:
-    std::thread::{spawn, JoinHandle}
-    std::sync::mpsc::{Sender, Receiver, channel}
-    std::sync::{Arc, RwLock}
-    std::net::{TcpListener, SocketAddr}
-    std::io::{Result, Error}
-    std::eprintln
+const allowed_dependencies = [""];
+const turn_in_directory = "ex06/";
+const files_to_turn_in = ["src/lib.rs", "src/main.rs", "Cargo.toml"];
 ```
 
 Create a `ThreadPool` type.
+
+_Please note that the struct attributes are only `pub` due to tester requirements, normally you would keep them private._
 
 ```rust
 type Task = Box<dyn 'static + Send + FnOnce()>;
 
 pub struct ThreadPool {
-    // Normally you would not make this pub, but the tester needs it.
     pub threads: Vec<JoinHandle<()>>,
-    // Normally you would not make this pub, but the tester needs it.
     pub should_stop: Arc<RwLock<bool>>,
-    // Normally you would not make this pub, but the tester needs it.
     pub task_sender: Sender<Task>,
 }
 
@@ -418,14 +393,13 @@ impl ThreadPool {
 
  * The `new` function must create a new `ThreadPool` instance by spawning `thread_count` threads.
  * The `spawn_task` function must send the task to a thread in the thread pool.
- * When a `ThreadPool` is dropped, its threads must stop. If any of the threads panicked, en error
-   should be printed to standard error.
+ * When a `ThreadPool` is dropped, its threads must stop. If any of the threads panicked, en error should be printed to standard error.
 
 When a thread is not executing a task, it waits until one is available and executes it.
 
 Let's create a multithreaded HTTP server!
 
-* You **program** must listen on an address and port specified in command-line arguments:
+* Your **program** must listen on an address and port specified in command-line arguments:
 
 ```txt
 >_ cargo run -- 127.0.0.1:8080
@@ -444,18 +418,16 @@ This page does not exist :(
 
 ## Exercise 07: Rendez-Vous
 
-```txt
-turn-in directory:
-    ex07/
+```rust
+// allowed symbols
+use std::{
+    sync::{CondVar, Mutex},
+    mem::{Replace, swap},
+};
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    std::sync::{Condvar, Mutex}
-    std::option::Option
-    std::result::Result
-    std::mem::{replace, swap}
+const allowed_dependencies = [""];
+const turn_in_directory = "ex07/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Let's create a "Rendez-Vous" primitive in Rust.
