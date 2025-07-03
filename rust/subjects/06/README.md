@@ -120,9 +120,9 @@ those already required by the subject.
 
 * A type being allowed implies that its methods and attributes are allowed to be used as well, including the attributes of its implemented traits.
 
-
-
 * You are **always** allowed to use `std::eprintln` for error handling.
+
+* These rules may be overridden by specific exercises.
 
 ## Module Rules
 

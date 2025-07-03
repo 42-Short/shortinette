@@ -115,21 +115,18 @@ those already required by the subject.
 
 * A type being allowed implies that its methods and attributes are allowed to be used as well, including the attributes of its implemented traits.
 
-
-
 * You are **always** allowed to use `std::eprintln` for error handling.
+
+* These rules may be overridden by specific exercises.
 
 ## Exercise 00: Wait that's it?
 
-```txt
-turn-in directories:
-    ex00/
+```rust
+// no allowed symbols
 
-files to turn in:
-    src/lib.rs  Cargo.toml
-
-allowed symbols:
-    none
+const allowed_dependencies = [""];
+const turn_in_directory = "ex00/";
+const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
 
 Create the `Outcome` and `Maybe` types, which should mimic `Result` and `Option` such that below test compiles and runs. For this exercise, you are exceptionally (_and obviously_) **not** allowed to use the `Option` and `Result` types.

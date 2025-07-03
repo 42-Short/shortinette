@@ -43,6 +43,8 @@ those already required by the subject.
 
 * You are **always** allowed to use `std::eprintln` for error handling.
 
+* These rules may be overridden by specific exercises.
+
 ## Exercise 00: Hello, World!
 
 ```rust
