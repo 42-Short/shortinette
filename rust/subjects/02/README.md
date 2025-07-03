@@ -136,6 +136,7 @@ those already required by the subject.
 ```rust
 // no allowed symbols
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex00/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -191,6 +192,7 @@ Note that removing the call to `bruh.free()` should allow the code to compile su
 ## Exercise 01: A Point In Space
 ```rust
 // allowed symbols
+const allowed_dependencies = [""];
 const turn_in_directory = "ex01/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -231,6 +233,7 @@ use std::{
     fmt::Debug,
 };
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex00/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -270,6 +273,7 @@ Copy the above `test` function and make it compile.
 ## Exercise 03 Money money money
 
 ```rust
+const allowed_dependencies = [""];
 const turn_in_directory = "ex03/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -362,6 +366,7 @@ use std::{
     default::Default,
 };
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex04/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -418,6 +423,7 @@ use std::{
 };
 
 const allowed_dependencies = ["ftkit"];
+const allowed_dependencies = [""];
 const turn_in_directory = "ex05/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -501,6 +507,7 @@ use std::{
     fmt::Debug,
 };
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex05/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -595,6 +602,7 @@ use std::{
 };
 
 const allowed_dependencies = ["ftkit"];
+const allowed_dependencies = [""];
 const turn_in_directory = "ex07/";
 const files_to_turn_in = ["src/main.rs", "Cargo.toml"];
 ```

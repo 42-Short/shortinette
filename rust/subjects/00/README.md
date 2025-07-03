@@ -49,6 +49,7 @@ those already required by the subject.
 // allowed symbols
 use std::println;
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex00/";
 const files_to_turn_in = ["hello.rs"];
 ```
@@ -67,6 +68,7 @@ Hello, World!
 ```rust
 // no allowed symbols
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex01/";
 const files_to_turn_in = ["min.rs"];
 ```
@@ -87,6 +89,7 @@ Oh, I almost forgot. The `return` keyword is forbidden in this exercise! Good lu
 // allowed symbols
 use std::println;
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex02/";
 const files_to_turn_in = ["yes.rs", "collatz.rs", "print_bytes.rs"];
 ```
@@ -164,6 +167,7 @@ Output:
 // allowed symbols
 use std::println;
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex03/";
 const files_to_turn_in = ["fizzbuzz.rs"];
 ```
@@ -213,6 +217,7 @@ You are only allowed to use **_one_** `for` loop and **_one_** `match` statement
 // allowed symbols
 use std::println;
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex04/";
 const files_to_turn_in = ["src/main.rs", "src/overflow.rs", "src/other.rs", "Cargo.toml"];
 ```
@@ -279,6 +284,7 @@ use std::{
     io::stdout,
 };
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex05/";
 const files_to_turn_in = ["src/main.rs", "src/lib.rs", "Cargo.toml"];
 ```
@@ -343,6 +349,7 @@ use i32::cmp;
 use ftkit::{read_number, random_number};
 
 const allowed_dependencies = ["ftkit"];
+const allowed_dependencies = [""];
 const turn_in_directory = "ex06/";
 const files_to_turn_in = ["src/main.rs", "Cargo.toml"];
 ```
@@ -372,6 +379,7 @@ use std::{
 use ftkit::ARGS;
 
 const allowed_dependencies = "ftkit";
+const allowed_dependencies = [""];
 const turn_in_directory = "ex07/";
 const files_to_turn_in = ["src/main.rs", "src/overflow.rs", "src/other.rs", "Cargo.toml"];
 ```

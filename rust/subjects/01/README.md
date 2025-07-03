@@ -20,6 +20,7 @@ fn punch_card() {
 // allowed symbols
 use ;
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex0/";
 const files_to_turn_in = [];
 ```

@@ -209,6 +209,7 @@ To summarize:
 // allowed symbols
 use std::ptr::{write, read, add};
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex00/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -257,6 +258,7 @@ assert_eq!(&dst, b"Hello, World!\0");
 // allowed symbols
 use std::{slice::from_raw_parts, mem::transmute};
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex01/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -331,6 +333,7 @@ use std::{
     alloc::{alloc, dealloc, handle_alloc_error, Layout},
 };
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex02/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -384,6 +387,7 @@ use std::{
     mem::*,
 };
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex03/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -429,6 +433,7 @@ use libc::{__errno_location, c_int, strerror, write, read, open, close};
 use cstr::cstr;
 
 const allowed_dependencies = ["libc", "cstr"];
+const allowed_dependencies = [""];
 const turn_in_directory = "ex04/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -521,6 +526,7 @@ use std::{
     mem::*,
 };
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex05/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml"];
 ```
@@ -585,6 +591,7 @@ use std::{
     ffi::{CStr, c_int, c_char},
 };
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex06/";
 const files_to_turn_in = ["src/lib.rs", "Cargo.toml", "build.rs", "awesome.c"];
 ```
@@ -669,6 +676,7 @@ When a `Database` goes out of scope, it must automatically call `delete_database
 // allowed symbols
 use core::arch::asm;
 
+const allowed_dependencies = [""];
 const turn_in_directory = "ex07/";
 const files_to_turn_in = ["ft_putchar.rs"];
 ```
