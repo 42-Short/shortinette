@@ -162,7 +162,7 @@ struct NestedStruct {
 Implement the `free` method, such that the following code does *not* compile:
 ```rust
 impl ComplexStruct {
-    pub fn free(&mut self) {
+    pub fn free(...) {
         // Your implementation
     }
 }
